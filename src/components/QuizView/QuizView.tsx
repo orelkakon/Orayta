@@ -90,6 +90,7 @@ const QuestionCard = styled.div`
   flex-direction: column;
   gap: ${theme.spacing.lg};
   animation: ${fadeIn} 0.3s ease;
+  min-width: 0;
 `;
 
 const QuestionLabel = styled.div`
@@ -107,6 +108,8 @@ const CitationText = styled.blockquote`
   color: ${theme.colors.text};
   border-right: 4px solid ${theme.colors.secondary};
   padding-right: ${theme.spacing.md};
+  overflow-wrap: break-word;
+  word-break: break-word;
 `;
 
 const HintBox = styled.div`
@@ -249,6 +252,7 @@ const StatsCard = styled.div`
   flex-direction: column;
   gap: ${theme.spacing.md};
   height: fit-content;
+  min-width: 0;
 `;
 
 const StatsTitle = styled.h3`

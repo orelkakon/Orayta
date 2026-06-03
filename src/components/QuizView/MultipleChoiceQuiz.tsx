@@ -16,6 +16,7 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${theme.spacing.lg};
+  min-width: 0;
 `;
 
 const QuestionLabel = styled.div`
@@ -33,6 +34,8 @@ const CitationText = styled.blockquote`
   color: ${theme.colors.text};
   border-right: 4px solid ${theme.colors.secondary};
   padding-right: ${theme.spacing.md};
+  overflow-wrap: break-word;
+  word-break: break-word;
 `;
 
 const OptionBtn = styled.button<{ $state: OptionState }>`
@@ -79,6 +82,17 @@ const NextBtn = styled.button`
   font-size: 1rem;
   font-weight: 600;
   &:hover { background: ${theme.colors.primaryLight}; }
+`;
+
+const SkipBtn = styled.button`
+  align-self: flex-start;
+  padding: ${theme.spacing.md} ${theme.spacing.xl};
+  border: 2px solid ${theme.colors.border};
+  border-radius: ${theme.radii.md};
+  font-size: 1rem;
+  color: ${theme.colors.textMuted};
+  transition: all 0.15s;
+  &:hover { border-color: ${theme.colors.primaryLight}; color: ${theme.colors.primary}; }
 `;
 
 interface Props {
@@ -166,8 +180,10 @@ export default function MultipleChoiceQuiz({ filterSeder, filterMasechet, onAnsw
           {score >= 1 ? HE.QUIZ_CORRECT : HE.QUIZ_WRONG}
         </ResultBanner>
       )}
-      {selectedId !== null && (
+      {selectedId !== null ? (
         <NextBtn onClick={loadQuestion}>{HE.QUIZ_NEXT}</NextBtn>
+      ) : (
+        <SkipBtn onClick={loadQuestion}>{HE.QUIZ_SKIP}</SkipBtn>
       )}
     </Wrapper>
   );
