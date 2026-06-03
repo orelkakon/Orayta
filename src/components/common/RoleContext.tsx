@@ -1,19 +1,19 @@
 'use client';
 
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 export type Role = 'admin' | 'reader';
 
-function readRoleCookie(): Role {
-  if (typeof document === 'undefined') return 'reader';
-  const match = document.cookie.match(/(?:^|;\s*)role=([^;]+)/);
-  return match?.[1] === 'admin' ? 'admin' : 'reader';
-}
-
-const RoleContext = createContext<Role>('reader');
+const RoleContext = createContext<Role>('admin');
 
 export function RoleProvider({ children }: { children: React.ReactNode }) {
-  const [role] = useState<Role>(readRoleCookie);
+  const [role, setRole] = useState<Role>('admin');
+
+  useEffect(() => {
+    const match = document.cookie.match(/(?:^|;\s*)role=([^;]+)/);
+    if (match) setRole(match[1] === 'reader' ? 'reader' : 'admin');
+  }, []);
+
   return <RoleContext.Provider value={role}>{children}</RoleContext.Provider>;
 }
 
