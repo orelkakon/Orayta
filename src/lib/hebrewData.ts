@@ -56,3 +56,20 @@ export const getMasechetSeder = (masechet: string): string => {
 export const getMasechtotBySeder = (seder: string): string[] => {
   return MASECHTOT.filter((m) => m.seder === seder).map((m) => m.name);
 };
+
+const LETTER_VALUES: Record<string, number> = {
+  'א': 1, 'ב': 2, 'ג': 3, 'ד': 4, 'ה': 5, 'ו': 6, 'ז': 7, 'ח': 8, 'ט': 9,
+  'י': 10, 'כ': 20, 'ל': 30, 'מ': 40, 'נ': 50, 'ס': 60, 'ע': 70, 'פ': 80, 'צ': 90,
+  'ק': 100, 'ר': 200, 'ש': 300, 'ת': 400,
+};
+
+export const dafToNumber = (daf: string): number => {
+  const clean = daf.replace(/[״׳"']/g, '');
+  return [...clean].reduce((sum, ch) => sum + (LETTER_VALUES[ch] ?? 0), 0);
+};
+
+export const sederIndex = (seder: string): number =>
+  SEDARIM.findIndex((s) => s === seder);
+
+export const masechetIndex = (masechet: string): number =>
+  MASECHTOT.findIndex((m) => m.name === masechet);

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
+import OraytaLogo from '@/components/common/OraytaLogo';
 
 const Wrapper = styled.div`
   min-height: 100vh;
@@ -15,7 +16,7 @@ const Wrapper = styled.div`
 const Header = styled.header`
   background: ${theme.colors.primary};
   color: white;
-  padding: ${theme.spacing.md} ${theme.spacing.xl};
+  padding: ${theme.spacing.sm} ${theme.spacing.xl};
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -29,23 +30,42 @@ const Header = styled.header`
   }
 `;
 
-const Logo = styled.div`
+const LogoArea = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.sm};
+`;
+
+const LogoText = styled.div`
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+`;
+
+const AppName = styled.span`
   font-family: ${theme.fonts.body};
-  font-size: 1.6rem;
+  font-size: 1.45rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
+`;
+
+const Bsd = styled.span`
+  font-family: ${theme.fonts.body};
+  font-size: 0.65rem;
+  opacity: 0.7;
+  letter-spacing: 0.05em;
+  text-align: left;
 `;
 
 const Nav = styled.nav`
   display: flex;
-  gap: ${theme.spacing.sm};
+  gap: ${theme.spacing.xs};
   align-items: center;
 `;
 
 const NavLink = styled(Link)<{ $active?: boolean }>`
-  padding: ${theme.spacing.xs} ${theme.spacing.md};
+  padding: ${theme.spacing.xs} ${theme.spacing.sm};
   border-radius: ${theme.radii.md};
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 500;
   transition: background 0.15s;
   background: ${({ $active }) => ($active ? 'rgba(255,255,255,0.25)' : 'transparent')};
@@ -55,19 +75,19 @@ const NavLink = styled(Link)<{ $active?: boolean }>`
   }
 
   @media (max-width: 600px) {
-    padding: ${theme.spacing.xs} ${theme.spacing.sm};
-    font-size: 0.8rem;
+    font-size: 0.78rem;
+    padding: ${theme.spacing.xs} 6px;
   }
 `;
 
 const LogoutButton = styled.button`
-  padding: ${theme.spacing.xs} ${theme.spacing.md};
+  padding: ${theme.spacing.xs} ${theme.spacing.sm};
   border-radius: ${theme.radii.md};
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: white;
-  opacity: 0.8;
-  transition: opacity 0.15s;
+  opacity: 0.75;
+  transition: all 0.15s;
 
   &:hover {
     opacity: 1;
@@ -75,8 +95,7 @@ const LogoutButton = styled.button`
   }
 
   @media (max-width: 600px) {
-    font-size: 0.8rem;
-    padding: ${theme.spacing.xs} ${theme.spacing.sm};
+    font-size: 0.78rem;
   }
 `;
 
@@ -103,7 +122,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <Wrapper>
       <Header>
-        <Logo>{HE.APP_NAME}</Logo>
+        <LogoArea href="/study">
+          <OraytaLogo size={40} />
+          <LogoText>
+            <AppName>{HE.APP_NAME}</AppName>
+            <Bsd>בס״ד</Bsd>
+          </LogoText>
+        </LogoArea>
+
         <Nav>
           <NavLink href="/study" $active={pathname === '/study'}>{HE.NAV_STUDY}</NavLink>
           <NavLink href="/add" $active={pathname === '/add'}>{HE.NAV_ADD}</NavLink>

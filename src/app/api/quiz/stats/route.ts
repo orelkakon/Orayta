@@ -4,9 +4,8 @@ import { prisma } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const [total, correct, recent] = await Promise.all([
-    prisma.quizResult.count(),
-    prisma.quizResult.count({ where: { isCorrect: true } }),
+  const [results, recent] = await Promise.all([
+    prisma.quizResult.findMany({ select: { score: true } }),
     prisma.quizResult.findMany({
       take: 10,
       orderBy: { answeredAt: 'desc' },
@@ -14,16 +13,17 @@ export async function GET() {
     }),
   ]);
 
-  const stats = {
+  const total = results.length;
+  const totalScore = results.reduce((sum, r) => sum + r.score, 0);
+
+  return NextResponse.json({
     total,
-    correct,
-    accuracy: total > 0 ? Math.round((correct / total) * 100) : 0,
+    totalScore,
+    accuracy: total > 0 ? Math.round((totalScore / total) * 100) : 0,
     recentResults: recent.map((r) => ({
-      isCorrect: r.isCorrect,
+      score: r.score,
       answeredAt: r.answeredAt.toISOString(),
       citationContent: r.citation.content,
     })),
-  };
-
-  return NextResponse.json(stats);
+  });
 }

@@ -2,6 +2,7 @@
 
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
+import OraytaLogo from '@/components/common/OraytaLogo';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -33,13 +34,6 @@ const LogoCircle = styled.div`
   align-items: center;
   justify-content: center;
   box-shadow: ${theme.shadows.lg};
-`;
-
-const LogoText = styled.span`
-  font-family: ${theme.fonts.body};
-  font-size: 2.8rem;
-  color: white;
-  line-height: 1;
 `;
 
 const AppName = styled.h1`
@@ -94,10 +88,33 @@ const CreatorEmail = styled.a`
   color: ${theme.colors.primaryLight};
   direction: ltr;
   display: inline-block;
+  &:hover { text-decoration: underline; }
+`;
 
-  &:hover {
-    text-decoration: underline;
-  }
+const SocialRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.sm};
+  margin-top: ${theme.spacing.xs};
+`;
+
+const LinkedInLink = styled.a`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.xs};
+  font-size: 0.85rem;
+  color: #0077B5;
+  direction: ltr;
+  font-weight: 500;
+  transition: opacity 0.15s;
+  &:hover { opacity: 0.75; }
+`;
+
+const Footer = styled.div`
+  font-size: 0.78rem;
+  color: ${theme.colors.textLight};
+  text-align: center;
+  padding-bottom: ${theme.spacing.md};
 `;
 
 const FeatureList = styled.ul`
@@ -146,7 +163,7 @@ export default function AboutView() {
     <Page>
       <LogoBlock>
         <LogoCircle>
-          <LogoText>א</LogoText>
+          <OraytaLogo size={80} />
         </LogoCircle>
         <AppName>אורייתא</AppName>
         <AppSubtitle>מערכת לניהול ולימוד ציטוטים מהתלמוד הבבלי</AppSubtitle>
@@ -174,8 +191,23 @@ export default function AboutView() {
           <CreatorEmail href="mailto:orelkakonweb@gmail.com">
             orelkakonweb@gmail.com
           </CreatorEmail>
+          <SocialRow>
+            <LinkedInLink
+              href="https://www.linkedin.com/in/orelkakon/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#0077B5">
+                <rect width="24" height="24" rx="4" fill="#0077B5"/>
+                <path d="M6.5 9.5h-2v8h2v-8zm-1-3a1.1 1.1 0 110 2.2A1.1 1.1 0 015.5 6.5zM18.5 17.5h-2v-3.8c0-1-.4-1.7-1.3-1.7-.7 0-1.1.5-1.3 1-.1.2-.1.5-.1.7v3.8h-2s.02-6.5 0-8h2v1.1c.3-.4.8-1.1 2-1.1 1.4 0 2.7 1 2.7 3.1v4.9z" fill="white"/>
+              </svg>
+              LinkedIn
+            </LinkedInLink>
+          </SocialRow>
         </CreatorRow>
       </Card>
+
+      <Footer>© 2026 אוראל קקון · אורייתא</Footer>
     </Page>
   );
 }

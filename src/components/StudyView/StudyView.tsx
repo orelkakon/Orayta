@@ -21,6 +21,12 @@ const Title = styled.h1`
   color: ${theme.colors.primary};
 `;
 
+const FilterSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${theme.spacing.sm};
+`;
+
 const FilterRow = styled.div`
   display: flex;
   gap: ${theme.spacing.md};
@@ -72,10 +78,10 @@ const SearchInput = styled.input`
   }
 `;
 
-const CountBadge = styled.span`
-  font-size: 0.85rem;
+const CountBadge = styled.div`
+  font-size: 0.82rem;
   color: ${theme.colors.textMuted};
-  align-self: center;
+  text-align: left;
 `;
 
 const CitationList = styled.div`
@@ -138,31 +144,32 @@ export default function StudyView() {
     <Container>
       <Title>{HE.STUDY_TITLE}</Title>
 
-      <FilterRow>
-        <FilterField>
-          <FilterLabel>{HE.STUDY_FILTER_SEDER}</FilterLabel>
-          <Select value={seder} onChange={(e) => { setSeder(e.target.value); setMasechet(''); }}>
-            <option value="">{HE.STUDY_FILTER_ALL}</option>
-            {SEDARIM.map((s) => <option key={s} value={s}>{s}</option>)}
-          </Select>
-        </FilterField>
+      <FilterSection>
+        <FilterRow>
+          <FilterField>
+            <FilterLabel>{HE.STUDY_FILTER_SEDER}</FilterLabel>
+            <Select value={seder} onChange={(e) => { setSeder(e.target.value); setMasechet(''); }}>
+              <option value="">{HE.STUDY_FILTER_ALL}</option>
+              {SEDARIM.map((s) => <option key={s} value={s}>{s}</option>)}
+            </Select>
+          </FilterField>
 
-        <FilterField>
-          <FilterLabel>{HE.STUDY_FILTER_MASECHET}</FilterLabel>
-          <Select value={masechet} onChange={(e) => setMasechet(e.target.value)}>
-            <option value="">{HE.STUDY_FILTER_ALL}</option>
-            {masechtotForSeder.map((m) => <option key={m} value={m}>{m}</option>)}
-          </Select>
-        </FilterField>
+          <FilterField>
+            <FilterLabel>{HE.STUDY_FILTER_MASECHET}</FilterLabel>
+            <Select value={masechet} onChange={(e) => setMasechet(e.target.value)}>
+              <option value="">{HE.STUDY_FILTER_ALL}</option>
+              {masechtotForSeder.map((m) => <option key={m} value={m}>{m}</option>)}
+            </Select>
+          </FilterField>
 
-        <SearchInput
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={HE.STUDY_SEARCH_PLACEHOLDER}
-        />
-
-        <CountBadge>{HE.STUDY_COUNT(citations.length)}</CountBadge>
-      </FilterRow>
+          <SearchInput
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={HE.STUDY_SEARCH_PLACEHOLDER}
+          />
+        </FilterRow>
+        {!loading && <CountBadge>{HE.STUDY_COUNT(citations.length)}</CountBadge>}
+      </FilterSection>
 
       <CitationList>
         {loading ? (

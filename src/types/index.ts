@@ -33,16 +33,16 @@ export interface QuizAnswer {
 }
 
 export interface QuizResult {
-  isCorrect: boolean;
+  score: number;
   correctLocations: CitationLocation[];
 }
 
 export interface QuizStats {
   total: number;
-  correct: number;
+  totalScore: number;
   accuracy: number;
   recentResults: Array<{
-    isCorrect: boolean;
+    score: number;
     answeredAt: string;
     citationContent: string;
   }>;

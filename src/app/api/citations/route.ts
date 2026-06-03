@@ -1,8 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getMasechetSeder, sederIndex, masechetIndex, dafToNumber } from '@/lib/hebrewData';
 
 export const dynamic = 'force-dynamic';
-import { getMasechetSeder } from '@/lib/hebrewData';
+
+type CitationWithLocations = Awaited<ReturnType<typeof prisma.citation.findMany>>[number];
+
+function sortCitations(list: CitationWithLocations[]): CitationWithLocations[] {
+  return [...list].sort((a, b) => {
+    const la = a.locations[0];
+    const lb = b.locations[0];
+    if (!la || !lb) return 0;
+    const sd = sederIndex(la.seder) - sederIndex(lb.seder);
+    if (sd !== 0) return sd;
+    const md = masechetIndex(la.masechet) - masechetIndex(lb.masechet);
+    if (md !== 0) return md;
+    return dafToNumber(la.daf) - dafToNumber(lb.daf);
+  });
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -21,10 +36,9 @@ export async function GET(request: NextRequest) {
       },
     },
     include: { locations: true },
-    orderBy: { createdAt: 'asc' },
   });
 
-  return NextResponse.json(citations);
+  return NextResponse.json(sortCitations(citations));
 }
 
 export async function POST(request: NextRequest) {

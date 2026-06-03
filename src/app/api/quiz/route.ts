@@ -3,17 +3,23 @@ import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+function calcScore(
+  answer: { masechet: string; daf: string; amud: string | null },
+  loc: { masechet: string; daf: string; amud: string | null }
+): number {
+  if (answer.masechet !== loc.masechet) return 0;
+  if (answer.daf.trim() !== loc.daf) return 0;
+  if (!loc.amud) return 1;           // no amud on this location → full point for daf
+  if (answer.amud === loc.amud) return 1;  // daf + amud both correct
+  return 0.5;                        // daf correct, amud wrong/missing
+}
+
 export async function GET() {
   const count = await prisma.citation.count();
-  if (count === 0) {
-    return NextResponse.json({ error: 'no citations' }, { status: 404 });
-  }
+  if (count === 0) return NextResponse.json({ error: 'no citations' }, { status: 404 });
 
   const skip = Math.floor(Math.random() * count);
-  const citation = await prisma.citation.findFirst({
-    skip,
-    include: { locations: true },
-  });
+  const citation = await prisma.citation.findFirst({ skip, include: { locations: true } });
 
   return NextResponse.json(citation);
 }
@@ -31,20 +37,11 @@ export async function POST(request: NextRequest) {
     include: { locations: true },
   });
 
-  if (!citation) {
-    return NextResponse.json({ error: 'not found' }, { status: 404 });
-  }
+  if (!citation) return NextResponse.json({ error: 'not found' }, { status: 404 });
 
-  const isCorrect = citation.locations.some((loc) => {
-    const masechetMatch = loc.masechet === body.masechet;
-    const dafMatch = loc.daf === body.daf.trim();
-    const amudMatch = loc.amud === (body.amud ?? null);
-    return masechetMatch && dafMatch && amudMatch;
-  });
+  const score = Math.max(...citation.locations.map((loc) => calcScore(body, loc)));
 
-  await prisma.quizResult.create({
-    data: { citationId: body.citationId, isCorrect },
-  });
+  await prisma.quizResult.create({ data: { citationId: body.citationId, score } });
 
-  return NextResponse.json({ isCorrect, correctLocations: citation.locations });
+  return NextResponse.json({ score, correctLocations: citation.locations });
 }

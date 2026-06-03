@@ -32,7 +32,7 @@ model CitationLocation {
 model QuizResult {
   id         String   @id @default(cuid())
   citationId String
-  isCorrect  Boolean
+  score      Float
   answeredAt DateTime @default(now())
   citation   Citation @relation(fields: [citationId], references: [id], onDelete: Cascade)
 

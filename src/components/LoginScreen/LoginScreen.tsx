@@ -18,6 +18,17 @@ const Page = styled.div`
   justify-content: center;
   background: ${theme.colors.primary};
   padding: ${theme.spacing.md};
+  position: relative;
+`;
+
+const BsdFixed = styled.div`
+  position: absolute;
+  top: ${theme.spacing.md};
+  left: ${theme.spacing.lg};
+  color: rgba(255,255,255,0.55);
+  font-family: ${theme.fonts.body};
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
 `;
 
 const Card = styled.div`
@@ -119,6 +130,7 @@ export default function LoginScreen() {
 
   return (
     <Page>
+      <BsdFixed>בס״ד</BsdFixed>
       <Card>
         <AppName>{HE.APP_NAME}</AppName>
         <Subtitle>{HE.APP_SUBTITLE}</Subtitle>
