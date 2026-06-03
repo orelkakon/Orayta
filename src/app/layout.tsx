@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Frank_Ruhl_Libre, Heebo } from 'next/font/google';
-import StyledComponentsRegistry from '@/components/common/StyledComponentsRegistry';
-import GlobalStyles from '@/components/common/GlobalStyles';
+import ClientProviders from '@/components/common/ClientProviders';
 
 const frankRuhl = Frank_Ruhl_Libre({
   subsets: ['hebrew', 'latin'],
@@ -26,10 +25,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="he" dir="rtl" className={`${frankRuhl.variable} ${heebo.variable}`}>
       <body>
-        <StyledComponentsRegistry>
-          <GlobalStyles />
+        <ClientProviders>
           {children}
-        </StyledComponentsRegistry>
+        </ClientProviders>
       </body>
     </html>
   );

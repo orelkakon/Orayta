@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import OraytaLogo from '@/components/common/OraytaLogo';
-import { RoleProvider, useRole } from '@/components/common/RoleContext';
+import { useRole } from '@/components/common/RoleContext';
 
 const Wrapper = styled.div`
   min-height: 100vh;
@@ -148,9 +148,5 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <RoleProvider>
-      <AppLayoutInner>{children}</AppLayoutInner>
-    </RoleProvider>
-  );
+  return <AppLayoutInner>{children}</AppLayoutInner>;
 }
