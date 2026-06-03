@@ -40,6 +40,9 @@ export const HE = {
   DELETE_SUCCESS: 'הציטוט נמחק',
 
   STUDY_TITLE: 'לימוד וחזרה',
+  STUDY_RANDOM_BUTTON: 'ציטוט אקראי',
+  STUDY_RANDOM_TITLE: 'ציטוט אקראי',
+  STUDY_RANDOM_NEXT: 'הבא',
   STUDY_FILTER_TITLE: 'סינון',
   STUDY_FILTER_ALL: 'הכל',
   STUDY_FILTER_SEDER: 'סדר',
@@ -53,6 +56,9 @@ export const HE = {
   STUDY_DELETE: 'מחיקה',
 
   QUIZ_TITLE: 'חידון',
+  QUIZ_FILTER_TITLE: 'סנן לפי',
+  QUIZ_FILTER_ALL: 'כל הציטוטים',
+  QUIZ_NO_RESULTS: 'אין ציטוטים בסינון זה',
   QUIZ_QUESTION: 'זהה את המקור',
   QUIZ_SELECT_MASECHET: 'בחר מסכת',
   QUIZ_ENTER_DAF: 'הזן דף',

@@ -24,20 +24,27 @@ export async function GET(request: NextRequest) {
   const masechet = searchParams.get('masechet');
   const seder = searchParams.get('seder');
   const search = searchParams.get('search');
+  const random = searchParams.get('random') === 'true';
 
-  const citations = await prisma.citation.findMany({
-    where: {
-      ...(search ? { content: { contains: search } } : {}),
-      locations: {
-        some: {
-          ...(masechet ? { masechet } : {}),
-          ...(seder ? { seder } : {}),
-        },
+  const where = {
+    ...(search ? { content: { contains: search } } : {}),
+    locations: {
+      some: {
+        ...(masechet ? { masechet } : {}),
+        ...(seder ? { seder } : {}),
       },
     },
-    include: { locations: true },
-  });
+  };
 
+  if (random) {
+    const count = await prisma.citation.count({ where });
+    if (count === 0) return NextResponse.json(null);
+    const skip = Math.floor(Math.random() * count);
+    const citation = await prisma.citation.findFirst({ where, skip, include: { locations: true } });
+    return NextResponse.json(citation);
+  }
+
+  const citations = await prisma.citation.findMany({ where, include: { locations: true } });
   return NextResponse.json(sortCitations(citations));
 }
 

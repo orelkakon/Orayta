@@ -9,11 +9,20 @@ import { Citation } from '@/types';
 import CitationCard from '@/components/CitationCard/CitationCard';
 import Modal from '@/components/common/Modal';
 import CitationForm from '@/components/CitationForm/CitationForm';
+import RandomCitationModal from '@/components/StudyView/RandomCitationModal';
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${theme.spacing.lg};
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: ${theme.spacing.md};
 `;
 
 const Title = styled.h1`
@@ -142,7 +151,10 @@ export default function StudyView() {
 
   return (
     <Container>
-      <Title>{HE.STUDY_TITLE}</Title>
+      <TitleRow>
+        <Title>{HE.STUDY_TITLE}</Title>
+        <RandomCitationModal masechet={masechet} seder={seder} search={search} />
+      </TitleRow>
 
       <FilterSection>
         <FilterRow>

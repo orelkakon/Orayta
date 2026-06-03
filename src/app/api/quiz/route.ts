@@ -14,12 +14,20 @@ function calcScore(
   return 0.5;                        // daf correct, amud wrong/missing
 }
 
-export async function GET() {
-  const count = await prisma.citation.count();
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const masechet = searchParams.get('masechet');
+  const seder = searchParams.get('seder');
+
+  const where = masechet || seder
+    ? { locations: { some: { ...(masechet ? { masechet } : {}), ...(seder ? { seder } : {}) } } }
+    : {};
+
+  const count = await prisma.citation.count({ where });
   if (count === 0) return NextResponse.json({ error: 'no citations' }, { status: 404 });
 
   const skip = Math.floor(Math.random() * count);
-  const citation = await prisma.citation.findFirst({ skip, include: { locations: true } });
+  const citation = await prisma.citation.findFirst({ where, skip, include: { locations: true } });
 
   return NextResponse.json(citation);
 }

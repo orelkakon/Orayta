@@ -18,9 +18,58 @@ const Page = styled.div`
   gap: ${theme.spacing.xl};
 `;
 
+const TitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: ${theme.spacing.md};
+`;
+
 const Title = styled.h1`
   font-size: 1.8rem;
   color: ${theme.colors.primary};
+`;
+
+const FilterBar = styled.div`
+  background: ${theme.colors.surface};
+  border: 1px solid ${theme.colors.borderLight};
+  border-radius: ${theme.radii.md};
+  padding: ${theme.spacing.md};
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.md};
+  flex-wrap: wrap;
+`;
+
+const FilterLabel = styled.span`
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: ${theme.colors.textMuted};
+  white-space: nowrap;
+`;
+
+const FilterSelect = styled.select`
+  padding: ${theme.spacing.xs} ${theme.spacing.md};
+  border: 2px solid ${theme.colors.border};
+  border-radius: ${theme.radii.md};
+  font-size: 0.9rem;
+  background: ${theme.colors.background};
+  color: ${theme.colors.text};
+  outline: none;
+  flex: 1;
+  min-width: 140px;
+  &:focus { border-color: ${theme.colors.primaryLight}; }
+`;
+
+const NoResultsCard = styled.div`
+  background: ${theme.colors.surface};
+  border-radius: ${theme.radii.lg};
+  padding: ${theme.spacing.xxl};
+  box-shadow: ${theme.shadows.sm};
+  text-align: center;
+  color: ${theme.colors.textMuted};
+  font-size: 1rem;
 `;
 
 const QuizGrid = styled.div`
@@ -276,6 +325,9 @@ function scoreLabel(score: number) {
 
 export default function QuizView() {
   const [question, setQuestion] = useState<Citation | null>(null);
+  const [noResults, setNoResults] = useState(false);
+  const [filterSeder, setFilterSeder] = useState('');
+  const [filterMasechet, setFilterMasechet] = useState('');
   const [masechet, setMasechet] = useState('');
   const [daf, setDaf] = useState('');
   const [amud, setAmud] = useState<Amud | null>(null);
@@ -286,15 +338,20 @@ export default function QuizView() {
 
   const hasAmud = question?.locations.some((l) => l.amud) ?? false;
 
-  const loadQuestion = useCallback(async () => {
+  const loadQuestion = useCallback(async (seder = filterSeder, masechetF = filterMasechet) => {
     setResult(null);
     setMasechet('');
     setDaf('');
     setAmud(null);
     setHintShown(false);
-    const res = await fetch('/api/quiz');
+    setNoResults(false);
+    const params = new URLSearchParams();
+    if (masechetF) params.set('masechet', masechetF);
+    else if (seder) params.set('seder', seder);
+    const res = await fetch(`/api/quiz?${params}`);
+    if (res.status === 404) { setQuestion(null); setNoResults(true); return; }
     if (res.ok) setQuestion(await res.json() as Citation);
-  }, []);
+  }, [filterSeder, filterMasechet]);
 
   const loadStats = useCallback(async () => {
     const res = await fetch('/api/quiz/stats');
@@ -302,6 +359,17 @@ export default function QuizView() {
   }, []);
 
   useEffect(() => { void loadQuestion(); void loadStats(); }, [loadQuestion, loadStats]);
+
+  const handleFilterSederChange = (val: string) => {
+    setFilterSeder(val);
+    setFilterMasechet('');
+    void loadQuestion(val, '');
+  };
+
+  const handleFilterMasechetChange = (val: string) => {
+    setFilterMasechet(val);
+    void loadQuestion(filterSeder, val);
+  };
 
   const handleSubmit = async () => {
     if (!question || !masechet || !daf.trim()) return;
@@ -323,10 +391,31 @@ export default function QuizView() {
   };
 
   const hintSeder = question?.locations[0]?.seder ?? '';
+  const filterMasechtot = filterSeder
+    ? MASECHTOT.filter((m) => m.seder === filterSeder)
+    : MASECHTOT;
 
   return (
     <Page>
-      <Title>{HE.QUIZ_TITLE}</Title>
+      <TitleRow>
+        <Title>{HE.QUIZ_TITLE}</Title>
+      </TitleRow>
+
+      <FilterBar>
+        <FilterLabel>{HE.QUIZ_FILTER_TITLE}</FilterLabel>
+        <FilterSelect value={filterSeder} onChange={(e) => handleFilterSederChange(e.target.value)}>
+          <option value="">{HE.QUIZ_FILTER_ALL}</option>
+          {SEDARIM.map((s) => <option key={s} value={s}>{s}</option>)}
+        </FilterSelect>
+        <FilterSelect value={filterMasechet} onChange={(e) => handleFilterMasechetChange(e.target.value)}>
+          <option value="">{HE.STUDY_FILTER_ALL}</option>
+          {filterMasechtot.map((m) => <option key={m.name} value={m.name}>{m.name}</option>)}
+        </FilterSelect>
+      </FilterBar>
+
+      {noResults ? (
+        <NoResultsCard>{HE.QUIZ_NO_RESULTS}</NoResultsCard>
+      ) : (
       <QuizGrid>
         <QuestionCard>
           <QuestionLabel>{HE.QUIZ_QUESTION}</QuestionLabel>
@@ -389,7 +478,7 @@ export default function QuizView() {
                 <PrimaryBtn onClick={handleSubmit} disabled={!masechet || !daf.trim() || loading}>
                   {loading ? HE.LOADING : HE.QUIZ_SUBMIT}
                 </PrimaryBtn>
-                <GhostBtn onClick={loadQuestion}>{HE.QUIZ_SKIP}</GhostBtn>
+                <GhostBtn onClick={() => loadQuestion()}>{HE.QUIZ_SKIP}</GhostBtn>
               </ButtonRow>
             </>
           ) : (
@@ -403,7 +492,7 @@ export default function QuizView() {
                 {result.correctLocations.map(formatLocation).join(' / ')}
               </CorrectAnswer>
               <ButtonRow>
-                <PrimaryBtn onClick={loadQuestion}>{HE.QUIZ_NEXT}</PrimaryBtn>
+                <PrimaryBtn onClick={() => loadQuestion()}>{HE.QUIZ_NEXT}</PrimaryBtn>
               </ButtonRow>
             </>
           )}
@@ -434,6 +523,7 @@ export default function QuizView() {
           </StatsCard>
         )}
       </QuizGrid>
+      )}
     </Page>
   );
 }
