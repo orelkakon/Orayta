@@ -12,7 +12,7 @@ This project is called Orayta and in hebrew is אורייתא.
 מסך ייעודי להוספה מהירה של ציטוטים הכולל:
 - בחירת מסכת מתוך רשימה
 - הזנת תוכן הציטוט
-- ציון דף ועמוד (א / ב)
+- ציון דף ועמוד (א / ב): פרמטר בחירה כלומר לא חייב להזין ואז לא קיים הפרמטר הזה
 - שמירה מהירה ונוחה ללא עומס מיותר
 
 המטרה היא לאפשר הזנה מהירה של הרבה נתונים בצורה יעילה.
@@ -36,7 +36,7 @@ This project is called Orayta and in hebrew is אורייתא.
 - המשתמש צריך לזהות:
   - מסכת
   - דף
-  - עמוד (א / ב)
+  - עמוד (א / ב): אם קיים
 
 לאחר הבחירה:
 - מתקבלת תשובה מיידית (נכון / לא נכון)
@@ -54,6 +54,8 @@ This project is called Orayta and in hebrew is אורייתא.
 - חוויית לימוד אינטראקטיבית ולא רק “מאגר מידע”
 - התאמה ללמידה חוזרת (spaced repetition בעתיד)
 - ציטוט יכול להופיע בכמה מקורות שונים למשל ציטוט זהה יכול להיות בשני מסכתות שונות בדפים שונים
+- חשוב מאוד שיהיה אפשרות לערוך פרטי ציטוט במקרה והיה טעות בהזנה ובנוסף אפשרות למחוק ציטוט לגמרי 
+- בקובץ seedData.md יש תוכן התחלתי שנדרש להזין למערכת חד פעמית כדי שיהיה מידע קיים ועליו בעתיד יצטרף מידע נוסף
 
 ## מבנה היררכי (Data Structure)
 
@@ -160,6 +162,8 @@ Seder → Masechet → Daf → Amud → Citation
 - Mobile and Web compatibility
 - This is hebrew website (RTL)
 - Dont write hebrew words into the main code files, use separate file that conatins all hebrew words mapped
+- Test your code
+- Push the tested code to git 
 
 ## Commands
 
