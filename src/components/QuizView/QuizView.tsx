@@ -318,6 +318,7 @@ const HistoryItem = styled.div<{ $score: number }>`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 `;
 
 const TabRow = styled.div`
