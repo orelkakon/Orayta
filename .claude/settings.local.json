@@ -16,7 +16,8 @@
       "Bash(DATABASE_URL=\"file:./prisma/dev.db\" npx prisma *)",
       "Bash(curl -s http://localhost:3000 -o /dev/null -w \"%{http_code}\")",
       "Bash(pkill -f \"next dev\")",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(git push *)"
     ]
   }
 }
