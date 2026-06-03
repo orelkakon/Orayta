@@ -81,6 +81,7 @@ interface Props {
   citation: Citation;
   onEdit: (citation: Citation) => void;
   onDelete: (id: string) => void;
+  isReadOnly?: boolean;
 }
 
 function formatLocation(loc: Citation['locations'][0]) {
@@ -89,7 +90,7 @@ function formatLocation(loc: Citation['locations'][0]) {
   return label;
 }
 
-export default function CitationCard({ citation, onEdit, onDelete }: Props) {
+export default function CitationCard({ citation, onEdit, onDelete, isReadOnly = false }: Props) {
   const [confirming, setConfirming] = useState(false);
 
   return (
@@ -100,24 +101,26 @@ export default function CitationCard({ citation, onEdit, onDelete }: Props) {
           <LocationTag key={loc.id}>{formatLocation(loc)}</LocationTag>
         ))}
       </Locations>
-      <Actions>
-        {confirming ? (
-          <ConfirmOverlay>
-            <span>{HE.DELETE_CONFIRM}</span>
-            <ActionButton $variant="danger" onClick={() => onDelete(citation.id)}>
-              כן, מחק
-            </ActionButton>
-            <ActionButton onClick={() => setConfirming(false)}>{HE.CANCEL}</ActionButton>
-          </ConfirmOverlay>
-        ) : (
-          <>
-            <ActionButton onClick={() => onEdit(citation)}>{HE.STUDY_EDIT}</ActionButton>
-            <ActionButton $variant="danger" onClick={() => setConfirming(true)}>
-              {HE.STUDY_DELETE}
-            </ActionButton>
-          </>
-        )}
-      </Actions>
+      {!isReadOnly && (
+        <Actions>
+          {confirming ? (
+            <ConfirmOverlay>
+              <span>{HE.DELETE_CONFIRM}</span>
+              <ActionButton $variant="danger" onClick={() => onDelete(citation.id)}>
+                כן, מחק
+              </ActionButton>
+              <ActionButton onClick={() => setConfirming(false)}>{HE.CANCEL}</ActionButton>
+            </ConfirmOverlay>
+          ) : (
+            <>
+              <ActionButton onClick={() => onEdit(citation)}>{HE.STUDY_EDIT}</ActionButton>
+              <ActionButton $variant="danger" onClick={() => setConfirming(true)}>
+                {HE.STUDY_DELETE}
+              </ActionButton>
+            </>
+          )}
+        </Actions>
+      )}
     </Card>
   );
 }

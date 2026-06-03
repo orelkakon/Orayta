@@ -50,6 +50,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  if (request.cookies.get('auth')?.value !== 'admin') {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+  }
+
   const body = await request.json() as {
     content: string;
     locations: Array<{ masechet: string; daf: string; amud?: string | null }>;

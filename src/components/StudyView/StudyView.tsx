@@ -10,6 +10,7 @@ import CitationCard from '@/components/CitationCard/CitationCard';
 import Modal from '@/components/common/Modal';
 import CitationForm from '@/components/CitationForm/CitationForm';
 import RandomCitationModal from '@/components/StudyView/RandomCitationModal';
+import { useRole } from '@/components/common/RoleContext';
 
 const Container = styled.div`
   display: flex;
@@ -113,6 +114,8 @@ export default function StudyView() {
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<Citation | null>(null);
   const [loading, setLoading] = useState(true);
+  const role = useRole();
+  const isReadOnly = role !== 'admin';
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -190,7 +193,7 @@ export default function StudyView() {
           <Empty>{HE.STUDY_EMPTY}</Empty>
         ) : (
           citations.map((c) => (
-            <CitationCard key={c.id} citation={c} onEdit={setEditing} onDelete={handleDelete} />
+            <CitationCard key={c.id} citation={c} onEdit={setEditing} onDelete={handleDelete} isReadOnly={isReadOnly} />
           ))
         )}
       </CitationList>

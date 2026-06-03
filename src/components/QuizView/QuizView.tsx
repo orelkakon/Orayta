@@ -6,6 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { MASECHTOT, SEDARIM } from '@/lib/hebrewData';
 import { Citation, Amud, QuizStats } from '@/types';
+import { useRole } from '@/components/common/RoleContext';
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(8px); }
@@ -285,6 +286,18 @@ const AccuracyBar = styled.div<{ $pct: number }>`
   }
 `;
 
+const ResetButton = styled.button`
+  font-size: 0.78rem;
+  color: ${theme.colors.error};
+  border: 1px solid ${theme.colors.error};
+  border-radius: ${theme.radii.sm};
+  padding: 3px ${theme.spacing.sm};
+  margin-top: ${theme.spacing.xs};
+  opacity: 0.7;
+  transition: opacity 0.15s;
+  &:hover { opacity: 1; background: rgba(155,35,53,0.06); }
+`;
+
 const HistoryList = styled.div`
   display: flex;
   flex-direction: column;
@@ -335,6 +348,8 @@ export default function QuizView() {
   const [stats, setStats] = useState<QuizStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [hintShown, setHintShown] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const role = useRole();
 
   const hasAmud = question?.locations.some((l) => l.amud) ?? false;
 
@@ -388,6 +403,14 @@ export default function QuizView() {
     let s = `${loc.masechet} ${loc.daf}`;
     if (loc.amud) s += ` עמוד ${loc.amud}`;
     return s;
+  };
+
+  const handleResetStats = async () => {
+    if (!window.confirm('לאפס את כל הסטטיסטיקות?')) return;
+    setResetting(true);
+    await fetch('/api/quiz/reset', { method: 'DELETE' });
+    setResetting(false);
+    void loadStats();
   };
 
   const hintSeder = question?.locations[0]?.seder ?? '';
@@ -498,7 +521,7 @@ export default function QuizView() {
           )}
         </QuestionCard>
 
-        {stats && (
+        {stats && role === 'admin' && (
           <StatsCard>
             <StatsTitle>{HE.QUIZ_STATS_TITLE}</StatsTitle>
             <AccuracyBar $pct={stats.accuracy} />
@@ -519,6 +542,11 @@ export default function QuizView() {
                   ))}
                 </HistoryList>
               </>
+            )}
+            {stats.total > 0 && (
+              <ResetButton onClick={handleResetStats} disabled={resetting}>
+                {resetting ? HE.LOADING : 'איפוס סטטיסטיקות'}
+              </ResetButton>
             )}
           </StatsCard>
         )}

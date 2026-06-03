@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import OraytaLogo from '@/components/common/OraytaLogo';
+import { RoleProvider, useRole } from '@/components/common/RoleContext';
 
 const Wrapper = styled.div`
   min-height: 100vh;
@@ -111,8 +112,9 @@ const Main = styled.main`
   }
 `;
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const role = useRole();
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -132,7 +134,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         <Nav>
           <NavLink href="/study" $active={pathname === '/study'}>{HE.NAV_STUDY}</NavLink>
-          <NavLink href="/add" $active={pathname === '/add'}>{HE.NAV_ADD}</NavLink>
+          {role === 'admin' && (
+            <NavLink href="/add" $active={pathname === '/add'}>{HE.NAV_ADD}</NavLink>
+          )}
           <NavLink href="/quiz" $active={pathname === '/quiz'}>{HE.NAV_QUIZ}</NavLink>
           <NavLink href="/about" $active={pathname === '/about'}>{HE.NAV_ABOUT}</NavLink>
           <LogoutButton onClick={handleLogout}>{HE.NAV_LOGOUT}</LogoutButton>
@@ -140,5 +144,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </Header>
       <Main>{children}</Main>
     </Wrapper>
+  );
+}
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <RoleProvider>
+      <AppLayoutInner>{children}</AppLayoutInner>
+    </RoleProvider>
   );
 }

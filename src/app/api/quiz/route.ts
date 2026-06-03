@@ -49,7 +49,9 @@ export async function POST(request: NextRequest) {
 
   const score = Math.max(...citation.locations.map((loc) => calcScore(body, loc)));
 
-  await prisma.quizResult.create({ data: { citationId: body.citationId, score } });
+  if (request.cookies.get('auth')?.value === 'admin') {
+    await prisma.quizResult.create({ data: { citationId: body.citationId, score } });
+  }
 
   return NextResponse.json({ score, correctLocations: citation.locations });
 }

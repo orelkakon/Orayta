@@ -5,13 +5,16 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   const { passcode } = await request.json() as { passcode: string };
-  const expected = process.env.PASSCODE ?? '1998';
+  const adminCode = process.env.PASSCODE ?? '1998';
+  const readerCode = process.env.READER_PASSCODE ?? '1111';
 
-  if (passcode !== expected) {
-    return NextResponse.json({ error: 'invalid' }, { status: 401 });
-  }
+  let role: 'admin' | 'reader' | null = null;
+  if (passcode === adminCode) role = 'admin';
+  else if (passcode === readerCode) role = 'reader';
 
-  cookies().set('auth', 'true', {
+  if (!role) return NextResponse.json({ error: 'invalid' }, { status: 401 });
+
+  cookies().set('auth', role, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',

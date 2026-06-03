@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getMasechetSeder } from '@/lib/hebrewData';
 
 export const dynamic = 'force-dynamic';
-import { getMasechetSeder } from '@/lib/hebrewData';
+
+function isAdmin(request: NextRequest) {
+  return request.cookies.get('auth')?.value === 'admin';
+}
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  if (!isAdmin(request)) return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+
   const body = await request.json() as {
     content: string;
     locations: Array<{ masechet: string; daf: string; amud?: string | null }>;
@@ -39,9 +45,10 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  if (!isAdmin(request)) return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   await prisma.citation.delete({ where: { id: params.id } });
   return NextResponse.json({ ok: true });
 }
