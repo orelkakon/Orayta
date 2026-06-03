@@ -31,17 +31,18 @@ export default function OraytaLogo({ size = 44 }: Props) {
       <line x1="14" y1="22" x2="30" y2="22" stroke="rgba(92,61,30,0.25)" strokeWidth="1" />
       <line x1="14" y1="25" x2="26" y2="25" stroke="rgba(92,61,30,0.25)" strokeWidth="1" />
 
-      {/* Hebrew Aleph in center */}
+      {/* Initials א.ק in center */}
       <text
         x="22"
         y="26"
         textAnchor="middle"
-        fontSize="11"
+        fontSize="8"
         fontWeight="700"
         fontFamily="'Frank Ruhl Libre', serif"
         fill="rgba(92,61,30,0.85)"
+        direction="rtl"
       >
-        א
+        א.ק
       </text>
 
       {/* Crown dots on top */}

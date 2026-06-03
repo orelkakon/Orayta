@@ -12,16 +12,20 @@ function normalize(s: string): string {
   return s.replace(/[^א-ת\s]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-function scoreCompletion(fullContent: string, userResponse: string): number {
+function evaluate(fullContent: string, userResponse: string): { score: number; correct: boolean } {
   const allWords = fullContent.trim().split(/\s+/);
   const startCount = getStartWordCount(allWords.length);
   const correctWords = normalize(allWords.slice(startCount).join(' ')).split(/\s+/).filter(Boolean);
 
-  if (correctWords.length === 0) return 1;
+  if (correctWords.length === 0) return { score: 1, correct: true };
 
   const responseWords = normalize(userResponse).split(/\s+/).filter(Boolean);
   const matched = correctWords.filter((w) => responseWords.includes(w)).length;
-  return matched / correctWords.length;
+  const score = matched / correctWords.length;
+
+  // Long completions (>12 words): 6 correct words is enough; otherwise ≥50%
+  const correct = correctWords.length > 12 ? matched >= 6 : score >= 0.5;
+  return { score, correct };
 }
 
 export async function POST(request: NextRequest) {
@@ -34,12 +38,11 @@ export async function POST(request: NextRequest) {
 
   if (!citation) return NextResponse.json({ error: 'not found' }, { status: 404 });
 
-  const rawScore = scoreCompletion(citation.content, body.response ?? '');
-  const savedScore = rawScore >= 0.6 ? 1 : 0;
+  const { score, correct } = evaluate(citation.content, body.response ?? '');
 
   if (request.cookies.get('auth')?.value === 'admin') {
-    await prisma.quizResult.create({ data: { citationId: body.citationId, score: savedScore } });
+    await prisma.quizResult.create({ data: { citationId: body.citationId, score: correct ? 1 : 0 } });
   }
 
-  return NextResponse.json({ score: rawScore, fullContent: citation.content });
+  return NextResponse.json({ score, correct, fullContent: citation.content });
 }

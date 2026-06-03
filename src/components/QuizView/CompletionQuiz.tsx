@@ -12,6 +12,13 @@ function getStartWordCount(content: string): number {
   return Math.min(start, n - 1);
 }
 
+function getHintWordCount(remaining: number): number {
+  if (remaining <= 3) return 0;
+  if (remaining <= 8) return 1;
+  if (remaining <= 15) return 2;
+  return 3;
+}
+
 const Wrapper = styled.div`
   background: ${theme.colors.surface};
   border-radius: ${theme.radii.lg};
@@ -51,6 +58,17 @@ const Ellipsis = styled.span`
   color: ${theme.colors.textMuted};
   font-size: 1.2rem;
   margin-right: ${theme.spacing.xs};
+`;
+
+const HintBtn = styled.button`
+  align-self: flex-start;
+  font-size: 0.85rem;
+  color: ${theme.colors.primaryLight};
+  border: 1px dashed ${theme.colors.border};
+  border-radius: ${theme.radii.sm};
+  padding: ${theme.spacing.xs} ${theme.spacing.md};
+  transition: all 0.15s;
+  &:hover { background: ${theme.colors.surfaceAlt}; }
 `;
 
 const Textarea = styled.textarea`
@@ -106,10 +124,7 @@ const ResultBanner = styled.div<{ $correct: boolean }>`
   align-items: center;
 `;
 
-const ScorePct = styled.span`
-  font-size: 0.9rem;
-  opacity: 0.85;
-`;
+const ScorePct = styled.span` font-size: 0.9rem; opacity: 0.85; `;
 
 const FullCitationBox = styled.div`
   background: ${theme.colors.surfaceAlt};
@@ -143,6 +158,7 @@ interface Props {
 
 interface Result {
   score: number;
+  correct: boolean;
   fullContent: string;
 }
 
@@ -152,11 +168,13 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
   const [result, setResult] = useState<Result | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [noResults, setNoResults] = useState(false);
+  const [hintUsed, setHintUsed] = useState(false);
 
   const loadQuestion = useCallback(async () => {
     setInput('');
     setResult(null);
     setNoResults(false);
+    setHintUsed(false);
 
     const params = new URLSearchParams();
     if (filterMasechet) params.set('masechet', filterMasechet);
@@ -184,20 +202,25 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
 
   if (noResults) return <Wrapper>{HE.QUIZ_NO_RESULTS}</Wrapper>;
 
+  const allWords = question?.content.trim().split(/\s+/) ?? [];
   const startCount = question ? getStartWordCount(question.content) : 3;
-  const prompt = question?.content.trim().split(/\s+/).slice(0, startCount).join(' ') ?? '';
+  const remaining = allWords.length - startCount;
+  const hintExtra = getHintWordCount(remaining);
+  const shownCount = hintUsed ? Math.min(startCount + hintExtra, allWords.length - 1) : startCount;
+  const prompt = allWords.slice(0, shownCount).join(' ');
 
   return (
     <Wrapper>
       <QuestionLabel>{HE.QUIZ_COMPLETION_PROMPT}</QuestionLabel>
       <PromptBox>
-        <PromptText>
-          {prompt} <Ellipsis>...</Ellipsis>
-        </PromptText>
+        <PromptText>{prompt} <Ellipsis>...</Ellipsis></PromptText>
       </PromptBox>
 
       {!result ? (
         <>
+          {!hintUsed && hintExtra > 0 && (
+            <HintBtn onClick={() => setHintUsed(true)}>{HE.QUIZ_HINT_BUTTON}</HintBtn>
+          )}
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -214,8 +237,8 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
         </>
       ) : (
         <>
-          <ResultBanner $correct={result.score >= 0.6}>
-            <span>{result.score >= 0.6 ? HE.QUIZ_CORRECT : HE.QUIZ_WRONG}</span>
+          <ResultBanner $correct={result.correct}>
+            <span>{result.correct ? HE.QUIZ_CORRECT : HE.QUIZ_WRONG}</span>
             <ScorePct>{Math.round(result.score * 100)}%</ScorePct>
           </ResultBanner>
           <FullCitationBox>

@@ -6,7 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Citation, CitationLocation } from '@/types';
 
-type OptionState = 'default' | 'correct' | 'wrong' | 'faded';
+type OptionState = 'default' | 'correct' | 'wrong' | 'faded' | 'eliminated';
 
 const Wrapper = styled.div`
   background: ${theme.colors.surface};
@@ -46,6 +46,7 @@ const OptionBtn = styled.button<{ $state: OptionState }>`
   text-align: right;
   width: 100%;
   transition: all 0.15s;
+  display: ${({ $state }) => ($state === 'eliminated' ? 'none' : 'block')};
   border: 2px solid ${({ $state }) =>
     $state === 'correct' ? theme.colors.success :
     $state === 'wrong' ? theme.colors.error :
@@ -65,6 +66,17 @@ const OptionBtn = styled.button<{ $state: OptionState }>`
   &:hover { border-color: ${theme.colors.primaryLight}; }
 `;
 
+const HintBtn = styled.button`
+  align-self: flex-start;
+  font-size: 0.85rem;
+  color: ${theme.colors.primaryLight};
+  border: 1px dashed ${theme.colors.border};
+  border-radius: ${theme.radii.sm};
+  padding: ${theme.spacing.xs} ${theme.spacing.md};
+  transition: all 0.15s;
+  &:hover { background: ${theme.colors.surfaceAlt}; }
+`;
+
 const ResultBanner = styled.div<{ $correct: boolean }>`
   padding: ${theme.spacing.md};
   border-radius: ${theme.radii.md};
@@ -73,8 +85,12 @@ const ResultBanner = styled.div<{ $correct: boolean }>`
   font-weight: 700;
 `;
 
+const BtnRow = styled.div`
+  display: flex;
+  gap: ${theme.spacing.md};
+`;
+
 const NextBtn = styled.button`
-  align-self: flex-start;
   padding: ${theme.spacing.md} ${theme.spacing.xl};
   background: ${theme.colors.primary};
   color: white;
@@ -85,7 +101,6 @@ const NextBtn = styled.button`
 `;
 
 const SkipBtn = styled.button`
-  align-self: flex-start;
   padding: ${theme.spacing.md} ${theme.spacing.xl};
   border: 2px solid ${theme.colors.border};
   border-radius: ${theme.radii.md};
@@ -105,11 +120,13 @@ export default function MultipleChoiceQuiz({ filterSeder, filterMasechet, onAnsw
   const [question, setQuestion] = useState<Citation | null>(null);
   const [options, setOptions] = useState<CitationLocation[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [eliminatedId, setEliminatedId] = useState<string | null>(null);
   const [score, setScore] = useState<number | null>(null);
   const [noResults, setNoResults] = useState(false);
 
   const loadQuestion = useCallback(async () => {
     setSelectedId(null);
+    setEliminatedId(null);
     setScore(null);
     setNoResults(false);
 
@@ -136,6 +153,12 @@ export default function MultipleChoiceQuiz({ filterSeder, filterMasechet, onAnsw
 
   useEffect(() => { void loadQuestion(); }, [loadQuestion]);
 
+  const handleHint = () => {
+    const correctId = question?.locations[0]?.id;
+    const wrong = options.find((o) => o.id !== correctId && o.id !== eliminatedId);
+    if (wrong) setEliminatedId(wrong.id);
+  };
+
   const handleSelect = async (opt: CitationLocation) => {
     if (selectedId !== null || !question) return;
     setSelectedId(opt.id);
@@ -152,6 +175,7 @@ export default function MultipleChoiceQuiz({ filterSeder, filterMasechet, onAnsw
   const correctId = question?.locations[0]?.id;
 
   const getState = (opt: CitationLocation): OptionState => {
+    if (opt.id === eliminatedId) return 'eliminated';
     if (selectedId === null) return 'default';
     if (opt.id === correctId) return 'correct';
     if (opt.id === selectedId) return 'wrong';
@@ -170,6 +194,9 @@ export default function MultipleChoiceQuiz({ filterSeder, filterMasechet, onAnsw
     <Wrapper>
       <QuestionLabel>{HE.QUIZ_MC_CHOOSE}</QuestionLabel>
       <CitationText>{question?.content ?? HE.LOADING}</CitationText>
+      {!selectedId && !eliminatedId && (
+        <HintBtn onClick={handleHint}>{HE.QUIZ_HINT_BUTTON}</HintBtn>
+      )}
       {options.map((opt) => (
         <OptionBtn key={opt.id} $state={getState(opt)} onClick={() => handleSelect(opt)}>
           {formatOption(opt)}
@@ -183,7 +210,9 @@ export default function MultipleChoiceQuiz({ filterSeder, filterMasechet, onAnsw
       {selectedId !== null ? (
         <NextBtn onClick={loadQuestion}>{HE.QUIZ_NEXT}</NextBtn>
       ) : (
-        <SkipBtn onClick={loadQuestion}>{HE.QUIZ_SKIP}</SkipBtn>
+        <BtnRow>
+          <SkipBtn onClick={loadQuestion}>{HE.QUIZ_SKIP}</SkipBtn>
+        </BtnRow>
       )}
     </Wrapper>
   );
