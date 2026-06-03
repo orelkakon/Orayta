@@ -2,7 +2,7 @@
 
 import styled from 'styled-components';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 
@@ -94,11 +94,10 @@ const Main = styled.main`
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/login');
+    window.location.href = '/login';
   };
 
   return (
@@ -109,6 +108,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <NavLink href="/study" $active={pathname === '/study'}>{HE.NAV_STUDY}</NavLink>
           <NavLink href="/add" $active={pathname === '/add'}>{HE.NAV_ADD}</NavLink>
           <NavLink href="/quiz" $active={pathname === '/quiz'}>{HE.NAV_QUIZ}</NavLink>
+          <NavLink href="/about" $active={pathname === '/about'}>{HE.NAV_ABOUT}</NavLink>
           <LogoutButton onClick={handleLogout}>{HE.NAV_LOGOUT}</LogoutButton>
         </Nav>
       </Header>

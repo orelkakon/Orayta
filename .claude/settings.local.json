@@ -11,7 +11,12 @@
       "Bash(npx create-next-app@latest . --typescript --app --src-dir --no-tailwind --eslint --import-alias \"@/*\" --yes)",
       "Bash(npx create-next-app@14 . --typescript --app --src-dir --no-tailwind --eslint --import-alias \"@/*\" --yes)",
       "Bash(npx prisma *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(DATABASE_URL=\"file:./prisma/dev.db\" npx prisma *)",
+      "Bash(curl -s http://localhost:3000 -o /dev/null -w \"%{http_code}\")",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(npm run *)"
     ]
   }
 }

@@ -97,8 +97,10 @@ export default function StudyView() {
   const [masechet, setMasechet] = useState('');
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<Citation | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
+    setLoading(true);
     const params = new URLSearchParams();
     if (masechet) params.set('masechet', masechet);
     else if (seder) params.set('seder', seder);
@@ -107,6 +109,7 @@ export default function StudyView() {
     const res = await fetch(`/api/citations?${params}`);
     const data = await res.json() as Citation[];
     setCitations(data);
+    setLoading(false);
   }, [masechet, seder, search]);
 
   useEffect(() => { void load(); }, [load]);
@@ -162,7 +165,9 @@ export default function StudyView() {
       </FilterRow>
 
       <CitationList>
-        {citations.length === 0 ? (
+        {loading ? (
+          <Empty>{HE.LOADING}</Empty>
+        ) : citations.length === 0 ? (
           <Empty>{HE.STUDY_EMPTY}</Empty>
         ) : (
           citations.map((c) => (
