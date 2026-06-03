@@ -81,6 +81,11 @@ export const HE = {
   QUIZ_MODE_MULTIPLE: 'חידון אמריקאי',
   QUIZ_MC_CHOOSE: 'בחר את המקור הנכון',
   QUIZ_MC_NOT_ENOUGH: 'אין מספיק ציטוטים לחידון האמריקאי',
+  QUIZ_MODE_COMPLETION: 'השלמת ציטוט',
+  QUIZ_COMPLETION_PROMPT: 'המשך את הציטוט',
+  QUIZ_COMPLETION_PLACEHOLDER: 'הזן את המשך הציטוט...',
+  QUIZ_COMPLETION_SUBMIT: 'בדוק',
+  QUIZ_COMPLETION_FULL: 'הציטוט המלא:',
 
   SEDER_ZERAIM: 'סדר זרעים',
   SEDER_MOED: 'סדר מועד',

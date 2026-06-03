@@ -8,6 +8,7 @@ import { MASECHTOT, SEDARIM } from '@/lib/hebrewData';
 import { Citation, Amud, QuizStats } from '@/types';
 import { useRole } from '@/components/common/RoleContext';
 import MultipleChoiceQuiz from './MultipleChoiceQuiz';
+import CompletionQuiz from './CompletionQuiz';
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(8px); }
@@ -361,7 +362,7 @@ function scoreLabel(score: number) {
   return HE.QUIZ_WRONG;
 }
 
-type QuizMode = 'classic' | 'multiple';
+type QuizMode = 'classic' | 'multiple' | 'completion';
 
 export default function QuizView() {
   const [quizMode, setQuizMode] = useState<QuizMode>('classic');
@@ -464,6 +465,9 @@ export default function QuizView() {
         <TabButton $active={quizMode === 'multiple'} onClick={() => handleModeSwitch('multiple')}>
           {HE.QUIZ_MODE_MULTIPLE}
         </TabButton>
+        <TabButton $active={quizMode === 'completion'} onClick={() => handleModeSwitch('completion')}>
+          {HE.QUIZ_MODE_COMPLETION}
+        </TabButton>
       </TabRow>
 
       <FilterBar>
@@ -484,6 +488,12 @@ export default function QuizView() {
       <QuizGrid>
         {quizMode === 'multiple' ? (
           <MultipleChoiceQuiz
+            filterSeder={filterSeder}
+            filterMasechet={filterMasechet}
+            onAnswered={loadStats}
+          />
+        ) : quizMode === 'completion' ? (
+          <CompletionQuiz
             filterSeder={filterSeder}
             filterMasechet={filterMasechet}
             onAnswered={loadStats}
