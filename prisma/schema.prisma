@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Citation {
+  id          String             @id @default(cuid())
+  content     String
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  locations   CitationLocation[]
+  quizResults QuizResult[]
+}
+
+model CitationLocation {
+  id         String   @id @default(cuid())
+  citationId String
+  masechet   String
+  seder      String
+  daf        String
+  amud       String?
+  citation   Citation @relation(fields: [citationId], references: [id], onDelete: Cascade)
+
+  @@index([masechet])
+  @@index([citationId])
+}
+
+model QuizResult {
+  id         String   @id @default(cuid())
+  citationId String
+  isCorrect  Boolean
+  answeredAt DateTime @default(now())
+  citation   Citation @relation(fields: [citationId], references: [id], onDelete: Cascade)
+
+  @@index([citationId])
+}

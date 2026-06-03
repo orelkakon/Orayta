@@ -164,6 +164,7 @@ Seder → Masechet → Daf → Amud → Citation
 - Dont write hebrew words into the main code files, use separate file that conatins all hebrew words mapped
 - Test your code
 - Push the tested code to git 
+- If you are not sure about something ask me 
 
 ## Commands
 
@@ -175,5 +176,4 @@ npm run lint
 
 src/app
 src/components
-src/lib
 src/types
