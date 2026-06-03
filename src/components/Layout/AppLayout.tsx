@@ -134,9 +134,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
 
         <Nav>
           <NavLink href="/study" $active={pathname === '/study'}>{HE.NAV_STUDY}</NavLink>
-          {role === 'admin' && (
-            <NavLink href="/add" $active={pathname === '/add'}>{HE.NAV_ADD}</NavLink>
-          )}
+          <NavLink href="/add" $active={pathname === '/add'}>{HE.NAV_ADD}</NavLink>
           <NavLink href="/quiz" $active={pathname === '/quiz'}>{HE.NAV_QUIZ}</NavLink>
           <NavLink href="/about" $active={pathname === '/about'}>{HE.NAV_ABOUT}</NavLink>
           <LogoutButton onClick={handleLogout}>{HE.NAV_LOGOUT}</LogoutButton>

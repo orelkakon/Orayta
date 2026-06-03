@@ -6,17 +6,12 @@ export function middleware(request: NextRequest) {
 
   const isPublic = pathname.startsWith('/login') || pathname.startsWith('/api/auth');
   const isAuthenticated = auth === 'admin' || auth === 'reader';
-  const isReader = auth === 'reader';
 
   if (!isAuthenticated && !isPublic) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
   if (isAuthenticated && pathname === '/login') {
-    return NextResponse.redirect(new URL('/study', request.url));
-  }
-
-  if (isReader && pathname.startsWith('/add')) {
     return NextResponse.redirect(new URL('/study', request.url));
   }
 

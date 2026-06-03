@@ -14,13 +14,17 @@ export async function POST(request: NextRequest) {
 
   if (!role) return NextResponse.json({ error: 'invalid' }, { status: 401 });
 
-  cookies().set('auth', role, {
-    httpOnly: true,
+  const cookieOpts = {
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'lax' as const,
     maxAge: 60 * 60 * 24 * 30,
     path: '/',
-  });
+  };
+
+  // httpOnly — for API security checks
+  cookies().set('auth', role, { ...cookieOpts, httpOnly: true });
+  // NOT httpOnly — read instantly by JS for UI (no API call needed)
+  cookies().set('role', role, { ...cookieOpts, httpOnly: false });
 
   return NextResponse.json({ ok: true });
 }
