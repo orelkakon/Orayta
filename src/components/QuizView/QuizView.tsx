@@ -7,6 +7,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { MASECHTOT, SEDARIM } from '@/lib/hebrewData';
 import { Citation, Amud, QuizStats } from '@/types';
 import { useRole } from '@/components/common/RoleContext';
+import MultipleChoiceQuiz from './MultipleChoiceQuiz';
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(8px); }
@@ -319,6 +320,25 @@ const HistoryItem = styled.div<{ $score: number }>`
   text-overflow: ellipsis;
 `;
 
+const TabRow = styled.div`
+  display: flex;
+  gap: ${theme.spacing.xs};
+  border-bottom: 2px solid ${theme.colors.borderLight};
+  padding-bottom: 0;
+`;
+
+const TabButton = styled.button<{ $active?: boolean }>`
+  padding: ${theme.spacing.sm} ${theme.spacing.lg};
+  border-radius: ${theme.radii.md} ${theme.radii.md} 0 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-bottom: 2px solid ${({ $active }) => ($active ? theme.colors.primary : 'transparent')};
+  color: ${({ $active }) => ($active ? theme.colors.primary : theme.colors.textMuted)};
+  margin-bottom: -2px;
+  transition: all 0.15s;
+  &:hover { color: ${theme.colors.primary}; }
+`;
+
 interface AnswerResult {
   score: number;
   correctLocations: Citation['locations'];
@@ -336,7 +356,10 @@ function scoreLabel(score: number) {
   return HE.QUIZ_WRONG;
 }
 
+type QuizMode = 'classic' | 'multiple';
+
 export default function QuizView() {
+  const [quizMode, setQuizMode] = useState<QuizMode>('classic');
   const [question, setQuestion] = useState<Citation | null>(null);
   const [noResults, setNoResults] = useState(false);
   const [filterSeder, setFilterSeder] = useState('');
@@ -418,11 +441,25 @@ export default function QuizView() {
     ? MASECHTOT.filter((m) => m.seder === filterSeder)
     : MASECHTOT;
 
+  const handleModeSwitch = (mode: QuizMode) => {
+    setQuizMode(mode);
+    setNoResults(false);
+  };
+
   return (
     <Page>
       <TitleRow>
         <Title>{HE.QUIZ_TITLE}</Title>
       </TitleRow>
+
+      <TabRow>
+        <TabButton $active={quizMode === 'classic'} onClick={() => handleModeSwitch('classic')}>
+          {HE.QUIZ_MODE_CLASSIC}
+        </TabButton>
+        <TabButton $active={quizMode === 'multiple'} onClick={() => handleModeSwitch('multiple')}>
+          {HE.QUIZ_MODE_MULTIPLE}
+        </TabButton>
+      </TabRow>
 
       <FilterBar>
         <FilterLabel>{HE.QUIZ_FILTER_TITLE}</FilterLabel>
@@ -436,10 +473,17 @@ export default function QuizView() {
         </FilterSelect>
       </FilterBar>
 
-      {noResults ? (
+      {quizMode === 'classic' && noResults ? (
         <NoResultsCard>{HE.QUIZ_NO_RESULTS}</NoResultsCard>
       ) : (
       <QuizGrid>
+        {quizMode === 'multiple' ? (
+          <MultipleChoiceQuiz
+            filterSeder={filterSeder}
+            filterMasechet={filterMasechet}
+            onAnswered={loadStats}
+          />
+        ) : (
         <QuestionCard>
           <QuestionLabel>{HE.QUIZ_QUESTION}</QuestionLabel>
           <CitationText>{question?.content ?? HE.LOADING}</CitationText>
@@ -520,6 +564,7 @@ export default function QuizView() {
             </>
           )}
         </QuestionCard>
+        )}
 
         {stats && role === 'admin' && (
           <StatsCard>

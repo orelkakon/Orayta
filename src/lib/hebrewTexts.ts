@@ -77,6 +77,10 @@ export const HE = {
   QUIZ_TOTAL_SCORE: 'סה״כ ניקוד',
   QUIZ_HISTORY: 'היסטוריה אחרונה',
   QUIZ_SKIP: 'דלג',
+  QUIZ_MODE_CLASSIC: 'חידון קלאסי',
+  QUIZ_MODE_MULTIPLE: 'חידון אמריקאי',
+  QUIZ_MC_CHOOSE: 'בחר את המקור הנכון',
+  QUIZ_MC_NOT_ENOUGH: 'אין מספיק ציטוטים לחידון האמריקאי',
 
   SEDER_ZERAIM: 'סדר זרעים',
   SEDER_MOED: 'סדר מועד',
