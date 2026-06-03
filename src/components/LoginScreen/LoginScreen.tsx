@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import styled, { keyframes } from 'styled-components';
-import { useRouter } from 'next/navigation';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 
@@ -105,7 +104,6 @@ export default function LoginScreen() {
   const [passcode, setPasscode] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,7 +119,8 @@ export default function LoginScreen() {
     setLoading(false);
 
     if (res.ok) {
-      router.push('/study');
+      // Full reload so RoleProvider remounts and reads the new role cookie
+      window.location.href = '/study';
     } else {
       setError(true);
       setPasscode('');
