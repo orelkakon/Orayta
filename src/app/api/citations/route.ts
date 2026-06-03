@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getMasechetSeder, sederIndex, masechetIndex, dafToNumber } from '@/lib/hebrewData';
 
 export const dynamic = 'force-dynamic';
 
-type CitationWithLocations = Awaited<ReturnType<typeof prisma.citation.findMany>>[number];
+type CitationWithLocations = Prisma.CitationGetPayload<{ include: { locations: true } }>;
 
 function sortCitations(list: CitationWithLocations[]): CitationWithLocations[] {
   return [...list].sort((a, b) => {

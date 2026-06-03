@@ -65,7 +65,7 @@ const LETTER_VALUES: Record<string, number> = {
 
 export const dafToNumber = (daf: string): number => {
   const clean = daf.replace(/[״׳"']/g, '');
-  return [...clean].reduce((sum, ch) => sum + (LETTER_VALUES[ch] ?? 0), 0);
+  return clean.split('').reduce((sum, ch) => sum + (LETTER_VALUES[ch] ?? 0), 0);
 };
 
 export const sederIndex = (seder: string): number =>
