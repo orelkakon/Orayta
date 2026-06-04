@@ -3,6 +3,7 @@
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import OraytaLogo from '@/components/common/OraytaLogo';
+import { HE } from '@/lib/hebrewTexts';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -70,53 +71,6 @@ const SectionTitle = styled.h2`
   padding-bottom: ${theme.spacing.sm};
 `;
 
-const CreatorRow = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${theme.spacing.xs};
-`;
-
-const CreatorName = styled.div`
-  font-family: ${theme.fonts.body};
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: ${theme.colors.primary};
-`;
-
-const CreatorEmail = styled.a`
-  font-size: 0.9rem;
-  color: ${theme.colors.primaryLight};
-  direction: ltr;
-  display: inline-block;
-  &:hover { text-decoration: underline; }
-`;
-
-const SocialRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${theme.spacing.sm};
-  margin-top: ${theme.spacing.xs};
-`;
-
-const LinkedInLink = styled.a`
-  display: flex;
-  align-items: center;
-  gap: ${theme.spacing.xs};
-  font-size: 0.85rem;
-  color: #0077B5;
-  direction: ltr;
-  font-weight: 500;
-  transition: opacity 0.15s;
-  &:hover { opacity: 0.75; }
-`;
-
-const Footer = styled.div`
-  font-size: 0.78rem;
-  color: ${theme.colors.textLight};
-  text-align: center;
-  padding-bottom: ${theme.spacing.md};
-`;
-
 const FeatureList = styled.ul`
   list-style: none;
   display: flex;
@@ -150,64 +104,168 @@ const Verse = styled.blockquote`
   font-style: italic;
 `;
 
-const FEATURES = [
-  { icon: '📖', text: 'הוספה מהירה של ציטוטים מהתלמוד הבבלי עם ציון מסכת, דף ועמוד' },
-  { icon: '🔍', text: 'צפייה בכל הציטוטים עם פילטור לפי סדר, מסכת וחיפוש חופשי' },
-  { icon: '✏️', text: 'עריכה ומחיקה קלה של ציטוטים קיימים' },
-  { icon: '🧠', text: 'מצב חידון אינטראקטיבי — זהה את מקור הציטוט ועקוב אחרי ההתקדמות' },
-  { icon: '📱', text: 'ממשק מותאם למובייל ולמחשב, נגיש מכל מקום' },
-];
+const CreatorCard = styled.div`
+  background: ${theme.colors.surface};
+  border-radius: ${theme.radii.lg};
+  box-shadow: ${theme.shadows.md};
+  border: 1px solid ${theme.colors.borderLight};
+  width: 100%;
+  max-width: 560px;
+  overflow: hidden;
+`;
+
+const CreatorBanner = styled.div`
+  height: 72px;
+  background: linear-gradient(135deg, ${theme.colors.primary} 0%, ${theme.colors.primaryLight} 60%, ${theme.colors.secondary} 100%);
+  display: flex;
+  align-items: flex-end;
+  padding: ${theme.spacing.sm} ${theme.spacing.xl};
+`;
+
+const BannerLabel = styled.span`
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.04em;
+`;
+
+const CreatorBody = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${theme.spacing.md};
+  padding: 0 ${theme.spacing.xl} ${theme.spacing.xl};
+`;
+
+const Avatar = styled.div`
+  margin-top: -32px;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: ${theme.colors.secondary};
+  border: 3px solid ${theme.colors.surface};
+  box-shadow: ${theme.shadows.md};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: ${theme.fonts.body};
+  font-weight: 700;
+  font-size: 1rem;
+  color: white;
+`;
+
+const CreatorName = styled.div`
+  font-family: ${theme.fonts.body};
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: ${theme.colors.primary};
+  text-align: center;
+`;
+
+const CreatorRole = styled.div`
+  font-size: 0.88rem;
+  color: ${theme.colors.textMuted};
+  text-align: center;
+  margin-top: -${theme.spacing.sm};
+`;
+
+const ContactLinks = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${theme.spacing.sm};
+  width: 100%;
+`;
+
+const ContactLink = styled.a`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.sm};
+  padding: ${theme.spacing.sm} ${theme.spacing.md};
+  border-radius: ${theme.radii.md};
+  border: 1px solid ${theme.colors.borderLight};
+  color: ${theme.colors.textMuted};
+  font-size: 0.9rem;
+  direction: ltr;
+  transition: all 0.15s;
+  &:hover {
+    background: ${theme.colors.surfaceAlt};
+    border-color: ${theme.colors.border};
+    color: ${theme.colors.primary};
+  }
+`;
+
+const Footer = styled.div`
+  font-size: 0.78rem;
+  color: ${theme.colors.textLight};
+  text-align: center;
+  padding-bottom: ${theme.spacing.md};
+`;
+
+const EmailIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <rect width="24" height="24" rx="5" fill={theme.colors.surfaceAlt} />
+    <path d="M5 8.5A2.5 2.5 0 017.5 6h9A2.5 2.5 0 0119 8.5v7a2.5 2.5 0 01-2.5 2.5h-9A2.5 2.5 0 015 15.5v-7z"
+      stroke={theme.colors.primaryLight} strokeWidth="1.4" />
+    <path d="M5.5 8.5L12 13.5l6.5-5" stroke={theme.colors.primaryLight} strokeWidth="1.4" strokeLinecap="round" />
+  </svg>
+);
+
+const LinkedInIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true">
+    <rect width="24" height="24" rx="5" fill="#0077B5" />
+    <path d="M6.5 9.5h-2v8h2v-8zm-1-3a1.1 1.1 0 110 2.2A1.1 1.1 0 015.5 6.5zM18.5 17.5h-2v-3.8c0-1-.4-1.7-1.3-1.7-.7 0-1.1.5-1.3 1-.1.2-.1.5-.1.7v3.8h-2s.02-6.5 0-8h2v1.1c.3-.4.8-1.1 2-1.1 1.4 0 2.7 1 2.7 3.1v4.9z"
+      fill="white" />
+  </svg>
+);
 
 export default function AboutView() {
   return (
     <Page>
       <LogoBlock>
-        <LogoCircle>
-          <OraytaLogo size={80} />
-        </LogoCircle>
-        <AppName>אורייתא</AppName>
-        <AppSubtitle>מערכת לניהול ולימוד ציטוטים מהתלמוד הבבלי</AppSubtitle>
+        <LogoCircle><OraytaLogo size={80} /></LogoCircle>
+        <AppName>{HE.APP_NAME}</AppName>
+        <AppSubtitle>{HE.APP_SUBTITLE}</AppSubtitle>
       </LogoBlock>
 
       <Card>
-        <SectionTitle>אודות המערכת</SectionTitle>
+        <SectionTitle>{HE.ABOUT_TITLE}</SectionTitle>
         <FeatureList>
-          {FEATURES.map((f, i) => (
+          {HE.ABOUT_FEATURES.map((f, i) => (
             <FeatureItem key={i}>
               <FeatureIcon>{f.icon}</FeatureIcon>
               <span>{f.text}</span>
             </FeatureItem>
           ))}
         </FeatureList>
-        <Verse>
-          &ldquo;לקח טוב נתתי לכם, תורתי אל תעזובו&rdquo;
-        </Verse>
+        <Verse>&ldquo;{HE.ABOUT_VERSE}&rdquo;</Verse>
       </Card>
 
-      <Card>
-        <SectionTitle>יוצר</SectionTitle>
-        <CreatorRow>
-          <CreatorName>אוראל קקון</CreatorName>
-          <CreatorEmail href="mailto:orelkakonweb@gmail.com">
-            orelkakonweb@gmail.com
-          </CreatorEmail>
-          <SocialRow>
-            <LinkedInLink
+      <CreatorCard>
+        <CreatorBanner>
+          <BannerLabel>{HE.ABOUT_CREATOR_SECTION}</BannerLabel>
+        </CreatorBanner>
+        <CreatorBody>
+          <Avatar>{HE.ABOUT_CREATOR_INITIALS}</Avatar>
+          <CreatorName>{HE.ABOUT_CREATOR_NAME}</CreatorName>
+          <CreatorRole>{HE.ABOUT_CREATOR_ROLE}</CreatorRole>
+          <ContactLinks>
+            <ContactLink href={`mailto:${HE.ABOUT_CREATOR_EMAIL}`}>
+              <EmailIcon />
+              {HE.ABOUT_CREATOR_EMAIL}
+            </ContactLink>
+            <ContactLink
               href="https://www.linkedin.com/in/orelkakon/"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="#0077B5">
-                <rect width="24" height="24" rx="4" fill="#0077B5"/>
-                <path d="M6.5 9.5h-2v8h2v-8zm-1-3a1.1 1.1 0 110 2.2A1.1 1.1 0 015.5 6.5zM18.5 17.5h-2v-3.8c0-1-.4-1.7-1.3-1.7-.7 0-1.1.5-1.3 1-.1.2-.1.5-.1.7v3.8h-2s.02-6.5 0-8h2v1.1c.3-.4.8-1.1 2-1.1 1.4 0 2.7 1 2.7 3.1v4.9z" fill="white"/>
-              </svg>
-              LinkedIn
-            </LinkedInLink>
-          </SocialRow>
-        </CreatorRow>
-      </Card>
+              <LinkedInIcon />
+              LinkedIn · orelkakon
+            </ContactLink>
+          </ContactLinks>
+        </CreatorBody>
+      </CreatorCard>
 
-      <Footer>© 2026 אוראל קקון · אורייתא</Footer>
+      <Footer>{HE.ABOUT_FOOTER}</Footer>
     </Page>
   );
 }
