@@ -41,6 +41,13 @@ const GlobalStylesheet = createGlobalStyle`
     font-size: 1rem;
   }
 
+  /* Prevent iOS/Android zoom on input focus — requires font-size >= 16px */
+  @media (max-width: 768px) {
+    input, textarea, select {
+      font-size: 16px !important;
+    }
+  }
+
   a {
     color: inherit;
     text-decoration: none;
