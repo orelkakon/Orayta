@@ -133,9 +133,9 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
         </LogoArea>
 
         <Nav>
-          <NavLink href="/study" $active={pathname === '/study'}>{HE.NAV_STUDY}</NavLink>
-          <NavLink href="/add" $active={pathname === '/add'}>{HE.NAV_ADD}</NavLink>
-          <NavLink href="/quiz" $active={pathname === '/quiz'}>{HE.NAV_QUIZ}</NavLink>
+          <NavLink href="/study" $active={pathname === '/study' || pathname === '/add'}>{HE.NAV_TALMUD}</NavLink>
+          <NavLink href="/rabbis" $active={pathname === '/rabbis'}>{HE.NAV_RABBIS}</NavLink>
+          <NavLink href="/quiz" $active={pathname === '/quiz'}>{HE.NAV_LEARN}</NavLink>
           <NavLink href="/about" $active={pathname === '/about'}>{HE.NAV_ABOUT}</NavLink>
           <LogoutButton onClick={handleLogout}>{HE.NAV_LOGOUT}</LogoutButton>
         </Nav>

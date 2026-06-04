@@ -1,10 +1,10 @@
 import AppLayout from '@/components/Layout/AppLayout';
-import StudyView from '@/components/StudyView/StudyView';
+import TalmudView from '@/components/TalmudView/TalmudView';
 
 export default function StudyPage() {
   return (
     <AppLayout>
-      <StudyView />
+      <TalmudView />
     </AppLayout>
   );
 }

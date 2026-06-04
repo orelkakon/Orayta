@@ -17,7 +17,11 @@
       "Bash(curl -s http://localhost:3000 -o /dev/null -w \"%{http_code}\")",
       "Bash(pkill -f \"next dev\")",
       "Bash(npm run *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(mkdir -p /Users/user/Desktop/Claude/src/app/api/rabbis)",
+      "Bash(mkdir -p /Users/user/Desktop/Claude/src/app/rabbis)",
+      "Bash(mkdir -p /Users/user/Desktop/Claude/src/components/RabbisView)",
+      "Bash(mkdir -p /Users/user/Desktop/Claude/src/components/TalmudView)"
     ]
   }
 }

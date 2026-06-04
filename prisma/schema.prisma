@@ -29,6 +29,21 @@ model CitationLocation {
   @@index([citationId])
 }
 
+model Rabbi {
+  id         String   @id @default(cuid())
+  name       String
+  fullName   String?
+  sortYear   Int
+  datePeriod String
+  isAlive    Boolean  @default(false)
+  bio        String
+  category   String
+  createdAt  DateTime @default(now())
+
+  @@index([category])
+  @@index([sortYear])
+}
+
 model QuizResult {
   id         String   @id @default(cuid())
   citationId String

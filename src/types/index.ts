@@ -48,6 +48,20 @@ export interface QuizStats {
   }>;
 }
 
+export type RabbiCategory = 'zugot' | 'tannaim' | 'amoraim' | 'geonim' | 'rishonim' | 'acharonim' | 'hasidim' | 'abuchatzira' | 'late';
+
+export interface Rabbi {
+  id: string;
+  name: string;
+  fullName: string | null;
+  sortYear: number;
+  datePeriod: string;
+  isAlive: boolean;
+  bio: string;
+  category: string;
+  createdAt: string;
+}
+
 export interface CitationFilters {
   masechet?: string;
   seder?: string;
