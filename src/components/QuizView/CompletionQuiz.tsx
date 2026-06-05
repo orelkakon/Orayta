@@ -151,16 +151,52 @@ const FullText = styled.p`
   word-break: break-word;
 `;
 
+const SourceRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.xs};
+  margin-top: ${theme.spacing.xs};
+  padding-top: ${theme.spacing.xs};
+  border-top: 1px solid ${theme.colors.borderLight};
+`;
+
+const SourceLabel = styled.span`
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: ${theme.colors.textMuted};
+`;
+
+const SourceValue = styled.span`
+  font-family: ${theme.fonts.body};
+  font-size: 0.88rem;
+  color: ${theme.colors.primary};
+  font-weight: 600;
+  direction: rtl;
+`;
+
 interface Props {
   filterSeder: string;
   filterMasechet: string;
   onAnswered: () => void;
 }
 
+interface ResultLocation {
+  masechet: string;
+  daf: string;
+  amud: string | null;
+}
+
 interface Result {
   score: number;
   correct: boolean;
   fullContent: string;
+  locations: ResultLocation[];
+}
+
+function formatLoc(loc: ResultLocation): string {
+  let s = `${loc.masechet} ${loc.daf}`;
+  if (loc.amud) s += ` ${loc.amud}`;
+  return s;
 }
 
 export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered }: Props) {
@@ -247,6 +283,14 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
           <FullCitationBox>
             <FullLabel>{HE.QUIZ_COMPLETION_FULL}</FullLabel>
             <FullText>{result.fullContent}</FullText>
+            {result.locations.length > 0 && (
+              <SourceRow>
+                <SourceLabel>{HE.QUIZ_COMPLETION_SOURCE}</SourceLabel>
+                <SourceValue>
+                  {result.locations.map(formatLoc).join(' / ')}
+                </SourceValue>
+              </SourceRow>
+            )}
           </FullCitationBox>
           <PrimaryBtn onClick={loadQuestion}>{HE.QUIZ_NEXT}</PrimaryBtn>
         </>

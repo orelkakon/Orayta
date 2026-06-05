@@ -40,5 +40,5 @@ export async function POST(request: NextRequest) {
 
   const { score, correct } = evaluate(citation.content, body.response ?? '');
 
-  return NextResponse.json({ score, correct, fullContent: citation.content });
+  return NextResponse.json({ score, correct, fullContent: citation.content, locations: citation.locations });
 }

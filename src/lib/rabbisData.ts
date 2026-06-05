@@ -1,6 +1,9 @@
 import { RabbiCategory } from '@/types';
 
 export const CATEGORY_LABELS: Record<RabbiCategory, string> = {
+  torah: 'תורה',
+  neviim: 'נביאים',
+  ketuvim: 'כתובים',
   zugot: 'זוגות',
   tannaim: 'תנאים',
   amoraim: 'אמוראים',
@@ -13,11 +16,15 @@ export const CATEGORY_LABELS: Record<RabbiCategory, string> = {
 };
 
 export const CATEGORY_ORDER: RabbiCategory[] = [
+  'torah', 'neviim', 'ketuvim',
   'zugot', 'tannaim', 'amoraim', 'geonim', 'rishonim',
   'acharonim', 'hasidim', 'abuchatzira', 'late',
 ];
 
 export const CATEGORY_COLORS: Record<RabbiCategory, string> = {
+  torah: '#1A3A6B',
+  neviim: '#2D5A3D',
+  ketuvim: '#4A2C6B',
   zugot: '#5C3D1E',
   tannaim: '#7A3B10',
   amoraim: '#9B2335',
