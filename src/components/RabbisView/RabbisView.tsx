@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Rabbi, RabbiCategory } from '@/types';
 import { CATEGORY_LABELS, CATEGORY_ORDER, CATEGORY_COLORS } from '@/lib/rabbisData';
+import { useRole } from '@/components/common/RoleContext';
 import RabbiCard from './RabbiCard';
+import RabbiForm from './RabbiForm';
 
 const Container = styled.div`
   display: flex;
@@ -16,8 +18,20 @@ const Container = styled.div`
 
 const TitleRow = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: ${theme.spacing.xs};
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: ${theme.spacing.md};
+`;
+
+const TitleGroup = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.xs};`;
+
+const AddBtn = styled.button`
+  padding: ${theme.spacing.sm} ${theme.spacing.lg};
+  background: ${theme.colors.primary}; color: white;
+  border-radius: ${theme.radii.md}; font-size: 0.9rem; font-weight: 600;
+  flex-shrink: 0; align-self: flex-start;
+  &:hover { background: ${theme.colors.primaryLight}; }
 `;
 
 const Title = styled.h1`
@@ -95,10 +109,15 @@ export default function RabbisView() {
   const [rabbis, setRabbis] = useState<Rabbi[]>([]);
   const [category, setCategory] = useState<string>('all');
   const [search, setSearch] = useState('');
+  const [editRabbi, setEditRabbi] = useState<Rabbi | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const role = useRole();
 
-  useEffect(() => {
+  const load = useCallback(() => {
     void fetch('/api/rabbis').then(r => r.json()).then(setRabbis as (v: unknown) => void);
   }, []);
+
+  useEffect(() => { load(); }, [load]);
 
   const filtered = useMemo(() => {
     let list = rabbis;
@@ -117,14 +136,33 @@ export default function RabbisView() {
   const countFor = (cat: string) =>
     rabbis.filter(r => cat === 'all' || r.category === cat).length;
 
+  const handleDelete = async (rabbi: Rabbi) => {
+    if (!window.confirm(HE.RABBI_DELETE_CONFIRM)) return;
+    await fetch(`/api/rabbis/${rabbi.id}`, { method: 'DELETE' });
+    load();
+  };
+
   return (
     <Container>
+      {(addOpen || editRabbi) && (
+        <RabbiForm
+          rabbi={editRabbi ?? undefined}
+          onClose={() => { setAddOpen(false); setEditRabbi(null); }}
+          onSaved={load}
+        />
+      )}
+
       <TitleRow>
-        <Title>{HE.RABBIS_TITLE}</Title>
-        <Subtitle>
-          {HE.RABBIS_SUBTITLE}
-          {rabbis.length > 0 && <CountBadge> · {rabbis.length} רבנים</CountBadge>}
-        </Subtitle>
+        <TitleGroup>
+          <Title>{HE.RABBIS_TITLE}</Title>
+          <Subtitle>
+            {HE.RABBIS_SUBTITLE}
+            {rabbis.length > 0 && <CountBadge> · {rabbis.length} רבנים</CountBadge>}
+          </Subtitle>
+        </TitleGroup>
+        {role === 'admin' && (
+          <AddBtn onClick={() => setAddOpen(true)}>{HE.RABBI_ADD_BTN}</AddBtn>
+        )}
       </TitleRow>
 
       <SearchInput
@@ -152,7 +190,14 @@ export default function RabbisView() {
       <Grid>
         {filtered.length === 0
           ? <Empty>{HE.STUDY_EMPTY}</Empty>
-          : filtered.map(r => <RabbiCard key={r.id} rabbi={r} />)
+          : filtered.map(r => (
+              <RabbiCard
+                key={r.id}
+                rabbi={r}
+                onEdit={role === 'admin' ? () => setEditRabbi(r) : undefined}
+                onDelete={role === 'admin' ? () => handleDelete(r) : undefined}
+              />
+            ))
         }
       </Grid>
     </Container>

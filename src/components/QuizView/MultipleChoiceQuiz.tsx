@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Citation, CitationLocation } from '@/types';
+import { addStat } from '@/lib/statsStorage';
 
 type OptionState = 'default' | 'correct' | 'wrong' | 'faded' | 'eliminated';
 
@@ -169,6 +170,7 @@ export default function MultipleChoiceQuiz({ filterSeder, filterMasechet, onAnsw
     });
     const result = await res.json() as { score: number };
     setScore(result.score);
+    addStat({ score: result.score, content: question.content.slice(0, 80), mode: 'multiple' });
     onAnswered();
   };
 

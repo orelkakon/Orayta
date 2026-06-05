@@ -5,10 +5,13 @@ import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { MASECHTOT, SEDARIM } from '@/lib/hebrewData';
-import { Citation, Amud, QuizStats } from '@/types';
-import { useRole } from '@/components/common/RoleContext';
+import { Citation, Amud } from '@/types';
+import { addStat } from '@/lib/statsStorage';
+
 import MultipleChoiceQuiz from './MultipleChoiceQuiz';
 import CompletionQuiz from './CompletionQuiz';
+import RabbiQuiz from './RabbiQuiz';
+import StatsPanel from './StatsPanel';
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(8px); }
@@ -362,7 +365,7 @@ function scoreLabel(score: number) {
   return HE.QUIZ_WRONG;
 }
 
-type QuizMode = 'classic' | 'multiple' | 'completion';
+type QuizMode = 'classic' | 'multiple' | 'completion' | 'rabbi';
 
 export default function QuizView() {
   const [quizMode, setQuizMode] = useState<QuizMode>('classic');
@@ -374,11 +377,9 @@ export default function QuizView() {
   const [daf, setDaf] = useState('');
   const [amud, setAmud] = useState<Amud | null>(null);
   const [result, setResult] = useState<AnswerResult | null>(null);
-  const [stats, setStats] = useState<QuizStats | null>(null);
+  const [statsKey, setStatsKey] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hintShown, setHintShown] = useState(false);
-  const [resetting, setResetting] = useState(false);
-  const role = useRole();
 
   const hasAmud = question?.locations.some((l) => l.amud) ?? false;
 
@@ -397,12 +398,9 @@ export default function QuizView() {
     if (res.ok) setQuestion(await res.json() as Citation);
   }, [filterSeder, filterMasechet]);
 
-  const loadStats = useCallback(async () => {
-    const res = await fetch('/api/quiz/stats');
-    if (res.ok) setStats(await res.json() as QuizStats);
-  }, []);
+  const bumpStats = () => setStatsKey(k => k + 1);
 
-  useEffect(() => { void loadQuestion(); void loadStats(); }, [loadQuestion, loadStats]);
+  useEffect(() => { void loadQuestion(); }, [loadQuestion]);
 
   const handleFilterSederChange = (val: string) => {
     setFilterSeder(val);
@@ -423,23 +421,17 @@ export default function QuizView() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ citationId: question.id, masechet, daf, amud }),
     });
-    setResult(await res.json() as AnswerResult);
+    const data = await res.json() as AnswerResult;
+    setResult(data);
+    addStat({ score: data.score, content: question.content.slice(0, 80), mode: 'classic' });
     setLoading(false);
-    void loadStats();
+    bumpStats();
   };
 
   const formatLocation = (loc: Citation['locations'][0]) => {
     let s = `${loc.masechet} ${loc.daf}`;
     if (loc.amud) s += ` עמוד ${loc.amud}`;
     return s;
-  };
-
-  const handleResetStats = async () => {
-    if (!window.confirm('לאפס את כל הסטטיסטיקות?')) return;
-    setResetting(true);
-    await fetch('/api/quiz/reset', { method: 'DELETE' });
-    setResetting(false);
-    void loadStats();
   };
 
   const hintSeder = question?.locations[0]?.seder ?? '';
@@ -468,9 +460,12 @@ export default function QuizView() {
         <TabButton $active={quizMode === 'completion'} onClick={() => handleModeSwitch('completion')}>
           {HE.QUIZ_MODE_COMPLETION}
         </TabButton>
+        <TabButton $active={quizMode === 'rabbi'} onClick={() => handleModeSwitch('rabbi')}>
+          {HE.QUIZ_MODE_RABBI}
+        </TabButton>
       </TabRow>
 
-      <FilterBar>
+      <FilterBar style={{ display: quizMode === 'rabbi' ? 'none' : undefined }}>
         <FilterLabel>{HE.QUIZ_FILTER_TITLE}</FilterLabel>
         <FilterSelect value={filterSeder} onChange={(e) => handleFilterSederChange(e.target.value)}>
           <option value="">{HE.QUIZ_FILTER_ALL}</option>
@@ -490,13 +485,15 @@ export default function QuizView() {
           <MultipleChoiceQuiz
             filterSeder={filterSeder}
             filterMasechet={filterMasechet}
-            onAnswered={loadStats}
+            onAnswered={bumpStats}
           />
+        ) : quizMode === 'rabbi' ? (
+          <RabbiQuiz onAnswered={bumpStats} />
         ) : quizMode === 'completion' ? (
           <CompletionQuiz
             filterSeder={filterSeder}
             filterMasechet={filterMasechet}
-            onAnswered={loadStats}
+            onAnswered={bumpStats}
           />
         ) : (
         <QuestionCard>
@@ -581,35 +578,7 @@ export default function QuizView() {
         </QuestionCard>
         )}
 
-        {stats && role === 'admin' && (
-          <StatsCard>
-            <StatsTitle>{HE.QUIZ_STATS_TITLE}</StatsTitle>
-            <AccuracyBar $pct={stats.accuracy} />
-            <StatRow><span>{HE.QUIZ_ACCURACY}</span><StatValue>{stats.accuracy}%</StatValue></StatRow>
-            <StatRow><span>{HE.QUIZ_TOTAL}</span><StatValue>{stats.total}</StatValue></StatRow>
-            <StatRow>
-              <span>{HE.QUIZ_TOTAL_SCORE}</span>
-              <StatValue>{stats.totalScore.toFixed(1)} / {stats.total}</StatValue>
-            </StatRow>
-            {stats.recentResults.length > 0 && (
-              <>
-                <StatsTitle>{HE.QUIZ_HISTORY}</StatsTitle>
-                <HistoryList>
-                  {stats.recentResults.map((r, i) => (
-                    <HistoryItem key={i} $score={r.score}>
-                      {scoreIcon(r.score)} {r.citationContent}
-                    </HistoryItem>
-                  ))}
-                </HistoryList>
-              </>
-            )}
-            {stats.total > 0 && (
-              <ResetButton onClick={handleResetStats} disabled={resetting}>
-                {resetting ? HE.LOADING : 'איפוס סטטיסטיקות'}
-              </ResetButton>
-            )}
-          </StatsCard>
-        )}
+        <StatsPanel statsKey={statsKey} />
       </QuizGrid>
       )}
     </Page>

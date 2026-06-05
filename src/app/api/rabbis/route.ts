@@ -14,3 +14,28 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json(rabbis);
 }
+
+export async function POST(request: NextRequest) {
+  if (request.cookies.get('auth')?.value !== 'admin') {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+  }
+
+  const body = await request.json() as {
+    name: string; fullName?: string; sortYear: number;
+    datePeriod: string; isAlive: boolean; bio: string; category: string;
+  };
+
+  const rabbi = await prisma.rabbi.create({
+    data: {
+      name: body.name,
+      fullName: body.fullName ?? null,
+      sortYear: body.sortYear,
+      datePeriod: body.datePeriod,
+      isAlive: body.isAlive,
+      bio: body.bio,
+      category: body.category,
+    },
+  });
+
+  return NextResponse.json(rabbi, { status: 201 });
+}

@@ -7,6 +7,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import OraytaLogo from '@/components/common/OraytaLogo';
 import { useRole } from '@/components/common/RoleContext';
+import { clearStats } from '@/lib/statsStorage';
 
 const Wrapper = styled.div`
   min-height: 100vh;
@@ -117,6 +118,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const role = useRole();
 
   const handleLogout = async () => {
+    clearStats();
     await fetch('/api/auth/logout', { method: 'POST' });
     window.location.href = '/login';
   };

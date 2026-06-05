@@ -40,9 +40,5 @@ export async function POST(request: NextRequest) {
 
   const { score, correct } = evaluate(citation.content, body.response ?? '');
 
-  if (request.cookies.get('auth')?.value === 'admin') {
-    await prisma.quizResult.create({ data: { citationId: body.citationId, score: correct ? 1 : 0 } });
-  }
-
   return NextResponse.json({ score, correct, fullContent: citation.content });
 }

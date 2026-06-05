@@ -2,6 +2,7 @@
 
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
+import { HE } from '@/lib/hebrewTexts';
 import { Rabbi, RabbiCategory } from '@/types';
 import { CATEGORY_COLORS, CATEGORY_LABELS } from '@/lib/rabbisData';
 
@@ -106,11 +107,33 @@ const Bio = styled.p`
   word-break: break-word;
 `;
 
+const AdminRow = styled.div`
+  display: flex;
+  gap: ${theme.spacing.xs};
+  justify-content: flex-start;
+  margin-top: ${theme.spacing.xs};
+`;
+
+const EditBtn = styled.button`
+  font-size: 0.75rem; padding: 2px ${theme.spacing.sm};
+  border: 1px solid ${theme.colors.border}; border-radius: ${theme.radii.sm};
+  color: ${theme.colors.textMuted}; transition: all 0.15s;
+  &:hover { border-color: ${theme.colors.primaryLight}; color: ${theme.colors.primary}; }
+`;
+const DeleteBtn = styled.button`
+  font-size: 0.75rem; padding: 2px ${theme.spacing.sm};
+  border: 1px solid ${theme.colors.error}33; border-radius: ${theme.radii.sm};
+  color: ${theme.colors.error}; opacity: 0.7; transition: opacity 0.15s;
+  &:hover { opacity: 1; background: rgba(155,35,53,0.06); }
+`;
+
 interface Props {
   rabbi: Rabbi;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-export default function RabbiCard({ rabbi }: Props) {
+export default function RabbiCard({ rabbi, onEdit, onDelete }: Props) {
   const color = CATEGORY_COLORS[rabbi.category as RabbiCategory] ?? theme.colors.primaryLight;
   const label = CATEGORY_LABELS[rabbi.category as RabbiCategory] ?? rabbi.category;
 
@@ -131,6 +154,12 @@ export default function RabbiCard({ rabbi }: Props) {
       </Header>
       <Divider />
       <Bio>{rabbi.bio}</Bio>
+      {(onEdit || onDelete) && (
+        <AdminRow>
+          {onEdit && <EditBtn onClick={onEdit}>{HE.STUDY_EDIT}</EditBtn>}
+          {onDelete && <DeleteBtn onClick={onDelete}>{HE.STUDY_DELETE}</DeleteBtn>}
+        </AdminRow>
+      )}
     </Card>
   );
 }

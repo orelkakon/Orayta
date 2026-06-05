@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Citation } from '@/types';
+import { addStat } from '@/lib/statsStorage';
 
 function getStartWordCount(content: string): number {
   const n = content.trim().split(/\s+/).length;
@@ -195,7 +196,9 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ citationId: question.id, response: input }),
     });
-    setResult(await res.json() as Result);
+    const data = await res.json() as Result;
+    setResult(data);
+    addStat({ score: data.correct ? 1 : 0, content: question.content.slice(0, 80), mode: 'completion' });
     setSubmitting(false);
     onAnswered();
   };
