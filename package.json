@@ -8,11 +8,7 @@
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "next lint",
-    "db:push": "prisma db push",
-    "db:seed": "ts-node --project tsconfig.seed.json src/lib/seed.ts",
-    "db:seed-rabbis": "ts-node --project tsconfig.seed.json prisma/seed.ts",
-    "db:seed-tanach": "ts-node --project tsconfig.seed.json prisma/seedTanach.ts",
-    "db:seed-more": "ts-node --project tsconfig.seed.json prisma/seedMore.ts"
+    "db:push": "prisma db push"
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",
@@ -28,7 +24,6 @@
     "eslint": "^8",
     "eslint-config-next": "13.5.6",
     "prisma": "^5.10.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5"
+"typescript": "^5"
   }
 }

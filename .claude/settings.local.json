@@ -21,7 +21,8 @@
       "Bash(mkdir -p /Users/user/Desktop/Claude/src/app/api/rabbis)",
       "Bash(mkdir -p /Users/user/Desktop/Claude/src/app/rabbis)",
       "Bash(mkdir -p /Users/user/Desktop/Claude/src/components/RabbisView)",
-      "Bash(mkdir -p /Users/user/Desktop/Claude/src/components/TalmudView)"
+      "Bash(mkdir -p /Users/user/Desktop/Claude/src/components/TalmudView)",
+      "Bash(npx ts-node *)"
     ]
   }
 }
