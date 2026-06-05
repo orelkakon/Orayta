@@ -43,6 +43,6 @@ export function computeSummary(stats: StatEntry[]): StatsSummary {
     total: stats.length,
     totalScore,
     accuracy: Math.round((totalScore / stats.length) * 100),
-    recent: stats.slice(0, 20),
+    recent: stats.slice(0, 5),
   };
 }
