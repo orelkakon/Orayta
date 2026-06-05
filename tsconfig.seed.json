@@ -6,5 +6,5 @@
     "moduleResolution": "node",
     "outDir": "./dist"
   },
-  "include": ["src/lib/seed.ts", "src/lib/hebrewData.ts", "prisma/seed.ts"]
+  "include": ["src/lib/seed.ts", "src/lib/hebrewData.ts", "prisma/seed.ts", "prisma/seedTanach.ts"]
 }

@@ -10,7 +10,8 @@
     "lint": "next lint",
     "db:push": "prisma db push",
     "db:seed": "ts-node --project tsconfig.seed.json src/lib/seed.ts",
-    "db:seed-rabbis": "ts-node --project tsconfig.seed.json prisma/seed.ts"
+    "db:seed-rabbis": "ts-node --project tsconfig.seed.json prisma/seed.ts",
+    "db:seed-tanach": "ts-node --project tsconfig.seed.json prisma/seedTanach.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",
