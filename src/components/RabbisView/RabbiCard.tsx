@@ -58,6 +58,8 @@ const MetaCol = styled.div`
   align-items: flex-end;
   gap: ${theme.spacing.xs};
   flex-shrink: 0;
+  max-width: 55%;
+  min-width: 0;
 `;
 
 const DateBadge = styled.div<{ $alive: boolean }>`
@@ -66,7 +68,9 @@ const DateBadge = styled.div<{ $alive: boolean }>`
   padding: 2px ${theme.spacing.sm};
   border-radius: ${theme.radii.sm};
   direction: ltr;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
+  text-align: right;
   background: ${({ $alive }) => ($alive ? '#E8F5E9' : theme.colors.surfaceAlt)};
   color: ${({ $alive }) => ($alive ? theme.colors.success : theme.colors.textMuted)};
   border: 1px solid ${({ $alive }) => ($alive ? '#A5D6A7' : theme.colors.borderLight)};
