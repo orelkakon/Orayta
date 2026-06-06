@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import OraytaLogo from '@/components/common/OraytaLogo';
-import { useRole } from '@/components/common/RoleContext';
 import { useDarkMode } from '@/components/common/ThemeContext';
 import { clearStats } from '@/lib/statsStorage';
 
@@ -138,7 +137,6 @@ const Main = styled.main`
 
 function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const role = useRole();
   const { isDark, toggle } = useDarkMode();
 
   const handleLogout = async () => {
