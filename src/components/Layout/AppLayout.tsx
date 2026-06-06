@@ -33,6 +33,12 @@ const Header = styled.header`
   }
 `;
 
+const LogoGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.md};
+`;
+
 const LogoArea = styled(Link)`
   display: flex;
   align-items: center;
@@ -141,22 +147,24 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   return (
     <Wrapper>
       <Header>
-        <LogoArea href="/study">
-          <OraytaLogo size={40} />
-          <LogoText>
-            <AppName>{HE.APP_NAME}</AppName>
-            <Bsd>בס״ד</Bsd>
-          </LogoText>
-        </LogoArea>
+        <LogoGroup>
+          <LogoArea href="/study">
+            <OraytaLogo size={52} />
+            <LogoText>
+              <AppName>{HE.APP_NAME}</AppName>
+              <Bsd>בס״ד</Bsd>
+            </LogoText>
+          </LogoArea>
+          <ThemeBtn onClick={toggle} title={isDark ? HE.THEME_LIGHT : HE.THEME_DARK}>
+            {isDark ? '☀' : '☾'}
+          </ThemeBtn>
+        </LogoGroup>
 
         <Nav>
           <NavLink href="/study" $active={pathname === '/study' || pathname === '/add'}>{HE.NAV_TALMUD}</NavLink>
           <NavLink href="/rabbis" $active={pathname === '/rabbis'}>{HE.NAV_RABBIS}</NavLink>
           <NavLink href="/quiz" $active={pathname === '/quiz'}>{HE.NAV_LEARN}</NavLink>
           <NavLink href="/about" $active={pathname === '/about'}>{HE.NAV_ABOUT}</NavLink>
-          <ThemeBtn onClick={toggle} title={isDark ? HE.THEME_LIGHT : HE.THEME_DARK}>
-            {isDark ? '☀' : '☾'}
-          </ThemeBtn>
           <LogoutButton onClick={handleLogout}>{HE.NAV_LOGOUT}</LogoutButton>
         </Nav>
       </Header>
