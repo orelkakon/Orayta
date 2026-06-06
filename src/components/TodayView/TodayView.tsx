@@ -55,11 +55,12 @@ export default function TodayView() {
       .catch(() => {});
   }, [dateStr]);
 
-  useEffect(() => {
+  const requestLocation = () => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
       setLocState('denied');
       return;
     }
+    setLocState('loading');
     navigator.geolocation.getCurrentPosition(
       pos => {
         setLocation({
@@ -70,9 +71,11 @@ export default function TodayView() {
         setLocState('granted');
       },
       () => setLocState('denied'),
-      { timeout: 10000, maximumAge: 300000 }
+      { timeout: 10000, maximumAge: 0 }
     );
-  }, []);
+  };
+
+  useEffect(() => { requestLocation(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Container>
@@ -83,8 +86,8 @@ export default function TodayView() {
       </Header>
       <Grid>
         <Col>
-          <ZmanimCard location={location} locState={locState} date={dateStr} />
-          <CompassCard location={location} locState={locState} />
+          <ZmanimCard location={location} locState={locState} date={dateStr} onRetry={requestLocation} />
+          <CompassCard location={location} locState={locState} onRetry={requestLocation} />
         </Col>
         <Col>
           <DafYomiCard />

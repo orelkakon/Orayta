@@ -48,7 +48,25 @@ const InfoRow = styled.div`
 const InfoItem = styled.div`display: flex; flex-direction: column; gap: 2px;`;
 const InfoVal = styled.span`font-size: 1.1rem; font-weight: 700; color: ${theme.colors.primary};`;
 const InfoLabel = styled.span`font-size: 0.75rem; color: ${theme.colors.textMuted};`;
-const Placeholder = styled.div`color: ${theme.colors.textMuted}; font-size: 0.9rem; text-align: center; padding: ${theme.spacing.lg};`;
+const Placeholder = styled.div`
+  color: ${theme.colors.textMuted};
+  font-size: 0.9rem;
+  text-align: center;
+  padding: ${theme.spacing.lg};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${theme.spacing.sm};
+`;
+const DeniedHelp = styled.p`font-size: 0.78rem; color: ${theme.colors.textLight};`;
+const RetryBtn = styled.button`
+  padding: ${theme.spacing.xs} ${theme.spacing.lg};
+  background: ${theme.colors.primary};
+  color: white;
+  border-radius: ${theme.radii.sm};
+  font-size: 0.82rem;
+  &:hover { background: ${theme.colors.primaryLight}; }
+`;
 const PermBtn = styled.button`
   font-size: 0.82rem;
   padding: ${theme.spacing.xs} ${theme.spacing.md};
@@ -60,9 +78,9 @@ const PermBtn = styled.button`
 
 type IOSOrientationEvt = typeof DeviceOrientationEvent & { requestPermission?: () => Promise<'granted' | 'denied'> };
 
-interface Props { location: GeoLocation | null; locState: LocState; }
+interface Props { location: GeoLocation | null; locState: LocState; onRetry: () => void; }
 
-export default function CompassCard({ location, locState }: Props) {
+export default function CompassCard({ location, locState, onRetry }: Props) {
   const [heading, setHeading] = useState<number | null>(null);
   const [iosPermission, setIosPermission] = useState(false);
   const cleanupRef = useRef<() => void>();
@@ -113,7 +131,15 @@ export default function CompassCard({ location, locState }: Props) {
     <Card>
       <CardTitle>{HE.TODAY_COMPASS_TITLE}</CardTitle>
       {locState !== 'granted' || bearing === null ? (
-        <Placeholder>{locState === 'denied' ? HE.TODAY_LOCATION_DENIED : HE.LOADING}</Placeholder>
+        <Placeholder>
+          <span>{locState === 'denied' ? HE.TODAY_LOCATION_DENIED : HE.LOADING}</span>
+          {locState === 'denied' && (
+            <>
+              <DeniedHelp>{HE.TODAY_LOCATION_DENIED_HELP}</DeniedHelp>
+              <RetryBtn onClick={onRetry}>{HE.TODAY_LOCATION_RETRY}</RetryBtn>
+            </>
+          )}
+        </Placeholder>
       ) : (
         <>
           <CompassWrap>

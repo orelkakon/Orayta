@@ -79,15 +79,19 @@ const NextBadge = styled.span`
   margin-inline-end: ${theme.spacing.xs};
 `;
 const Placeholder = styled.div`
-  padding: ${theme.spacing.xl};
+  padding: ${theme.spacing.xl} ${theme.spacing.lg};
   text-align: center;
   color: ${theme.colors.textMuted};
   font-size: 0.9rem;
   line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${theme.spacing.sm};
 `;
-const LocBtn = styled.button`
-  margin-top: ${theme.spacing.sm};
-  padding: ${theme.spacing.xs} ${theme.spacing.md};
+const DeniedHelp = styled.p`font-size: 0.8rem; color: ${theme.colors.textLight}; direction: rtl;`;
+const RetryBtn = styled.button`
+  padding: ${theme.spacing.xs} ${theme.spacing.lg};
   background: ${theme.colors.primary};
   color: white;
   border-radius: ${theme.radii.sm};
@@ -99,9 +103,9 @@ function fmt(iso: string): string {
   return new Date(iso).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
-interface Props { location: GeoLocation | null; locState: LocState; date: string; }
+interface Props { location: GeoLocation | null; locState: LocState; date: string; onRetry: () => void; }
 
-export default function ZmanimCard({ location, locState, date }: Props) {
+export default function ZmanimCard({ location, locState, date, onRetry }: Props) {
   const [times, setTimes] = useState<ZmanimTimes | null>(null);
   const [error, setError] = useState(false);
   const [now, setNow] = useState(new Date());
@@ -131,10 +135,14 @@ export default function ZmanimCard({ location, locState, date }: Props) {
     <Card>
       <CardHeader>{HE.TODAY_ZMANIM_TITLE}</CardHeader>
       {locState === 'denied' && (
-        <Placeholder>{HE.TODAY_LOCATION_DENIED}</Placeholder>
+        <Placeholder>
+          <span>{HE.TODAY_LOCATION_DENIED}</span>
+          <DeniedHelp>{HE.TODAY_LOCATION_DENIED_HELP}</DeniedHelp>
+          <RetryBtn onClick={onRetry}>{HE.TODAY_LOCATION_RETRY}</RetryBtn>
+        </Placeholder>
       )}
       {locState === 'loading' && (
-        <Placeholder>{HE.LOADING}</Placeholder>
+        <Placeholder><span>{HE.LOADING}</span></Placeholder>
       )}
       {locState === 'granted' && error && (
         <Placeholder>{HE.TODAY_ERROR}</Placeholder>
