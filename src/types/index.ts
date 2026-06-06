@@ -48,7 +48,7 @@ export interface QuizStats {
   }>;
 }
 
-export type RabbiCategory = 'torah' | 'neviim' | 'ketuvim' | 'zugot' | 'tannaim' | 'amoraim' | 'geonim' | 'rishonim' | 'acharonim' | 'hasidim' | 'abuchatzira' | 'late';
+export type RabbiCategory = 'torah' | 'neviim' | 'shoftim' | 'melachim' | 'ketuvim' | 'zugot' | 'tannaim' | 'amoraim' | 'geonim' | 'rishonim' | 'acharonim' | 'hasidim' | 'abuchatzira' | 'late';
 
 export interface Rabbi {
   id: string;
