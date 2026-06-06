@@ -72,12 +72,16 @@ interface Props { onAnswered: () => void; }
 
 export default function RabbiQuiz({ onAnswered }: Props) {
   const [allRabbis, setAllRabbis] = useState<Rabbi[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [question, setQuestion] = useState<Rabbi | null>(null);
   const [options, setOptions] = useState<RabbiCategory[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
 
   useEffect(() => {
-    void fetch('/api/rabbis').then(r => r.json()).then(setAllRabbis as (v: unknown) => void);
+    fetch('/api/rabbis')
+      .then(r => r.json())
+      .then(data => { setAllRabbis(data as Rabbi[]); setLoaded(true); })
+      .catch(() => setLoaded(true));
   }, []);
 
   const loadQuestion = useCallback((list: Rabbi[]) => {
@@ -107,8 +111,8 @@ export default function RabbiQuiz({ onAnswered }: Props) {
     return 'faded';
   };
 
-  if (allRabbis.length === 0) return <Wrapper><Empty>{HE.LOADING}</Empty></Wrapper>;
-  if (!question) return <Wrapper><Empty>{HE.QUIZ_RABBI_NOT_ENOUGH}</Empty></Wrapper>;
+  if (!loaded) return <Wrapper><Empty>{HE.LOADING}</Empty></Wrapper>;
+  if (allRabbis.length === 0 || !question) return <Wrapper><Empty>{HE.QUIZ_RABBI_NOT_ENOUGH}</Empty></Wrapper>;
 
   return (
     <Wrapper>

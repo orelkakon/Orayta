@@ -227,16 +227,19 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
   const handleSubmit = async () => {
     if (!question || !input.trim()) return;
     setSubmitting(true);
-    const res = await fetch('/api/quiz/completion', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ citationId: question.id, response: input }),
-    });
-    const data = await res.json() as Result;
-    setResult(data);
-    addStat({ score: data.correct ? 1 : 0, content: question.content.slice(0, 80), mode: 'completion' });
-    setSubmitting(false);
-    onAnswered();
+    try {
+      const res = await fetch('/api/quiz/completion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ citationId: question.id, response: input }),
+      });
+      const data = await res.json() as Result;
+      setResult(data);
+      addStat({ score: data.correct ? 1 : 0, content: question.content.slice(0, 80), mode: 'completion' });
+      onAnswered();
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (noResults) return <Wrapper>{HE.QUIZ_NO_RESULTS}</Wrapper>;

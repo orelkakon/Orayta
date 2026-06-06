@@ -138,8 +138,8 @@ export default function RabbisView() {
 
   const handleDelete = async (rabbi: Rabbi) => {
     if (!window.confirm(HE.RABBI_DELETE_CONFIRM)) return;
-    await fetch(`/api/rabbis/${rabbi.id}`, { method: 'DELETE' });
-    load();
+    const res = await fetch(`/api/rabbis/${rabbi.id}`, { method: 'DELETE' });
+    if (res.ok) load();
   };
 
   return (
@@ -157,7 +157,7 @@ export default function RabbisView() {
           <Title>{HE.RABBIS_TITLE}</Title>
           <Subtitle>
             {HE.RABBIS_SUBTITLE}
-            {rabbis.length > 0 && <CountBadge> · {rabbis.length} רבנים</CountBadge>}
+            {rabbis.length > 0 && <CountBadge> {HE.RABBIS_COUNT(rabbis.length)}</CountBadge>}
           </Subtitle>
         </TitleGroup>
         {role === 'admin' && (

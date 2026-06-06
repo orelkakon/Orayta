@@ -4,10 +4,10 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 export type Role = 'admin' | 'reader';
 
-const RoleContext = createContext<Role>('admin');
+const RoleContext = createContext<Role>('reader');
 
 export function RoleProvider({ children }: { children: React.ReactNode }) {
-  const [role, setRole] = useState<Role>('admin');
+  const [role, setRole] = useState<Role>('reader');
 
   useEffect(() => {
     const match = document.cookie.match(/(?:^|;\s*)role=([^;]+)/);

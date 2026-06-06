@@ -22,10 +22,22 @@ export function addStat(entry: Omit<StatEntry, 'answeredAt'>): void {
   localStorage.setItem(KEY, JSON.stringify(all));
 }
 
+function isValidEntry(e: unknown): e is StatEntry {
+  if (typeof e !== 'object' || e === null) return false;
+  const entry = e as Record<string, unknown>;
+  return (
+    typeof entry.score === 'number' && isFinite(entry.score) &&
+    typeof entry.content === 'string' &&
+    typeof entry.mode === 'string' &&
+    typeof entry.answeredAt === 'string'
+  );
+}
+
 export function getStats(): StatEntry[] {
   if (typeof window === 'undefined') return [];
   try {
-    return JSON.parse(localStorage.getItem(KEY) ?? '[]') as StatEntry[];
+    const raw = JSON.parse(localStorage.getItem(KEY) ?? '[]') as unknown[];
+    return Array.isArray(raw) ? raw.filter(isValidEntry) : [];
   } catch {
     return [];
   }

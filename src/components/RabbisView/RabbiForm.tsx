@@ -45,6 +45,7 @@ const CancelBtn = styled.button`
   border: 2px solid ${theme.colors.border}; border-radius: ${theme.radii.md};
   font-size: 0.95rem; color: ${theme.colors.textMuted};
   &:hover { border-color: ${theme.colors.primaryLight}; color: ${theme.colors.primary}; }`;
+const ErrorMsg = styled.p`font-size: 0.85rem; color: ${theme.colors.error}; text-align: center;`;
 
 interface Props {
   rabbi?: Rabbi;
@@ -68,6 +69,7 @@ export default function RabbiForm({ rabbi, onClose, onSaved }: Props) {
     bio: rabbi?.bio ?? '',
   });
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
 
   const set = (k: keyof FormData, v: string | boolean) =>
     setData(d => ({ ...d, [k]: v }));
@@ -76,6 +78,7 @@ export default function RabbiForm({ rabbi, onClose, onSaved }: Props) {
     e.preventDefault();
     if (!data.name.trim() || !data.bio.trim() || !data.datePeriod.trim()) return;
     setSaving(true);
+    setSaveError(false);
     const payload = {
       name: data.name.trim(),
       fullName: data.fullName.trim() || undefined,
@@ -87,9 +90,15 @@ export default function RabbiForm({ rabbi, onClose, onSaved }: Props) {
     };
     const url = rabbi ? `/api/rabbis/${rabbi.id}` : '/api/rabbis';
     const method = rabbi ? 'PUT' : 'POST';
-    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    setSaving(false);
-    if (res.ok) { onSaved(); onClose(); }
+    try {
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (res.ok) { onSaved(); onClose(); }
+      else setSaveError(true);
+    } catch {
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -133,6 +142,7 @@ export default function RabbiForm({ rabbi, onClose, onSaved }: Props) {
           <Label>{HE.RABBI_FORM_BIO} *</Label>
           <Textarea value={data.bio} onChange={e => set('bio', e.target.value)} required />
         </Field>
+        {saveError && <ErrorMsg>{HE.RABBI_SAVE_ERROR}</ErrorMsg>}
         <BtnRow>
           <CancelBtn type="button" onClick={onClose}>{HE.CANCEL}</CancelBtn>
           <SaveBtn type="submit" disabled={saving}>{saving ? HE.LOADING : HE.RABBI_FORM_SAVE}</SaveBtn>

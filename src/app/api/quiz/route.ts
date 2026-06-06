@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (!citation) return NextResponse.json({ error: 'not found' }, { status: 404 });
+  if (citation.locations.length === 0) return NextResponse.json({ error: 'no locations' }, { status: 404 });
 
   const score = Math.max(...citation.locations.map((loc) => calcScore(body, loc)));
   return NextResponse.json({ score, correctLocations: citation.locations });

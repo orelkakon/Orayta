@@ -30,6 +30,8 @@ export const HE = {
   RABBI_DELETE_CONFIRM: 'האם למחוק את הרב מהמאגר?',
   RABBI_DELETE_SUCCESS: 'הרב נמחק',
   RABBI_SAVE_SUCCESS: 'הרב נשמר בהצלחה',
+  RABBI_SAVE_ERROR: 'שגיאה בשמירה, נסה שנית',
+  RABBIS_COUNT: (n: number) => `· ${n} רבנים`,
 
   LOGIN_TITLE: 'ברוך הבא לאורייתא',
   LOGIN_SUBTITLE: 'הזן קוד כניסה',
