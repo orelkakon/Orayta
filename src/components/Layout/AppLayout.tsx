@@ -90,16 +90,19 @@ const NavLink = styled(Link)<{ $active?: boolean }>`
 `;
 
 const ThemeBtn = styled.button`
-  padding: ${theme.spacing.xs} ${theme.spacing.sm};
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   border-radius: ${theme.radii.md};
   font-size: 1rem;
   color: white;
   opacity: 0.75;
-  transition: all 0.15s;
+  transition: opacity 0.15s;
   line-height: 1;
   &:hover { opacity: 1; background: rgba(255,255,255,0.15); }
-
-  @media (max-width: 600px) { font-size: 0.9rem; }
 `;
 
 const LogoutButton = styled.button`
