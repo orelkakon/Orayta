@@ -24,6 +24,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="he" dir="rtl" className={`${frankRuhl.variable} ${heebo.variable}`}>
+      <head>
+        {/* Prevent dark-mode flash: read localStorage before first paint */}
+        <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem('orayta_theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}` }} />
+      </head>
       <body>
         <ClientProviders>
           {children}

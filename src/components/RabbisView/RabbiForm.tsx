@@ -69,7 +69,7 @@ export default function RabbiForm({ rabbi, onClose, onSaved }: Props) {
     bio: rabbi?.bio ?? '',
   });
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const set = (k: keyof FormData, v: string | boolean) =>
     setData(d => ({ ...d, [k]: v }));
@@ -78,7 +78,7 @@ export default function RabbiForm({ rabbi, onClose, onSaved }: Props) {
     e.preventDefault();
     if (!data.name.trim() || !data.bio.trim() || !data.datePeriod.trim()) return;
     setSaving(true);
-    setSaveError(false);
+    setSaveError(null);
     const payload = {
       name: data.name.trim(),
       fullName: data.fullName.trim() || undefined,
@@ -93,9 +93,10 @@ export default function RabbiForm({ rabbi, onClose, onSaved }: Props) {
     try {
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (res.ok) { onSaved(); onClose(); }
-      else setSaveError(true);
+      else if (res.status === 409) setSaveError(HE.DUPLICATE_RABBI);
+      else setSaveError(HE.RABBI_SAVE_ERROR);
     } catch {
-      setSaveError(true);
+      setSaveError(HE.RABBI_SAVE_ERROR);
     } finally {
       setSaving(false);
     }
@@ -142,7 +143,7 @@ export default function RabbiForm({ rabbi, onClose, onSaved }: Props) {
           <Label>{HE.RABBI_FORM_BIO} *</Label>
           <Textarea value={data.bio} onChange={e => set('bio', e.target.value)} required />
         </Field>
-        {saveError && <ErrorMsg>{HE.RABBI_SAVE_ERROR}</ErrorMsg>}
+        {saveError && <ErrorMsg>{saveError}</ErrorMsg>}
         <BtnRow>
           <CancelBtn type="button" onClick={onClose}>{HE.CANCEL}</CancelBtn>
           <SaveBtn type="submit" disabled={saving}>{saving ? HE.LOADING : HE.RABBI_FORM_SAVE}</SaveBtn>

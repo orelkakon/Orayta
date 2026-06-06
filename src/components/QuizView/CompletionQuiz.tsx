@@ -117,7 +117,7 @@ const SkipBtn = styled.button`
 const ResultBanner = styled.div<{ $correct: boolean }>`
   padding: ${theme.spacing.md};
   border-radius: ${theme.radii.md};
-  background: ${({ $correct }) => ($correct ? '#E8F5E9' : '#FDECEA')};
+  background: ${({ $correct }) => ($correct ? theme.colors.bgSuccess : theme.colors.bgError)};
   color: ${({ $correct }) => ($correct ? theme.colors.success : theme.colors.error)};
   font-weight: 700;
   display: flex;

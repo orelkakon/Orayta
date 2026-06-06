@@ -71,7 +71,7 @@ const DateBadge = styled.div<{ $alive: boolean }>`
   white-space: normal;
   word-break: break-word;
   text-align: right;
-  background: ${({ $alive }) => ($alive ? '#E8F5E9' : theme.colors.surfaceAlt)};
+  background: ${({ $alive }) => ($alive ? theme.colors.bgSuccess : theme.colors.surfaceAlt)};
   color: ${({ $alive }) => ($alive ? theme.colors.success : theme.colors.textMuted)};
   border: 1px solid ${({ $alive }) => ($alive ? '#A5D6A7' : theme.colors.borderLight)};
 `;

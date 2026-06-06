@@ -136,6 +136,14 @@ export const HE = {
     { icon: '📱', text: 'ממשק מותאם למובייל ולמחשב, נגיש מכל מקום' },
   ],
 
+  THEME_DARK: 'מצב לילה',
+  THEME_LIGHT: 'מצב יום',
+
+  DUPLICATE_CITATION_TITLE: 'ציטוט זה כבר קיים במאגר',
+  DUPLICATE_CITATION_FOUND_AT: 'נמצא ב:',
+  DUPLICATE_CITATION_DISMISS: 'הבנתי',
+  DUPLICATE_RABBI: 'רב בשם זה כבר קיים במאגר',
+
   SEDER_ZERAIM: 'סדר זרעים',
   SEDER_MOED: 'סדר מועד',
   SEDER_NASHIM: 'סדר נשים',

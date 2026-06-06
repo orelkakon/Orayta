@@ -39,7 +39,7 @@ const OptionBtn = styled.button<{ $state: State; $color: string }>`
     $state === 'wrong' ? theme.colors.error :
     $state === 'default' ? $color + '55' : theme.colors.borderLight};
   background: ${({ $state }) =>
-    $state === 'correct' ? '#E8F5E9' : $state === 'wrong' ? '#FDECEA' : theme.colors.surface};
+    $state === 'correct' ? theme.colors.bgSuccess : $state === 'wrong' ? theme.colors.bgError : theme.colors.surface};
   color: ${({ $state }) =>
     $state === 'correct' ? theme.colors.success :
     $state === 'wrong' ? theme.colors.error :
@@ -50,7 +50,7 @@ const OptionBtn = styled.button<{ $state: State; $color: string }>`
 `;
 const ResultBanner = styled.div<{ $correct: boolean }>`
   padding: ${theme.spacing.md}; border-radius: ${theme.radii.md};
-  background: ${({ $correct }) => ($correct ? '#E8F5E9' : '#FDECEA')};
+  background: ${({ $correct }) => ($correct ? theme.colors.bgSuccess : theme.colors.bgError)};
   color: ${({ $correct }) => ($correct ? theme.colors.success : theme.colors.error)};
   font-weight: 700;
 `;

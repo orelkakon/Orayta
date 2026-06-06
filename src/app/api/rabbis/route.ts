@@ -27,6 +27,11 @@ export async function POST(request: NextRequest) {
     datePeriod: string; isAlive: boolean; bio: string; category: string;
   };
 
+  const existing = await prisma.rabbi.findFirst({
+    where: { name: { equals: body.name.trim(), mode: 'insensitive' } },
+  });
+  if (existing) return NextResponse.json({ existing }, { status: 409 });
+
   const rabbi = await prisma.rabbi.create({
     data: {
       name: body.name,

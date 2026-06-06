@@ -63,6 +63,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'missing fields' }, { status: 400 });
   }
 
+  const normalized = body.content.trim().replace(/\s+/g, ' ');
+  const existing = await prisma.citation.findFirst({
+    where: { content: { equals: normalized, mode: 'insensitive' } },
+    include: { locations: true },
+  });
+  if (existing) return NextResponse.json({ existing }, { status: 409 });
+
   const citation = await prisma.citation.create({
     data: {
       content: body.content.trim(),

@@ -44,7 +44,7 @@ const HistoryItem = styled.div<{ $score: number }>`
   font-size: 0.78rem;
   padding: ${theme.spacing.xs} ${theme.spacing.sm};
   border-radius: ${theme.radii.sm};
-  background: ${({ $score }) => $score >= 1 ? '#E8F5E9' : $score > 0 ? '#FFF8E1' : '#FDECEA'};
+  background: ${({ $score }) => $score >= 1 ? theme.colors.bgSuccess : $score > 0 ? theme.colors.bgWarning : theme.colors.bgError};
   color: ${({ $score }) => $score >= 1 ? theme.colors.success : $score > 0 ? '#E65100' : theme.colors.error};
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
 `;
@@ -89,7 +89,7 @@ export default function StatsPanel({ statsKey }: Props) {
           <StatRow><span>{HE.QUIZ_TOTAL}</span><Val>{s.total}</Val></StatRow>
           <StatRow>
             <span>{HE.QUIZ_TOTAL_SCORE}</span>
-            <Val>{s.totalScore.toFixed(1)} / {s.total}</Val>
+            <Val>{Math.round(s.totalScore)} / {s.total}</Val>
           </StatRow>
           {s.recent.length > 0 && (
             <>

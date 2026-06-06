@@ -7,6 +7,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import OraytaLogo from '@/components/common/OraytaLogo';
 import { useRole } from '@/components/common/RoleContext';
+import { useDarkMode } from '@/components/common/ThemeContext';
 import { clearStats } from '@/lib/statsStorage';
 
 const Wrapper = styled.div`
@@ -82,6 +83,19 @@ const NavLink = styled(Link)<{ $active?: boolean }>`
   }
 `;
 
+const ThemeBtn = styled.button`
+  padding: ${theme.spacing.xs} ${theme.spacing.sm};
+  border-radius: ${theme.radii.md};
+  font-size: 1rem;
+  color: white;
+  opacity: 0.75;
+  transition: all 0.15s;
+  line-height: 1;
+  &:hover { opacity: 1; background: rgba(255,255,255,0.15); }
+
+  @media (max-width: 600px) { font-size: 0.9rem; }
+`;
+
 const LogoutButton = styled.button`
   padding: ${theme.spacing.xs} ${theme.spacing.sm};
   border-radius: ${theme.radii.md};
@@ -116,6 +130,7 @@ const Main = styled.main`
 function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const role = useRole();
+  const { isDark, toggle } = useDarkMode();
 
   const handleLogout = async () => {
     clearStats();
@@ -139,6 +154,9 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           <NavLink href="/rabbis" $active={pathname === '/rabbis'}>{HE.NAV_RABBIS}</NavLink>
           <NavLink href="/quiz" $active={pathname === '/quiz'}>{HE.NAV_LEARN}</NavLink>
           <NavLink href="/about" $active={pathname === '/about'}>{HE.NAV_ABOUT}</NavLink>
+          <ThemeBtn onClick={toggle} title={isDark ? HE.THEME_LIGHT : HE.THEME_DARK}>
+            {isDark ? '☀' : '☾'}
+          </ThemeBtn>
           <LogoutButton onClick={handleLogout}>{HE.NAV_LOGOUT}</LogoutButton>
         </Nav>
       </Header>
