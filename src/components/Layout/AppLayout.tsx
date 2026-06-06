@@ -165,6 +165,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           <NavLink href="/study" $active={pathname === '/study' || pathname === '/add'}>{HE.NAV_TALMUD}</NavLink>
           <NavLink href="/rabbis" $active={pathname === '/rabbis'}>{HE.NAV_RABBIS}</NavLink>
           <NavLink href="/quiz" $active={pathname === '/quiz'}>{HE.NAV_LEARN}</NavLink>
+          <NavLink href="/today" $active={pathname === '/today'}>{HE.NAV_TODAY}</NavLink>
           <NavLink href="/about" $active={pathname === '/about'}>{HE.NAV_ABOUT}</NavLink>
           <LogoutButton onClick={handleLogout}>{HE.NAV_LOGOUT}</LogoutButton>
         </Nav>
