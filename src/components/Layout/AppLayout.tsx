@@ -9,94 +9,72 @@ import OraytaLogo from '@/components/common/OraytaLogo';
 import { useDarkMode } from '@/components/common/ThemeContext';
 import { clearStats } from '@/lib/statsStorage';
 
-const Wrapper = styled.div`
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-`;
+const Wrapper = styled.div`min-height: 100vh; display: flex; flex-direction: column;`;
 
 const Header = styled.header`
   background: ${theme.colors.primary};
   color: white;
-  padding: ${theme.spacing.sm} ${theme.spacing.xl};
+  padding: ${theme.spacing.sm} ${theme.spacing.lg};
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: ${theme.spacing.sm};
   box-shadow: ${theme.shadows.md};
   position: sticky;
   top: 0;
   z-index: 100;
+  min-width: 0;
+  overflow: hidden;
 
-  @media (max-width: 600px) {
-    padding: ${theme.spacing.sm} ${theme.spacing.md};
+  @media (max-width: 480px) {
+    padding: 6px ${theme.spacing.sm};
   }
 `;
 
 const LogoGroup = styled.div`
   display: flex;
   align-items: center;
-  gap: ${theme.spacing.md};
+  gap: ${theme.spacing.sm};
+  flex-shrink: 0;
 `;
 
 const LogoArea = styled(Link)`
   display: flex;
   align-items: center;
-  gap: ${theme.spacing.sm};
+  gap: 6px;
 `;
 
 const LogoText = styled.div`
   display: flex;
   flex-direction: column;
   line-height: 1.1;
+
+  @media (max-width: 520px) { display: none; }
 `;
 
 const AppName = styled.span`
   font-family: ${theme.fonts.body};
-  font-size: 1.45rem;
+  font-size: 1.2rem;
   font-weight: 700;
 `;
 
 const Bsd = styled.span`
   font-family: ${theme.fonts.body};
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   opacity: 0.7;
   letter-spacing: 0.05em;
   text-align: left;
 `;
 
-const Nav = styled.nav`
-  display: flex;
-  gap: ${theme.spacing.xs};
-  align-items: center;
-`;
-
-const NavLink = styled(Link)<{ $active?: boolean }>`
-  padding: ${theme.spacing.xs} ${theme.spacing.sm};
-  border-radius: ${theme.radii.md};
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: background 0.15s;
-  background: ${({ $active }) => ($active ? 'rgba(255,255,255,0.25)' : 'transparent')};
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.15);
-  }
-
-  @media (max-width: 600px) {
-    font-size: 0.78rem;
-    padding: ${theme.spacing.xs} 6px;
-  }
-`;
-
 const ThemeBtn = styled.button`
-  width: 2rem;
-  height: 2rem;
+  width: 1.75rem;
+  height: 1.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border-radius: ${theme.radii.md};
-  font-size: 1rem;
+  border-radius: ${theme.radii.sm};
+  font-size: 0.9rem;
   color: white;
   opacity: 0.75;
   transition: opacity 0.15s;
@@ -104,22 +82,52 @@ const ThemeBtn = styled.button`
   &:hover { opacity: 1; background: rgba(255,255,255,0.15); }
 `;
 
-const LogoutButton = styled.button`
-  padding: ${theme.spacing.xs} ${theme.spacing.sm};
-  border-radius: ${theme.radii.md};
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: white;
-  opacity: 0.75;
-  transition: all 0.15s;
+const Nav = styled.nav`
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  flex-shrink: 1;
+`;
 
-  &:hover {
-    opacity: 1;
-    background: rgba(255, 255, 255, 0.15);
-  }
+const NavLink = styled(Link)<{ $active?: boolean }>`
+  padding: 5px 7px;
+  border-radius: ${theme.radii.sm};
+  font-size: 0.82rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.15s;
+  background: ${({ $active }) => ($active ? 'rgba(255,255,255,0.25)' : 'transparent')};
+  &:hover { background: rgba(255,255,255,0.15); }
 
   @media (max-width: 600px) {
-    font-size: 0.78rem;
+    font-size: 0.74rem;
+    padding: 4px 5px;
+  }
+  @media (max-width: 400px) {
+    font-size: 0.68rem;
+    padding: 3px 4px;
+  }
+`;
+
+const LogoutButton = styled.button`
+  padding: 5px 7px;
+  border-radius: ${theme.radii.sm};
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: white;
+  opacity: 0.7;
+  white-space: nowrap;
+  transition: all 0.15s;
+  &:hover { opacity: 1; background: rgba(255,255,255,0.15); }
+
+  @media (max-width: 600px) {
+    font-size: 0.74rem;
+    padding: 4px 5px;
+  }
+  @media (max-width: 400px) {
+    font-size: 0.68rem;
+    padding: 3px 4px;
   }
 `;
 
@@ -130,9 +138,7 @@ const Main = styled.main`
   margin: 0 auto;
   padding: ${theme.spacing.xl};
 
-  @media (max-width: 600px) {
-    padding: ${theme.spacing.md};
-  }
+  @media (max-width: 600px) { padding: ${theme.spacing.md}; }
 `;
 
 function AppLayoutInner({ children }: { children: React.ReactNode }) {
@@ -150,7 +156,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
       <Header>
         <LogoGroup>
           <LogoArea href="/study">
-            <OraytaLogo size={52} />
+            <OraytaLogo size={36} />
             <LogoText>
               <AppName>{HE.APP_NAME}</AppName>
               <Bsd>בס״ד</Bsd>
@@ -162,11 +168,11 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
         </LogoGroup>
 
         <Nav>
-          <NavLink href="/study" $active={pathname === '/study' || pathname === '/add'}>{HE.NAV_TALMUD}</NavLink>
+          <NavLink href="/study"  $active={pathname === '/study' || pathname === '/add'}>{HE.NAV_TALMUD}</NavLink>
           <NavLink href="/rabbis" $active={pathname === '/rabbis'}>{HE.NAV_RABBIS}</NavLink>
-          <NavLink href="/quiz" $active={pathname === '/quiz'}>{HE.NAV_LEARN}</NavLink>
-          <NavLink href="/today" $active={pathname === '/today'}>{HE.NAV_TODAY}</NavLink>
-          <NavLink href="/about" $active={pathname === '/about'}>{HE.NAV_ABOUT}</NavLink>
+          <NavLink href="/quiz"   $active={pathname === '/quiz'}>{HE.NAV_LEARN}</NavLink>
+          <NavLink href="/today"  $active={pathname === '/today'}>{HE.NAV_TODAY}</NavLink>
+          <NavLink href="/about"  $active={pathname === '/about'}>{HE.NAV_ABOUT}</NavLink>
           <LogoutButton onClick={handleLogout}>{HE.NAV_LOGOUT}</LogoutButton>
         </Nav>
       </Header>
