@@ -331,32 +331,55 @@ const HistoryItem = styled.div<{ $score: number }>`
   min-width: 0;
 `;
 
-const TabRow = styled.div`
-  display: flex;
-  gap: ${theme.spacing.xs};
-  overflow-x: auto;
-  scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
-  border-bottom: 2px solid ${theme.colors.borderLight};
-  padding-bottom: 0;
+const ModeGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: ${theme.spacing.sm};
+
+  @media (max-width: 760px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media (max-width: 380px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
 `;
 
-const TabButton = styled.button<{ $active?: boolean }>`
-  flex-shrink: 0;
-  padding: ${theme.spacing.sm} ${theme.spacing.lg};
-  border-radius: ${theme.radii.md} ${theme.radii.md} 0 0;
-  font-size: 0.9rem;
-  font-weight: 600;
-  white-space: nowrap;
-  border-bottom: 2px solid ${({ $active }) => ($active ? theme.colors.primary : 'transparent')};
+const ModeButton = styled.button<{ $active?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  padding: ${theme.spacing.sm} ${theme.spacing.xs};
+  border-radius: ${theme.radii.md};
+  border: 2px solid ${({ $active }) => ($active ? theme.colors.primary : theme.colors.borderLight)};
+  background: ${({ $active }) => ($active ? theme.colors.surfaceAlt : theme.colors.surface)};
+  box-shadow: ${({ $active }) => ($active ? theme.shadows.md : theme.shadows.sm)};
   color: ${({ $active }) => ($active ? theme.colors.primary : theme.colors.textMuted)};
-  margin-bottom: -2px;
   transition: all 0.15s;
-  &:hover { color: ${theme.colors.primary}; }
 
-  @media (max-width: 600px) {
-    padding: ${theme.spacing.xs} ${theme.spacing.md};
-    font-size: 0.82rem;
+  &:hover {
+    border-color: ${theme.colors.primaryLight};
+    color: ${theme.colors.primary};
+    transform: translateY(-1px);
+  }
+`;
+
+const ModeIcon = styled.span`
+  font-size: 1.3rem;
+  line-height: 1;
+`;
+
+const ModeLabel = styled.span`
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+  word-break: break-word;
+
+  @media (max-width: 380px) {
+    font-size: 0.7rem;
   }
 `;
 
@@ -462,26 +485,32 @@ export default function QuizView() {
         <Title>{HE.QUIZ_TITLE}</Title>
       </TitleRow>
 
-      <TabRow>
-        <TabButton $active={quizMode === 'classic'} onClick={() => handleModeSwitch('classic')}>
-          {HE.QUIZ_MODE_CLASSIC}
-        </TabButton>
-        <TabButton $active={quizMode === 'multiple'} onClick={() => handleModeSwitch('multiple')}>
-          {HE.QUIZ_MODE_MULTIPLE}
-        </TabButton>
-        <TabButton $active={quizMode === 'completion'} onClick={() => handleModeSwitch('completion')}>
-          {HE.QUIZ_MODE_COMPLETION}
-        </TabButton>
-        <TabButton $active={quizMode === 'rabbi'} onClick={() => handleModeSwitch('rabbi')}>
-          {HE.QUIZ_MODE_RABBI}
-        </TabButton>
-        <TabButton $active={quizMode === 'gematria'} onClick={() => handleModeSwitch('gematria')}>
-          {HE.QUIZ_MODE_GEMATRIA}
-        </TabButton>
-        <TabButton $active={quizMode === 'books'} onClick={() => handleModeSwitch('books')}>
-          {HE.QUIZ_MODE_BOOKS}
-        </TabButton>
-      </TabRow>
+      <ModeGrid>
+        <ModeButton $active={quizMode === 'classic'} onClick={() => handleModeSwitch('classic')}>
+          <ModeIcon>🎯</ModeIcon>
+          <ModeLabel>{HE.QUIZ_MODE_CLASSIC}</ModeLabel>
+        </ModeButton>
+        <ModeButton $active={quizMode === 'multiple'} onClick={() => handleModeSwitch('multiple')}>
+          <ModeIcon>🔤</ModeIcon>
+          <ModeLabel>{HE.QUIZ_MODE_MULTIPLE}</ModeLabel>
+        </ModeButton>
+        <ModeButton $active={quizMode === 'completion'} onClick={() => handleModeSwitch('completion')}>
+          <ModeIcon>✏️</ModeIcon>
+          <ModeLabel>{HE.QUIZ_MODE_COMPLETION}</ModeLabel>
+        </ModeButton>
+        <ModeButton $active={quizMode === 'rabbi'} onClick={() => handleModeSwitch('rabbi')}>
+          <ModeIcon>🧔</ModeIcon>
+          <ModeLabel>{HE.QUIZ_MODE_RABBI}</ModeLabel>
+        </ModeButton>
+        <ModeButton $active={quizMode === 'gematria'} onClick={() => handleModeSwitch('gematria')}>
+          <ModeIcon>🔢</ModeIcon>
+          <ModeLabel>{HE.QUIZ_MODE_GEMATRIA}</ModeLabel>
+        </ModeButton>
+        <ModeButton $active={quizMode === 'books'} onClick={() => handleModeSwitch('books')}>
+          <ModeIcon>📚</ModeIcon>
+          <ModeLabel>{HE.QUIZ_MODE_BOOKS}</ModeLabel>
+        </ModeButton>
+      </ModeGrid>
 
       <FilterBar style={{ display: quizMode === 'rabbi' || quizMode === 'gematria' || quizMode === 'books' ? 'none' : undefined }}>
         <FilterLabel>{HE.QUIZ_FILTER_TITLE}</FilterLabel>
