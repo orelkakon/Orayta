@@ -333,8 +333,13 @@ const HistoryItem = styled.div<{ $score: number }>`
 const TabRow = styled.div`
   display: flex;
   gap: ${theme.spacing.xs};
+  flex-wrap: wrap;
   border-bottom: 2px solid ${theme.colors.borderLight};
   padding-bottom: 0;
+
+  @media (max-width: 600px) {
+    gap: 2px;
+  }
 `;
 
 const TabButton = styled.button<{ $active?: boolean }>`
@@ -342,11 +347,22 @@ const TabButton = styled.button<{ $active?: boolean }>`
   border-radius: ${theme.radii.md} ${theme.radii.md} 0 0;
   font-size: 0.9rem;
   font-weight: 600;
+  white-space: nowrap;
   border-bottom: 2px solid ${({ $active }) => ($active ? theme.colors.primary : 'transparent')};
   color: ${({ $active }) => ($active ? theme.colors.primary : theme.colors.textMuted)};
   margin-bottom: -2px;
   transition: all 0.15s;
   &:hover { color: ${theme.colors.primary}; }
+
+  @media (max-width: 600px) {
+    padding: ${theme.spacing.xs} ${theme.spacing.sm};
+    font-size: 0.78rem;
+  }
+
+  @media (max-width: 400px) {
+    padding: ${theme.spacing.xs} 6px;
+    font-size: 0.7rem;
+  }
 `;
 
 interface AnswerResult {
