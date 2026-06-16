@@ -22,7 +22,31 @@
       "Bash(mkdir -p /Users/user/Desktop/Claude/src/app/rabbis)",
       "Bash(mkdir -p /Users/user/Desktop/Claude/src/components/RabbisView)",
       "Bash(mkdir -p /Users/user/Desktop/Claude/src/components/TalmudView)",
-      "Bash(npx ts-node *)"
+      "Bash(npx ts-node *)",
+      "Bash(curl -s \"https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=on&nx=on&mf=on&ss=on&omer=on&year=2026&month=6&gy=gregorian\")",
+      "Bash(curl -s \"https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=on&nx=on&mf=on&ss=on&omer=on&year=2026&month=6&gy=gregorian&lg=he\")",
+      "Bash(curl -s \"https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=on&nx=on&mf=on&ss=on&omer=on&year=2026&lg=he\")",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s \"https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=on&nx=on&mf=on&ss=on&omer=on&year=2026&month=9&gy=gregorian\")",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s \"https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=on&nx=on&mf=on&ss=on&omer=on&year=2026&month=9&gy=gregorian&lg=he\")",
+      "Read(//private/tmp/**)",
+      "Bash(rm -f cookies.txt)",
+      "Bash(curl -s -c cookies.txt -X POST http://localhost:3000/api/auth/login -H \"Content-Type: application/json\" -d '{\"passcode\":\"1998\"}' -i)",
+      "Bash(curl -s http://localhost:3000/api/gematria -b /tmp/cookies.txt)",
+      "Bash(curl -s http://localhost:3000/api/quiz/gematria -b /tmp/cookies.txt)",
+      "Bash(curl -s -X POST http://localhost:3000/api/quiz/gematria -b /tmp/cookies.txt -H \"Content-Type: application/json\" -d '{\"value\":18,\"response\":\"חי\"}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/quiz/gematria -b /tmp/cookies.txt -H \"Content-Type: application/json\" -d '{\"value\":18,\"response\":\"זזז\"}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/quiz/gematria -b /tmp/cookies.txt -H \"Content-Type: application/json\" -d '{\"value\":52,\"response\":\"בֵּן\"}')",
+      "Bash(curl -s http://localhost:3000/gematria -b /tmp/cookies.txt)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/today -b /tmp/cookies.txt)",
+      "Bash(curl -s http://localhost:3000/today -b /tmp/cookies.txt)",
+      "Read(//tmp/**)",
+      "Bash(curl -s -b /tmp/cookies.txt -X POST http://localhost:3000/api/quiz/gematria -H 'Content-Type: application/json' -d '{\"value\":52}')",
+      "Bash(curl -s -b /tmp/cookies.txt -X POST http://localhost:3000/api/quiz/gematria -H 'Content-Type: application/json' -d '{\"value\":99999,\"response\":\"x\"}')",
+      "Bash(grep -v \"^$\")",
+      "Bash(gh pr *)",
+      "Bash(git rm *)"
     ]
   }
 }

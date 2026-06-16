@@ -39,3 +39,6 @@ next-env.d.ts
 
 # prisma
 /prisma/migrations
+
+# claude code runtime lock files
+.claude/scheduled_tasks.lock
