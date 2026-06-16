@@ -67,3 +67,10 @@ export interface CitationFilters {
   seder?: string;
   search?: string;
 }
+
+export interface Gematria {
+  id: string;
+  word: string;
+  value: number;
+  createdAt: string;
+}

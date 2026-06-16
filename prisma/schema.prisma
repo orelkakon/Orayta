@@ -44,6 +44,15 @@ model Rabbi {
   @@index([sortYear])
 }
 
+model Gematria {
+  id        String   @id @default(cuid())
+  word      String
+  value     Int
+  createdAt DateTime @default(now())
+
+  @@index([value])
+}
+
 model QuizResult {
   id         String   @id @default(cuid())
   citationId String

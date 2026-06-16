@@ -11,6 +11,7 @@ import { addStat } from '@/lib/statsStorage';
 import MultipleChoiceQuiz from './MultipleChoiceQuiz';
 import CompletionQuiz from './CompletionQuiz';
 import RabbiQuiz from './RabbiQuiz';
+import GematriaQuiz from './GematriaQuiz';
 import StatsPanel from './StatsPanel';
 
 const fadeIn = keyframes`
@@ -365,7 +366,7 @@ function scoreLabel(score: number) {
   return HE.QUIZ_WRONG;
 }
 
-type QuizMode = 'classic' | 'multiple' | 'completion' | 'rabbi';
+type QuizMode = 'classic' | 'multiple' | 'completion' | 'rabbi' | 'gematria';
 
 export default function QuizView() {
   const [quizMode, setQuizMode] = useState<QuizMode>('classic');
@@ -463,9 +464,12 @@ export default function QuizView() {
         <TabButton $active={quizMode === 'rabbi'} onClick={() => handleModeSwitch('rabbi')}>
           {HE.QUIZ_MODE_RABBI}
         </TabButton>
+        <TabButton $active={quizMode === 'gematria'} onClick={() => handleModeSwitch('gematria')}>
+          {HE.QUIZ_MODE_GEMATRIA}
+        </TabButton>
       </TabRow>
 
-      <FilterBar style={{ display: quizMode === 'rabbi' ? 'none' : undefined }}>
+      <FilterBar style={{ display: quizMode === 'rabbi' || quizMode === 'gematria' ? 'none' : undefined }}>
         <FilterLabel>{HE.QUIZ_FILTER_TITLE}</FilterLabel>
         <FilterSelect value={filterSeder} onChange={(e) => handleFilterSederChange(e.target.value)}>
           <option value="">{HE.QUIZ_FILTER_ALL}</option>
@@ -489,6 +493,8 @@ export default function QuizView() {
           />
         ) : quizMode === 'rabbi' ? (
           <RabbiQuiz onAnswered={bumpStats} />
+        ) : quizMode === 'gematria' ? (
+          <GematriaQuiz onAnswered={bumpStats} />
         ) : quizMode === 'completion' ? (
           <CompletionQuiz
             filterSeder={filterSeder}

@@ -4,7 +4,7 @@ export interface StatEntry {
   score: number;
   answeredAt: string;
   content: string;
-  mode: 'classic' | 'multiple' | 'completion' | 'rabbi';
+  mode: 'classic' | 'multiple' | 'completion' | 'rabbi' | 'gematria';
 }
 
 export interface StatsSummary {

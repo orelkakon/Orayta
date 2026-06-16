@@ -62,7 +62,6 @@ const NameHe = styled.span`
   color: ${theme.colors.text};
   overflow-wrap: break-word;
 `;
-const NameEn = styled.span`font-size: 0.8rem; color: ${theme.colors.textLight};`;
 const Memo = styled.span`font-size: 0.8rem; color: ${theme.colors.textMuted};`;
 const Badge = styled.span<{ $cat: string }>`
   flex-shrink: 0;
@@ -93,7 +92,7 @@ export default function EventsCard({ date }: Props) {
   useEffect(() => {
     const d = new Date(date + 'T12:00:00');
     const year = d.getFullYear(), month = d.getMonth() + 1;
-    fetch(`https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=on&nx=on&mf=on&ss=on&omer=on&year=${year}&month=${month}&gy=gregorian`)
+    fetch(`https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=on&nx=on&mf=on&ss=on&omer=on&year=${year}&month=${month}&gy=gregorian&lg=he`)
       .then(r => r.json())
       .then((data: HebResp) => {
         const today = (data.items ?? []).filter(
@@ -118,7 +117,6 @@ export default function EventsCard({ date }: Props) {
           <EventRow key={i}>
             <EventName>
               <NameHe>{ev.hebrew ?? ev.title}</NameHe>
-              {ev.hebrew && ev.hebrew !== ev.title && <NameEn>{ev.title}</NameEn>}
               {ev.memo && <Memo>{ev.memo}</Memo>}
             </EventName>
             <Badge $cat={ev.category}>

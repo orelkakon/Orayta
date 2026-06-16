@@ -55,7 +55,6 @@ const ItemValue = styled.span`
   font-weight: 700;
   color: ${theme.colors.primary};
 `;
-const ItemEn = styled.span`font-size: 0.82rem; color: ${theme.colors.textLight};`;
 const ParashaRow = styled.div`
   padding: ${theme.spacing.md} ${theme.spacing.lg};
   border-top: 1px solid ${theme.colors.borderLight};
@@ -78,7 +77,7 @@ const Placeholder = styled.div`
 `;
 
 export default function DafYomiCard() {
-  const [items, setItems] = useState<{ label: string; he: string; en: string; url: string }[]>([]);
+  const [items, setItems] = useState<{ label: string; he: string; url: string }[]>([]);
   const [parasha, setParasha] = useState<{ en: string; he: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -92,7 +91,7 @@ export default function DafYomiCard() {
           const label = getLabel(ci.title.en);
           if (!label || seen.has(label)) return [];
           seen.add(label);
-          return [{ label, he: ci.displayValue.he, en: ci.displayValue.en, url: `https://www.sefaria.org/${ci.url}` }];
+          return [{ label, he: ci.displayValue.he, url: `https://www.sefaria.org/${ci.url}` }];
         });
         setItems(filtered);
         if (d.parasha) setParasha(d.parasha);
@@ -111,7 +110,6 @@ export default function DafYomiCard() {
           <Item key={it.label} href={it.url} target="_blank" rel="noopener noreferrer">
             <ItemType>{it.label}</ItemType>
             <ItemValue>{it.he}</ItemValue>
-            <ItemEn>{it.en}</ItemEn>
           </Item>
         ))}
         {!loading && !error && parasha && (
