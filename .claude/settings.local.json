@@ -46,7 +46,21 @@
       "Bash(curl -s -b /tmp/cookies.txt -X POST http://localhost:3000/api/quiz/gematria -H 'Content-Type: application/json' -d '{\"value\":99999,\"response\":\"x\"}')",
       "Bash(grep -v \"^$\")",
       "Bash(gh pr *)",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000)",
+      "Bash(curl -s -c /tmp/cookies2.txt -X POST http://localhost:3001/api/auth/login -H \"Content-Type: application/json\" -d '{\"passcode\":\"1998\"}' -i)",
+      "Bash(curl -s http://localhost:3001/api/books -b /tmp/cookies2.txt)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(len\\(d\\)\\); print\\(d[0]\\); print\\(d[-1]\\)\")",
+      "Bash(curl -s -b /tmp/cookies2.txt -X POST http://localhost:3001/api/books -H \"Content-Type: application/json\" -d '{\"title\":\"ספר בדיקה\",\"author\":\"מחבר בדיקה\"}')",
+      "Bash(curl -s -w \" [status:%{http_code}]\\\\n\" -b /tmp/cookies2.txt -X POST http://localhost:3001/api/books -H \"Content-Type: application/json\" -d '{\"title\":\"ספר בדיקה\",\"author\":\"אחר\"}')",
+      "Bash(curl -s http://localhost:3001/books -b /tmp/cookies2.txt)",
+      "Bash(curl -s http://localhost:3001/quiz -b /tmp/cookies2.txt)",
+      "Bash(curl -s -w \" [status:%{http_code}]\\\\n\" http://localhost:3001/api/books -o /dev/null)",
+      "Bash(curl -s -w \" [status:%{http_code}]\\\\n\" http://localhost:3001/api/rabbis -o /dev/null)",
+      "Bash(curl -s -c /tmp/cookies_reader.txt -X POST http://localhost:3001/api/auth/login -H \"Content-Type: application/json\" -d '{\"passcode\":\"1111\"}' -o /dev/null -w \"login:%{http_code}\\\\n\")",
+      "Bash(curl -s -w \" [GET status:%{http_code}]\\\\n\" http://localhost:3001/api/books -b /tmp/cookies_reader.txt -o /dev/null)",
+      "Bash(curl -s -w \" [POST status:%{http_code}]\\\\n\" -X POST http://localhost:3001/api/books -b /tmp/cookies_reader.txt -H \"Content-Type: application/json\" -d '{\"title\":\"x\",\"author\":\"y\"}')"
     ]
   }
 }

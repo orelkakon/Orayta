@@ -12,6 +12,7 @@ import MultipleChoiceQuiz from './MultipleChoiceQuiz';
 import CompletionQuiz from './CompletionQuiz';
 import RabbiQuiz from './RabbiQuiz';
 import GematriaQuiz from './GematriaQuiz';
+import BooksQuiz from './BooksQuiz';
 import StatsPanel from './StatsPanel';
 
 const fadeIn = keyframes`
@@ -333,16 +334,15 @@ const HistoryItem = styled.div<{ $score: number }>`
 const TabRow = styled.div`
   display: flex;
   gap: ${theme.spacing.xs};
-  flex-wrap: wrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
   border-bottom: 2px solid ${theme.colors.borderLight};
   padding-bottom: 0;
-
-  @media (max-width: 600px) {
-    gap: 2px;
-  }
 `;
 
 const TabButton = styled.button<{ $active?: boolean }>`
+  flex-shrink: 0;
   padding: ${theme.spacing.sm} ${theme.spacing.lg};
   border-radius: ${theme.radii.md} ${theme.radii.md} 0 0;
   font-size: 0.9rem;
@@ -355,13 +355,8 @@ const TabButton = styled.button<{ $active?: boolean }>`
   &:hover { color: ${theme.colors.primary}; }
 
   @media (max-width: 600px) {
-    padding: ${theme.spacing.xs} ${theme.spacing.sm};
-    font-size: 0.78rem;
-  }
-
-  @media (max-width: 400px) {
-    padding: ${theme.spacing.xs} 6px;
-    font-size: 0.7rem;
+    padding: ${theme.spacing.xs} ${theme.spacing.md};
+    font-size: 0.82rem;
   }
 `;
 
@@ -382,7 +377,7 @@ function scoreLabel(score: number) {
   return HE.QUIZ_WRONG;
 }
 
-type QuizMode = 'classic' | 'multiple' | 'completion' | 'rabbi' | 'gematria';
+type QuizMode = 'classic' | 'multiple' | 'completion' | 'rabbi' | 'gematria' | 'books';
 
 export default function QuizView() {
   const [quizMode, setQuizMode] = useState<QuizMode>('classic');
@@ -483,9 +478,12 @@ export default function QuizView() {
         <TabButton $active={quizMode === 'gematria'} onClick={() => handleModeSwitch('gematria')}>
           {HE.QUIZ_MODE_GEMATRIA}
         </TabButton>
+        <TabButton $active={quizMode === 'books'} onClick={() => handleModeSwitch('books')}>
+          {HE.QUIZ_MODE_BOOKS}
+        </TabButton>
       </TabRow>
 
-      <FilterBar style={{ display: quizMode === 'rabbi' || quizMode === 'gematria' ? 'none' : undefined }}>
+      <FilterBar style={{ display: quizMode === 'rabbi' || quizMode === 'gematria' || quizMode === 'books' ? 'none' : undefined }}>
         <FilterLabel>{HE.QUIZ_FILTER_TITLE}</FilterLabel>
         <FilterSelect value={filterSeder} onChange={(e) => handleFilterSederChange(e.target.value)}>
           <option value="">{HE.QUIZ_FILTER_ALL}</option>
@@ -511,6 +509,8 @@ export default function QuizView() {
           <RabbiQuiz onAnswered={bumpStats} />
         ) : quizMode === 'gematria' ? (
           <GematriaQuiz onAnswered={bumpStats} />
+        ) : quizMode === 'books' ? (
+          <BooksQuiz onAnswered={bumpStats} />
         ) : quizMode === 'completion' ? (
           <CompletionQuiz
             filterSeder={filterSeder}

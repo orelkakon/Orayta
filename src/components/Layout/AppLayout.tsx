@@ -88,6 +88,9 @@ const Nav = styled.nav`
   gap: 2px;
   min-width: 0;
   flex-shrink: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
 `;
 
 const NavLink = styled(Link)<{ $active?: boolean }>`
@@ -96,6 +99,7 @@ const NavLink = styled(Link)<{ $active?: boolean }>`
   font-size: 0.82rem;
   font-weight: 500;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: background 0.15s;
   background: ${({ $active }) => ($active ? 'rgba(255,255,255,0.25)' : 'transparent')};
   &:hover { background: rgba(255,255,255,0.15); }
@@ -118,6 +122,7 @@ const LogoutButton = styled.button`
   color: white;
   opacity: 0.7;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.15s;
   &:hover { opacity: 1; background: rgba(255,255,255,0.15); }
 
@@ -170,6 +175,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
         <Nav>
           <NavLink href="/study"  $active={pathname === '/study' || pathname === '/add'}>{HE.NAV_TALMUD}</NavLink>
           <NavLink href="/rabbis" $active={pathname === '/rabbis'}>{HE.NAV_RABBIS}</NavLink>
+          <NavLink href="/books" $active={pathname === '/books'}>{HE.NAV_BOOKS}</NavLink>
           <NavLink href="/gematria" $active={pathname === '/gematria'}>{HE.NAV_GEMATRIA}</NavLink>
           <NavLink href="/quiz"   $active={pathname === '/quiz'}>{HE.NAV_LEARN}</NavLink>
           <NavLink href="/today"  $active={pathname === '/today'}>{HE.NAV_TODAY}</NavLink>

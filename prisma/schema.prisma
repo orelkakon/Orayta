@@ -53,6 +53,15 @@ model Gematria {
   @@index([value])
 }
 
+model Book {
+  id        String   @id @default(cuid())
+  title     String
+  author    String
+  createdAt DateTime @default(now())
+
+  @@index([author])
+}
+
 model QuizResult {
   id         String   @id @default(cuid())
   citationId String
