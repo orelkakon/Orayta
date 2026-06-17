@@ -8,6 +8,7 @@ import { Gematria } from '@/types';
 import { useRole } from '@/components/common/RoleContext';
 import GematriaCard from './GematriaCard';
 import GematriaForm from './GematriaForm';
+import GematriaConnectionGroup from './GematriaConnectionGroup';
 
 const Container = styled.div`
   display: flex;
@@ -64,12 +65,9 @@ const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: ${theme.spacing.lg};
-  @media (max-width: 700px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  @media (max-width: 420px) {
-    grid-template-columns: 1fr;
-  }
+  align-items: start;
+  @media (max-width: 700px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 420px) { grid-template-columns: 1fr; }
 `;
 
 const Empty = styled.div`
@@ -97,6 +95,19 @@ export default function GematriaView() {
     if (!q) return items;
     return items.filter(g => g.word.includes(q) || String(g.value).includes(q));
   }, [items, search]);
+
+  // Group by gematria value, sorted by value ascending
+  const groups = useMemo(() => {
+    const map = new Map<number, Gematria[]>();
+    for (const g of filtered) {
+      const list = map.get(g.value) ?? [];
+      list.push(g);
+      map.set(g.value, list);
+    }
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([value, group]) => ({ value, group }));
+  }, [filtered]);
 
   const handleDelete = async (item: Gematria) => {
     if (!window.confirm(HE.GEMATRIA_DELETE_CONFIRM)) return;
@@ -134,17 +145,26 @@ export default function GematriaView() {
       />
 
       <Grid>
-        {filtered.length === 0
-          ? <Empty>{HE.GEMATRIA_EMPTY}</Empty>
-          : filtered.map(g => (
-              <GematriaCard
-                key={g.id}
-                gematria={g}
-                onEdit={role === 'admin' ? () => setEditItem(g) : undefined}
-                onDelete={role === 'admin' ? () => handleDelete(g) : undefined}
-              />
-            ))
-        }
+        {filtered.length === 0 ? (
+          <Empty>{HE.GEMATRIA_EMPTY}</Empty>
+        ) : groups.map(({ value, group }) =>
+          group.length >= 2 ? (
+            <GematriaConnectionGroup
+              key={value}
+              value={value}
+              items={group}
+              onEdit={role === 'admin' ? (g) => setEditItem(g) : undefined}
+              onDelete={role === 'admin' ? handleDelete : undefined}
+            />
+          ) : (
+            <GematriaCard
+              key={group[0].id}
+              gematria={group[0]}
+              onEdit={role === 'admin' ? () => setEditItem(group[0]) : undefined}
+              onDelete={role === 'admin' ? () => handleDelete(group[0]) : undefined}
+            />
+          )
+        )}
       </Grid>
     </Container>
   );

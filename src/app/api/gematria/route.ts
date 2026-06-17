@@ -5,7 +5,7 @@ import { calculateGematria, normalizeHebrewWord } from '@/lib/gematria';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const items = await prisma.gematria.findMany({ orderBy: { word: 'asc' } });
+  const items = await prisma.gematria.findMany({ orderBy: { value: 'asc' } });
   return NextResponse.json(items);
 }
 

@@ -64,15 +64,16 @@ const DeleteBtn = styled.button`
 
 interface Props {
   gematria: Gematria;
+  hideValue?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
 }
 
-export default function GematriaCard({ gematria, onEdit, onDelete }: Props) {
+export default function GematriaCard({ gematria, hideValue, onEdit, onDelete }: Props) {
   return (
     <Card>
       <Word>{gematria.word}</Word>
-      <ValueBadge>{HE.GEMATRIA_VALUE_LABEL}: {gematria.value}</ValueBadge>
+      {!hideValue && <ValueBadge>{HE.GEMATRIA_VALUE_LABEL}: {gematria.value}</ValueBadge>}
       {(onEdit || onDelete) && (
         <AdminRow>
           {onEdit && <EditBtn onClick={onEdit}>{HE.STUDY_EDIT}</EditBtn>}

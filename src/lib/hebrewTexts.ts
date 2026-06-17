@@ -67,6 +67,7 @@ export const HE = {
   GEMATRIA_EMPTY: 'לא נמצאו גימטריות',
   GEMATRIA_COUNT: (n: number) => `· ${n} גימטריות`,
   GEMATRIA_VALUE_LABEL: 'ערך',
+  GEMATRIA_EQUAL_LABEL: 'ערך שווה',
   DUPLICATE_GEMATRIA: 'מילה זו כבר קיימת במאגר',
 
   LOGIN_TITLE: 'ברוך הבא לאורייתא',
