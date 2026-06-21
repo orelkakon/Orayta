@@ -120,6 +120,7 @@ export default function GematriaView() {
       {(addOpen || editItem) && (
         <GematriaForm
           gematria={editItem ?? undefined}
+          allItems={items}
           onClose={() => { setAddOpen(false); setEditItem(null); }}
           onSaved={load}
         />

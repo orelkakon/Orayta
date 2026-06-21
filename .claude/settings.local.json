@@ -60,7 +60,9 @@
       "Bash(curl -s -w \" [status:%{http_code}]\\\\n\" http://localhost:3001/api/rabbis -o /dev/null)",
       "Bash(curl -s -c /tmp/cookies_reader.txt -X POST http://localhost:3001/api/auth/login -H \"Content-Type: application/json\" -d '{\"passcode\":\"1111\"}' -o /dev/null -w \"login:%{http_code}\\\\n\")",
       "Bash(curl -s -w \" [GET status:%{http_code}]\\\\n\" http://localhost:3001/api/books -b /tmp/cookies_reader.txt -o /dev/null)",
-      "Bash(curl -s -w \" [POST status:%{http_code}]\\\\n\" -X POST http://localhost:3001/api/books -b /tmp/cookies_reader.txt -H \"Content-Type: application/json\" -d '{\"title\":\"x\",\"author\":\"y\"}')"
+      "Bash(curl -s -w \" [POST status:%{http_code}]\\\\n\" -X POST http://localhost:3001/api/books -b /tmp/cookies_reader.txt -H \"Content-Type: application/json\" -d '{\"title\":\"x\",\"author\":\"y\"}')",
+      "Bash(curl -s -c /tmp/cookies3.txt -X POST http://localhost:3001/api/auth/login -H \"Content-Type: application/json\" -d '{\"passcode\":\"1998\"}' -o /dev/null -w \"login:%{http_code}\\\\n\")",
+      "Bash(curl -s http://localhost:3001/quiz -b /tmp/cookies3.txt -o /tmp/quiz_page.html -w \"page:%{http_code}\\\\n\")"
     ]
   }
 }

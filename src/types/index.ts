@@ -79,5 +79,6 @@ export interface Book {
   id: string;
   title: string;
   author: string;
+  rabbiId: string | null;
   createdAt: string;
 }

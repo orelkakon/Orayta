@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -111,6 +112,38 @@ const Bio = styled.p`
   word-break: break-word;
 `;
 
+const BooksSection = styled.div`
+  border-top: 1px solid ${theme.colors.borderLight};
+  margin-top: ${theme.spacing.xs};
+  padding-top: ${theme.spacing.xs};
+`;
+
+const BooksToggle = styled.button`
+  font-size: 0.78rem;
+  color: ${theme.colors.textMuted};
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s;
+  &:hover { color: ${theme.colors.primary}; }
+`;
+
+const BooksList = styled.ul`
+  list-style: none;
+  margin-top: ${theme.spacing.xs};
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const BookItem = styled.li`
+  font-size: 0.8rem;
+  color: ${theme.colors.text};
+  padding-right: ${theme.spacing.sm};
+  &::before { content: '📖 '; }
+`;
+
 const AdminRow = styled.div`
   display: flex;
   gap: ${theme.spacing.xs};
@@ -131,13 +164,17 @@ const DeleteBtn = styled.button`
   &:hover { opacity: 1; background: rgba(155,35,53,0.06); }
 `;
 
+interface BookRef { id: string; title: string; }
+
 interface Props {
   rabbi: Rabbi;
+  books?: BookRef[];
   onEdit?: () => void;
   onDelete?: () => void;
 }
 
-export default function RabbiCard({ rabbi, onEdit, onDelete }: Props) {
+export default function RabbiCard({ rabbi, books, onEdit, onDelete }: Props) {
+  const [booksOpen, setBooksOpen] = useState(false);
   const color = CATEGORY_COLORS[rabbi.category as RabbiCategory] ?? theme.colors.primaryLight;
   const label = CATEGORY_LABELS[rabbi.category as RabbiCategory] ?? rabbi.category;
 
@@ -158,6 +195,18 @@ export default function RabbiCard({ rabbi, onEdit, onDelete }: Props) {
       </Header>
       <Divider />
       <Bio>{rabbi.bio}</Bio>
+      {books && books.length > 0 && (
+        <BooksSection>
+          <BooksToggle onClick={() => setBooksOpen(o => !o)}>
+            📚 {HE.RABBI_BOOKS_SECTION} ({books.length}) {booksOpen ? '▲' : '▼'}
+          </BooksToggle>
+          {booksOpen && (
+            <BooksList>
+              {books.map(b => <BookItem key={b.id}>{b.title}</BookItem>)}
+            </BooksList>
+          )}
+        </BooksSection>
+      )}
       {(onEdit || onDelete) && (
         <AdminRow>
           {onEdit && <EditBtn onClick={onEdit}>{HE.STUDY_EDIT}</EditBtn>}

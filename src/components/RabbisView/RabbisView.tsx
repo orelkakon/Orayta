@@ -4,11 +4,12 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
-import { Rabbi, RabbiCategory } from '@/types';
+import { Rabbi, RabbiCategory, Book } from '@/types';
 import { CATEGORY_LABELS, CATEGORY_ORDER, CATEGORY_COLORS } from '@/lib/rabbisData';
 import { useRole } from '@/components/common/RoleContext';
 import RabbiCard from './RabbiCard';
 import RabbiForm from './RabbiForm';
+import RabbisTimeline from './RabbisTimeline';
 
 const Container = styled.div`
   display: flex;
@@ -105,16 +106,31 @@ const Empty = styled.div`
   padding: ${theme.spacing.xxl};
 `;
 
+const ViewToggleRow = styled.div`display: flex; gap: ${theme.spacing.xs};`;
+const ViewBtn = styled.button<{ $active: boolean }>`
+  padding: ${theme.spacing.xs} ${theme.spacing.md};
+  border-radius: ${theme.radii.md};
+  font-size: 0.85rem; font-weight: 600;
+  border: 2px solid ${({ $active }) => $active ? theme.colors.primary : theme.colors.borderLight};
+  background: ${({ $active }) => $active ? theme.colors.primary : 'transparent'};
+  color: ${({ $active }) => $active ? 'white' : theme.colors.textMuted};
+  transition: all 0.15s;
+  &:hover { border-color: ${theme.colors.primary}; color: ${({ $active }) => $active ? 'white' : theme.colors.primary}; }
+`;
+
 export default function RabbisView() {
   const [rabbis, setRabbis] = useState<Rabbi[]>([]);
+  const [books, setBooks] = useState<Book[]>([]);
   const [category, setCategory] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [editRabbi, setEditRabbi] = useState<Rabbi | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
   const role = useRole();
 
   const load = useCallback(() => {
     void fetch('/api/rabbis').then(r => r.json()).then(setRabbis as (v: unknown) => void);
+    void fetch('/api/books').then(r => r.json()).then(setBooks as (v: unknown) => void);
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -160,9 +176,13 @@ export default function RabbisView() {
             {rabbis.length > 0 && <CountBadge> {HE.RABBIS_COUNT(rabbis.length)}</CountBadge>}
           </Subtitle>
         </TitleGroup>
-        {role === 'admin' && (
-          <AddBtn onClick={() => setAddOpen(true)}>{HE.RABBI_ADD_BTN}</AddBtn>
-        )}
+        <ViewToggleRow>
+          <ViewBtn $active={!showTimeline} onClick={() => setShowTimeline(false)}>📋 {HE.RABBIS_LIST_VIEW}</ViewBtn>
+          <ViewBtn $active={showTimeline} onClick={() => setShowTimeline(true)}>📅 {HE.RABBIS_TIMELINE_VIEW}</ViewBtn>
+          {role === 'admin' && !showTimeline && (
+            <AddBtn onClick={() => setAddOpen(true)}>{HE.RABBI_ADD_BTN}</AddBtn>
+          )}
+        </ViewToggleRow>
       </TitleRow>
 
       <SearchInput
@@ -187,19 +207,24 @@ export default function RabbisView() {
         ))}
       </TabsScroll>
 
-      <Grid>
-        {filtered.length === 0
-          ? <Empty>{HE.STUDY_EMPTY}</Empty>
-          : filtered.map(r => (
-              <RabbiCard
-                key={r.id}
-                rabbi={r}
-                onEdit={role === 'admin' ? () => setEditRabbi(r) : undefined}
-                onDelete={role === 'admin' ? () => handleDelete(r) : undefined}
-              />
-            ))
-        }
-      </Grid>
+      {showTimeline ? (
+        <RabbisTimeline rabbis={rabbis} />
+      ) : (
+        <Grid>
+          {filtered.length === 0
+            ? <Empty>{HE.STUDY_EMPTY}</Empty>
+            : filtered.map(r => (
+                <RabbiCard
+                  key={r.id}
+                  rabbi={r}
+                  books={books.filter(b => b.rabbiId === r.id).map(b => ({ id: b.id, title: b.title }))}
+                  onEdit={role === 'admin' ? () => setEditRabbi(r) : undefined}
+                  onDelete={role === 'admin' ? () => handleDelete(r) : undefined}
+                />
+              ))
+          }
+        </Grid>
+      )}
     </Container>
   );
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -32,12 +33,31 @@ const Title = styled.h3`
   word-break: break-word;
 `;
 
+const AuthorRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.xs};
+  flex-wrap: wrap;
+`;
+
 const Author = styled.div`
   font-family: ${theme.fonts.body};
   font-size: 0.92rem;
   color: ${theme.colors.textMuted};
   overflow-wrap: break-word;
   word-break: break-word;
+`;
+
+const RabbiLink = styled(Link)`
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: ${theme.colors.primaryLight};
+  border: 1px solid ${theme.colors.borderLight};
+  border-radius: ${theme.radii.sm};
+  padding: 1px 6px;
+  white-space: nowrap;
+  transition: all 0.15s;
+  &:hover { background: ${theme.colors.surfaceAlt}; border-color: ${theme.colors.primaryLight}; }
 `;
 
 const AdminRow = styled.div`
@@ -69,7 +89,12 @@ export default function BookCard({ book, onEdit, onDelete }: Props) {
   return (
     <Card>
       <Title>{book.title}</Title>
-      <Author>{book.author}</Author>
+      <AuthorRow>
+        <Author>{book.author}</Author>
+        {book.rabbiId && (
+          <RabbiLink href="/rabbis">👤 {HE.BOOK_VIEW_RABBI}</RabbiLink>
+        )}
+      </AuthorRow>
       {(onEdit || onDelete) && (
         <AdminRow>
           {onEdit && <EditBtn onClick={onEdit}>{HE.STUDY_EDIT}</EditBtn>}

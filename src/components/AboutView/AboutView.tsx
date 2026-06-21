@@ -4,6 +4,7 @@ import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import OraytaLogo from '@/components/common/OraytaLogo';
 import { HE } from '@/lib/hebrewTexts';
+import ShareSection from './ShareSection';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -264,6 +265,8 @@ export default function AboutView() {
           </ContactLinks>
         </CreatorBody>
       </CreatorCard>
+
+      <ShareSection />
 
       <Footer>{HE.ABOUT_FOOTER}</Footer>
     </Page>

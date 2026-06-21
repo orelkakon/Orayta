@@ -57,9 +57,11 @@ model Book {
   id        String   @id @default(cuid())
   title     String
   author    String
+  rabbiId   String?
   createdAt DateTime @default(now())
 
   @@index([author])
+  @@index([rabbiId])
 }
 
 model QuizResult {

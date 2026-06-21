@@ -7,6 +7,14 @@ function isAdmin(req: NextRequest) {
   return req.cookies.get('auth')?.value === 'admin';
 }
 
+async function resolveRabbiId(author: string): Promise<string | null> {
+  const rabbi = await prisma.rabbi.findFirst({
+    where: { OR: [{ fullName: author }, { name: author }] },
+    select: { id: true },
+  });
+  return rabbi?.id ?? null;
+}
+
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   if (!isAdmin(request)) return NextResponse.json({ error: 'forbidden' }, { status: 403 });
 
@@ -17,9 +25,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({ error: 'missing fields' }, { status: 400 });
   }
 
+  const rabbiId = await resolveRabbiId(author);
   const book = await prisma.book.update({
     where: { id: params.id },
-    data: { title, author },
+    data: { title, author, rabbiId },
   });
 
   return NextResponse.json(book);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -41,18 +41,52 @@ const CancelBtn = styled.button`
   &:hover { border-color: ${theme.colors.primaryLight}; color: ${theme.colors.primary}; }`;
 const ErrorMsg = styled.p`font-size: 0.85rem; color: ${theme.colors.error}; text-align: center;`;
 
+const MatchesBox = styled.div`
+  background: ${theme.colors.surfaceAlt};
+  border: 1px solid ${theme.colors.borderLight};
+  border-right: 3px solid ${theme.colors.accent};
+  border-radius: ${theme.radii.md};
+  padding: ${theme.spacing.sm} ${theme.spacing.md};
+  display: flex;
+  flex-direction: column;
+  gap: ${theme.spacing.xs};
+`;
+const MatchesLabel = styled.div`
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: ${theme.colors.accent};
+  letter-spacing: 0.04em;
+`;
+const MatchChips = styled.div`display: flex; flex-wrap: wrap; gap: ${theme.spacing.xs};`;
+const MatchChip = styled.span`
+  font-family: ${theme.fonts.body};
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: ${theme.colors.primary};
+  background: ${theme.colors.surface};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radii.sm};
+  padding: 2px ${theme.spacing.sm};
+`;
+
 interface Props {
   gematria?: Gematria;
+  allItems?: Gematria[];
   onClose: () => void;
   onSaved: () => void;
 }
 
-export default function GematriaForm({ gematria, onClose, onSaved }: Props) {
+export default function GematriaForm({ gematria, allItems, onClose, onSaved }: Props) {
   const [word, setWord] = useState(gematria?.word ?? '');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const value = calculateGematria(word);
+
+  const matches = useMemo(() => {
+    if (!allItems || value === 0) return [];
+    return allItems.filter(g => g.value === value && g.id !== gematria?.id);
+  }, [allItems, value, gematria?.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,6 +128,14 @@ export default function GematriaForm({ gematria, onClose, onSaved }: Props) {
           <Label>{HE.GEMATRIA_FORM_VALUE}</Label>
           <ValuePreview>{value}</ValuePreview>
         </Field>
+        {matches.length > 0 && (
+          <MatchesBox>
+            <MatchesLabel>🔗 {HE.GEMATRIA_FORM_MATCHES}</MatchesLabel>
+            <MatchChips>
+              {matches.map(m => <MatchChip key={m.id}>{m.word}</MatchChip>)}
+            </MatchChips>
+          </MatchesBox>
+        )}
         {saveError && <ErrorMsg>{saveError}</ErrorMsg>}
         <BtnRow>
           <CancelBtn type="button" onClick={onClose}>{HE.CANCEL}</CancelBtn>

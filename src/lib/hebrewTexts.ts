@@ -51,6 +51,8 @@ export const HE = {
   BOOKS_EMPTY: 'לא נמצאו ספרים',
   BOOKS_COUNT: (n: number) => `· ${n} ספרים`,
   DUPLICATE_BOOK: 'ספר זה כבר קיים במאגר',
+  BOOK_VIEW_RABBI: 'לפרופיל הרב',
+  RABBI_BOOKS_SECTION: 'ספרים שכתב',
 
   GEMATRIA_TITLE: 'גימטריות',
   GEMATRIA_SUBTITLE: 'חישוב ערכי אותיות במילים ושמות',
@@ -68,6 +70,7 @@ export const HE = {
   GEMATRIA_COUNT: (n: number) => `· ${n} גימטריות`,
   GEMATRIA_VALUE_LABEL: 'ערך',
   GEMATRIA_EQUAL_LABEL: 'ערך שווה',
+  GEMATRIA_FORM_MATCHES: 'מילים בעלות ערך זהה',
   DUPLICATE_GEMATRIA: 'מילה זו כבר קיימת במאגר',
 
   LOGIN_TITLE: 'ברוך הבא לאורייתא',
@@ -165,6 +168,17 @@ export const HE = {
   QUIZ_MODE_BOOKS: 'ניחוש מחבר',
   QUIZ_BOOKS_QUESTION: 'מי כתב את הספר?',
   QUIZ_BOOKS_NOT_ENOUGH: 'אין מספיק ספרים במאגר לחידון',
+
+  RABBIS_TIMELINE_VIEW: 'ציר זמן',
+  RABBIS_LIST_VIEW: 'רשימה',
+
+  ABOUT_SHARE_TITLE: 'שתף את אורייתא',
+  ABOUT_SHARE_SUBTITLE: 'הפצה לחברים ובני משפחה',
+  ABOUT_SHARE_NATIVE: 'שתף',
+  ABOUT_SHARE_WHATSAPP: 'WhatsApp',
+  ABOUT_SHARE_TELEGRAM: 'Telegram',
+  ABOUT_SHARE_COPY: 'העתק קישור',
+  ABOUT_SHARE_COPIED: '✓ הועתק!',
 
   ABOUT_TITLE: 'אודות המערכת',
   ABOUT_CREATOR_SECTION: 'יוצר',
