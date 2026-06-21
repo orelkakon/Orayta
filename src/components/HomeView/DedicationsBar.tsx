@@ -70,10 +70,10 @@ const AdminTitle = styled.h3`
 
 const FormRow = styled.div`display: flex; gap: ${theme.spacing.sm}; flex-wrap: wrap;`;
 const Select = styled.select`
-  flex: 1; min-width: 130px;
-  padding: ${theme.spacing.sm} ${theme.spacing.md}; border: 2px solid ${theme.colors.border};
-  border-radius: ${theme.radii.md}; font-size: 0.9rem; background: ${theme.colors.background};
-  color: ${theme.colors.text}; outline: none;
+  min-width: 148px; width: 148px;
+  padding: ${theme.spacing.sm} ${theme.spacing.sm}; border: 2px solid ${theme.colors.border};
+  border-radius: ${theme.radii.md}; font-size: 0.88rem; background: ${theme.colors.background};
+  color: ${theme.colors.text}; outline: none; flex-shrink: 0;
 `;
 const Input = styled.input`
   flex: 2; min-width: 140px;

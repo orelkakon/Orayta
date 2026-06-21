@@ -63,14 +63,13 @@ const Divider = styled.div`
   background: linear-gradient(90deg, transparent, ${theme.colors.secondary}, transparent);
 `;
 
-/* 3 × 3 grid */
+/* 3 × 3 grid — all screen sizes */
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: ${theme.spacing.md};
   width: 100%;
-  @media (max-width: 600px) { grid-template-columns: repeat(2, 1fr); gap: ${theme.spacing.sm}; }
-  @media (max-width: 340px) { grid-template-columns: 1fr; }
+  @media (max-width: 480px) { gap: ${theme.spacing.sm}; }
 `;
 
 const SectionCard = styled(Link)`

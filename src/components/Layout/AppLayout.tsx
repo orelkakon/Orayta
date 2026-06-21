@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -61,22 +61,6 @@ const ThemeBtn = styled.button`
   &:hover { opacity: 1; background: rgba(255,255,255,0.15); }
 `;
 
-/* Hebrew date — absolutely centered so it never disturbs the flex layout */
-const DateBadge = styled.div`
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex; align-items: center; gap: 5px;
-  font-family: ${theme.fonts.body};
-  font-size: 0.78rem;
-  color: rgba(255,255,255,0.65);
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  pointer-events: none;
-  user-select: none;
-  @media (max-width: 900px) { display: none; }
-`;
-
 /* Desktop nav */
 const Nav = styled.nav`
   display: flex; align-items: center; gap: 1px;
@@ -128,16 +112,6 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname   = usePathname();
   const { isDark, toggle } = useDarkMode();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [hebrewDate, setHebrewDate] = useState('');
-
-  useEffect(() => {
-    try {
-      const d = new Intl.DateTimeFormat('he-IL-u-ca-hebrew', {
-        day: 'numeric', month: 'long', year: 'numeric',
-      }).format(new Date());
-      setHebrewDate(d);
-    } catch { /* unsupported — stays empty */ }
-  }, []);
 
   const handleLogout = async () => {
     clearStats();
@@ -163,13 +137,6 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             {isDark ? '☀' : '☾'}
           </ThemeBtn>
         </LogoGroup>
-
-        {hebrewDate && (
-          <DateBadge>
-            <span style={{ opacity: 0.5 }}>📅</span>
-            {hebrewDate}
-          </DateBadge>
-        )}
 
         <Nav>
           <NavLink href="/rabbis"    $active={isActive('/rabbis')}>👥 {HE.NAV_RABBIS}</NavLink>
