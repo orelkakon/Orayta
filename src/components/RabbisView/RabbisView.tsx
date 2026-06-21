@@ -106,16 +106,23 @@ const Empty = styled.div`
   padding: ${theme.spacing.xxl};
 `;
 
-const ViewToggleRow = styled.div`display: flex; gap: ${theme.spacing.xs};`;
-const ViewBtn = styled.button<{ $active: boolean }>`
-  padding: ${theme.spacing.xs} ${theme.spacing.md};
+/* Segment toggle — pill style, visually distinct from action buttons */
+const SegmentRow = styled.div`
+  display: flex;
+  border: 1.5px solid ${theme.colors.border};
   border-radius: ${theme.radii.md};
-  font-size: 0.85rem; font-weight: 600;
-  border: 2px solid ${({ $active }) => $active ? theme.colors.primary : theme.colors.borderLight};
+  overflow: hidden;
+  align-self: flex-start;
+`;
+const SegBtn = styled.button<{ $active: boolean }>`
+  padding: ${theme.spacing.xs} ${theme.spacing.md};
+  font-size: 0.82rem; font-weight: 600;
+  border-left: 1.5px solid ${theme.colors.border};
   background: ${({ $active }) => $active ? theme.colors.primary : 'transparent'};
   color: ${({ $active }) => $active ? 'white' : theme.colors.textMuted};
   transition: all 0.15s;
-  &:hover { border-color: ${theme.colors.primary}; color: ${({ $active }) => $active ? 'white' : theme.colors.primary}; }
+  &:first-child { border-left: none; }
+  &:hover { background: ${({ $active }) => $active ? theme.colors.primary : theme.colors.surfaceAlt}; }
 `;
 
 interface Props { initialSearch?: string; }
@@ -178,13 +185,15 @@ export default function RabbisView({ initialSearch = '' }: Props) {
             {rabbis.length > 0 && <CountBadge> {HE.RABBIS_COUNT(rabbis.length)}</CountBadge>}
           </Subtitle>
         </TitleGroup>
-        <ViewToggleRow>
-          <ViewBtn $active={!showTimeline} onClick={() => setShowTimeline(false)}>📋 {HE.RABBIS_LIST_VIEW}</ViewBtn>
-          <ViewBtn $active={showTimeline} onClick={() => setShowTimeline(true)}>📅 {HE.RABBIS_TIMELINE_VIEW}</ViewBtn>
-          {role === 'admin' && !showTimeline && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.xs, alignItems: 'flex-end' }}>
+          <SegmentRow>
+            <SegBtn $active={!showTimeline} onClick={() => setShowTimeline(false)}>📋 {HE.RABBIS_LIST_VIEW}</SegBtn>
+            <SegBtn $active={showTimeline}  onClick={() => setShowTimeline(true)}>📅 {HE.RABBIS_TIMELINE_VIEW}</SegBtn>
+          </SegmentRow>
+          {role === 'admin' && (
             <AddBtn onClick={() => setAddOpen(true)}>{HE.RABBI_ADD_BTN}</AddBtn>
           )}
-        </ViewToggleRow>
+        </div>
       </TitleRow>
 
       <SearchInput

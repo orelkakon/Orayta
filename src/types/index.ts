@@ -82,3 +82,12 @@ export interface Book {
   rabbiId: string | null;
   createdAt: string;
 }
+
+export interface Chidush {
+  id: string;
+  text: string;
+  source: string | null;
+  author: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -64,6 +64,17 @@ model Book {
   @@index([rabbiId])
 }
 
+model Chidush {
+  id        String   @id @default(cuid())
+  text      String
+  source    String?
+  author    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
 model QuizResult {
   id         String   @id @default(cuid())
   citationId String

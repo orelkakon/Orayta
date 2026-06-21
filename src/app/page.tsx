@@ -1,5 +1,10 @@
-import { redirect } from 'next/navigation';
+import AppLayout from '@/components/Layout/AppLayout';
+import HomeView from '@/components/HomeView/HomeView';
 
 export default function HomePage() {
-  redirect('/study');
+  return (
+    <AppLayout>
+      <HomeView />
+    </AppLayout>
+  );
 }
