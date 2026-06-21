@@ -96,12 +96,12 @@ export async function POST(req: NextRequest) {
     sendEmail(name?.trim(), message.trim(), typeof rating === 'number' ? rating : undefined)
       .catch(() => { /* swallow */ });
 
-    // WhatsApp — phone hidden server-side
-    const phone      = process.env.CONTACT_PHONE ?? '';
-    const senderLine = name?.trim() ? `הודעה חדשה מ ${name.trim()}` : 'הודעה חדשה (אנונימי)';
-    const stars      = typeof rating === 'number' ? `\nדירוג: ${'⭐'.repeat(rating)} (${rating}/5)` : '';
+    // WhatsApp — conversational, written from the user's perspective
+    const phone  = process.env.CONTACT_PHONE ?? '';
+    const intro  = name?.trim() ? `היי, אני ${name.trim()} 👋` : 'היי 👋';
+    const stars  = typeof rating === 'number' ? `\n${'⭐'.repeat(rating)}` : '';
     const waText = encodeURIComponent(
-      `📬 ${senderLine} — אורייתא\n${formatDate()}\n\n${message.trim()}${stars}`
+      `${intro}\nפניתי דרך אפליקציית אורייתא 📖\n\n${message.trim()}${stars}`
     );
     const waUrl = `https://wa.me/${phone}?text=${waText}`;
 
