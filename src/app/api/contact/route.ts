@@ -4,7 +4,7 @@ import nodemailer from 'nodemailer';
 
 /* ── Simple in-process rate limit: max 3 submissions per IP per 10 minutes ── */
 const ipLog = new Map<string, number[]>();
-const WINDOW_MS  = 10 * 60 * 1000; // 10 minutes
+const WINDOW_MS  = 10 * 60 * 1000;
 const MAX_IN_WIN = 3;
 
 function isRateLimited(ip: string): boolean {
@@ -13,6 +13,13 @@ function isRateLimited(ip: string): boolean {
   if (hits.length >= MAX_IN_WIN) return true;
   ipLog.set(ip, [...hits, now]);
   return false;
+}
+
+function formatDate(): string {
+  return new Intl.DateTimeFormat('he-IL', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  }).format(new Date());
 }
 
 async function sendEmail(name: string | undefined, message: string, rating: number | undefined) {
@@ -24,24 +31,36 @@ async function sendEmail(name: string | undefined, message: string, rating: numb
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
-    secure: false, // STARTTLS
+    secure: false,
     auth: { user: gmailUser, pass: gmailPass },
     tls: { rejectUnauthorized: false },
   });
 
-  const ratingText = typeof rating === 'number' ? `\nדירוג: ${'⭐'.repeat(rating)} (${rating}/5)` : '';
-  const fromLabel  = name ? `מ: ${name}` : 'אנונימי';
+  const senderLine = name ? `הודעה חדשה מ ${name}` : 'הודעה חדשה (אנונימי)';
+  const stars      = typeof rating === 'number' ? '⭐'.repeat(rating) : null;
 
   await transporter.sendMail({
     from: `"אורייתא" <${gmailUser}>`,
     to: toEmail,
-    subject: `📬 הודעה חדשה מאורייתא — ${fromLabel}`,
-    text: `${fromLabel}\n\n${message}${ratingText}`,
-    html: `<div dir="rtl" style="font-family:sans-serif;font-size:15px">
-      <p><strong>${fromLabel}</strong></p>
-      <p style="white-space:pre-wrap">${message}</p>
-      ${ratingText ? `<p>${ratingText.trim()}</p>` : ''}
-    </div>`,
+    subject: `📬 ${senderLine} — אורייתא`,
+    text: [
+      senderLine,
+      formatDate(),
+      '',
+      message,
+      stars ? `דירוג: ${stars} (${rating}/5)` : '',
+    ].filter(Boolean).join('\n'),
+    html: `
+      <div dir="rtl" style="font-family:Arial,sans-serif;font-size:15px;max-width:560px;margin:0 auto">
+        <div style="background:#5C3D1E;padding:18px 24px;border-radius:8px 8px 0 0">
+          <h2 style="color:white;margin:0;font-size:18px">📬 ${senderLine}</h2>
+          <p style="color:rgba(255,255,255,0.65);margin:4px 0 0;font-size:12px">${formatDate()} · אורייתא</p>
+        </div>
+        <div style="border:1px solid #e5ddd4;border-top:none;padding:20px 24px;border-radius:0 0 8px 8px;background:#faf7f2">
+          <p style="white-space:pre-wrap;line-height:1.7;color:#2d1f0f;margin:0">${message}</p>
+          ${stars ? `<p style="margin:16px 0 0;font-size:14px;color:#5C3D1E">דירוג: ${stars} (${rating}/5)</p>` : ''}
+        </div>
+      </div>`,
   });
 }
 
@@ -59,7 +78,6 @@ export async function POST(req: NextRequest) {
     const body = await req.json() as { name?: string; message: string; rating?: number };
     const { name, message, rating } = body;
 
-    // Validate
     if (!message || typeof message !== 'string' || !message.trim()) {
       return NextResponse.json({ error: 'message required' }, { status: 400 });
     }
@@ -75,18 +93,17 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Send email non-blocking
     sendEmail(name?.trim(), message.trim(), typeof rating === 'number' ? rating : undefined)
       .catch(() => { /* swallow */ });
 
-    // WhatsApp URL — phone stays server-side only
+    // WhatsApp — phone hidden server-side
     const phone      = process.env.CONTACT_PHONE ?? '';
-    const senderLabel = name?.trim() ? `מ: ${name.trim()}\n` : '';
-    const ratingLabel = typeof rating === 'number' ? `\nדירוג: ${'⭐'.repeat(rating)}` : '';
-    const text = encodeURIComponent(
-      `${senderLabel}הודעה מאפליקציית אורייתא:\n${message.trim()}${ratingLabel}`
+    const senderLine = name?.trim() ? `הודעה חדשה מ ${name.trim()}` : 'הודעה חדשה (אנונימי)';
+    const stars      = typeof rating === 'number' ? `\nדירוג: ${'⭐'.repeat(rating)} (${rating}/5)` : '';
+    const waText = encodeURIComponent(
+      `📬 ${senderLine} — אורייתא\n${formatDate()}\n\n${message.trim()}${stars}`
     );
-    const waUrl = `https://wa.me/${phone}?text=${text}`;
+    const waUrl = `https://wa.me/${phone}?text=${waText}`;
 
     return NextResponse.json({ ok: true, waUrl });
   } catch {
