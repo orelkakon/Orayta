@@ -10,6 +10,7 @@ import OraytaLogo from '@/components/common/OraytaLogo';
 import { useDarkMode } from '@/components/common/ThemeContext';
 import { clearStats } from '@/lib/statsStorage';
 import NavDrawer from './NavDrawer';
+import AddToHomeScreen from '@/components/common/AddToHomeScreen';
 
 const Wrapper = styled.div`min-height: 100vh; display: flex; flex-direction: column;`;
 
@@ -164,6 +165,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
       />
 
       <Main>{children}</Main>
+      <AddToHomeScreen />
     </Wrapper>
   );
 }

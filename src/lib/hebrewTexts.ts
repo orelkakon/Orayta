@@ -319,6 +319,15 @@ export const HE = {
   CHIDUSH_SAVE_ERROR: 'שגיאה בשמירה, נסה שנית',
   CHIDUSH_UNKNOWN_SOURCE: 'מקור לא ידוע',
 
+  A2HS_TITLE: 'הוסף לדף הבית',
+  A2HS_DESC: 'גישה מהירה לאורייתא ישירות מהמסך הראשי',
+  A2HS_BTN: 'הוסף',
+  A2HS_DISMISS: 'לא עכשיו',
+  A2HS_IOS_TITLE: 'הוספה לדף הבית',
+  A2HS_IOS_STEP1: 'לחץ על כפתור השיתוף 📤 בתחתית הדפדפן',
+  A2HS_IOS_STEP2: 'גלול ובחר "הוסף למסך הבית"',
+  A2HS_IOS_STEP3: 'לחץ "הוסף" לאישור',
+
   ERROR_REQUIRED: 'שדה זה חובה',
   LOADING: 'טוען...',
   SAVE: 'שמור',

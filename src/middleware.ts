@@ -4,7 +4,12 @@ export function middleware(request: NextRequest) {
   const auth = request.cookies.get('auth')?.value;
   const { pathname } = request.nextUrl;
 
-  const isPublic = pathname.startsWith('/login') || pathname.startsWith('/api/auth');
+  const isPublic =
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/api/auth') ||
+    pathname === '/icon' ||
+    pathname === '/apple-icon' ||
+    pathname.startsWith('/manifest');
   const isAuthenticated = auth === 'admin' || auth === 'reader';
 
   if (!isAuthenticated && !isPublic) {
