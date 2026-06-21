@@ -16,81 +16,95 @@ const Wrapper = styled.div`min-height: 100vh; display: flex; flex-direction: col
 const Header = styled.header`
   background: ${theme.colors.primary};
   color: white;
-  padding: ${theme.spacing.md} ${theme.spacing.lg};
+  padding: 0 ${theme.spacing.lg};
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
   gap: ${theme.spacing.sm};
   box-shadow: ${theme.shadows.md};
+  border-bottom: 2px solid ${theme.colors.secondary}55;
   position: sticky;
   top: 0;
   z-index: 100;
-  min-height: 56px;
-  @media (max-width: 480px) { padding: 8px ${theme.spacing.sm}; min-height: 50px; }
+  min-height: 60px;
+  @media (max-width: 480px) { padding: 0 ${theme.spacing.sm}; min-height: 52px; }
 `;
 
 const LogoGroup = styled.div`
   display: flex; align-items: center; gap: ${theme.spacing.sm}; flex-shrink: 0;
+  padding: ${theme.spacing.sm} 0;
+  border-left: 1px solid rgba(255,255,255,0.15);
+  padding-left: ${theme.spacing.md};
+  margin-left: ${theme.spacing.sm};
+  @media (max-width: 768px) { border-left: none; padding-left: 0; margin-left: 0; }
 `;
 
 const LogoArea = styled(Link)`
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 8px;
 `;
 
 const LogoText = styled.div`
-  display: flex; flex-direction: column; line-height: 1.1;
+  display: flex; flex-direction: column; line-height: 1.15;
   @media (max-width: 520px) { display: none; }
 `;
 
 const AppName = styled.span`
-  font-family: ${theme.fonts.body}; font-size: 1.2rem; font-weight: 700;
+  font-family: ${theme.fonts.body}; font-size: 1.25rem; font-weight: 700;
+  letter-spacing: -0.01em;
 `;
 
-const Bsd = styled.span`
-  font-family: ${theme.fonts.body}; font-size: 0.6rem; opacity: 0.7;
-  letter-spacing: 0.05em; text-align: left;
+const Tagline = styled.span`
+  font-size: 0.6rem; opacity: 0.55; letter-spacing: 0.06em;
+  font-family: ${theme.fonts.body};
 `;
 
 const ThemeBtn = styled.button`
   width: 1.75rem; height: 1.75rem;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; border-radius: ${theme.radii.sm};
-  font-size: 0.9rem; color: white; opacity: 0.75;
-  transition: opacity 0.15s; line-height: 1;
+  font-size: 0.95rem; color: white; opacity: 0.7;
+  transition: opacity 0.15s;
   &:hover { opacity: 1; background: rgba(255,255,255,0.15); }
 `;
 
-/* Desktop nav — hidden on mobile */
+/* Desktop nav — takes all remaining space, items spread across it */
 const Nav = styled.nav`
-  display: flex; align-items: center; gap: 2px;
-  min-width: 0; flex-shrink: 1;
+  display: flex; align-items: center;
+  flex: 1;
+  justify-content: flex-end;
+  gap: 1px;
   overflow-x: auto; scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
   @media (max-width: 768px) { display: none; }
 `;
 
 const NavLink = styled(Link)<{ $active?: boolean }>`
-  padding: 5px 7px; border-radius: ${theme.radii.sm};
-  font-size: 0.82rem; font-weight: 500; white-space: nowrap; flex-shrink: 0;
-  transition: background 0.15s;
-  background: ${({ $active }) => ($active ? 'rgba(255,255,255,0.25)' : 'transparent')};
-  &:hover { background: rgba(255,255,255,0.15); }
+  display: flex; align-items: center; gap: 4px;
+  height: 100%;
+  padding: 0 8px;
+  font-size: 0.8rem; font-weight: 500; white-space: nowrap; flex-shrink: 0;
+  border-bottom: 3px solid ${({ $active }) => ($active ? theme.colors.secondary : 'transparent')};
+  background: ${({ $active }) => ($active ? 'rgba(255,255,255,0.12)' : 'transparent')};
+  transition: background 0.15s, border-color 0.15s;
+  &:hover { background: rgba(255,255,255,0.12); }
 `;
 
 const LogoutButton = styled.button`
-  padding: 5px 7px; border-radius: ${theme.radii.sm};
-  font-size: 0.82rem; font-weight: 500; color: white; opacity: 0.7;
-  white-space: nowrap; flex-shrink: 0; transition: all 0.15s;
-  &:hover { opacity: 1; background: rgba(255,255,255,0.15); }
+  display: flex; align-items: center; gap: 4px;
+  height: 100%; padding: 0 8px;
+  font-size: 0.8rem; font-weight: 500; color: white; opacity: 0.65;
+  white-space: nowrap; flex-shrink: 0; border-bottom: 3px solid transparent;
+  transition: all 0.15s;
+  &:hover { opacity: 1; background: rgba(255,255,255,0.12); }
 `;
 
 /* Hamburger — only on mobile */
 const HamBtn = styled.button`
   display: none;
   color: white; font-size: 1.35rem;
-  width: 36px; height: 36px;
+  width: 36px; height: 36px; flex-shrink: 0;
   align-items: center; justify-content: center;
-  border-radius: ${theme.radii.sm}; flex-shrink: 0;
+  border-radius: ${theme.radii.sm};
   transition: background 0.15s;
   &:hover { background: rgba(255,255,255,0.15); }
   @media (max-width: 768px) { display: flex; }
@@ -121,10 +135,10 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
       <Header>
         <LogoGroup>
           <LogoArea href="/">
-            <OraytaLogo size={36} />
+            <OraytaLogo size={34} />
             <LogoText>
               <AppName>{HE.APP_NAME}</AppName>
-              <Bsd>בס״ד</Bsd>
+              <Tagline>בס״ד · מקורות יהודיים</Tagline>
             </LogoText>
           </LogoArea>
           <ThemeBtn onClick={toggle} title={isDark ? HE.THEME_LIGHT : HE.THEME_DARK}>
