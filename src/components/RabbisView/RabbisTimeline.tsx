@@ -6,86 +6,114 @@ import { theme } from '@/lib/theme';
 import { Rabbi, RabbiCategory } from '@/types';
 import { CATEGORY_COLORS, CATEGORY_LABELS, CATEGORY_ORDER } from '@/lib/rabbisData';
 
-const fadeIn = keyframes`
+const reveal = keyframes`
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
 `;
 
-/* The outer wrapper draws the vertical guide line via ::before.
-   padding-right: 28px reserves space for the line + dots on the RIGHT (RTL). */
+/* ── Outer wrapper ─────────────────────────────── */
 const Wrap = styled.div`
-  position: relative;
-  padding-right: 28px;
-  &::before {
-    content: '';
-    position: absolute;
-    right: 13px; top: 0; bottom: 0; width: 2px;
-    background: linear-gradient(
-      to bottom,
-      transparent 0%,
-      ${theme.colors.border} 4%,
-      ${theme.colors.border} 96%,
-      transparent 100%
-    );
-  }
+  display: flex;
+  flex-direction: column;
 `;
 
-/* Each row is position:relative so the dot/diamond can be placed on the line */
-const Row = styled.div<{ $click?: boolean; $active?: boolean }>`
-  position: relative;
-  padding: 7px 0;
-  border-radius: ${theme.radii.sm};
-  transition: background 0.12s;
-  cursor: ${p => (p.$click ? 'pointer' : 'default')};
-  background: ${p => (p.$active ? theme.colors.surfaceAlt : 'transparent')};
-  ${p => p.$click && `&:hover { background: ${theme.colors.surfaceAlt}; }`}
+/* ── Generic row: flex, RTL → first child is on the RIGHT ── */
+const Row = styled.div`
+  display: flex;
+  align-items: stretch;
 `;
 
-/* Circle dot for each rabbi — centered on the line (right:7px → center at 13px from right) */
+/* ── Dot column (RIGHT side in RTL, 28px wide) ── */
+const DotCol = styled.div`
+  width: 28px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+/* Thin line segment that fills space between dots */
+const Seg = styled.div<{ $flex?: boolean; $h?: string }>`
+  width: 2px;
+  background: ${theme.colors.border};
+  opacity: 0.5;
+  ${p => p.$flex ? 'flex: 1; min-height: 4px;' : `height: ${p.$h ?? '8px'};`}
+`;
+
+/* Circle dot for each rabbi */
 const Dot = styled.div<{ $c: string; $on: boolean }>`
-  position: absolute;
-  right: 7px; top: 10px;
-  width: 12px; height: 12px; border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
   background: ${p => (p.$on ? p.$c : theme.colors.surface)};
-  border: 2px solid ${p => p.$c};
-  box-shadow: 0 0 0 2px ${theme.colors.background};
+  border: 2.5px solid ${p => p.$c};
+  box-shadow: 0 0 0 3px ${theme.colors.background};
+  transition: background 0.15s;
   z-index: 1;
-  transition: background 0.15s, box-shadow 0.15s;
-  ${p => p.$on && `box-shadow: 0 0 0 3px ${p.$c}33, 0 0 0 2px ${theme.colors.background};`}
 `;
 
-/* Diamond marker for era section headers */
+/* Diamond for era section headers */
 const Diamond = styled.div<{ $c: string }>`
-  position: absolute;
-  right: 7px; top: 10px;
-  width: 12px; height: 12px;
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
   transform: rotate(45deg);
   background: ${p => p.$c};
-  box-shadow: 0 0 0 2px ${theme.colors.background};
+  box-shadow: 0 0 0 3px ${theme.colors.background};
   z-index: 1;
+`;
+
+/* ── Section header ─────────────────────────────── */
+const HeaderContent = styled.div`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: ${theme.spacing.lg} ${theme.spacing.sm} ${theme.spacing.xs};
 `;
 
 const EraChip = styled.span<{ $c: string }>`
-  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   color: ${p => p.$c};
-  background: ${p => p.$c}12;
-  border: 1px solid ${p => p.$c}33;
-  padding: 2px ${theme.spacing.sm};
+  background: ${p => p.$c}14;
+  border: 1px solid ${p => p.$c}44;
+  padding: 3px ${theme.spacing.sm};
   border-radius: ${theme.radii.sm};
+`;
+
+/* ── Entry row ──────────────────────────────────── */
+const EntryRow = styled.div<{ $on: boolean }>`
+  display: flex;
+  align-items: stretch;
+  cursor: pointer;
+  border-radius: ${theme.radii.sm};
+  transition: background 0.12s;
+  background: ${p => (p.$on ? theme.colors.surfaceAlt : 'transparent')};
+  &:hover { background: ${theme.colors.surfaceAlt}; }
+`;
+
+const EntryContent = styled.div`
+  flex: 1;
+  min-width: 0;
+  padding: 8px ${theme.spacing.sm} 8px 0;
 `;
 
 const EntryTop = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: ${theme.spacing.sm};
   flex-wrap: wrap;
 `;
 
 const EntryName = styled.span`
   font-family: ${theme.fonts.body};
-  font-size: 0.95rem; font-weight: 600;
+  font-size: 0.97rem;
+  font-weight: 600;
   color: ${theme.colors.primary};
+  line-height: 1.3;
 `;
 
 const EntryDate = styled.span`
@@ -93,16 +121,47 @@ const EntryDate = styled.span`
   color: ${theme.colors.textMuted};
   direction: ltr;
   flex-shrink: 0;
+  white-space: nowrap;
 `;
 
-const EntryBio = styled.p`
+const EntryDetail = styled.div`
   margin-top: ${theme.spacing.xs};
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: ${reveal} 0.2s ease;
+`;
+
+const FullName = styled.div`
+  font-size: 0.8rem;
+  color: ${theme.colors.textMuted};
+  font-style: italic;
+`;
+
+const AliveBadge = styled.span`
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: ${theme.colors.success};
+  background: ${theme.colors.bgSuccess};
+  border-radius: ${theme.radii.sm};
+  padding: 1px ${theme.spacing.sm};
+  align-self: flex-start;
+`;
+
+const BioParagraph = styled.p`
   font-family: ${theme.fonts.body};
-  font-size: 0.88rem; line-height: 1.75;
+  font-size: 0.88rem;
+  line-height: 1.75;
   color: ${theme.colors.text};
   border-right: 2px solid ${theme.colors.borderLight};
   padding-right: ${theme.spacing.sm};
-  animation: ${fadeIn} 0.2s ease;
+`;
+
+const Hint = styled.div`
+  font-size: 0.74rem;
+  color: ${theme.colors.textLight};
+  text-align: center;
+  margin-bottom: ${theme.spacing.xs};
 `;
 
 const Empty = styled.div`
@@ -111,13 +170,7 @@ const Empty = styled.div`
   padding: ${theme.spacing.xxl};
 `;
 
-const Hint = styled.div`
-  font-size: 0.75rem;
-  color: ${theme.colors.textLight};
-  text-align: center;
-  margin-bottom: ${theme.spacing.sm};
-`;
-
+/* ── Component ────────────────────────────────── */
 interface Props { rabbis: Rabbi[]; }
 
 export default function RabbisTimeline({ rabbis }: Props) {
@@ -126,9 +179,9 @@ export default function RabbisTimeline({ rabbis }: Props) {
   const groups = useMemo(() => {
     const map = new Map<string, Rabbi[]>();
     for (const r of rabbis) {
-      const list = map.get(r.category) ?? [];
-      list.push(r);
-      map.set(r.category, list);
+      const arr = map.get(r.category) ?? [];
+      arr.push(r);
+      map.set(r.category, arr);
     }
     return CATEGORY_ORDER
       .filter(cat => map.has(cat))
@@ -140,35 +193,61 @@ export default function RabbisTimeline({ rabbis }: Props) {
 
   if (rabbis.length === 0) return <Empty>אין תוצאות</Empty>;
 
+  const lastGroupIdx = groups.length - 1;
+
   return (
     <>
-      <Hint>לחץ על שם לפרטים</Hint>
+      <Hint>לחץ על שם לפרטים נוספים</Hint>
       <Wrap>
-        {groups.map(({ cat, items }) => {
+        {groups.map(({ cat, items }, gi) => {
           const color = CATEGORY_COLORS[cat];
+          const lastItemIdx = items.length - 1;
+
           return (
             <Fragment key={cat}>
-              <Row style={{ marginTop: theme.spacing.md }}>
-                <Diamond $c={color} />
-                <EraChip $c={color}>{CATEGORY_LABELS[cat]}</EraChip>
+              {/* Era section header */}
+              <Row>
+                <DotCol>
+                  {gi > 0 && <Seg $flex />}
+                  <Diamond $c={color} />
+                  <Seg $h="12px" />
+                </DotCol>
+                <HeaderContent>
+                  <EraChip $c={color}>{CATEGORY_LABELS[cat]}</EraChip>
+                </HeaderContent>
               </Row>
 
-              {items.map(r => {
+              {/* Rabbi entries */}
+              {items.map((r, ri) => {
                 const isOn = expandedId === r.id;
+                const needLineBelow = ri < lastItemIdx || gi < lastGroupIdx;
+
                 return (
-                  <Row
+                  <EntryRow
                     key={r.id}
-                    $click
-                    $active={isOn}
+                    $on={isOn}
                     onClick={() => setExpandedId(p => (p === r.id ? null : r.id))}
                   >
-                    <Dot $c={color} $on={isOn} />
-                    <EntryTop>
-                      <EntryName>{r.name}</EntryName>
-                      <EntryDate>{r.datePeriod}</EntryDate>
-                    </EntryTop>
-                    {isOn && <EntryBio>{r.bio}</EntryBio>}
-                  </Row>
+                    <DotCol>
+                      <Seg $h="9px" />
+                      <Dot $c={color} $on={isOn} />
+                      {needLineBelow && <Seg $flex />}
+                    </DotCol>
+
+                    <EntryContent>
+                      <EntryTop>
+                        <EntryName>{r.name}</EntryName>
+                        <EntryDate>{r.datePeriod}</EntryDate>
+                      </EntryTop>
+                      {isOn && (
+                        <EntryDetail>
+                          {r.fullName && <FullName>{r.fullName}</FullName>}
+                          {r.isAlive && <AliveBadge>⬤ חי ופועל</AliveBadge>}
+                          <BioParagraph>{r.bio}</BioParagraph>
+                        </EntryDetail>
+                      )}
+                    </EntryContent>
+                  </EntryRow>
                 );
               })}
             </Fragment>
