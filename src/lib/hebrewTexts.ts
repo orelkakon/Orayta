@@ -5,6 +5,7 @@ export const HE = {
   NAV_ADD: 'הוסף ציטוט',
   NAV_STUDY: 'לימוד',
   NAV_QUIZ: 'חידון',
+  NAV_HOME: 'בית',
   NAV_ABOUT: 'אודות',
   NAV_LOGOUT: 'יציאה',
   NAV_TALMUD: 'תלמוד',

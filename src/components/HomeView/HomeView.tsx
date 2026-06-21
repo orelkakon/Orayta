@@ -72,12 +72,6 @@ const Divider = styled.div`
   background: linear-gradient(90deg, transparent, ${theme.colors.secondary}, transparent);
 `;
 
-/* ── Nav hint ── */
-const NavHint = styled.p`
-  font-size: 0.82rem; font-weight: 600; letter-spacing: 0.07em;
-  color: ${theme.colors.textLight}; text-transform: uppercase;
-`;
-
 /* ── Section cards grid ── */
 const Grid = styled.div`
   display: grid;
@@ -137,7 +131,6 @@ export default function HomeView() {
       <DedicationsBar />
 
       <Divider />
-      <NavHint>{HE.HOME_NAV_HINT}</NavHint>
 
       <Grid>
         {HE.HOME_SECTIONS.map(s => (

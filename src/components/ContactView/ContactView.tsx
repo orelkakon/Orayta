@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import styled, { keyframes } from 'styled-components';
+import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 
@@ -14,6 +15,16 @@ const Page = styled.div`
   display: flex; flex-direction: column; align-items: center;
   gap: ${theme.spacing.xl}; padding: ${theme.spacing.xl} 0 ${theme.spacing.xxl};
   animation: ${fadeUp} 0.4s ease;
+`;
+
+const BackLink = styled(Link)`
+  align-self: flex-start;
+  display: flex; align-items: center; gap: 4px;
+  font-size: 0.88rem; font-weight: 600;
+  color: ${theme.colors.textMuted};
+  padding: 4px 2px;
+  transition: color 0.15s;
+  &:hover { color: ${theme.colors.primary}; }
 `;
 
 const Hero = styled.div`
@@ -124,6 +135,8 @@ export default function ContactView() {
 
   return (
     <Page>
+      <BackLink href="/">← {HE.NAV_HOME}</BackLink>
+
       <Hero>
         <Icon>📞</Icon>
         <Title>{HE.CONTACT_PAGE_TITLE}</Title>
