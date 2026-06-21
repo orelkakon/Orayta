@@ -10,7 +10,8 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-const DISMISSED_KEY = 'orayta_a2hs_dismissed';
+const SNOOZED_KEY = 'orayta_a2hs_snoozed';
+const SNOOZE_MS = 5 * 60 * 1000;
 
 const Banner = styled.div`
   position: fixed; bottom: 0; left: 0; right: 0;
@@ -71,7 +72,8 @@ export default function AddToHomeScreen() {
     if (window.matchMedia('(display-mode: standalone)').matches) return;
     const nav = window.navigator as Navigator & { standalone?: boolean };
     if (nav.standalone) return;
-    if (localStorage.getItem(DISMISSED_KEY)) return;
+    const snoozed = localStorage.getItem(SNOOZED_KEY);
+    if (snoozed && Date.now() - Number(snoozed) < SNOOZE_MS) return;
 
     const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
     if (isIos) {
@@ -88,7 +90,7 @@ export default function AddToHomeScreen() {
   }, []);
 
   const dismiss = useCallback(() => {
-    localStorage.setItem(DISMISSED_KEY, '1');
+    localStorage.setItem(SNOOZED_KEY, String(Date.now()));
     setShow(false);
     setShowIos(false);
   }, []);
