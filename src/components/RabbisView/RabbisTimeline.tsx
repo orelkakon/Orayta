@@ -1,169 +1,180 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Fragment } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { Rabbi, RabbiCategory } from '@/types';
-import { CATEGORY_COLORS, CATEGORY_LABELS } from '@/lib/rabbisData';
+import { CATEGORY_COLORS, CATEGORY_LABELS, CATEGORY_ORDER } from '@/lib/rabbisData';
 
-const MIN_YEAR = -1100;
-const MAX_YEAR = 2030;
-const SPAN = MAX_YEAR - MIN_YEAR;
-const TRACK_PX = 5000;
-
-function pct(year: number) { return ((year - MIN_YEAR) / SPAN) * 100; }
-function px(year: number)  { return ((year - MIN_YEAR) / SPAN) * TRACK_PX; }
-
-const ERA_BANDS = [
-  { label: 'תנ״ך',           start: -1100, end:  -160, color: '#1A3A6B' },
-  { label: 'זוגות + תנאים', start:  -160, end:   220, color: '#7A3B10' },
-  { label: 'אמוראים',        start:   220, end:   600, color: '#9B2335' },
-  { label: 'גאונים',          start:   600, end:  1050, color: '#2D6A4F' },
-  { label: 'ראשונים',         start:  1050, end:  1500, color: '#1A5C8A' },
-  { label: 'אחרונים ואילך',  start:  1500, end:  2030, color: '#5B3880' },
-];
-const TICKS = [-1000, -500, 0, 500, 1000, 1500, 2000];
-
-const fadeIn = keyframes`from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); }`;
-
-const Wrap      = styled.div`display:flex; flex-direction:column; gap:${theme.spacing.md};`;
-const ScrollBox = styled.div`
-  overflow-x: auto; border-radius: ${theme.radii.lg};
-  scrollbar-width: thin; scrollbar-color: #c9a84c55 transparent;
-  &::-webkit-scrollbar { height:5px; }
-  &::-webkit-scrollbar-thumb { background:#c9a84c55; border-radius:3px; }
-  box-shadow: 0 0 40px rgba(0,0,0,0.5);
-`;
-const Hint = styled.div`
-  font-size:0.75rem; color:${theme.colors.textMuted}; text-align:center; letter-spacing:0.06em;
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
 `;
 
-const Track = styled.div`
+/* The outer wrapper draws the vertical guide line via ::before.
+   padding-right: 28px reserves space for the line + dots on the RIGHT (RTL). */
+const Wrap = styled.div`
   position: relative;
-  width: ${TRACK_PX}px;
-  height: 200px;
-  background: linear-gradient(180deg,#06101e 0%,#0d1b2a 100%);
-  overflow: visible;
-`;
-const Band = styled.div<{ $l:number; $w:number; $c:string }>`
-  position:absolute; top:0; bottom:0;
-  left:${p=>p.$l}px; width:${p=>p.$w}px;
-  background:${p=>p.$c}1a; border-right:1px solid ${p=>p.$c}22;
-`;
-const EraLabel = styled.div<{ $l:number; $c:string }>`
-  position:absolute; top:8px; left:${p=>p.$l+6}px;
-  font-size:0.58rem; font-weight:700; letter-spacing:0.07em;
-  color:${p=>p.$c}bb; white-space:nowrap; pointer-events:none;
-`;
-const Line = styled.div`
-  position:absolute; top:106px; left:0; right:0; height:3px;
-  background:linear-gradient(90deg,transparent,#c9a84c 4%,#f5d07a 50%,#c9a84c 96%,transparent);
-  box-shadow:0 0 10px #c9a84c55;
-`;
-const Tick = styled.div<{ $l:number }>`
-  position:absolute; top:105px; left:${p=>p.$l}px; transform:translateX(-50%);
-  display:flex; flex-direction:column; align-items:center;
-`;
-const TickMark  = styled.div`width:1px; height:12px; background:#c9a84c66;`;
-const TickLabel = styled.div`
-  font-size:0.55rem; font-weight:600; color:#c9a84c88;
-  margin-top:2px; white-space:nowrap;
-`;
-const Node = styled.button<{ $c:string; $active:boolean }>`
-  position:absolute; top:100px; width:16px; height:16px;
-  border-radius:50%; transform:translateX(-50%);
-  border:2px solid ${p=>p.$c};
-  background:${p=>p.$active ? p.$c : '#0d1b2a'};
-  box-shadow:${p=>p.$active ? `0 0 14px ${p.$c},0 0 28px ${p.$c}55` : `0 0 6px ${p.$c}55`};
-  cursor:pointer; transition:all 0.2s; z-index:2;
-  &:hover { background:${p=>p.$c}; box-shadow:0 0 14px ${p=>p.$c}; transform:translateX(-50%) scale(1.4); }
+  padding-right: 28px;
+  &::before {
+    content: '';
+    position: absolute;
+    right: 13px; top: 0; bottom: 0; width: 2px;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      ${theme.colors.border} 4%,
+      ${theme.colors.border} 96%,
+      transparent 100%
+    );
+  }
 `;
 
-const Detail = styled.div`
-  background:${theme.colors.surface}; border:1px solid ${theme.colors.borderLight};
-  border-radius:${theme.radii.lg}; padding:${theme.spacing.lg};
-  animation:${fadeIn} 0.25s ease;
-  display:flex; flex-direction:column; gap:${theme.spacing.sm};
+/* Each row is position:relative so the dot/diamond can be placed on the line */
+const Row = styled.div<{ $click?: boolean; $active?: boolean }>`
+  position: relative;
+  padding: 7px 0;
+  border-radius: ${theme.radii.sm};
+  transition: background 0.12s;
+  cursor: ${p => (p.$click ? 'pointer' : 'default')};
+  background: ${p => (p.$active ? theme.colors.surfaceAlt : 'transparent')};
+  ${p => p.$click && `&:hover { background: ${theme.colors.surfaceAlt}; }`}
 `;
-const DName    = styled.h3`font-family:${theme.fonts.body}; font-size:1.3rem; font-weight:700; color:${theme.colors.primary};`;
-const DFull    = styled.div`font-size:0.85rem; color:${theme.colors.textMuted}; font-style:italic;`;
-const DRow     = styled.div`display:flex; gap:${theme.spacing.sm}; flex-wrap:wrap;`;
-const DCat     = styled.span<{ $c:string }>`
-  font-size:0.75rem; font-weight:700; color:${p=>p.$c};
-  border:1px solid ${p=>p.$c}44; background:${p=>p.$c}11;
-  border-radius:${theme.radii.sm}; padding:2px ${theme.spacing.sm};
+
+/* Circle dot for each rabbi — centered on the line (right:7px → center at 13px from right) */
+const Dot = styled.div<{ $c: string; $on: boolean }>`
+  position: absolute;
+  right: 7px; top: 10px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: ${p => (p.$on ? p.$c : theme.colors.surface)};
+  border: 2px solid ${p => p.$c};
+  box-shadow: 0 0 0 2px ${theme.colors.background};
+  z-index: 1;
+  transition: background 0.15s, box-shadow 0.15s;
+  ${p => p.$on && `box-shadow: 0 0 0 3px ${p.$c}33, 0 0 0 2px ${theme.colors.background};`}
 `;
-const DDate    = styled.span`font-size:0.8rem; color:${theme.colors.textMuted};`;
-const DBio     = styled.p`font-family:${theme.fonts.body}; font-size:0.9rem; line-height:1.75; color:${theme.colors.text};`;
-const CloseBtn = styled.button`
-  align-self:flex-end; font-size:0.78rem; color:${theme.colors.textMuted};
-  border:1px solid ${theme.colors.borderLight}; border-radius:${theme.radii.sm};
-  padding:2px ${theme.spacing.sm}; transition:all 0.15s;
-  &:hover { color:${theme.colors.primary}; border-color:${theme.colors.primary}; }
+
+/* Diamond marker for era section headers */
+const Diamond = styled.div<{ $c: string }>`
+  position: absolute;
+  right: 7px; top: 10px;
+  width: 12px; height: 12px;
+  transform: rotate(45deg);
+  background: ${p => p.$c};
+  box-shadow: 0 0 0 2px ${theme.colors.background};
+  z-index: 1;
+`;
+
+const EraChip = styled.span<{ $c: string }>`
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+  color: ${p => p.$c};
+  background: ${p => p.$c}12;
+  border: 1px solid ${p => p.$c}33;
+  padding: 2px ${theme.spacing.sm};
+  border-radius: ${theme.radii.sm};
+`;
+
+const EntryTop = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: ${theme.spacing.sm};
+  flex-wrap: wrap;
+`;
+
+const EntryName = styled.span`
+  font-family: ${theme.fonts.body};
+  font-size: 0.95rem; font-weight: 600;
+  color: ${theme.colors.primary};
+`;
+
+const EntryDate = styled.span`
+  font-size: 0.72rem;
+  color: ${theme.colors.textMuted};
+  direction: ltr;
+  flex-shrink: 0;
+`;
+
+const EntryBio = styled.p`
+  margin-top: ${theme.spacing.xs};
+  font-family: ${theme.fonts.body};
+  font-size: 0.88rem; line-height: 1.75;
+  color: ${theme.colors.text};
+  border-right: 2px solid ${theme.colors.borderLight};
+  padding-right: ${theme.spacing.sm};
+  animation: ${fadeIn} 0.2s ease;
+`;
+
+const Empty = styled.div`
+  text-align: center;
+  color: ${theme.colors.textMuted};
+  padding: ${theme.spacing.xxl};
+`;
+
+const Hint = styled.div`
+  font-size: 0.75rem;
+  color: ${theme.colors.textLight};
+  text-align: center;
+  margin-bottom: ${theme.spacing.sm};
 `;
 
 interface Props { rabbis: Rabbi[]; }
 
 export default function RabbisTimeline({ rabbis }: Props) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const sorted = useMemo(() =>
-    [...rabbis].sort((a, b) => a.sortYear - b.sortYear), [rabbis]);
+  const groups = useMemo(() => {
+    const map = new Map<string, Rabbi[]>();
+    for (const r of rabbis) {
+      const list = map.get(r.category) ?? [];
+      list.push(r);
+      map.set(r.category, list);
+    }
+    return CATEGORY_ORDER
+      .filter(cat => map.has(cat))
+      .map(cat => ({
+        cat: cat as RabbiCategory,
+        items: (map.get(cat) ?? []).sort((a, b) => a.sortYear - b.sortYear),
+      }));
+  }, [rabbis]);
 
-  const selected = useMemo(() =>
-    sorted.find(r => r.id === selectedId) ?? null, [sorted, selectedId]);
-
-  const toggle = (id: string) =>
-    setSelectedId(prev => prev === id ? null : id);
+  if (rabbis.length === 0) return <Empty>אין תוצאות</Empty>;
 
   return (
-    <Wrap>
-      <Hint>← גלול לחקירת ציר הזמן — לחץ על נקודה לפרטים →</Hint>
-      <ScrollBox>
-        <Track>
-          {ERA_BANDS.map(b => (
-            <Band key={b.label} $l={px(b.start)} $w={px(b.end)-px(b.start)} $c={b.color} />
-          ))}
-          {ERA_BANDS.map(b => (
-            <EraLabel key={b.label} $l={px(b.start)} $c={b.color}>{b.label}</EraLabel>
-          ))}
-          <Line />
-          {TICKS.map(y => (
-            <Tick key={y} $l={px(y)}>
-              <TickMark /><TickLabel>{y < 0 ? `${Math.abs(y)} לפנה״ס` : `${y} לסה״נ`}</TickLabel>
-            </Tick>
-          ))}
-          {sorted.map(r => {
-            const color = CATEGORY_COLORS[r.category as RabbiCategory] ?? '#888';
-            return (
-              <Node
-                key={r.id}
-                $c={color}
-                $active={selectedId === r.id}
-                style={{ left: px(r.sortYear) }}
-                onClick={() => toggle(r.id)}
-                title={r.name}
-              />
-            );
-          })}
-        </Track>
-      </ScrollBox>
+    <>
+      <Hint>לחץ על שם לפרטים</Hint>
+      <Wrap>
+        {groups.map(({ cat, items }) => {
+          const color = CATEGORY_COLORS[cat];
+          return (
+            <Fragment key={cat}>
+              <Row style={{ marginTop: theme.spacing.md }}>
+                <Diamond $c={color} />
+                <EraChip $c={color}>{CATEGORY_LABELS[cat]}</EraChip>
+              </Row>
 
-      {selected && (() => {
-        const color = CATEGORY_COLORS[selected.category as RabbiCategory] ?? theme.colors.primaryLight;
-        return (
-          <Detail>
-            <CloseBtn onClick={() => setSelectedId(null)}>✕ סגור</CloseBtn>
-            <DName>{selected.name}</DName>
-            {selected.fullName && <DFull>{selected.fullName}</DFull>}
-            <DRow>
-              <DCat $c={color}>{CATEGORY_LABELS[selected.category as RabbiCategory] ?? selected.category}</DCat>
-              <DDate>{selected.datePeriod}</DDate>
-            </DRow>
-            <DBio>{selected.bio}</DBio>
-          </Detail>
-        );
-      })()}
-    </Wrap>
+              {items.map(r => {
+                const isOn = expandedId === r.id;
+                return (
+                  <Row
+                    key={r.id}
+                    $click
+                    $active={isOn}
+                    onClick={() => setExpandedId(p => (p === r.id ? null : r.id))}
+                  >
+                    <Dot $c={color} $on={isOn} />
+                    <EntryTop>
+                      <EntryName>{r.name}</EntryName>
+                      <EntryDate>{r.datePeriod}</EntryDate>
+                    </EntryTop>
+                    {isOn && <EntryBio>{r.bio}</EntryBio>}
+                  </Row>
+                );
+              })}
+            </Fragment>
+          );
+        })}
+      </Wrap>
+    </>
   );
 }

@@ -92,7 +92,9 @@ export default function BookCard({ book, onEdit, onDelete }: Props) {
       <AuthorRow>
         <Author>{book.author}</Author>
         {book.rabbiId && (
-          <RabbiLink href="/rabbis">👤 {HE.BOOK_VIEW_RABBI}</RabbiLink>
+          <RabbiLink href={`/rabbis?q=${encodeURIComponent(book.author)}`}>
+            👤 {HE.BOOK_VIEW_RABBI}
+          </RabbiLink>
         )}
       </AuthorRow>
       {(onEdit || onDelete) && (

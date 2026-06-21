@@ -1,10 +1,14 @@
 import AppLayout from '@/components/Layout/AppLayout';
 import RabbisView from '@/components/RabbisView/RabbisView';
 
-export default function RabbisPage() {
+interface Props {
+  searchParams: { q?: string };
+}
+
+export default function RabbisPage({ searchParams }: Props) {
   return (
     <AppLayout>
-      <RabbisView />
+      <RabbisView initialSearch={searchParams.q ?? ''} />
     </AppLayout>
   );
 }

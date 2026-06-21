@@ -118,11 +118,13 @@ const ViewBtn = styled.button<{ $active: boolean }>`
   &:hover { border-color: ${theme.colors.primary}; color: ${({ $active }) => $active ? 'white' : theme.colors.primary}; }
 `;
 
-export default function RabbisView() {
+interface Props { initialSearch?: string; }
+
+export default function RabbisView({ initialSearch = '' }: Props) {
   const [rabbis, setRabbis] = useState<Rabbi[]>([]);
   const [books, setBooks] = useState<Book[]>([]);
   const [category, setCategory] = useState<string>('all');
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(initialSearch);
   const [editRabbi, setEditRabbi] = useState<Rabbi | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
@@ -208,7 +210,7 @@ export default function RabbisView() {
       </TabsScroll>
 
       {showTimeline ? (
-        <RabbisTimeline rabbis={rabbis} />
+        <RabbisTimeline rabbis={filtered} />
       ) : (
         <Grid>
           {filtered.length === 0
