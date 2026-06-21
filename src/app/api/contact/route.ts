@@ -22,8 +22,11 @@ async function sendEmail(name: string | undefined, message: string, rating: numb
   if (!gmailUser || !gmailPass || !toEmail) return;
 
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // STARTTLS
     auth: { user: gmailUser, pass: gmailPass },
+    tls: { rejectUnauthorized: false },
   });
 
   const ratingText = typeof rating === 'number' ? `\nדירוג: ${'⭐'.repeat(rating)} (${rating}/5)` : '';

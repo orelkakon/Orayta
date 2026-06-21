@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -18,7 +18,7 @@ const Header = styled.header`
   color: white;
   padding: 0 ${theme.spacing.lg};
   display: flex;
-  align-items: stretch;
+  align-items: center;
   justify-content: space-between;
   gap: ${theme.spacing.sm};
   box-shadow: ${theme.shadows.md};
@@ -32,11 +32,6 @@ const Header = styled.header`
 
 const LogoGroup = styled.div`
   display: flex; align-items: center; gap: ${theme.spacing.sm}; flex-shrink: 0;
-  padding: ${theme.spacing.sm} 0;
-  border-left: 1px solid rgba(255,255,255,0.15);
-  padding-left: ${theme.spacing.md};
-  margin-left: ${theme.spacing.sm};
-  @media (max-width: 768px) { border-left: none; padding-left: 0; margin-left: 0; }
 `;
 
 const LogoArea = styled(Link)`
@@ -55,7 +50,6 @@ const AppName = styled.span`
 
 const Tagline = styled.span`
   font-size: 0.6rem; opacity: 0.55; letter-spacing: 0.06em;
-  font-family: ${theme.fonts.body};
 `;
 
 const ThemeBtn = styled.button`
@@ -67,12 +61,26 @@ const ThemeBtn = styled.button`
   &:hover { opacity: 1; background: rgba(255,255,255,0.15); }
 `;
 
-/* Desktop nav — takes all remaining space, items spread across it */
+/* Hebrew date — absolutely centered so it never disturbs the flex layout */
+const DateBadge = styled.div`
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 5px;
+  font-family: ${theme.fonts.body};
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.65);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  @media (max-width: 900px) { display: none; }
+`;
+
+/* Desktop nav */
 const Nav = styled.nav`
-  display: flex; align-items: center;
-  flex: 1;
-  justify-content: flex-end;
-  gap: 1px;
+  display: flex; align-items: center; gap: 1px;
+  flex: 1; justify-content: flex-end;
   overflow-x: auto; scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
   @media (max-width: 768px) { display: none; }
@@ -80,25 +88,25 @@ const Nav = styled.nav`
 
 const NavLink = styled(Link)<{ $active?: boolean }>`
   display: flex; align-items: center; gap: 4px;
-  height: 100%;
-  padding: 0 8px;
+  padding: 0 8px; height: 60px;
   font-size: 0.8rem; font-weight: 500; white-space: nowrap; flex-shrink: 0;
   border-bottom: 3px solid ${({ $active }) => ($active ? theme.colors.secondary : 'transparent')};
   background: ${({ $active }) => ($active ? 'rgba(255,255,255,0.12)' : 'transparent')};
   transition: background 0.15s, border-color 0.15s;
   &:hover { background: rgba(255,255,255,0.12); }
+  @media (max-width: 480px) { height: 52px; }
 `;
 
 const LogoutButton = styled.button`
   display: flex; align-items: center; gap: 4px;
-  height: 100%; padding: 0 8px;
+  padding: 0 8px; height: 60px;
   font-size: 0.8rem; font-weight: 500; color: white; opacity: 0.65;
   white-space: nowrap; flex-shrink: 0; border-bottom: 3px solid transparent;
   transition: all 0.15s;
   &:hover { opacity: 1; background: rgba(255,255,255,0.12); }
+  @media (max-width: 480px) { height: 52px; }
 `;
 
-/* Hamburger — only on mobile */
 const HamBtn = styled.button`
   display: none;
   color: white; font-size: 1.35rem;
@@ -120,6 +128,16 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname   = usePathname();
   const { isDark, toggle } = useDarkMode();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [hebrewDate, setHebrewDate] = useState('');
+
+  useEffect(() => {
+    try {
+      const d = new Intl.DateTimeFormat('he-IL-u-ca-hebrew', {
+        day: 'numeric', month: 'long', year: 'numeric',
+      }).format(new Date());
+      setHebrewDate(d);
+    } catch { /* unsupported — stays empty */ }
+  }, []);
 
   const handleLogout = async () => {
     clearStats();
@@ -145,6 +163,13 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             {isDark ? '☀' : '☾'}
           </ThemeBtn>
         </LogoGroup>
+
+        {hebrewDate && (
+          <DateBadge>
+            <span style={{ opacity: 0.5 }}>📅</span>
+            {hebrewDate}
+          </DateBadge>
+        )}
 
         <Nav>
           <NavLink href="/rabbis"    $active={isActive('/rabbis')}>👥 {HE.NAV_RABBIS}</NavLink>
