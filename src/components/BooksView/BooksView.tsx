@@ -8,6 +8,7 @@ import { Book } from '@/types';
 import { useRole } from '@/components/common/RoleContext';
 import BookCard from './BookCard';
 import BookForm from './BookForm';
+import SearchField from '@/components/common/SearchField';
 
 const Container = styled.div`
   display: flex;
@@ -48,17 +49,6 @@ const CountBadge = styled.span`
   color: ${theme.colors.textLight};
 `;
 
-const SearchInput = styled.input`
-  padding: ${theme.spacing.sm} ${theme.spacing.md};
-  border: 2px solid ${theme.colors.border};
-  border-radius: ${theme.radii.md};
-  font-size: 1rem;
-  background: ${theme.colors.surface};
-  color: ${theme.colors.text};
-  outline: none;
-  width: 100%;
-  &:focus { border-color: ${theme.colors.primaryLight}; }
-`;
 
 const Grid = styled.div`
   display: grid;
@@ -129,9 +119,9 @@ export default function BooksView() {
         )}
       </TitleRow>
 
-      <SearchInput
+      <SearchField
         value={search}
-        onChange={e => setSearch(e.target.value)}
+        onChange={setSearch}
         placeholder={HE.BOOKS_SEARCH_PLACEHOLDER}
       />
 

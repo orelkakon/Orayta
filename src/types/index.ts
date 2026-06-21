@@ -91,3 +91,10 @@ export interface Chidush {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface Dedication {
+  id: string;
+  type: string;
+  name: string;
+  createdAt: string;
+}

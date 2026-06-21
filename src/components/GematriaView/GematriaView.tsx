@@ -9,6 +9,7 @@ import { useRole } from '@/components/common/RoleContext';
 import GematriaCard from './GematriaCard';
 import GematriaForm from './GematriaForm';
 import GematriaConnectionGroup from './GematriaConnectionGroup';
+import SearchField from '@/components/common/SearchField';
 
 const Container = styled.div`
   display: flex;
@@ -49,17 +50,6 @@ const CountBadge = styled.span`
   color: ${theme.colors.textLight};
 `;
 
-const SearchInput = styled.input`
-  padding: ${theme.spacing.sm} ${theme.spacing.md};
-  border: 2px solid ${theme.colors.border};
-  border-radius: ${theme.radii.md};
-  font-size: 1rem;
-  background: ${theme.colors.surface};
-  color: ${theme.colors.text};
-  outline: none;
-  width: 100%;
-  &:focus { border-color: ${theme.colors.primaryLight}; }
-`;
 
 const Grid = styled.div`
   display: grid;
@@ -139,9 +129,9 @@ export default function GematriaView() {
         )}
       </TitleRow>
 
-      <SearchInput
+      <SearchField
         value={search}
-        onChange={e => setSearch(e.target.value)}
+        onChange={setSearch}
         placeholder={HE.GEMATRIA_SEARCH_PLACEHOLDER}
       />
 

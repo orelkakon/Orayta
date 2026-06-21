@@ -75,6 +75,23 @@ model Chidush {
   @@index([createdAt])
 }
 
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String?
+  message   String
+  rating    Int?
+  createdAt DateTime @default(now())
+}
+
+model Dedication {
+  id        String   @id @default(cuid())
+  type      String
+  name      String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 model QuizResult {
   id         String   @id @default(cuid())
   citationId String

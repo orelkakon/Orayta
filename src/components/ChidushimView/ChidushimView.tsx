@@ -8,6 +8,7 @@ import { Chidush } from '@/types';
 import { useRole } from '@/components/common/RoleContext';
 import ChidushCard from './ChidushCard';
 import ChidushForm from './ChidushForm';
+import SearchField from '@/components/common/SearchField';
 
 const Container = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
 
@@ -28,13 +29,6 @@ const AddBtn = styled.button`
   &:hover { background: ${theme.colors.primaryLight}; }
 `;
 
-const SearchInput = styled.input`
-  padding: ${theme.spacing.sm} ${theme.spacing.md};
-  border: 2px solid ${theme.colors.border}; border-radius: ${theme.radii.md};
-  font-size: 1rem; background: ${theme.colors.surface}; color: ${theme.colors.text};
-  outline: none; width: 100%;
-  &:focus { border-color: ${theme.colors.primaryLight}; }
-`;
 
 const List = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
 
@@ -94,9 +88,9 @@ export default function ChidushimView() {
         )}
       </TitleRow>
 
-      <SearchInput
+      <SearchField
         value={search}
-        onChange={e => setSearch(e.target.value)}
+        onChange={setSearch}
         placeholder={HE.CHIDUSHIM_SEARCH_PLACEHOLDER}
       />
 

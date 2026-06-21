@@ -16,7 +16,7 @@ const Wrapper = styled.div`min-height: 100vh; display: flex; flex-direction: col
 const Header = styled.header`
   background: ${theme.colors.primary};
   color: white;
-  padding: ${theme.spacing.sm} ${theme.spacing.lg};
+  padding: ${theme.spacing.md} ${theme.spacing.lg};
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -25,7 +25,8 @@ const Header = styled.header`
   position: sticky;
   top: 0;
   z-index: 100;
-  @media (max-width: 480px) { padding: 6px ${theme.spacing.sm}; }
+  min-height: 56px;
+  @media (max-width: 480px) { padding: 8px ${theme.spacing.sm}; min-height: 50px; }
 `;
 
 const LogoGroup = styled.div`
@@ -132,15 +133,16 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
         </LogoGroup>
 
         <Nav>
-          <NavLink href="/rabbis"    $active={isActive('/rabbis')}>{HE.NAV_RABBIS}</NavLink>
-          <NavLink href="/books"     $active={isActive('/books')}>{HE.NAV_BOOKS}</NavLink>
-          <NavLink href="/study"     $active={isActive('/study') || pathname === '/add'}>{HE.NAV_TALMUD}</NavLink>
-          <NavLink href="/gematria"  $active={isActive('/gematria')}>{HE.NAV_GEMATRIA}</NavLink>
-          <NavLink href="/chidushim" $active={isActive('/chidushim')}>{HE.NAV_CHIDUSHIM}</NavLink>
-          <NavLink href="/quiz"      $active={isActive('/quiz')}>{HE.NAV_LEARN}</NavLink>
-          <NavLink href="/today"     $active={isActive('/today')}>{HE.NAV_TODAY}</NavLink>
-          <NavLink href="/about"     $active={isActive('/about')}>{HE.NAV_ABOUT}</NavLink>
-          <LogoutButton onClick={handleLogout}>{HE.NAV_LOGOUT}</LogoutButton>
+          <NavLink href="/rabbis"    $active={isActive('/rabbis')}>👥 {HE.NAV_RABBIS}</NavLink>
+          <NavLink href="/books"     $active={isActive('/books')}>📖 {HE.NAV_BOOKS}</NavLink>
+          <NavLink href="/study"     $active={isActive('/study') || pathname === '/add'}>📜 {HE.NAV_TALMUD}</NavLink>
+          <NavLink href="/gematria"  $active={isActive('/gematria')}>🔢 {HE.NAV_GEMATRIA}</NavLink>
+          <NavLink href="/chidushim" $active={isActive('/chidushim')}>💡 {HE.NAV_CHIDUSHIM}</NavLink>
+          <NavLink href="/quiz"      $active={isActive('/quiz')}>🎯 {HE.NAV_LEARN}</NavLink>
+          <NavLink href="/today"     $active={isActive('/today')}>🗓️ {HE.NAV_TODAY}</NavLink>
+          <NavLink href="/contact"   $active={isActive('/contact')}>📞 {HE.NAV_CONTACT}</NavLink>
+          <NavLink href="/about"     $active={isActive('/about')}>ℹ️ {HE.NAV_ABOUT}</NavLink>
+          <LogoutButton onClick={handleLogout}>🚪 {HE.NAV_LOGOUT}</LogoutButton>
         </Nav>
 
         <HamBtn onClick={() => setMenuOpen(o => !o)} aria-label="תפריט">

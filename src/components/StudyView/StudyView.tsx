@@ -11,6 +11,7 @@ import Modal from '@/components/common/Modal';
 import CitationForm from '@/components/CitationForm/CitationForm';
 import RandomCitationModal from '@/components/StudyView/RandomCitationModal';
 import { useRole } from '@/components/common/RoleContext';
+import SearchField from '@/components/common/SearchField';
 
 const Container = styled.div`
   display: flex;
@@ -72,20 +73,9 @@ const Select = styled.select`
   }
 `;
 
-const SearchInput = styled.input`
-  padding: ${theme.spacing.sm} ${theme.spacing.md};
-  border: 2px solid ${theme.colors.border};
-  border-radius: ${theme.radii.md};
-  font-size: 0.9rem;
-  background: ${theme.colors.surface};
-  color: ${theme.colors.text};
-  outline: none;
+const SearchWrap = styled.div`
   flex: 2;
   min-width: 200px;
-
-  &:focus {
-    border-color: ${theme.colors.primaryLight};
-  }
 `;
 
 const CountBadge = styled.div`
@@ -177,11 +167,13 @@ export default function StudyView() {
             </Select>
           </FilterField>
 
-          <SearchInput
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={HE.STUDY_SEARCH_PLACEHOLDER}
-          />
+          <SearchWrap>
+            <SearchField
+              value={search}
+              onChange={setSearch}
+              placeholder={HE.STUDY_SEARCH_PLACEHOLDER}
+            />
+          </SearchWrap>
         </FilterRow>
         {!loading && <CountBadge>{HE.STUDY_COUNT(citations.length)}</CountBadge>}
       </FilterSection>

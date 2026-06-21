@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import OraytaLogo from '@/components/common/OraytaLogo';
+import DedicationsBar from './DedicationsBar';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(18px); }
@@ -132,6 +133,8 @@ export default function HomeView() {
         </QuoteBlock>
         <WelcomeText>{HE.APP_SUBTITLE}</WelcomeText>
       </Hero>
+
+      <DedicationsBar />
 
       <Divider />
       <NavHint>{HE.HOME_NAV_HINT}</NavHint>

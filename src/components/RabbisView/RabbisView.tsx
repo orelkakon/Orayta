@@ -10,6 +10,7 @@ import { useRole } from '@/components/common/RoleContext';
 import RabbiCard from './RabbiCard';
 import RabbiForm from './RabbiForm';
 import RabbisTimeline from './RabbisTimeline';
+import SearchField from '@/components/common/SearchField';
 
 const Container = styled.div`
   display: flex;
@@ -50,17 +51,6 @@ const CountBadge = styled.span`
   color: ${theme.colors.textLight};
 `;
 
-const SearchInput = styled.input`
-  padding: ${theme.spacing.sm} ${theme.spacing.md};
-  border: 2px solid ${theme.colors.border};
-  border-radius: ${theme.radii.md};
-  font-size: 1rem;
-  background: ${theme.colors.surface};
-  color: ${theme.colors.text};
-  outline: none;
-  width: 100%;
-  &:focus { border-color: ${theme.colors.primaryLight}; }
-`;
 
 const TabsScroll = styled.div`
   display: flex;
@@ -196,9 +186,9 @@ export default function RabbisView({ initialSearch = '' }: Props) {
         </div>
       </TitleRow>
 
-      <SearchInput
+      <SearchField
         value={search}
-        onChange={e => setSearch(e.target.value)}
+        onChange={setSearch}
         placeholder={HE.RABBIS_SEARCH_PLACEHOLDER}
       />
 

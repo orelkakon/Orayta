@@ -173,7 +173,7 @@ export default function LoginScreen() {
       body: JSON.stringify({ passcode }),
     });
     setLoading(false);
-    if (res.ok) { window.location.href = '/study'; }
+    if (res.ok) { window.location.href = '/'; }
     else { setError(true); setPasscode(''); }
   };
 
