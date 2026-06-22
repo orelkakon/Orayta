@@ -4,6 +4,7 @@ import { Fragment, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { ContentSection, SefariaBook } from '@/lib/contentsSections';
+import type { StaticGroup } from '@/lib/prayers/types';
 import { toHebrewNumeral } from '@/lib/hebrewNumerals';
 import SpeakButton from '@/components/common/SpeakButton';
 
@@ -98,18 +99,40 @@ const Loading = styled.div`
   padding: ${theme.spacing.xxl}; font-size: 0.95rem;
 `;
 
+function StaticGroupsView({ groups }: { groups: StaticGroup[] }) {
+  return (
+    <TextCard>
+      {groups.map((group, gi) => (
+        <Fragment key={gi}>
+          <GroupTitle>{group.title}</GroupTitle>
+          {group.items.map((item, ii) => (
+            <BlessingRow key={ii}>
+              {item.icon && <BlessingIcon>{item.icon}</BlessingIcon>}
+              <BlessingMeta>
+                {item.label && <BlessingLabel>{item.label}</BlessingLabel>}
+                <BlessingText>{item.text}</BlessingText>
+              </BlessingMeta>
+            </BlessingRow>
+          ))}
+        </Fragment>
+      ))}
+    </TextCard>
+  );
+}
+
 interface Props { section: ContentSection; }
 
 export default function ContentReader({ section }: Props) {
   const [book, setBook] = useState<SefariaBook | null>(section.books?.[0] ?? null);
   const [chapter, setChapter] = useState(1);
+  const [sectionIdx, setSectionIdx] = useState(0);
   const [verses, setVerses] = useState<string[]>([]);
   const [refLabel, setRefLabel] = useState('');
   const [loading, setLoading] = useState(false);
   const maxChapters = book?.chapters ?? section.totalChapters ?? 1;
 
   useEffect(() => {
-    if (section.type === 'static') return;
+    if (section.type === 'static' || section.type === 'static-sections') return;
     const baseRef = book?.ref ?? section.ref ?? '';
     const ref = maxChapters > 1 ? `${baseRef}.${chapter}` : baseRef;
     setLoading(true);
@@ -129,36 +152,37 @@ export default function ContentReader({ section }: Props) {
     setChapter(1);
   };
 
-  const fullText = verses.join(' ');
+  if (section.type === 'static-sections' && section.staticSections) {
+    const current = section.staticSections[sectionIdx];
+    return (
+      <Wrap>
+        <Controls>
+          <Select value={sectionIdx} onChange={e => setSectionIdx(Number(e.target.value))}>
+            {section.staticSections.map((s, i) => (
+              <option key={i} value={i}>{s.name}</option>
+            ))}
+          </Select>
+        </Controls>
+        <StaticGroupsView groups={current.groups} />
+      </Wrap>
+    );
+  }
 
   if (section.type === 'static') {
-    return (
-      <TextCard>
-        {section.staticGroups ? (
-          section.staticGroups.map((group, gi) => (
-            <Fragment key={gi}>
-              <GroupTitle>{group.title}</GroupTitle>
-              {group.items.map((item, ii) => (
-                <BlessingRow key={ii}>
-                  {item.icon && <BlessingIcon>{item.icon}</BlessingIcon>}
-                  <BlessingMeta>
-                    {item.label && <BlessingLabel>{item.label}</BlessingLabel>}
-                    <BlessingText>{item.text}</BlessingText>
-                  </BlessingMeta>
-                </BlessingRow>
-              ))}
-            </Fragment>
-          ))
-        ) : (
-          section.staticText?.map((line, i) => (
+    return section.staticGroups
+      ? <StaticGroupsView groups={section.staticGroups} />
+      : (
+        <TextCard>
+          {section.staticText?.map((line, i) => (
             <BlessingRow key={i}>
               <BlessingMeta><BlessingText>{line}</BlessingText></BlessingMeta>
             </BlessingRow>
-          ))
-        )}
-      </TextCard>
-    );
+          ))}
+        </TextCard>
+      );
   }
+
+  const fullText = verses.join(' ');
 
   return (
     <Wrap>

@@ -1,15 +1,13 @@
-export type { StaticItem, StaticGroup } from './staticPrayers';
-import type { StaticGroup } from './staticPrayers';
-import {
-  BRACHOT_NEHENIN_GROUPS,
-  BIRKHAT_HAMAZON_GROUPS,
-  SIDDUR_GROUPS,
-  ASHER_YATZAR,
-} from './staticPrayers';
+export type { StaticItem, StaticGroup, SiddurSection } from './prayers/types';
+import type { StaticGroup, SiddurSection } from './prayers/types';
+import { BRACHOT_NEHENIN_GROUPS } from './prayers/brachotNehenin';
+import { BIRKHAT_HAMAZON_GROUPS } from './prayers/birkhatHamazon';
+import { ASHER_YATZAR } from './staticPrayers';
+import { SIDDUR_SECTIONS } from './siddurContent';
 
 export interface SefariaBook { ref: string; name: string; chapters: number; }
 
-export type SectionType = 'sefaria-chapters' | 'sefaria-books' | 'static';
+export type SectionType = 'sefaria-chapters' | 'sefaria-books' | 'static' | 'static-sections';
 
 export interface ContentSection {
   id: string;
@@ -22,6 +20,7 @@ export interface ContentSection {
   books?: SefariaBook[];
   staticText?: string[];
   staticGroups?: StaticGroup[];
+  staticSections?: SiddurSection[];
 }
 
 export const TORAH_BOOKS: SefariaBook[] = [
@@ -66,15 +65,14 @@ export const KETUVIM_BOOKS: SefariaBook[] = [
   { ref: 'II Chronicles',  name: 'דברי הימים ב', chapters: 36  },
 ];
 
-// Ordered: סידור, תהילים, ברכת המזון, ברכות הנהנין, תורה, נביאים, כתובים, אשר יצר
 export const SECTIONS: ContentSection[] = [
   {
     id: 'siddur',
     icon: '🕯️',
     title: 'סידור',
-    desc: 'תפילות יומיות',
-    type: 'static',
-    staticGroups: SIDDUR_GROUPS,
+    desc: 'ברכות השחר, קריאת שמע, עמידה',
+    type: 'static-sections',
+    staticSections: SIDDUR_SECTIONS,
   },
   {
     id: 'tehillim',
@@ -89,7 +87,7 @@ export const SECTIONS: ContentSection[] = [
     id: 'birkhat-hamazon',
     icon: '🍞',
     title: 'ברכת המזון',
-    desc: 'נוסח עדות המזרח',
+    desc: 'נוסח עדות המזרח — הרחמן',
     type: 'static',
     staticGroups: BIRKHAT_HAMAZON_GROUPS,
   },

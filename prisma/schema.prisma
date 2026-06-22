@@ -92,6 +92,14 @@ model Dedication {
   @@index([createdAt])
 }
 
+model PageVisit {
+  id      String   @id @default(cuid())
+  ipHash  String   @unique
+  seenAt  DateTime @default(now())
+
+  @@index([ipHash])
+}
+
 model QuizResult {
   id         String   @id @default(cuid())
   citationId String

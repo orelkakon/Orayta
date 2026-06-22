@@ -6,6 +6,7 @@ import OraytaLogo from '@/components/common/OraytaLogo';
 import { HE } from '@/lib/hebrewTexts';
 import ShareSection from './ShareSection';
 import CreatorSection from './CreatorSection';
+import VisitsCounter from './VisitsCounter';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -111,6 +112,8 @@ export default function AboutView() {
         </FeatureList>
         <Verse>&ldquo;{HE.ABOUT_VERSE}&rdquo;</Verse>
       </Card>
+
+      <VisitsCounter />
 
       <CreatorSection />
 

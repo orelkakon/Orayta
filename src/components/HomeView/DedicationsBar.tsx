@@ -8,8 +8,8 @@ import { useRole } from '@/components/common/RoleContext';
 import { Dedication } from '@/types';
 
 const scrollLeft = keyframes`
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
 `;
 
 /* ── Ticker ── */
