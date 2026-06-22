@@ -256,6 +256,9 @@ export const HE = {
 
   NAV_CHIDUSHIM: 'חידושים',
   NAV_CONTACT: 'צור קשר',
+  NAV_CONTENTS: 'תכנים',
+  CONTENTS_TITLE: 'תכנים',
+  CONTENTS_SUBTITLE: 'ספרי קודש, תפילה וברכות',
 
   HOME_QUOTE: 'כִּי נֵר מִצְוָה וְתוֹרָה אוֹר',
   HOME_QUOTE_SOURCE: 'משלי ו׳, כ״ג',
@@ -269,6 +272,7 @@ export const HE = {
     { icon: '🎯', href: '/quiz',      label: 'תרגול',     desc: 'חידונים ושישה מצבים' },
     { icon: '📅', href: '/today',     label: 'יומי',      desc: 'זמנים ולוח שנה עברי' },
     { icon: '💡', href: '/chidushim', label: 'חידושים',   desc: 'חידושי תורה ומחשבה' },
+    { icon: '📚', href: '/content',   label: 'תכנים',     desc: 'תהילים, תורה, ברכות ועוד' },
     { icon: 'ℹ️', href: '/about',     label: 'אודות',     desc: 'אודות המערכת ויוצרה' },
     { icon: '📞', href: '/contact',   label: 'צור קשר',   desc: 'שאלות, הערות ומשוב' },
   ] as { icon: string; href: string; label: string; desc: string }[],

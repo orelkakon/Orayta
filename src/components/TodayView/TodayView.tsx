@@ -85,6 +85,7 @@ export default function TodayView() {
         {hebrewDate && <HebrewDate>{hebrewDate}</HebrewDate>}
         <Subtitle>{HE.TODAY_SUBTITLE}</Subtitle>
       </Header>
+      <DailySection />
       <Grid>
         <Col>
           <ZmanimCard location={location} locState={locState} date={dateStr} onRetry={requestLocation} />
@@ -95,7 +96,6 @@ export default function TodayView() {
           <EventsCard date={dateStr} />
         </Col>
       </Grid>
-      <DailySection />
     </Container>
   );
 }

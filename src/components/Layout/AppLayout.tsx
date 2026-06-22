@@ -144,6 +144,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           <NavLink href="/books"     $active={isActive('/books')}>📖 {HE.NAV_BOOKS}</NavLink>
           <NavLink href="/study"     $active={isActive('/study') || pathname === '/add'}>📜 {HE.NAV_TALMUD}</NavLink>
           <NavLink href="/gematria"  $active={isActive('/gematria')}>🔢 {HE.NAV_GEMATRIA}</NavLink>
+          <NavLink href="/content"   $active={isActive('/content')}>📚 {HE.NAV_CONTENTS}</NavLink>
           <NavLink href="/chidushim" $active={isActive('/chidushim')}>💡 {HE.NAV_CHIDUSHIM}</NavLink>
           <NavLink href="/quiz"      $active={isActive('/quiz')}>🎯 {HE.NAV_LEARN}</NavLink>
           <NavLink href="/today"     $active={isActive('/today')}>🗓️ {HE.NAV_TODAY}</NavLink>

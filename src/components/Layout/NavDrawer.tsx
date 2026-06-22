@@ -103,6 +103,7 @@ export default function NavDrawer({ open, onClose, pathname, onLogout }: Props) 
     { href: '/books',      label: HE.NAV_BOOKS,     icon: '📖' },
     { href: '/study',      label: HE.NAV_TALMUD,    icon: '📜' },
     { href: '/gematria',   label: HE.NAV_GEMATRIA,  icon: '🔢' },
+    { href: '/content',    label: HE.NAV_CONTENTS,  icon: '📚' },
     { href: '/chidushim',  label: HE.NAV_CHIDUSHIM, icon: '💡' },
     { href: '/quiz',       label: HE.NAV_LEARN,     icon: '🎯' },
     { href: '/today',      label: HE.NAV_TODAY,     icon: '📅' },

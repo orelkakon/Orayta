@@ -22,8 +22,10 @@ const TitleRow = styled.div`
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: ${theme.spacing.md};
+  @media (max-width: 520px) {
+    flex-direction: column;
+  }
 `;
 
 const TitleGroup = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.xs};`;
@@ -102,7 +104,6 @@ const SegmentRow = styled.div`
   border: 1.5px solid ${theme.colors.border};
   border-radius: ${theme.radii.md};
   overflow: hidden;
-  align-self: flex-start;
 `;
 const SegBtn = styled.button<{ $active: boolean }>`
   padding: ${theme.spacing.xs} ${theme.spacing.md};

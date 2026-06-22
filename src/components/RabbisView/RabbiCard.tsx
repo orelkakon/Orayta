@@ -6,6 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Rabbi, RabbiCategory } from '@/types';
 import { CATEGORY_COLORS, CATEGORY_LABELS } from '@/lib/rabbisData';
+import SpeakButton from '@/components/common/SpeakButton';
 
 const Card = styled.div<{ $color: string }>`
   background: ${theme.colors.surface};
@@ -195,6 +196,7 @@ export default function RabbiCard({ rabbi, books, onEdit, onDelete }: Props) {
       </Header>
       <Divider />
       <Bio>{rabbi.bio}</Bio>
+      <SpeakButton text={`${rabbi.name}. ${rabbi.bio}`} />
       {books && books.length > 0 && (
         <BooksSection>
           <BooksToggle onClick={() => setBooksOpen(o => !o)}>

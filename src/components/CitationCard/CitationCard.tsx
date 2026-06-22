@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Citation } from '@/types';
+import SpeakButton from '@/components/common/SpeakButton';
 
 const Card = styled.div`
   background: ${theme.colors.surface};
@@ -101,26 +102,22 @@ export default function CitationCard({ citation, onEdit, onDelete, isReadOnly = 
           <LocationTag key={loc.id}>{formatLocation(loc)}</LocationTag>
         ))}
       </Locations>
-      {!isReadOnly && (
-        <Actions>
-          {confirming ? (
-            <ConfirmOverlay>
-              <span>{HE.DELETE_CONFIRM}</span>
-              <ActionButton $variant="danger" onClick={() => onDelete(citation.id)}>
-                כן, מחק
-              </ActionButton>
-              <ActionButton onClick={() => setConfirming(false)}>{HE.CANCEL}</ActionButton>
-            </ConfirmOverlay>
-          ) : (
-            <>
-              <ActionButton onClick={() => onEdit(citation)}>{HE.STUDY_EDIT}</ActionButton>
-              <ActionButton $variant="danger" onClick={() => setConfirming(true)}>
-                {HE.STUDY_DELETE}
-              </ActionButton>
-            </>
-          )}
-        </Actions>
-      )}
+      <Actions>
+        <SpeakButton text={`${citation.content}. ${citation.locations.map(formatLocation).join(', ')}`} />
+        {!isReadOnly && !confirming && (
+          <>
+            <ActionButton onClick={() => onEdit(citation)}>{HE.STUDY_EDIT}</ActionButton>
+            <ActionButton $variant="danger" onClick={() => setConfirming(true)}>{HE.STUDY_DELETE}</ActionButton>
+          </>
+        )}
+        {!isReadOnly && confirming && (
+          <ConfirmOverlay>
+            <span>{HE.DELETE_CONFIRM}</span>
+            <ActionButton $variant="danger" onClick={() => onDelete(citation.id)}>כן, מחק</ActionButton>
+            <ActionButton onClick={() => setConfirming(false)}>{HE.CANCEL}</ActionButton>
+          </ConfirmOverlay>
+        )}
+      </Actions>
     </Card>
   );
 }

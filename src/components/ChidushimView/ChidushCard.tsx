@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Chidush } from '@/types';
+import SpeakButton from '@/components/common/SpeakButton';
 
 const Card = styled.div`
   background: ${theme.colors.surface};
@@ -88,6 +89,7 @@ export default function ChidushCard({ chidush, onEdit, onDelete }: Props) {
     <Card>
       <Text>{chidush.text}</Text>
       <MetaRow>
+        <SpeakButton text={chidush.text} />
         {hasAuthor && <Chip>👤 {chidush.author}</Chip>}
         {hasSource && <Chip>📖 {chidush.source}</Chip>}
         {!hasMeta && <UnknownSource>{HE.CHIDUSH_UNKNOWN_SOURCE}</UnknownSource>}
