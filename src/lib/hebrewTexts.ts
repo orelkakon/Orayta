@@ -319,6 +319,11 @@ export const HE = {
   CHIDUSH_SAVE_ERROR: 'שגיאה בשמירה, נסה שנית',
   CHIDUSH_UNKNOWN_SOURCE: 'מקור לא ידוע',
 
+  DAILY_TITLE: 'לימוד יומי',
+  DAILY_RABBI: 'רב היום',
+  DAILY_CITATION: 'ציטוט היום',
+  DAILY_BOOK: 'ספר היום',
+
   A2HS_TITLE: 'הוסף לדף הבית',
   A2HS_DESC: 'גישה מהירה לאורייתא ישירות מהמסך הראשי',
   A2HS_BTN: 'הוסף',

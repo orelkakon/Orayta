@@ -62,7 +62,15 @@
       "Bash(curl -s -w \" [GET status:%{http_code}]\\\\n\" http://localhost:3001/api/books -b /tmp/cookies_reader.txt -o /dev/null)",
       "Bash(curl -s -w \" [POST status:%{http_code}]\\\\n\" -X POST http://localhost:3001/api/books -b /tmp/cookies_reader.txt -H \"Content-Type: application/json\" -d '{\"title\":\"x\",\"author\":\"y\"}')",
       "Bash(curl -s -c /tmp/cookies3.txt -X POST http://localhost:3001/api/auth/login -H \"Content-Type: application/json\" -d '{\"passcode\":\"1998\"}' -o /dev/null -w \"login:%{http_code}\\\\n\")",
-      "Bash(curl -s http://localhost:3001/quiz -b /tmp/cookies3.txt -o /tmp/quiz_page.html -w \"page:%{http_code}\\\\n\")"
+      "Bash(curl -s http://localhost:3001/quiz -b /tmp/cookies3.txt -o /tmp/quiz_page.html -w \"page:%{http_code}\\\\n\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\('exports',{}\\).get\\('./og',{}\\)\\)\")",
+      "Bash(git -C /Users/user/Desktop/Claude/orayta status)",
+      "Bash(git -C /Users/user/Desktop/Claude/orayta log --oneline -3)",
+      "Bash(git -C /Users/user/Desktop/Claude/orayta add src/app/apple-icon.tsx src/app/icon.tsx src/app/manifest.ts src/components/common/AddToHomeScreen.tsx src/components/Layout/AppLayout.tsx src/lib/hebrewTexts.ts src/middleware.ts)",
+      "Bash(git -C /Users/user/Desktop/Claude/orayta commit -m ' *)",
+      "Bash(git *)",
+      "Bash(CLAUDE_CODE_TMPDIR=/tmp npm run build)",
+      "Bash(CLAUDE_CODE_TMPDIR=/tmp grep *)"
     ]
   }
 }
