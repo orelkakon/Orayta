@@ -12,7 +12,7 @@ const DAY = Math.floor(Date.now() / 86400000);
 const pick = <T,>(arr: T[]): T | null => arr.length ? arr[DAY % arr.length] : null;
 
 const Wrapper = styled.div`
-  width: 100%; max-width: 560px;
+  width: 100%;
   display: flex; flex-direction: column; gap: ${theme.spacing.md};
 `;
 

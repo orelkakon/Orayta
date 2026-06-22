@@ -6,7 +6,6 @@ import OraytaLogo from '@/components/common/OraytaLogo';
 import { HE } from '@/lib/hebrewTexts';
 import ShareSection from './ShareSection';
 import CreatorSection from './CreatorSection';
-import DailySection from './DailySection';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -99,8 +98,6 @@ export default function AboutView() {
         <AppName>{HE.APP_NAME}</AppName>
         <AppSubtitle>{HE.APP_SUBTITLE}</AppSubtitle>
       </LogoBlock>
-
-      <DailySection />
 
       <Card>
         <SectionTitle>{HE.ABOUT_TITLE}</SectionTitle>

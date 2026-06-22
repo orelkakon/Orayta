@@ -8,6 +8,7 @@ import ZmanimCard from './ZmanimCard';
 import CompassCard from './CompassCard';
 import DafYomiCard from './DafYomiCard';
 import EventsCard from './EventsCard';
+import DailySection from './DailySection';
 
 export interface GeoLocation { lat: number; lon: number; tz: string; }
 export type LocState = 'loading' | 'granted' | 'denied';
@@ -94,6 +95,7 @@ export default function TodayView() {
           <EventsCard date={dateStr} />
         </Col>
       </Grid>
+      <DailySection />
     </Container>
   );
 }
