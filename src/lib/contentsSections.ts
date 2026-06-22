@@ -1,3 +1,12 @@
+export type { StaticItem, StaticGroup } from './staticPrayers';
+import type { StaticGroup } from './staticPrayers';
+import {
+  BRACHOT_NEHENIN_GROUPS,
+  BIRKHAT_HAMAZON_GROUPS,
+  SIDDUR_GROUPS,
+  ASHER_YATZAR,
+} from './staticPrayers';
+
 export interface SefariaBook { ref: string; name: string; chapters: number; }
 
 export type SectionType = 'sefaria-chapters' | 'sefaria-books' | 'static';
@@ -8,10 +17,11 @@ export interface ContentSection {
   title: string;
   desc: string;
   type: SectionType;
-  ref?: string;               // sefaria-chapters: base ref, e.g. "Psalms"
+  ref?: string;
   totalChapters?: number;
-  books?: SefariaBook[];      // sefaria-books: book list
-  staticText?: string[];      // static: paragraphs
+  books?: SefariaBook[];
+  staticText?: string[];
+  staticGroups?: StaticGroup[];
 }
 
 export const TORAH_BOOKS: SefariaBook[] = [
@@ -56,24 +66,15 @@ export const KETUVIM_BOOKS: SefariaBook[] = [
   { ref: 'II Chronicles',  name: 'דברי הימים ב', chapters: 36  },
 ];
 
-export const BRACHOT_NEHENIN: string[] = [
-  'בָּרוּךְ אַתָּה ה׳ אֱלֹהֵינוּ מֶלֶךְ הָעוֹלָם הַמּוֹצִיא לֶחֶם מִן הָאָרֶץ',
-  'בָּרוּךְ אַתָּה ה׳ אֱלֹהֵינוּ מֶלֶךְ הָעוֹלָם בּוֹרֵא מִינֵי מְזוֹנוֹת',
-  'בָּרוּךְ אַתָּה ה׳ אֱלֹהֵינוּ מֶלֶךְ הָעוֹלָם בּוֹרֵא פְּרִי הַגָּפֶן',
-  'בָּרוּךְ אַתָּה ה׳ אֱלֹהֵינוּ מֶלֶךְ הָעוֹלָם בּוֹרֵא פְּרִי הָעֵץ',
-  'בָּרוּךְ אַתָּה ה׳ אֱלֹהֵינוּ מֶלֶךְ הָעוֹלָם בּוֹרֵא פְּרִי הָאֲדָמָה',
-  'בָּרוּךְ אַתָּה ה׳ אֱלֹהֵינוּ מֶלֶךְ הָעוֹלָם שֶׁהַכֹּל נִהְיָה בִּדְבָרוֹ',
-];
-
+// Ordered: סידור, תהילים, ברכת המזון, ברכות הנהנין, תורה, נביאים, כתובים, אשר יצר
 export const SECTIONS: ContentSection[] = [
   {
-    id: 'birkhat-hamazon',
-    icon: '🍞',
-    title: 'ברכת המזון',
-    desc: 'נוסח עדות המזרח',
-    type: 'sefaria-chapters',
-    ref: 'Birkat_Hamazon',
-    totalChapters: 1,
+    id: 'siddur',
+    icon: '🕯️',
+    title: 'סידור',
+    desc: 'תפילות יומיות',
+    type: 'static',
+    staticGroups: SIDDUR_GROUPS,
   },
   {
     id: 'tehillim',
@@ -85,13 +86,20 @@ export const SECTIONS: ContentSection[] = [
     totalChapters: 150,
   },
   {
-    id: 'siddur',
-    icon: '🕯️',
-    title: 'סידור',
-    desc: 'תפילות יומיות',
-    type: 'sefaria-chapters',
-    ref: 'Siddur_Ashkenaz,_Weekday,_Shacharit,_Amidah',
-    totalChapters: 1,
+    id: 'birkhat-hamazon',
+    icon: '🍞',
+    title: 'ברכת המזון',
+    desc: 'נוסח עדות המזרח',
+    type: 'static',
+    staticGroups: BIRKHAT_HAMAZON_GROUPS,
+  },
+  {
+    id: 'brachot-nehenin',
+    icon: '🙏',
+    title: 'ברכות הנהנין',
+    desc: 'ברכות על אוכל, שתייה וריח',
+    type: 'static',
+    staticGroups: BRACHOT_NEHENIN_GROUPS,
   },
   {
     id: 'torah',
@@ -118,11 +126,11 @@ export const SECTIONS: ContentSection[] = [
     books: KETUVIM_BOOKS,
   },
   {
-    id: 'brachot-nehenin',
-    icon: '🙏',
-    title: 'ברכות הנהנין',
-    desc: 'ברכות על אוכל ושתייה',
+    id: 'asher-yatzar',
+    icon: '🤲',
+    title: 'אשר יצר',
+    desc: 'ברכת אשר יצר',
     type: 'static',
-    staticText: BRACHOT_NEHENIN,
+    staticGroups: [{ title: 'אשר יצר', items: ASHER_YATZAR }],
   },
 ];

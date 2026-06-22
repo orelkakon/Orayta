@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { ContentSection, SefariaBook } from '@/lib/contentsSections';
+import { toHebrewNumeral } from '@/lib/hebrewNumerals';
 import SpeakButton from '@/components/common/SpeakButton';
 
 interface SefariaResp { he: string[]; heRef?: string; }
@@ -51,7 +52,8 @@ const Verse = styled.div`
 
 const VerseNum = styled.span`
   font-size: 0.72rem; color: ${theme.colors.textLight};
-  min-width: 20px; padding-top: 4px; flex-shrink: 0; font-weight: 600;
+  min-width: 22px; padding-top: 4px; flex-shrink: 0; font-weight: 600;
+  font-family: ${theme.fonts.body};
 `;
 
 const VerseText = styled.p`
@@ -59,11 +61,36 @@ const VerseText = styled.p`
   color: ${theme.colors.text};
 `;
 
-const StaticText = styled.p`
-  font-family: ${theme.fonts.body}; font-size: 1.1rem; line-height: 2.1;
-  color: ${theme.colors.text}; padding: ${theme.spacing.md} 0;
+const GroupTitle = styled.div`
+  font-family: ${theme.fonts.body}; font-size: 1.05rem; font-weight: 700;
+  color: ${theme.colors.primary};
+  padding: ${theme.spacing.sm} 0 4px;
+  border-bottom: 2px solid ${theme.colors.borderLight};
+  margin-bottom: ${theme.spacing.sm};
+  margin-top: ${theme.spacing.md};
+  &:first-child { margin-top: 0; }
+`;
+
+const BlessingRow = styled.div`
+  display: flex; gap: ${theme.spacing.sm}; align-items: flex-start;
+  padding: ${theme.spacing.sm} 0;
   border-bottom: 1px solid ${theme.colors.borderLight};
   &:last-child { border-bottom: none; }
+`;
+
+const BlessingIcon = styled.span`
+  font-size: 1.4rem; flex-shrink: 0; line-height: 1; padding-top: 2px;
+`;
+
+const BlessingMeta = styled.div`display: flex; flex-direction: column; gap: 3px;`;
+
+const BlessingLabel = styled.div`
+  font-size: 0.8rem; font-weight: 700; color: ${theme.colors.secondary};
+`;
+
+const BlessingText = styled.p`
+  font-family: ${theme.fonts.body}; font-size: 1.05rem; line-height: 2;
+  color: ${theme.colors.text};
 `;
 
 const Loading = styled.div`
@@ -96,7 +123,6 @@ export default function ContentReader({ section }: Props) {
       .finally(() => setLoading(false));
   }, [book, chapter, section]);
 
-  // reset chapter on book change
   const handleBookChange = (ref: string) => {
     const b = section.books?.find(b => b.ref === ref) ?? null;
     setBook(b);
@@ -108,7 +134,28 @@ export default function ContentReader({ section }: Props) {
   if (section.type === 'static') {
     return (
       <TextCard>
-        {section.staticText?.map((line, i) => <StaticText key={i}>{line}</StaticText>)}
+        {section.staticGroups ? (
+          section.staticGroups.map((group, gi) => (
+            <Fragment key={gi}>
+              <GroupTitle>{group.title}</GroupTitle>
+              {group.items.map((item, ii) => (
+                <BlessingRow key={ii}>
+                  {item.icon && <BlessingIcon>{item.icon}</BlessingIcon>}
+                  <BlessingMeta>
+                    {item.label && <BlessingLabel>{item.label}</BlessingLabel>}
+                    <BlessingText>{item.text}</BlessingText>
+                  </BlessingMeta>
+                </BlessingRow>
+              ))}
+            </Fragment>
+          ))
+        ) : (
+          section.staticText?.map((line, i) => (
+            <BlessingRow key={i}>
+              <BlessingMeta><BlessingText>{line}</BlessingText></BlessingMeta>
+            </BlessingRow>
+          ))
+        )}
       </TextCard>
     );
   }
@@ -126,7 +173,7 @@ export default function ContentReader({ section }: Props) {
             <NavBtn disabled={chapter <= 1} onClick={() => setChapter(c => c - 1)}>→</NavBtn>
             <Select value={chapter} onChange={e => setChapter(Number(e.target.value))}>
               {Array.from({ length: maxChapters }, (_, i) => (
-                <option key={i + 1} value={i + 1}>פרק {i + 1}</option>
+                <option key={i + 1} value={i + 1}>פרק {toHebrewNumeral(i + 1)}</option>
               ))}
             </Select>
             <NavBtn disabled={chapter >= maxChapters} onClick={() => setChapter(c => c + 1)}>←</NavBtn>
@@ -143,7 +190,7 @@ export default function ContentReader({ section }: Props) {
           <Verses>
             {verses.map((v, i) => (
               <Verse key={i}>
-                <VerseNum>{i + 1}</VerseNum>
+                <VerseNum>{toHebrewNumeral(i + 1)}</VerseNum>
                 <VerseText dangerouslySetInnerHTML={{ __html: v }} />
               </Verse>
             ))}

@@ -274,7 +274,6 @@ export const HE = {
     { icon: '💡', href: '/chidushim', label: 'חידושים',   desc: 'חידושי תורה ומחשבה' },
     { icon: '📚', href: '/content',   label: 'תכנים',     desc: 'תהילים, תורה, ברכות ועוד' },
     { icon: 'ℹ️', href: '/about',     label: 'אודות',     desc: 'אודות המערכת ויוצרה' },
-    { icon: '📞', href: '/contact',   label: 'צור קשר',   desc: 'שאלות, הערות ומשוב' },
   ] as { icon: string; href: string; label: string; desc: string }[],
 
   SEARCH_CLEAR: 'נקה',

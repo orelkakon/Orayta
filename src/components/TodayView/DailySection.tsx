@@ -65,10 +65,6 @@ const CardSub = styled.div`
 const Snippet = styled.div`
   font-size: 0.8rem; color: ${theme.colors.textMuted};
   line-height: 1.55; margin-top: 2px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 `;
 
 export default function DailySection() {
