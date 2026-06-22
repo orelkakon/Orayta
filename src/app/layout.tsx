@@ -16,9 +16,26 @@ const heebo = Heebo({
   display: 'swap',
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://orayta.vercel.app';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(APP_URL),
   title: 'אורייתא',
-  description: 'מערכת לניהול ולימוד ציטוטים מהתלמוד הבבלי',
+  description: 'מערכת לניהול, לימוד ותרגול מקורות יהודיים — תלמוד, רבנים, ספרים, חידונים ועוד',
+  openGraph: {
+    title: 'אורייתא',
+    description: 'מערכת לניהול, לימוד ותרגול מקורות יהודיים',
+    url: APP_URL,
+    siteName: 'אורייתא',
+    locale: 'he_IL',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'אורייתא',
+    description: 'מערכת לניהול, לימוד ותרגול מקורות יהודיים',
+  },
+  themeColor: '#5C3D1E',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

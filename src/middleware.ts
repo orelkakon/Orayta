@@ -9,6 +9,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/api/auth') ||
     pathname === '/icon' ||
     pathname === '/apple-icon' ||
+    pathname === '/opengraph-image' ||
     pathname.startsWith('/manifest');
   const isAuthenticated = auth === 'admin' || auth === 'reader';
 
