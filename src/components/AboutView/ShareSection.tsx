@@ -97,9 +97,11 @@ export default function ShareSection() {
   }, []);
 
   const url  = typeof window !== 'undefined' ? window.location.origin : 'https://orayta.vercel.app';
-  const text = `${HE.APP_NAME} — ${HE.APP_SUBTITLE}\n${url}`;
+  // ‏ = RIGHT-TO-LEFT MARK — forces WhatsApp to render Hebrew lines RTL
+  const rtl  = '‏';
+  const text = `${rtl}${HE.APP_NAME}\n${rtl}${HE.APP_SUBTITLE}\n${url}`;
 
-  const handleNative   = () => { void navigator.share({ title: HE.APP_NAME, text: HE.APP_SUBTITLE, url }); };
+  const handleNative   = () => { void navigator.share({ title: HE.APP_NAME, text: `${rtl}${HE.APP_SUBTITLE}`, url }); };
   const handleWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   const handleTelegram = () => window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
   const handleCopy     = () => {
