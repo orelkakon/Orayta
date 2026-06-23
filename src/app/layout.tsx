@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     siteName: 'אורייתא',
     locale: 'he_IL',
     type: 'website',
-    images: [{ url: `${APP_URL}/opengraph-image?v=5`, width: 1200, height: 630, alt: 'אורייתא — מקורות יהודיים' }],
+    images: [{ url: `${APP_URL}/opengraph-image?v=6`, width: 1200, height: 630, alt: 'אורייתא — מקורות יהודיים' }],
   },
   twitter: {
     card: 'summary_large_image',

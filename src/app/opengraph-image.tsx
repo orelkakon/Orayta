@@ -9,6 +9,12 @@ const S  = '#C4956A';
 const A  = '#9B2335';
 const BG = '#FAF7F2';
 
+// Satori renders all text LTR regardless of direction: rtl.
+// To display Hebrew correctly, reverse each word's characters AND reverse word order.
+function rtl(text: string): string {
+  return text.split(' ').reverse().map(w => Array.from(w).reverse().join('')).join(' ');
+}
+
 const FEATURES = ['תלמוד', 'רבנים', 'סידור', 'תהילים', 'חידון', 'תכנים'];
 
 export default function OgImage() {
@@ -41,8 +47,8 @@ export default function OgImage() {
               boxShadow: '0 0 48px rgba(196,149,106,0.25)',
             }}
           >
-            <div style={{ fontSize: 140, fontWeight: 700, color: S, lineHeight: 1, direction: 'rtl' }}>
-              א
+            <div style={{ fontSize: 140, fontWeight: 700, color: S, lineHeight: 1 }}>
+              {rtl('א')}
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -71,8 +77,8 @@ export default function OgImage() {
             }}
           >
             <div style={{ width: 7, height: 7, borderRadius: '50%', background: A }} />
-            <span style={{ color: A, fontSize: 16, letterSpacing: 1, direction: 'rtl' }}>
-              בס״ד · מקורות יהודיים
+            <span style={{ color: A, fontSize: 16, letterSpacing: 1 }}>
+              {rtl('בס״ד · מקורות יהודיים')}
             </span>
           </div>
 
@@ -81,10 +87,9 @@ export default function OgImage() {
             style={{
               color: P, fontSize: 104, fontWeight: 700,
               lineHeight: 0.95, textAlign: 'right', letterSpacing: -3,
-              direction: 'rtl',
             }}
           >
-            אורייתא
+            {rtl('אורייתא')}
           </div>
 
           {/* Gold divider */}
@@ -95,10 +100,9 @@ export default function OgImage() {
             style={{
               color: '#6B5744', fontSize: 23, lineHeight: 1.65,
               textAlign: 'right', maxWidth: 480,
-              direction: 'rtl',
             }}
           >
-            לימוד, ניהול ותרגול מקורות יהודיים — תלמוד, רבנים, סידור, חידונים ועוד
+            {rtl('לימוד, ניהול ותרגול מקורות יהודיים — תלמוד, רבנים, סידור, חידונים ועוד')}
           </div>
 
           {/* Feature pills */}
@@ -116,10 +120,9 @@ export default function OgImage() {
                   border: '1.5px solid rgba(92,61,30,0.20)',
                   borderRadius: 20, padding: '5px 18px',
                   color: P, fontSize: 19, fontWeight: 600,
-                  direction: 'rtl',
                 }}
               >
-                {label}
+                {rtl(label)}
               </div>
             ))}
           </div>
