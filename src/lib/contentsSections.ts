@@ -1,13 +1,12 @@
 export type { StaticItem, StaticGroup, SiddurSection } from './prayers/types';
 import type { StaticGroup, SiddurSection } from './prayers/types';
 import { BRACHOT_NEHENIN_GROUPS } from './prayers/brachotNehenin';
-import { BIRKHAT_HAMAZON_GROUPS } from './prayers/birkhatHamazon';
 import { ASHER_YATZAR } from './staticPrayers';
 import { SIDDUR_SECTIONS } from './siddurContent';
 
 export interface SefariaBook { ref: string; name: string; chapters: number; }
 
-export type SectionType = 'sefaria-chapters' | 'sefaria-books' | 'static' | 'static-sections';
+export type SectionType = 'sefaria-chapters' | 'sefaria-books' | 'static' | 'static-sections' | 'sefaria-prayer';
 
 export interface ContentSection {
   id: string;
@@ -16,6 +15,7 @@ export interface ContentSection {
   desc: string;
   type: SectionType;
   ref?: string;
+  sefariaRef?: string;
   totalChapters?: number;
   books?: SefariaBook[];
   staticText?: string[];
@@ -87,9 +87,9 @@ export const SECTIONS: ContentSection[] = [
     id: 'birkhat-hamazon',
     icon: '🍞',
     title: 'ברכת המזון',
-    desc: 'נוסח עדות המזרח — הרחמן',
-    type: 'static',
-    staticGroups: BIRKHAT_HAMAZON_GROUPS,
+    desc: 'נוסח עדות המזרח',
+    type: 'sefaria-prayer',
+    sefariaRef: 'Siddur_Edot_HaMizrach, Post_Meal_Blessing',
   },
   {
     id: 'brachot-nehenin',

@@ -1,12 +1,14 @@
 'use client';
 
-import { Fragment, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { ContentSection, SefariaBook } from '@/lib/contentsSections';
 import type { StaticGroup } from '@/lib/prayers/types';
 import { toHebrewNumeral } from '@/lib/hebrewNumerals';
 import SpeakButton from '@/components/common/SpeakButton';
+import StaticGroupsView from './StaticGroupsView';
+import SefariaPrayerView from './SefariaPrayerView';
 
 interface SefariaResp { he: string[]; heRef?: string; }
 
@@ -62,31 +64,11 @@ const VerseText = styled.p`
   color: ${theme.colors.text};
 `;
 
-const GroupTitle = styled.div`
-  font-family: ${theme.fonts.body}; font-size: 1.05rem; font-weight: 700;
-  color: ${theme.colors.primary};
-  padding: ${theme.spacing.sm} 0 4px;
-  border-bottom: 2px solid ${theme.colors.borderLight};
-  margin-bottom: ${theme.spacing.sm};
-  margin-top: ${theme.spacing.md};
-  &:first-child { margin-top: 0; }
-`;
-
 const BlessingRow = styled.div`
-  display: flex; gap: ${theme.spacing.sm}; align-items: flex-start;
+  display: flex; align-items: flex-start;
   padding: ${theme.spacing.sm} 0;
   border-bottom: 1px solid ${theme.colors.borderLight};
   &:last-child { border-bottom: none; }
-`;
-
-const BlessingIcon = styled.span`
-  font-size: 1.4rem; flex-shrink: 0; line-height: 1; padding-top: 2px;
-`;
-
-const BlessingMeta = styled.div`display: flex; flex-direction: column; gap: 3px;`;
-
-const BlessingLabel = styled.div`
-  font-size: 0.8rem; font-weight: 700; color: ${theme.colors.secondary};
 `;
 
 const BlessingText = styled.p`
@@ -98,27 +80,6 @@ const Loading = styled.div`
   text-align: center; color: ${theme.colors.textMuted};
   padding: ${theme.spacing.xxl}; font-size: 0.95rem;
 `;
-
-function StaticGroupsView({ groups }: { groups: StaticGroup[] }) {
-  return (
-    <TextCard>
-      {groups.map((group, gi) => (
-        <Fragment key={gi}>
-          <GroupTitle>{group.title}</GroupTitle>
-          {group.items.map((item, ii) => (
-            <BlessingRow key={ii}>
-              {item.icon && <BlessingIcon>{item.icon}</BlessingIcon>}
-              <BlessingMeta>
-                {item.label && <BlessingLabel>{item.label}</BlessingLabel>}
-                <BlessingText>{item.text}</BlessingText>
-              </BlessingMeta>
-            </BlessingRow>
-          ))}
-        </Fragment>
-      ))}
-    </TextCard>
-  );
-}
 
 interface Props { section: ContentSection; }
 
@@ -132,7 +93,7 @@ export default function ContentReader({ section }: Props) {
   const maxChapters = book?.chapters ?? section.totalChapters ?? 1;
 
   useEffect(() => {
-    if (section.type === 'static' || section.type === 'static-sections') return;
+    if (section.type === 'static' || section.type === 'static-sections' || section.type === 'sefaria-prayer') return;
     const baseRef = book?.ref ?? section.ref ?? '';
     const ref = maxChapters > 1 ? `${baseRef}.${chapter}` : baseRef;
     setLoading(true);
@@ -144,13 +105,17 @@ export default function ContentReader({ section }: Props) {
       })
       .catch(() => setVerses([]))
       .finally(() => setLoading(false));
-  }, [book, chapter, section]);
+  }, [book, chapter, section, maxChapters]);
 
   const handleBookChange = (ref: string) => {
     const b = section.books?.find(b => b.ref === ref) ?? null;
     setBook(b);
     setChapter(1);
   };
+
+  if (section.type === 'sefaria-prayer' && section.sefariaRef) {
+    return <SefariaPrayerView sefariaRef={section.sefariaRef} />;
+  }
 
   if (section.type === 'static-sections' && section.staticSections) {
     const current = section.staticSections[sectionIdx];
@@ -163,19 +128,23 @@ export default function ContentReader({ section }: Props) {
             ))}
           </Select>
         </Controls>
-        <StaticGroupsView groups={current.groups} />
+        {current.sefariaRef
+          ? <SefariaPrayerView sefariaRef={current.sefariaRef} />
+          : <StaticGroupsView groups={current.groups ?? []} />
+        }
       </Wrap>
     );
   }
 
   if (section.type === 'static') {
-    return section.staticGroups
-      ? <StaticGroupsView groups={section.staticGroups} />
+    const staticGroups = section.staticGroups as StaticGroup[] | undefined;
+    return staticGroups
+      ? <StaticGroupsView groups={staticGroups} />
       : (
         <TextCard>
           {section.staticText?.map((line, i) => (
             <BlessingRow key={i}>
-              <BlessingMeta><BlessingText>{line}</BlessingText></BlessingMeta>
+              <BlessingText>{line}</BlessingText>
             </BlessingRow>
           ))}
         </TextCard>

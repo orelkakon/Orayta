@@ -11,5 +11,6 @@ export interface StaticGroup {
 
 export interface SiddurSection {
   name: string;
-  groups: StaticGroup[];
+  sefariaRef?: string;
+  groups?: StaticGroup[];
 }

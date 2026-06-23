@@ -1,12 +1,9 @@
 import type { SiddurSection } from './prayers/types';
-import { SHACHARIT_SECTION } from './prayers/shacharit';
-import { SHEMA_SECTION } from './prayers/shema';
-import { AMIDAH_SECTION } from './prayers/amidah';
-import { ALEINU_SECTION } from './prayers/aleinu';
 
 export const SIDDUR_SECTIONS: SiddurSection[] = [
-  SHACHARIT_SECTION,
-  SHEMA_SECTION,
-  AMIDAH_SECTION,
-  ALEINU_SECTION,
+  { name: 'ברכות השחר', sefariaRef: 'Siddur_Edot_HaMizrach, Preparatory_Prayers, Morning_Blessings' },
+  { name: 'ברכות התורה', sefariaRef: 'Siddur_Edot_HaMizrach, Preparatory_Prayers, Torah_Blessings' },
+  { name: 'קריאת שמע', sefariaRef: 'Siddur_Edot_HaMizrach, Weekday_Shacharit, The_Shema' },
+  { name: 'עמידה', sefariaRef: 'Siddur_Edot_HaMizrach, Weekday_Shacharit, Amida' },
+  { name: 'עלינו לשבח', sefariaRef: 'Siddur_Edot_HaMizrach, Weekday_Shacharit, Alenu' },
 ];

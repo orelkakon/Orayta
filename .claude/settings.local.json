@@ -70,7 +70,9 @@
       "Bash(git -C /Users/user/Desktop/Claude/orayta commit -m ' *)",
       "Bash(git *)",
       "Bash(CLAUDE_CODE_TMPDIR=/tmp npm run build)",
-      "Bash(CLAUDE_CODE_TMPDIR=/tmp grep *)"
+      "Bash(CLAUDE_CODE_TMPDIR=/tmp grep *)",
+      "WebFetch(domain:www.sefaria.org)",
+      "WebFetch(domain:www.sefaria.org.il)"
     ]
   }
 }

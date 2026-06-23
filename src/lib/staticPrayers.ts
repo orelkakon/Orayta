@@ -10,4 +10,3 @@ export const ASHER_YATZAR: StaticItem[] = [
 ];
 
 export { BRACHOT_NEHENIN_GROUPS } from './prayers/brachotNehenin';
-export { BIRKHAT_HAMAZON_GROUPS } from './prayers/birkhatHamazon';
