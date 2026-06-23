@@ -102,7 +102,7 @@ export default function ShareSection() {
   const text = `${rtl}${HE.APP_NAME}\n${rtl}${HE.APP_SUBTITLE}\n${url}`;
 
   const handleNative   = () => { void navigator.share({ title: HE.APP_NAME, text: `${rtl}${HE.APP_SUBTITLE}`, url }); };
-  const handleWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  const handleWhatsApp = () => window.open(`https://api.whatsapp.com/send/?text=${encodeURIComponent(text)}`, '_blank');
   const handleTelegram = () => window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
   const handleCopy     = () => {
     void navigator.clipboard.writeText(url).then(() => {
