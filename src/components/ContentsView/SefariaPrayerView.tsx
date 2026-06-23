@@ -14,6 +14,18 @@ const Card = styled.div`
   box-shadow: ${theme.shadows.sm};
 `;
 
+const HeadingPara = styled.p`
+  font-family: ${theme.fonts.body};
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: ${theme.colors.primary};
+  padding: ${theme.spacing.sm} 0 4px;
+  border-bottom: 2px solid ${theme.colors.borderLight};
+  margin-bottom: ${theme.spacing.xs};
+  big { font-size: 1em; }
+  b   { font-weight: 800; }
+`;
+
 const Para = styled.p`
   font-family: ${theme.fonts.body};
   font-size: 1.05rem;
@@ -23,23 +35,13 @@ const Para = styled.p`
   border-bottom: 1px solid ${theme.colors.borderLight};
   &:last-child { border-bottom: none; }
 
-  big {
-    display: block;
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: ${theme.colors.primary};
-    border-bottom: 2px solid ${theme.colors.borderLight};
-    padding-bottom: 4px;
-    margin-bottom: ${theme.spacing.xs};
-  }
-
+  big  { font-size: 1.35em; font-weight: 700; }
   small {
     display: block;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     color: ${theme.colors.textMuted};
-    line-height: 1.6;
+    line-height: 1.5;
   }
-
   b { color: ${theme.colors.primary}; }
 `;
 
@@ -48,7 +50,7 @@ const Loading = styled.div`
   padding: ${theme.spacing.xxl}; font-size: 0.95rem;
 `;
 
-const Error = styled.div`
+const ErrorMsg = styled.div`
   text-align: center; color: ${theme.colors.textMuted};
   padding: ${theme.spacing.xl}; font-size: 0.9rem;
 `;
@@ -77,13 +79,16 @@ export default function SefariaPrayerView({ sefariaRef }: { sefariaRef: string }
   }, [sefariaRef]);
 
   if (loading) return <Loading>טוען...</Loading>;
-  if (error) return <Error>לא ניתן לטעון את הטקסט. נסה שוב מאוחר יותר.</Error>;
+  if (error) return <ErrorMsg>לא ניתן לטעון את הטקסט. נסה שוב מאוחר יותר.</ErrorMsg>;
 
   return (
     <Card>
-      {paragraphs.map((p, i) => (
-        <Para key={i} dangerouslySetInnerHTML={{ __html: p }} />
-      ))}
+      {paragraphs.map((p, i) => {
+        const isHeading = p.trim().startsWith('<big>');
+        return isHeading
+          ? <HeadingPara key={i} dangerouslySetInnerHTML={{ __html: p }} />
+          : <Para key={i} dangerouslySetInnerHTML={{ __html: p }} />;
+      })}
     </Card>
   );
 }
