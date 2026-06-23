@@ -20,6 +20,7 @@ export function addStat(entry: Omit<StatEntry, 'answeredAt'>): void {
   all.unshift({ ...entry, answeredAt: new Date().toISOString() });
   if (all.length > 300) all.splice(300);
   localStorage.setItem(KEY, JSON.stringify(all));
+  void fetch('/api/quiz/answered', { method: 'POST' });
 }
 
 function isValidEntry(e: unknown): e is StatEntry {

@@ -100,6 +100,11 @@ model PageVisit {
   @@index([ipHash])
 }
 
+model GlobalCounter {
+  key   String @id
+  value Int    @default(0)
+}
+
 model QuizResult {
   id         String   @id @default(cuid())
   citationId String
