@@ -54,6 +54,15 @@ const FullName = styled.div`
   font-style: italic;
 `;
 
+const YahrzeitLine = styled.div`
+  font-size: 0.72rem;
+  color: ${theme.colors.textLight};
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 1px;
+`;
+
 const MetaCol = styled.div`
   display: flex;
   flex-direction: column;
@@ -185,6 +194,12 @@ export default function RabbiCard({ rabbi, books, onEdit, onDelete }: Props) {
         <NameBlock>
           <Name>{rabbi.name}</Name>
           {rabbi.fullName && <FullName>{rabbi.fullName}</FullName>}
+          {rabbi.deathDate && (
+            <YahrzeitLine>
+              <span>🕯</span>
+              <span>{rabbi.deathDate}</span>
+            </YahrzeitLine>
+          )}
         </NameBlock>
         <MetaCol>
           <DateBadge $alive={rabbi.isAlive}>
