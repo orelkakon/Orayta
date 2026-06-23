@@ -16,7 +16,7 @@ const heebo = Heebo({
   display: 'swap',
 });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://orayta.vercel.app';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://orayta-eight.vercel.app';
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     siteName: 'אורייתא',
     locale: 'he_IL',
     type: 'website',
-    images: [{ url: `${APP_URL}/opengraph-image?v=3`, width: 1200, height: 630, alt: 'אורייתא — מקורות יהודיים' }],
+    images: [{ url: `${APP_URL}/opengraph-image?v=4`, width: 1200, height: 630, alt: 'אורייתא — מקורות יהודיים' }],
   },
   twitter: {
     card: 'summary_large_image',

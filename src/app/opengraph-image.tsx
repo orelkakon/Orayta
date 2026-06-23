@@ -124,7 +124,7 @@ export default function OgImage() {
 
           {/* URL hint */}
           <div style={{ color: '#9B8575', fontSize: 14, marginTop: 4 }}>
-            orayta.vercel.app
+            orayta-eight.vercel.app
           </div>
         </div>
       </div>

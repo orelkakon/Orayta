@@ -96,7 +96,7 @@ export default function ShareSection() {
     setCanNative(typeof navigator !== 'undefined' && !!navigator.share);
   }, []);
 
-  const url  = typeof window !== 'undefined' ? window.location.origin : 'https://orayta.vercel.app';
+  const url  = typeof window !== 'undefined' ? window.location.origin : 'https://orayta-eight.vercel.app';
   // ‏ = RIGHT-TO-LEFT MARK — forces WhatsApp to render Hebrew lines RTL
   const rtl  = '‏';
   const text = `${rtl}${HE.APP_NAME}\n${rtl}${HE.APP_SUBTITLE}\n${url}`;
