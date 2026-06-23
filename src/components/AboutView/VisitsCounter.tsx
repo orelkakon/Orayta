@@ -60,7 +60,7 @@ export default function VisitsCounter() {
   const [displayed, setDisplayed] = useState(0);
 
   useEffect(() => {
-    fetch('/api/visits', { method: 'POST' })
+    fetch('/api/visits')
       .then(r => r.json())
       .then((d: { count: number }) => setCount(d.count))
       .catch(() => {});
