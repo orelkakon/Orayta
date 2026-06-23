@@ -129,6 +129,10 @@ export default function AboutView() {
           <CopyIcon>🌿</CopyIcon>
           <span>{HE.ABOUT_SHARING_TEXT}</span>
         </CopyRow>
+        <CopyRow>
+          <CopyIcon>✡️</CopyIcon>
+          <span>{HE.ABOUT_DIVINE_TEXT}</span>
+        </CopyRow>
       </CopyrightCard>
 
       <Footer>{HE.ABOUT_FOOTER}</Footer>
