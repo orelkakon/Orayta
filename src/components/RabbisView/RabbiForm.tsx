@@ -55,7 +55,7 @@ interface Props {
 
 type FormData = {
   name: string; fullName: string; category: RabbiCategory;
-  sortYear: string; datePeriod: string; isAlive: boolean; bio: string;
+  sortYear: string; datePeriod: string; isAlive: boolean; bio: string; deathDate: string;
 };
 
 export default function RabbiForm({ rabbi, onClose, onSaved }: Props) {
@@ -67,6 +67,7 @@ export default function RabbiForm({ rabbi, onClose, onSaved }: Props) {
     datePeriod: rabbi?.datePeriod ?? '',
     isAlive: rabbi?.isAlive ?? false,
     bio: rabbi?.bio ?? '',
+    deathDate: rabbi?.deathDate ?? '',
   });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -87,6 +88,7 @@ export default function RabbiForm({ rabbi, onClose, onSaved }: Props) {
       isAlive: data.isAlive,
       bio: data.bio.trim(),
       category: data.category,
+      deathDate: data.deathDate.trim() || undefined,
     };
     const url = rabbi ? `/api/rabbis/${rabbi.id}` : '/api/rabbis';
     const method = rabbi ? 'PUT' : 'POST';
@@ -142,6 +144,15 @@ export default function RabbiForm({ rabbi, onClose, onSaved }: Props) {
         <Field>
           <Label>{HE.RABBI_FORM_BIO} *</Label>
           <Textarea value={data.bio} onChange={e => set('bio', e.target.value)} required />
+        </Field>
+        <Field>
+          <Label>{HE.RABBI_FORM_DEATH_DATE}</Label>
+          <Input
+            value={data.deathDate}
+            onChange={e => set('deathDate', e.target.value)}
+            placeholder={HE.RABBI_FORM_DEATH_DATE_PLACEHOLDER}
+            dir="rtl"
+          />
         </Field>
         {saveError && <ErrorMsg>{saveError}</ErrorMsg>}
         <BtnRow>

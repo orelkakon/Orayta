@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json() as {
     name: string; fullName?: string; sortYear: number;
-    datePeriod: string; isAlive: boolean; bio: string; category: string;
+    datePeriod: string; isAlive: boolean; bio: string; category: string; deathDate?: string;
   };
 
   const existing = await prisma.rabbi.findFirst({
@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
       isAlive: body.isAlive,
       bio: body.bio,
       category: body.category,
+      deathDate: body.deathDate?.trim() || null,
     },
   });
 

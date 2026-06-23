@@ -12,7 +12,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
   const body = await request.json() as {
     name: string; fullName?: string; sortYear: number;
-    datePeriod: string; isAlive: boolean; bio: string; category: string;
+    datePeriod: string; isAlive: boolean; bio: string; category: string; deathDate?: string;
   };
 
   const rabbi = await prisma.rabbi.update({
@@ -25,6 +25,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       isAlive: body.isAlive,
       bio: body.bio,
       category: body.category,
+      deathDate: body.deathDate?.trim() || null,
     },
   });
 

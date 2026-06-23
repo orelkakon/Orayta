@@ -59,6 +59,7 @@ export interface Rabbi {
   isAlive: boolean;
   bio: string;
   category: string;
+  deathDate: string | null;
   createdAt: string;
 }
 

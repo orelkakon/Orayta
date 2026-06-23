@@ -38,6 +38,7 @@ model Rabbi {
   isAlive    Boolean  @default(false)
   bio        String
   category   String
+  deathDate  String?
   createdAt  DateTime @default(now())
 
   @@index([category])
