@@ -3,129 +3,128 @@ import { ImageResponse } from 'next/server';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
+const P  = '#5C3D1E';   // primary (dark brown)
+const PD = '#2C1810';   // text (very dark)
+const S  = '#C4956A';   // secondary (golden)
+const A  = '#9B2335';   // accent (deep red)
+const BG = '#FAF7F2';   // background (cream)
+
+const FEATURES = ['תלמוד', 'רבנים', 'סידור', 'תהילים', 'חידון', 'תכנים'];
+
 export default function OgImage() {
   return new ImageResponse(
     (
       <div
         style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          background: 'linear-gradient(135deg, #4a2f14 0%, #5C3D1E 50%, #7a5230 100%)',
-          padding: '60px 80px',
-          fontFamily: 'serif',
+          width: '100%', height: '100%',
+          display: 'flex', flexDirection: 'row', alignItems: 'stretch',
+          fontFamily: 'serif', background: PD,
         }}
       >
-        {/* Left: text content */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, flex: 1 }}>
+        {/* ── LEFT PANEL: decorative ── */}
+        <div
+          style={{
+            width: 340, flexShrink: 0,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            background: `linear-gradient(180deg, ${P} 0%, ${PD} 100%)`,
+            borderLeft: `4px solid ${S}`,
+            gap: 24,
+          }}
+        >
+          {/* Glow circle */}
+          <div
+            style={{
+              width: 220, height: 220, borderRadius: '50%',
+              border: `3px solid ${S}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: `rgba(196,149,106,0.10)`,
+              boxShadow: `0 0 48px rgba(196,149,106,0.25)`,
+            }}
+          >
+            <div style={{ fontSize: 140, fontWeight: 700, color: S, lineHeight: 1 }}>
+              א
+            </div>
+          </div>
+
+          {/* Three golden dots */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {[12, 16, 12].map((s, i) => (
+              <div key={i} style={{ width: s, height: s, borderRadius: '50%', background: S, opacity: 0.7 }} />
+            ))}
+          </div>
+        </div>
+
+        {/* ── RIGHT PANEL: text content ── */}
+        <div
+          style={{
+            flex: 1, display: 'flex', flexDirection: 'column',
+            alignItems: 'flex-end', justifyContent: 'center',
+            padding: '56px 72px 56px 48px', gap: 18,
+            background: `linear-gradient(135deg, ${BG} 0%, #EDE5D8 100%)`,
+          }}
+        >
           {/* Badge */}
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              background: 'rgba(196,149,106,0.25)',
-              border: '1px solid rgba(196,149,106,0.5)',
-              borderRadius: 30,
-              padding: '6px 18px',
+              display: 'flex', alignItems: 'center', gap: 8,
+              background: `rgba(155,35,53,0.10)`,
+              border: `1px solid rgba(155,35,53,0.30)`,
+              borderRadius: 30, padding: '5px 18px',
             }}
           >
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#C4956A' }} />
-            <span style={{ color: '#C4956A', fontSize: 18, letterSpacing: 2 }}>בס״ד · מקורות יהודיים</span>
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: A }} />
+            <span style={{ color: A, fontSize: 16, letterSpacing: 1 }}>בס״ד · מקורות יהודיים</span>
           </div>
 
           {/* App name */}
-          <div style={{ color: 'white', fontSize: 110, fontWeight: 700, lineHeight: 1, letterSpacing: -2 }}>
+          <div
+            style={{
+              color: P, fontSize: 104, fontWeight: 700,
+              lineHeight: 0.95, textAlign: 'right', letterSpacing: -3,
+            }}
+          >
             אורייתא
           </div>
 
+          {/* Gold divider */}
+          <div style={{ width: 72, height: 3, background: S, borderRadius: 2, alignSelf: 'flex-end' }} />
+
           {/* Subtitle */}
-          <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 28, lineHeight: 1.5, maxWidth: 560 }}>
-            מערכת לניהול, לימוד ותרגול מקורות יהודיים
+          <div
+            style={{
+              color: '#6B5744', fontSize: 23, lineHeight: 1.65,
+              textAlign: 'right', maxWidth: 480,
+            }}
+          >
+            לימוד, ניהול ותרגול מקורות יהודיים — תלמוד, רבנים, סידור, חידונים ועוד
           </div>
 
           {/* Feature pills */}
-          <div style={{ display: 'flex', gap: 12, marginTop: 12, flexWrap: 'wrap' }}>
-            {['📜 תלמוד', '👥 רבנים', '📖 ספרים', '🎯 תרגול'].map(label => (
+          <div
+            style={{
+              display: 'flex', flexWrap: 'wrap', gap: 10,
+              justifyContent: 'flex-end', marginTop: 6,
+            }}
+          >
+            {FEATURES.map(label => (
               <div
                 key={label}
                 style={{
-                  background: 'rgba(255,255,255,0.12)',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: 20,
-                  padding: '6px 16px',
-                  color: 'white',
-                  fontSize: 20,
+                  background: `rgba(92,61,30,0.08)`,
+                  border: `1.5px solid rgba(92,61,30,0.20)`,
+                  borderRadius: 20, padding: '5px 18px',
+                  color: P, fontSize: 19, fontWeight: 600,
                 }}
               >
                 {label}
               </div>
             ))}
           </div>
-        </div>
 
-        {/* Right: Torah scroll icon */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 16,
-            marginRight: 20,
-          }}
-        >
-          {/* Outer glow ring */}
-          <div
-            style={{
-              width: 280,
-              height: 280,
-              borderRadius: '50%',
-              border: '3px solid rgba(196,149,106,0.4)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'rgba(255,255,255,0.06)',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 12,
-              }}
-            >
-              {/* Crown dots */}
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
-                <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#C4956A' }} />
-                <div style={{ width: 14, height: 14, borderRadius: '50%', background: '#C4956A' }} />
-                <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#C4956A' }} />
-              </div>
-              {/* Scroll */}
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <div style={{ width: 16, height: 120, background: 'rgba(255,255,255,0.78)', borderRadius: 8 }} />
-                <div
-                  style={{
-                    width: 138,
-                    height: 100,
-                    background: 'rgba(255,255,255,0.93)',
-                    borderRadius: 10,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 12,
-                  }}
-                >
-                  <div style={{ width: 108, height: 3, background: 'rgba(92,61,30,0.22)', borderRadius: 2 }} />
-                  <div style={{ width: 108, height: 3, background: 'rgba(92,61,30,0.22)', borderRadius: 2 }} />
-                  <div style={{ width: 82, height: 3, background: 'rgba(92,61,30,0.22)', borderRadius: 2 }} />
-                </div>
-                <div style={{ width: 16, height: 120, background: 'rgba(255,255,255,0.78)', borderRadius: 8 }} />
-              </div>
-            </div>
+          {/* URL hint */}
+          <div style={{ color: '#9B8575', fontSize: 14, marginTop: 4 }}>
+            orayta.vercel.app
           </div>
         </div>
       </div>
