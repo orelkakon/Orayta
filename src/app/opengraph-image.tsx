@@ -3,11 +3,11 @@ import { ImageResponse } from 'next/server';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-const P  = '#5C3D1E';   // primary (dark brown)
-const PD = '#2C1810';   // text (very dark)
-const S  = '#C4956A';   // secondary (golden)
-const A  = '#9B2335';   // accent (deep red)
-const BG = '#FAF7F2';   // background (cream)
+const P  = '#5C3D1E';
+const PD = '#2C1810';
+const S  = '#C4956A';
+const A  = '#9B2335';
+const BG = '#FAF7F2';
 
 const FEATURES = ['תלמוד', 'רבנים', 'סידור', 'תהילים', 'חידון', 'תכנים'];
 
@@ -32,22 +32,19 @@ export default function OgImage() {
             gap: 24,
           }}
         >
-          {/* Glow circle */}
           <div
             style={{
               width: 220, height: 220, borderRadius: '50%',
               border: `3px solid ${S}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: `rgba(196,149,106,0.10)`,
-              boxShadow: `0 0 48px rgba(196,149,106,0.25)`,
+              background: 'rgba(196,149,106,0.10)',
+              boxShadow: '0 0 48px rgba(196,149,106,0.25)',
             }}
           >
-            <div style={{ fontSize: 140, fontWeight: 700, color: S, lineHeight: 1 }}>
+            <div style={{ fontSize: 140, fontWeight: 700, color: S, lineHeight: 1, direction: 'rtl' }}>
               א
             </div>
           </div>
-
-          {/* Three golden dots */}
           <div style={{ display: 'flex', gap: 8 }}>
             {[12, 16, 12].map((s, i) => (
               <div key={i} style={{ width: s, height: s, borderRadius: '50%', background: S, opacity: 0.7 }} />
@@ -68,13 +65,15 @@ export default function OgImage() {
           <div
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
-              background: `rgba(155,35,53,0.10)`,
-              border: `1px solid rgba(155,35,53,0.30)`,
+              background: 'rgba(155,35,53,0.10)',
+              border: '1px solid rgba(155,35,53,0.30)',
               borderRadius: 30, padding: '5px 18px',
             }}
           >
             <div style={{ width: 7, height: 7, borderRadius: '50%', background: A }} />
-            <span style={{ color: A, fontSize: 16, letterSpacing: 1 }}>בס״ד · מקורות יהודיים</span>
+            <span style={{ color: A, fontSize: 16, letterSpacing: 1, direction: 'rtl' }}>
+              בס״ד · מקורות יהודיים
+            </span>
           </div>
 
           {/* App name */}
@@ -82,6 +81,7 @@ export default function OgImage() {
             style={{
               color: P, fontSize: 104, fontWeight: 700,
               lineHeight: 0.95, textAlign: 'right', letterSpacing: -3,
+              direction: 'rtl',
             }}
           >
             אורייתא
@@ -95,6 +95,7 @@ export default function OgImage() {
             style={{
               color: '#6B5744', fontSize: 23, lineHeight: 1.65,
               textAlign: 'right', maxWidth: 480,
+              direction: 'rtl',
             }}
           >
             לימוד, ניהול ותרגול מקורות יהודיים — תלמוד, רבנים, סידור, חידונים ועוד
@@ -111,10 +112,11 @@ export default function OgImage() {
               <div
                 key={label}
                 style={{
-                  background: `rgba(92,61,30,0.08)`,
-                  border: `1.5px solid rgba(92,61,30,0.20)`,
+                  background: 'rgba(92,61,30,0.08)',
+                  border: '1.5px solid rgba(92,61,30,0.20)',
                   borderRadius: 20, padding: '5px 18px',
                   color: P, fontSize: 19, fontWeight: 600,
+                  direction: 'rtl',
                 }}
               >
                 {label}
