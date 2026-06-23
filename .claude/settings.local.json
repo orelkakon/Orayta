@@ -72,7 +72,18 @@
       "Bash(CLAUDE_CODE_TMPDIR=/tmp npm run build)",
       "Bash(CLAUDE_CODE_TMPDIR=/tmp grep *)",
       "WebFetch(domain:www.sefaria.org)",
-      "WebFetch(domain:www.sefaria.org.il)"
+      "WebFetch(domain:www.sefaria.org.il)",
+      "WebFetch",
+      "WebSearch",
+      "Bash(python3 *)",
+      "Bash(CLAUDE_CODE_TMPDIR=/tmp/orayta-tmp ls *)",
+      "Bash(curl -s \"https://orayta.vercel.app/api/rabbis\")",
+      "Bash(curl -s \"http://localhost:3000/api/rabbis\")",
+      "Bash(curl -sv \"http://localhost:3000/api/rabbis\")",
+      "Bash(curl -s \"http://localhost:3000/api/rabbis\" -H \"Cookie: auth=admin\")",
+      "Bash(curl -s \"http://localhost:3000/api/rabbis/$\\(curl -s \"http://localhost:3000/api/rabbis\" -H \"Cookie: auth=admin\")",
+      "Bash(curl *)",
+      "Skill(update-config)"
     ]
   }
 }
