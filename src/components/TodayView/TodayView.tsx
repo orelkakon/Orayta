@@ -66,7 +66,7 @@ export default function TodayView() {
     const y = d.getFullYear(), mo = d.getMonth() + 1, dd = d.getDate();
     void Promise.all([
       fetch(`https://www.hebcal.com/converter?cfg=json&date=${dateStr}&g2h=1&strict=1`).then(r => r.json() as Promise<HebDate>),
-      fetch(`https://www.hebcal.com/shabbat?cfg=json&gy=${y}&gm=${mo}&gd=${dd}&m=50&lg=he`).then(r => r.json() as Promise<ShabbatResp>),
+      fetch(`https://www.hebcal.com/shabbat?cfg=json&gy=${y}&gm=${mo}&gd=${dd}&m=50&lg=he&i=on`).then(r => r.json() as Promise<ShabbatResp>),
     ]).then(([hd, sh]) => {
       setHebrewDate(hd.hebrew);
       const p = sh.items?.find(i => i.category === 'parashat');

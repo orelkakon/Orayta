@@ -30,6 +30,15 @@ const BarTitle = styled.div`
 
 const Track = styled.div`overflow: hidden; padding: 10px 0; direction: ltr;`;
 
+const BarSkeleton = styled.div`
+  width: 100%; height: 69px;
+  background: ${theme.colors.surface};
+  border: 1px solid ${theme.colors.borderLight};
+  border-right: 3px solid ${theme.colors.secondary};
+  border-radius: ${theme.radii.md};
+  box-shadow: ${theme.shadows.sm};
+`;
+
 const Tape = styled.div<{ $secs: number }>`
   display: inline-flex; white-space: nowrap; will-change: transform;
   animation: ${scrollLeft} ${p => p.$secs}s linear infinite;
@@ -111,13 +120,20 @@ interface Props { part?: 'ticker' | 'admin'; }
 
 export default function DedicationsBar({ part = 'ticker' }: Props) {
   const [dedications, setDedications] = useState<Dedication[]>([]);
+  const [tickerLoading, setTickerLoading] = useState(true);
   const [type, setType] = useState('iluy');
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
   const role = useRole();
 
   const load = useCallback(() => {
-    void fetch('/api/dedications').then(r => r.json()).then(setDedications as (v: unknown) => void);
+    void fetch('/api/dedications')
+      .then(r => r.json())
+      .then((data: unknown) => {
+        setDedications(data as Dedication[]);
+        setTickerLoading(false);
+      })
+      .catch(() => setTickerLoading(false));
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -143,6 +159,7 @@ export default function DedicationsBar({ part = 'ticker' }: Props) {
 
   /* ── Ticker part ── */
   if (part === 'ticker') {
+    if (tickerLoading) return <BarSkeleton />;
     if (dedications.length === 0) return null;
     const doubled = [...dedications, ...dedications];
     const secs = Math.max(dedications.length * 5, 14);
