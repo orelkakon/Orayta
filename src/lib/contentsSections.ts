@@ -102,6 +102,14 @@ export const SECTIONS: ContentSection[] = [
     staticGroups: BRACHOT_NEHENIN_GROUPS,
   },
   {
+    id: 'brachot-reiya',
+    icon: '👁️',
+    title: 'ברכות הראייה',
+    desc: 'ברכות על תופעות טבע ואנשים',
+    type: 'static',
+    staticGroups: BRACHOT_REIYA_GROUPS,
+  },
+  {
     id: 'torah',
     icon: '📜',
     title: 'תורה',
@@ -140,13 +148,5 @@ export const SECTIONS: ContentSection[] = [
     desc: 'קדיש יתום, שלם ודרבנן',
     type: 'static',
     staticGroups: KADDISH_GROUPS,
-  },
-  {
-    id: 'brachot-reiya',
-    icon: '👁️',
-    title: 'ברכות הראייה',
-    desc: 'ברכות על תופעות טבע ואנשים',
-    type: 'static',
-    staticGroups: BRACHOT_REIYA_GROUPS,
   },
 ];
