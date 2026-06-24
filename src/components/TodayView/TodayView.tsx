@@ -27,6 +27,13 @@ const HebrewDate = styled.div`
   line-height: 1.3;
 `;
 
+const DayLine = styled.div`
+  font-family: ${theme.fonts.body};
+  font-size: 1rem;
+  color: ${theme.colors.text};
+  font-weight: 500;
+`;
+
 const Subtitle = styled.p`font-size: 0.95rem; color: ${theme.colors.textMuted};`;
 
 const Grid = styled.div`
@@ -40,21 +47,37 @@ const Grid = styled.div`
 const Col = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
 
 interface HebDate { hebrew: string; }
+interface ShabbatItem { title: string; category: string; }
+interface ShabbatResp { items?: ShabbatItem[]; }
+
+const DAYS_HE = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 
 export default function TodayView() {
   const [location, setLocation] = useState<GeoLocation | null>(null);
   const [locState, setLocState] = useState<LocState>('loading');
   const [hebrewDate, setHebrewDate] = useState('');
+  const [parasha, setParasha] = useState('');
 
   const today = new Date();
   const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
   useEffect(() => {
-    fetch(`https://www.hebcal.com/converter?cfg=json&date=${dateStr}&g2h=1&strict=1`)
-      .then(r => r.json())
-      .then((d: HebDate) => setHebrewDate(d.hebrew))
-      .catch(() => {});
+    const d = new Date(dateStr + 'T12:00:00');
+    const y = d.getFullYear(), mo = d.getMonth() + 1, dd = d.getDate();
+    void Promise.all([
+      fetch(`https://www.hebcal.com/converter?cfg=json&date=${dateStr}&g2h=1&strict=1`).then(r => r.json() as Promise<HebDate>),
+      fetch(`https://www.hebcal.com/shabbat?cfg=json&gy=${y}&gm=${mo}&gd=${dd}&m=50&lg=he`).then(r => r.json() as Promise<ShabbatResp>),
+    ]).then(([hd, sh]) => {
+      setHebrewDate(hd.hebrew);
+      const p = sh.items?.find(i => i.category === 'parashat');
+      if (p) setParasha(p.title);
+    }).catch(() => {});
   }, [dateStr]);
+
+  const dayIdx = today.getDay();
+  const isShabbat = dayIdx === 6;
+  const dayStr = isShabbat ? 'שבת קודש' : `יום ${DAYS_HE[dayIdx]} בשבת קודש`;
+  const dayLine = parasha ? `היום ${dayStr} (${parasha})` : '';
 
   const requestLocation = () => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
@@ -83,6 +106,7 @@ export default function TodayView() {
       <Header>
         <Title>{HE.TODAY_TITLE}</Title>
         {hebrewDate && <HebrewDate>{hebrewDate}</HebrewDate>}
+        {dayLine && <DayLine>{dayLine}</DayLine>}
         <Subtitle>{HE.TODAY_SUBTITLE}</Subtitle>
       </Header>
       <DailySection />
