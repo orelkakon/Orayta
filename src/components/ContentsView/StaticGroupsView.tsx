@@ -18,9 +18,15 @@ const GroupTitle = styled.div`
   color: ${theme.colors.primary};
   padding: ${theme.spacing.sm} 0 4px;
   border-bottom: 2px solid ${theme.colors.borderLight};
-  margin-bottom: ${theme.spacing.sm};
+  margin-bottom: 4px;
   margin-top: ${theme.spacing.md};
   &:first-child { margin-top: 0; }
+`;
+
+const GroupExplanation = styled.div`
+  font-size: 0.78rem; color: ${theme.colors.textMuted};
+  font-style: italic; margin-bottom: ${theme.spacing.sm};
+  line-height: 1.5;
 `;
 
 const BlessingRow = styled.div`
@@ -42,7 +48,7 @@ const BlessingLabel = styled.div`
 
 const BlessingText = styled.p`
   font-family: ${theme.fonts.body}; font-size: 1.05rem; line-height: 2;
-  color: ${theme.colors.text};
+  color: ${theme.colors.text}; white-space: pre-line;
 `;
 
 export default function StaticGroupsView({ groups }: { groups: StaticGroup[] }) {
@@ -51,6 +57,7 @@ export default function StaticGroupsView({ groups }: { groups: StaticGroup[] }) 
       {groups.map((group, gi) => (
         <Fragment key={gi}>
           <GroupTitle>{group.title}</GroupTitle>
+          {group.explanation && <GroupExplanation>{group.explanation}</GroupExplanation>}
           {group.items.map((item, ii) => (
             <BlessingRow key={ii}>
               {item.icon && <BlessingIcon>{item.icon}</BlessingIcon>}

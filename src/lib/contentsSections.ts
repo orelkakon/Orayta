@@ -1,6 +1,8 @@
 export type { StaticItem, StaticGroup, SiddurSection } from './prayers/types';
 import type { StaticGroup, SiddurSection } from './prayers/types';
 import { BRACHOT_NEHENIN_GROUPS } from './prayers/brachotNehenin';
+import { BRACHOT_REIYA_GROUPS } from './prayers/brachotReiya';
+import { KADDISH_GROUPS } from './prayers/kaddish';
 import { ASHER_YATZAR } from './staticPrayers';
 import { SIDDUR_SECTIONS } from './siddurContent';
 
@@ -130,5 +132,21 @@ export const SECTIONS: ContentSection[] = [
     desc: 'ברכת אשר יצר',
     type: 'static',
     staticGroups: [{ title: 'אשר יצר', items: ASHER_YATZAR }],
+  },
+  {
+    id: 'kaddish',
+    icon: '🕯️',
+    title: 'קדיש',
+    desc: 'קדיש יתום, שלם ודרבנן',
+    type: 'static',
+    staticGroups: KADDISH_GROUPS,
+  },
+  {
+    id: 'brachot-reiya',
+    icon: '👁️',
+    title: 'ברכות הראייה',
+    desc: 'ברכות על תופעות טבע ואנשים',
+    type: 'static',
+    staticGroups: BRACHOT_REIYA_GROUPS,
   },
 ];

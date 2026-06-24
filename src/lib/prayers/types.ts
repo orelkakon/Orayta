@@ -6,6 +6,7 @@ export interface StaticItem {
 
 export interface StaticGroup {
   title: string;
+  explanation?: string;
   items: StaticItem[];
 }
 

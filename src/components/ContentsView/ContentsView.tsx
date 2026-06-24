@@ -7,7 +7,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { SECTIONS, ContentSection } from '@/lib/contentsSections';
 import ContentReader from './ContentReader';
 
-const Page = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
+const Page = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
 
 const Header = styled.div`display: flex; align-items: center; gap: ${theme.spacing.md};`;
 
@@ -25,20 +25,20 @@ const Subtitle = styled.p`font-size: 0.95rem; color: ${theme.colors.textMuted};`
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: ${theme.spacing.lg};
-  @media (max-width: 680px) { grid-template-columns: repeat(2, 1fr); }
-  @media (max-width: 420px) { grid-template-columns: 1fr; }
+  grid-template-columns: repeat(5, 1fr);
+  gap: ${theme.spacing.sm};
+  @media (max-width: 700px) { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 480px) { grid-template-columns: repeat(3, 1fr); }
 `;
 
 const SectionCard = styled.button`
   background: ${theme.colors.surface};
   border: 1.5px solid ${theme.colors.borderLight};
-  border-radius: ${theme.radii.lg};
-  padding: ${theme.spacing.lg};
+  border-radius: ${theme.radii.md};
+  padding: ${theme.spacing.sm} ${theme.spacing.xs};
   box-shadow: ${theme.shadows.sm};
   display: flex; flex-direction: column; align-items: center;
-  gap: ${theme.spacing.sm}; text-align: center; cursor: pointer;
+  gap: 4px; text-align: center; cursor: pointer;
   transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
   &:hover {
     box-shadow: ${theme.shadows.md}; transform: translateY(-2px);
@@ -46,14 +46,14 @@ const SectionCard = styled.button`
   }
 `;
 
-const CardIcon = styled.div`font-size: 2.2rem; line-height: 1;`;
+const CardIcon = styled.div`font-size: 1.6rem; line-height: 1;`;
 
 const CardTitle = styled.div`
-  font-family: ${theme.fonts.body}; font-size: 1.05rem; font-weight: 700;
-  color: ${theme.colors.primary};
+  font-family: ${theme.fonts.body}; font-size: 0.82rem; font-weight: 700;
+  color: ${theme.colors.primary}; line-height: 1.3;
 `;
 
-const CardDesc = styled.div`font-size: 0.8rem; color: ${theme.colors.textMuted};`;
+const CardDesc = styled.div`font-size: 0.7rem; color: ${theme.colors.textMuted}; line-height: 1.3;`;
 
 const ReaderHeader = styled.div`
   display: flex; align-items: center; gap: ${theme.spacing.md};
