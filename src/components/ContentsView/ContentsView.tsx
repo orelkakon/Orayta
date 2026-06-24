@@ -26,19 +26,21 @@ const Subtitle = styled.p`font-size: 0.95rem; color: ${theme.colors.textMuted};`
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(5, 1fr);
+  grid-auto-rows: 1fr;
   gap: ${theme.spacing.sm};
-  @media (max-width: 700px) { grid-template-columns: repeat(4, 1fr); }
-  @media (max-width: 480px) { grid-template-columns: repeat(2, 1fr); }
+  height: calc(85vh - 140px);
+  @media (max-width: 700px) { grid-template-columns: repeat(4, 1fr); height: calc(85vh - 120px); }
+  @media (max-width: 480px) { grid-template-columns: repeat(2, 1fr); height: calc(85vh - 110px); }
 `;
 
 const SectionCard = styled.button`
   background: ${theme.colors.surface};
   border: 1.5px solid ${theme.colors.borderLight};
   border-radius: ${theme.radii.md};
-  padding: ${theme.spacing.sm} ${theme.spacing.xs};
+  padding: ${theme.spacing.md} ${theme.spacing.xs};
   box-shadow: ${theme.shadows.sm};
-  display: flex; flex-direction: column; align-items: center;
-  gap: 4px; text-align: center; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; text-align: center; cursor: pointer;
   transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
   &:hover {
     box-shadow: ${theme.shadows.md}; transform: translateY(-2px);
@@ -46,14 +48,14 @@ const SectionCard = styled.button`
   }
 `;
 
-const CardIcon = styled.div`font-size: 1.6rem; line-height: 1;`;
+const CardIcon = styled.div`font-size: 1.9rem; line-height: 1;`;
 
 const CardTitle = styled.div`
-  font-family: ${theme.fonts.body}; font-size: 0.82rem; font-weight: 700;
+  font-family: ${theme.fonts.body}; font-size: 0.88rem; font-weight: 700;
   color: ${theme.colors.primary}; line-height: 1.3;
 `;
 
-const CardDesc = styled.div`font-size: 0.7rem; color: ${theme.colors.textMuted}; line-height: 1.3;`;
+const CardDesc = styled.div`font-size: 0.72rem; color: ${theme.colors.textMuted}; line-height: 1.3;`;
 
 const ReaderHeader = styled.div`
   display: flex; align-items: center; gap: ${theme.spacing.md};
