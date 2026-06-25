@@ -71,7 +71,10 @@ const AllChip = styled.button<{ $active: boolean }>`
   background: ${({ $active }) => $active ? theme.colors.primary : theme.colors.surface};
   color: ${({ $active }) => $active ? 'white' : theme.colors.textMuted};
   transition: all 0.15s;
-  &:hover { border-color: ${theme.colors.primary}; color: ${theme.colors.primary}; }
+  &:hover {
+    border-color: ${theme.colors.primary};
+    color: ${({ $active }) => $active ? 'white' : theme.colors.primary};
+  }
 `;
 
 const CategoryChip = styled.button<{ $active: boolean; $color: string }>`
@@ -226,16 +229,10 @@ export default function ImageQuiz({ onAnswered }: Props) {
   useEffect(() => { if (all.length >= 1) next(all, selectedCats); }, [all, next, selectedCats]);
 
   const toggleCat = (cat: RabbiCategory) => {
-    setSelectedCats(prev => {
-      const next = prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat];
-      return next;
-    });
+    setSelectedCats(prev =>
+      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+    );
   };
-
-  useEffect(() => {
-    if (all.length >= 1) next(all, selectedCats);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCats]);
 
   const pick = (id: string) => {
     if (selected !== null || !question) return;
