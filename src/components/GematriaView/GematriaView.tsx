@@ -56,8 +56,8 @@ const Grid = styled.div`
   grid-template-columns: repeat(3, 1fr);
   gap: ${theme.spacing.md};
   align-items: start;
-  @media (max-width: 600px) { grid-template-columns: repeat(2, 1fr); }
-  @media (max-width: 380px) { grid-template-columns: 1fr; }
+  @media (max-width: 480px) { gap: ${theme.spacing.xs}; }
+  @media (max-width: 320px) { grid-template-columns: repeat(2, 1fr); }
 `;
 
 const Empty = styled.div`

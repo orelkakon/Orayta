@@ -17,6 +17,7 @@ const Card = styled.div`
   flex-direction: column;
   gap: 4px;
   transition: box-shadow 0.15s, transform 0.15s;
+  @media (max-width: 480px) { padding: 4px ${theme.spacing.sm}; }
   &:hover {
     box-shadow: ${theme.shadows.md};
     transform: translateY(-1px);
