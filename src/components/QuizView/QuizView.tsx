@@ -13,6 +13,9 @@ import CompletionQuiz from './CompletionQuiz';
 import RabbiQuiz from './RabbiQuiz';
 import GematriaQuiz from './GematriaQuiz';
 import BooksQuiz from './BooksQuiz';
+import WhoFirstQuiz from './WhoFirstQuiz';
+import SederQuiz from './SederQuiz';
+import BioQuiz from './BioQuiz';
 import StatsPanel from './StatsPanel';
 
 const fadeIn = keyframes`
@@ -333,15 +336,8 @@ const HistoryItem = styled.div<{ $score: number }>`
 
 const ModeGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: ${theme.spacing.sm};
-
-  @media (max-width: 760px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  @media (max-width: 380px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
 `;
 
 const ModeButton = styled.button<{ $active?: boolean }>`
@@ -400,7 +396,7 @@ function scoreLabel(score: number) {
   return HE.QUIZ_WRONG;
 }
 
-type QuizMode = 'classic' | 'multiple' | 'completion' | 'rabbi' | 'gematria' | 'books';
+type QuizMode = 'classic' | 'multiple' | 'completion' | 'rabbi' | 'gematria' | 'books' | 'whoFirst' | 'seder' | 'bio';
 
 export default function QuizView() {
   const [quizMode, setQuizMode] = useState<QuizMode>('classic');
@@ -510,9 +506,21 @@ export default function QuizView() {
           <ModeIcon>📚</ModeIcon>
           <ModeLabel>{HE.QUIZ_MODE_BOOKS}</ModeLabel>
         </ModeButton>
+        <ModeButton $active={quizMode === 'whoFirst'} onClick={() => handleModeSwitch('whoFirst')}>
+          <ModeIcon>⏳</ModeIcon>
+          <ModeLabel>{HE.QUIZ_MODE_WHO_FIRST}</ModeLabel>
+        </ModeButton>
+        <ModeButton $active={quizMode === 'seder'} onClick={() => handleModeSwitch('seder')}>
+          <ModeIcon>📖</ModeIcon>
+          <ModeLabel>{HE.QUIZ_MODE_SEDER}</ModeLabel>
+        </ModeButton>
+        <ModeButton $active={quizMode === 'bio'} onClick={() => handleModeSwitch('bio')}>
+          <ModeIcon>🔍</ModeIcon>
+          <ModeLabel>{HE.QUIZ_MODE_BIO}</ModeLabel>
+        </ModeButton>
       </ModeGrid>
 
-      <FilterBar style={{ display: quizMode === 'rabbi' || quizMode === 'gematria' || quizMode === 'books' ? 'none' : undefined }}>
+      <FilterBar style={{ display: quizMode === 'rabbi' || quizMode === 'gematria' || quizMode === 'books' || quizMode === 'whoFirst' || quizMode === 'seder' || quizMode === 'bio' ? 'none' : undefined }}>
         <FilterLabel>{HE.QUIZ_FILTER_TITLE}</FilterLabel>
         <FilterSelect value={filterSeder} onChange={(e) => handleFilterSederChange(e.target.value)}>
           <option value="">{HE.QUIZ_FILTER_ALL}</option>
@@ -540,6 +548,12 @@ export default function QuizView() {
           <GematriaQuiz onAnswered={bumpStats} />
         ) : quizMode === 'books' ? (
           <BooksQuiz onAnswered={bumpStats} />
+        ) : quizMode === 'whoFirst' ? (
+          <WhoFirstQuiz onAnswered={bumpStats} />
+        ) : quizMode === 'seder' ? (
+          <SederQuiz onAnswered={bumpStats} />
+        ) : quizMode === 'bio' ? (
+          <BioQuiz onAnswered={bumpStats} />
         ) : quizMode === 'completion' ? (
           <CompletionQuiz
             filterSeder={filterSeder}
