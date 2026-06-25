@@ -7,15 +7,15 @@ import { Gematria } from '@/types';
 
 const Card = styled.div`
   background: ${theme.colors.surface};
-  border-radius: ${theme.radii.lg};
+  border-radius: ${theme.radii.md};
   border: 1px solid ${theme.colors.borderLight};
-  border-right: 4px solid ${theme.colors.secondary};
+  border-right: 3px solid ${theme.colors.secondary};
   box-shadow: ${theme.shadows.sm};
-  padding: ${theme.spacing.lg};
+  padding: ${theme.spacing.sm} ${theme.spacing.md};
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: ${theme.spacing.sm};
+  gap: 4px;
   text-align: center;
   transition: box-shadow 0.15s, transform 0.15s;
   &:hover {
@@ -26,7 +26,7 @@ const Card = styled.div`
 
 const Word = styled.div`
   font-family: ${theme.fonts.body};
-  font-size: 1.6rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: ${theme.colors.primary};
   overflow-wrap: break-word;
@@ -35,12 +35,12 @@ const Word = styled.div`
 
 const ValueBadge = styled.div`
   font-family: ${theme.fonts.body};
-  font-size: 1.1rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: ${theme.colors.secondary};
   background: ${theme.colors.surfaceAlt};
-  border-radius: ${theme.radii.md};
-  padding: 2px ${theme.spacing.md};
+  border-radius: ${theme.radii.sm};
+  padding: 1px ${theme.spacing.sm};
 `;
 
 const AdminRow = styled.div`

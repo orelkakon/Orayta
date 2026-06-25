@@ -8,14 +8,14 @@ import GematriaCard from './GematriaCard';
 
 const Group = styled.div`
   grid-column: 1 / -1;
-  border-radius: ${theme.radii.lg};
+  border-radius: ${theme.radii.md};
   border: 1px solid ${theme.colors.border};
-  border-right: 4px solid ${theme.colors.accent};
+  border-right: 3px solid ${theme.colors.accent};
   background: ${theme.colors.surfaceAlt};
-  padding: ${theme.spacing.md} ${theme.spacing.lg};
+  padding: ${theme.spacing.sm} ${theme.spacing.md};
   display: flex;
   flex-direction: column;
-  gap: ${theme.spacing.md};
+  gap: ${theme.spacing.sm};
 `;
 
 const Header = styled.div`
