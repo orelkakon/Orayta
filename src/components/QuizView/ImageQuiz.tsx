@@ -220,7 +220,7 @@ export default function ImageQuiz({ onAnswered }: Props) {
       : allWithImg;
     if (pool.length < 4) return;
     const q = pool[Math.floor(Math.random() * pool.length)];
-    const others = allWithImg.filter(r => r.id !== q.id).sort(() => Math.random() - 0.5).slice(0, 3);
+    const others = pool.filter(r => r.id !== q.id).sort(() => Math.random() - 0.5).slice(0, 3);
     setQuestion(q);
     setOptions([q, ...others].sort(() => Math.random() - 0.5));
     setSelected(null);
