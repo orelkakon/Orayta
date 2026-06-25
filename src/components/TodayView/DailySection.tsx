@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
-import { Rabbi, Citation, Book } from '@/types';
+import { Rabbi, Citation, Book, Chidush } from '@/types';
 import { CATEGORY_LABELS, CATEGORY_COLORS } from '@/lib/rabbisData';
 import type { RabbiCategory } from '@/types';
 
@@ -28,9 +28,10 @@ const Title = styled.h2`
 
 const Cards = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: ${theme.spacing.sm};
-  @media (max-width: 560px) { grid-template-columns: 1fr; }
+  @media (max-width: 800px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 400px) { grid-template-columns: 1fr; }
 `;
 
 const DayCard = styled.div`
@@ -71,6 +72,7 @@ export default function DailySection() {
   const [rabbi, setRabbi] = useState<Rabbi | null>(null);
   const [citation, setCitation] = useState<Citation | null>(null);
   const [book, setBook] = useState<Book | null>(null);
+  const [chidush, setChidush] = useState<Chidush | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -78,10 +80,12 @@ export default function DailySection() {
       fetch('/api/rabbis').then(r => r.json()) as Promise<Rabbi[]>,
       fetch('/api/citations').then(r => r.json()) as Promise<Citation[]>,
       fetch('/api/books').then(r => r.json()) as Promise<Book[]>,
-    ]).then(([rs, cs, bs]) => {
+      fetch('/api/chidushim').then(r => r.json()) as Promise<Chidush[]>,
+    ]).then(([rs, cs, bs, chs]) => {
       setRabbi(pick(rs));
       setCitation(pick(cs));
       setBook(pick(bs));
+      setChidush(pick(chs));
       setReady(true);
     });
   }, []);
@@ -120,6 +124,14 @@ export default function DailySection() {
             <Label>{HE.DAILY_BOOK}</Label>
             <CardTitle>{book.title}</CardTitle>
             <CardSub>{book.author}</CardSub>
+          </DayCard>
+        )}
+        {chidush && (
+          <DayCard>
+            <Label>{HE.DAILY_CHIDUSH}</Label>
+            {chidush.author && <CardTitle>{chidush.author}</CardTitle>}
+            {chidush.source && <CardSub>{chidush.source}</CardSub>}
+            <Snippet>{chidush.text}</Snippet>
           </DayCard>
         )}
       </Cards>

@@ -331,6 +331,7 @@ export const HE = {
   DAILY_RABBI: 'רב היום',
   DAILY_CITATION: 'ציטוט היום',
   DAILY_BOOK: 'ספר היום',
+  DAILY_CHIDUSH: 'חידוש היום',
 
   A2HS_TITLE: 'הוסף לדף הבית',
   A2HS_DESC: 'גישה מהירה לאורייתא ישירות מהמסך הראשי',
