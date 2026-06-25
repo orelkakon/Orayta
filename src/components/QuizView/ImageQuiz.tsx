@@ -5,7 +5,7 @@ import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Rabbi, RabbiCategory } from '@/types';
-import { CATEGORY_LABELS, CATEGORY_COLORS } from '@/lib/rabbisData';
+import { CATEGORY_LABELS, CATEGORY_COLORS, CATEGORY_ORDER } from '@/lib/rabbisData';
 import { addStat } from '@/lib/statsStorage';
 
 const pop = keyframes`
@@ -40,6 +40,57 @@ const Streak = styled.div`
   color: white; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
 `;
 
+/* ─── Category filter ─── */
+
+const FilterSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${theme.spacing.sm};
+`;
+
+const FilterTitle = styled.div`
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: ${theme.colors.textMuted};
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+`;
+
+const ChipsRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${theme.spacing.xs};
+`;
+
+const AllChip = styled.button<{ $active: boolean }>`
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 2px solid ${({ $active }) => $active ? theme.colors.primary : theme.colors.borderLight};
+  background: ${({ $active }) => $active ? theme.colors.primary : theme.colors.surface};
+  color: ${({ $active }) => $active ? 'white' : theme.colors.textMuted};
+  transition: all 0.15s;
+  &:hover { border-color: ${theme.colors.primary}; color: ${theme.colors.primary}; }
+`;
+
+const CategoryChip = styled.button<{ $active: boolean; $color: string }>`
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  border: 2px solid ${({ $active, $color }) => $active ? $color : $color + '44'};
+  background: ${({ $active, $color }) => $active ? $color : $color + '10'};
+  color: ${({ $active, $color }) => $active ? 'white' : $color};
+  transition: all 0.15s;
+  &:hover {
+    border-color: ${({ $color }) => $color};
+    background: ${({ $color, $active }) => $active ? $color : $color + '20'};
+  }
+`;
+
+/* ─── Image area ─── */
+
 const ImageFrame = styled.div`
   border-radius: ${theme.radii.lg};
   overflow: hidden;
@@ -60,7 +111,6 @@ const RabbiImg = styled.img`
   object-position: top;
   display: block;
 `;
-
 
 const Grid = styled.div`
   display: grid;
@@ -151,6 +201,7 @@ export default function ImageQuiz({ onAnswered }: Props) {
   const [options, setOptions] = useState<Rabbi[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [streak, setStreak] = useState(0);
+  const [selectedCats, setSelectedCats] = useState<RabbiCategory[]>([]);
 
   useEffect(() => {
     fetch('/api/rabbis')
@@ -159,17 +210,32 @@ export default function ImageQuiz({ onAnswered }: Props) {
       .catch(() => setLoaded(true));
   }, []);
 
-  const next = useCallback((list: Rabbi[]) => {
-    const withImg = list.filter(r => r.imageUrl);
-    if (withImg.length < 4) return;
-    const q = withImg[Math.floor(Math.random() * withImg.length)];
-    const others = withImg.filter(r => r.id !== q.id).sort(() => Math.random() - 0.5).slice(0, 3);
+  const next = useCallback((list: Rabbi[], cats: RabbiCategory[]) => {
+    const allWithImg = list.filter(r => r.imageUrl);
+    const pool = cats.length > 0
+      ? allWithImg.filter(r => cats.includes(r.category as RabbiCategory))
+      : allWithImg;
+    if (pool.length < 4) return;
+    const q = pool[Math.floor(Math.random() * pool.length)];
+    const others = allWithImg.filter(r => r.id !== q.id).sort(() => Math.random() - 0.5).slice(0, 3);
     setQuestion(q);
     setOptions([q, ...others].sort(() => Math.random() - 0.5));
     setSelected(null);
   }, []);
 
-  useEffect(() => { if (all.length >= 1) next(all); }, [all, next]);
+  useEffect(() => { if (all.length >= 1) next(all, selectedCats); }, [all, next, selectedCats]);
+
+  const toggleCat = (cat: RabbiCategory) => {
+    setSelectedCats(prev => {
+      const next = prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat];
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    if (all.length >= 1) next(all, selectedCats);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCats]);
 
   const pick = (id: string) => {
     if (selected !== null || !question) return;
@@ -191,9 +257,39 @@ export default function ImageQuiz({ onAnswered }: Props) {
 
   if (!loaded) return <Wrapper><Empty>{HE.LOADING}</Empty></Wrapper>;
 
-  const withImg = all.filter(r => r.imageUrl);
-  if (withImg.length < 4 || !question) {
-    return <Wrapper><Empty>{HE.QUIZ_IMAGE_NOT_ENOUGH}</Empty></Wrapper>;
+  const allWithImg = all.filter(r => r.imageUrl);
+  const pool = selectedCats.length > 0
+    ? allWithImg.filter(r => selectedCats.includes(r.category as RabbiCategory))
+    : allWithImg;
+
+  const catsWithImages = CATEGORY_ORDER.filter(cat =>
+    allWithImg.some(r => r.category === cat)
+  );
+
+  if (pool.length < 4 || !question) {
+    return (
+      <Wrapper>
+        <FilterSection>
+          <FilterTitle>{HE.QUIZ_IMAGE_FILTER_TITLE}</FilterTitle>
+          <ChipsRow>
+            <AllChip $active={selectedCats.length === 0} onClick={() => setSelectedCats([])}>
+              {HE.QUIZ_IMAGE_FILTER_ALL}
+            </AllChip>
+            {catsWithImages.map(cat => (
+              <CategoryChip
+                key={cat}
+                $active={selectedCats.includes(cat)}
+                $color={CATEGORY_COLORS[cat]}
+                onClick={() => toggleCat(cat)}
+              >
+                {CATEGORY_LABELS[cat]}
+              </CategoryChip>
+            ))}
+          </ChipsRow>
+        </FilterSection>
+        <Empty>{HE.QUIZ_IMAGE_NOT_ENOUGH}</Empty>
+      </Wrapper>
+    );
   }
 
   const answered = selected !== null;
@@ -206,12 +302,31 @@ export default function ImageQuiz({ onAnswered }: Props) {
         {streak > 0 && <Streak>🔥 {HE.QUIZ_STREAK(streak)}</Streak>}
       </Top>
 
+      <FilterSection>
+        <FilterTitle>{HE.QUIZ_IMAGE_FILTER_TITLE}</FilterTitle>
+        <ChipsRow>
+          <AllChip $active={selectedCats.length === 0} onClick={() => setSelectedCats([])}>
+            {HE.QUIZ_IMAGE_FILTER_ALL}
+          </AllChip>
+          {catsWithImages.map(cat => (
+            <CategoryChip
+              key={cat}
+              $active={selectedCats.includes(cat)}
+              $color={CATEGORY_COLORS[cat]}
+              onClick={() => toggleCat(cat)}
+            >
+              {CATEGORY_LABELS[cat]}
+            </CategoryChip>
+          ))}
+        </ChipsRow>
+      </FilterSection>
+
       <ImageFrame>
         {question.imageUrl && (
           <RabbiImg
             src={question.imageUrl}
             alt="?"
-            onError={() => next(all)}
+            onError={() => next(all, selectedCats)}
           />
         )}
       </ImageFrame>
@@ -231,10 +346,10 @@ export default function ImageQuiz({ onAnswered }: Props) {
             <RevealName>{question.name}{question.fullName ? ` — ${question.fullName}` : ''}</RevealName>
             <RevealMeta>{CATEGORY_LABELS[question.category as RabbiCategory]} · {question.datePeriod}</RevealMeta>
           </RevealCard>
-          <NextBtn onClick={() => next(all)}>{HE.QUIZ_NEXT}</NextBtn>
+          <NextBtn onClick={() => next(all, selectedCats)}>{HE.QUIZ_NEXT}</NextBtn>
         </>
       )}
-      {!answered && <SkipBtn onClick={() => next(all)}>{HE.QUIZ_SKIP}</SkipBtn>}
+      {!answered && <SkipBtn onClick={() => next(all, selectedCats)}>{HE.QUIZ_SKIP}</SkipBtn>}
     </Wrapper>
   );
 }

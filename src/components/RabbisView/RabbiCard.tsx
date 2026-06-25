@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Rabbi, RabbiCategory } from '@/types';
@@ -161,6 +161,60 @@ const AdminRow = styled.div`
   margin-top: ${theme.spacing.xs};
 `;
 
+const PhotoBtn = styled.button<{ $color: string }>`
+  font-size: 0.75rem;
+  padding: 3px ${theme.spacing.sm};
+  border: 1.5px solid ${({ $color }) => $color}55;
+  border-radius: ${theme.radii.sm};
+  color: ${({ $color }) => $color};
+  background: ${({ $color }) => $color}0D;
+  font-weight: 600;
+  transition: all 0.15s;
+  display: flex; align-items: center; gap: 4px;
+  &:hover { background: ${({ $color }) => $color}20; border-color: ${({ $color }) => $color}; }
+`;
+
+const fadeIn = keyframes`from { opacity: 0; } to { opacity: 1; }`;
+const zoomIn = keyframes`from { opacity: 0; transform: scale(0.88); } to { opacity: 1; transform: scale(1); }`;
+
+const LightboxOverlay = styled.div`
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,0.85);
+  display: flex; align-items: center; justify-content: center;
+  padding: ${theme.spacing.md};
+  animation: ${fadeIn} 0.2s ease;
+  cursor: zoom-out;
+`;
+
+const LightboxImg = styled.img`
+  max-width: min(90vw, 560px);
+  max-height: 82vh;
+  border-radius: ${theme.radii.lg};
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  object-fit: contain;
+  animation: ${zoomIn} 0.25s ease;
+  cursor: default;
+`;
+
+const LightboxCaption = styled.div`
+  position: fixed; bottom: ${theme.spacing.xl};
+  left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+  color: white; padding: ${theme.spacing.sm} ${theme.spacing.lg};
+  border-radius: 24px; font-size: 1rem; font-weight: 600;
+  white-space: nowrap;
+`;
+
+const LightboxClose = styled.button`
+  position: fixed; top: ${theme.spacing.lg}; left: ${theme.spacing.lg};
+  background: rgba(0,0,0,0.5); color: white;
+  width: 36px; height: 36px; border-radius: 50%;
+  font-size: 1.2rem; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+  &:hover { background: rgba(255,255,255,0.2); }
+`;
+
 const EditBtn = styled.button`
   font-size: 0.75rem; padding: 2px ${theme.spacing.sm};
   border: 1px solid ${theme.colors.border}; border-radius: ${theme.radii.sm};
@@ -185,10 +239,12 @@ interface Props {
 
 export default function RabbiCard({ rabbi, books, onEdit, onDelete }: Props) {
   const [booksOpen, setBooksOpen] = useState(false);
+  const [lightbox, setLightbox] = useState(false);
   const color = CATEGORY_COLORS[rabbi.category as RabbiCategory] ?? theme.colors.primaryLight;
   const label = CATEGORY_LABELS[rabbi.category as RabbiCategory] ?? rabbi.category;
 
   return (
+    <>
     <Card $color={color}>
       <Header>
         <NameBlock>
@@ -207,6 +263,11 @@ export default function RabbiCard({ rabbi, books, onEdit, onDelete }: Props) {
             {rabbi.isAlive && <AliveDot />}
           </DateBadge>
           <CategoryBadge $color={color}>{label}</CategoryBadge>
+          {rabbi.imageUrl && (
+            <PhotoBtn $color={color} onClick={() => setLightbox(true)}>
+              🖼 תמונה
+            </PhotoBtn>
+          )}
         </MetaCol>
       </Header>
       <Divider />
@@ -231,5 +292,14 @@ export default function RabbiCard({ rabbi, books, onEdit, onDelete }: Props) {
         </AdminRow>
       )}
     </Card>
+
+    {lightbox && rabbi.imageUrl && (
+      <LightboxOverlay onClick={() => setLightbox(false)}>
+        <LightboxImg src={rabbi.imageUrl} alt={rabbi.name} onClick={e => e.stopPropagation()} />
+        <LightboxCaption>{rabbi.name}</LightboxCaption>
+        <LightboxClose onClick={() => setLightbox(false)}>×</LightboxClose>
+      </LightboxOverlay>
+    )}
+  </>
   );
 }

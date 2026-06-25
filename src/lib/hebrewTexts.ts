@@ -193,6 +193,8 @@ export const HE = {
   QUIZ_MODE_IMAGE: 'זהה את הרב',
   QUIZ_IMAGE_QUESTION: 'מי הרב בתמונה?',
   QUIZ_IMAGE_NOT_ENOUGH: 'אין מספיק רבנים עם תמונה — הוסף תמונות דרך ממשק הרבנים',
+  QUIZ_IMAGE_FILTER_TITLE: 'סנן לפי תקופה',
+  QUIZ_IMAGE_FILTER_ALL: 'כל התקופות',
 
   RABBIS_TIMELINE_VIEW: 'ציר זמן',
   RABBIS_LIST_VIEW: 'רשימה',
