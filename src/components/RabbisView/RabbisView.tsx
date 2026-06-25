@@ -188,15 +188,15 @@ export default function RabbisView({ initialSearch = '' }: Props) {
             {rabbis.length > 0 && <CountBadge> {HE.RABBIS_COUNT(rabbis.length)}</CountBadge>}
           </Subtitle>
         </TitleGroup>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.xs, alignItems: 'flex-end' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', gap: theme.spacing.sm, alignItems: 'center' }}>
+          {role === 'admin' && (
+            <AddBtn onClick={() => setAddOpen(true)}>{HE.RABBI_ADD_BTN}</AddBtn>
+          )}
           <SegmentRow>
             <SegBtn $active={view === 'list'}     onClick={() => setView('list')}>📋 {HE.RABBIS_LIST_VIEW}</SegBtn>
             <SegBtn $active={view === 'timeline'} onClick={() => setView('timeline')}>📅 {HE.RABBIS_TIMELINE_VIEW}</SegBtn>
             <SegBtn $active={view === 'map'}      onClick={() => setView('map')}>🗺️ {HE.RABBIS_MAP_VIEW}</SegBtn>
           </SegmentRow>
-          {role === 'admin' && (
-            <AddBtn onClick={() => setAddOpen(true)}>{HE.RABBI_ADD_BTN}</AddBtn>
-          )}
         </div>
       </TitleRow>
 
