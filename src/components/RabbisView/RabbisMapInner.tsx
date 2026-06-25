@@ -101,7 +101,8 @@ function jitter(lat: number, lng: number, idx: number, total: number): [number, 
   const posInRing = idx % 8;
   const countInRing = Math.min(8, total - ring * 8);
   const angle = (2 * Math.PI * posInRing) / countInRing;
-  const r = 0.9 + ring * 0.55;
+  // Cap at 0.42° to prevent coastal dots from landing in the sea (~47km max offset)
+  const r = Math.min(0.22 + ring * 0.2, 0.42);
   return [lat + r * Math.sin(angle), lng + r * Math.cos(angle)];
 }
 
@@ -112,13 +113,17 @@ export default function RabbisMapInner({ rabbis }: { rabbis: Rabbi[] }) {
   const [selLoc, setSelLoc] = useState('');
 
   const placed = useMemo((): Placed[] => {
+    // Group by 1° grid so rabbis at the same region cluster and jitter together,
+    // even if they matched different label strings (e.g. "ירושלים" vs "ארץ ישראל")
     const groups = new Map<string, Array<{ rabbi: Rabbi; locs: ReturnType<typeof extractLocations> }>>();
     for (const rabbi of rabbis) {
       const locs = extractLocations(rabbi.bio, rabbi.category);
-      const label = locs[0]?.label ?? 'default';
-      const g = groups.get(label) ?? [];
+      const primary = locs[0];
+      if (!primary) continue;
+      const key = `${Math.round(primary.lat)},${Math.round(primary.lng)}`;
+      const g = groups.get(key) ?? [];
       g.push({ rabbi, locs });
-      groups.set(label, g);
+      groups.set(key, g);
     }
     const result: Placed[] = [];
     for (const group of Array.from(groups.values())) {
