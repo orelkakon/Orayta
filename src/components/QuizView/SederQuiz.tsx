@@ -137,6 +137,12 @@ const SkipBtn = styled.button`
   &:hover { border-color: ${theme.colors.primary}; color: ${theme.colors.primary}; }
 `;
 
+const Top = styled.div`display: flex; align-items: center; justify-content: space-between;`;
+const Streak = styled.div`
+  background: linear-gradient(135deg, #FF6B35, #FF9F1C);
+  color: white; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
+`;
+
 interface Props { onAnswered: () => void; }
 
 function randomMasechet() {
@@ -146,6 +152,7 @@ function randomMasechet() {
 export default function SederQuiz({ onAnswered }: Props) {
   const [masechet, setMasechet] = useState(randomMasechet);
   const [selected, setSelected] = useState<string | null>(null);
+  const [streak, setStreak] = useState(0);
 
   const next = useCallback(() => {
     setMasechet(randomMasechet());
@@ -157,6 +164,7 @@ export default function SederQuiz({ onAnswered }: Props) {
     setSelected(seder);
     const ok = seder === masechet.seder;
     addStat({ score: ok ? 1 : 0, content: masechet.name, mode: 'seder' });
+    setStreak(s => ok ? s + 1 : 0);
     onAnswered();
   };
 
@@ -173,7 +181,10 @@ export default function SederQuiz({ onAnswered }: Props) {
 
   return (
     <Wrapper>
-      <Label>{HE.QUIZ_SEDER_QUESTION}</Label>
+      <Top>
+        <Label>{HE.QUIZ_SEDER_QUESTION}</Label>
+        {streak > 0 && <Streak>🔥 {HE.QUIZ_STREAK(streak)}</Streak>}
+      </Top>
       <MasechetCard>
         <MasechetName>{masechet.name}</MasechetName>
         {answered && <MasechetSub>{masechet.seder} · {countInSeder} מסכתות</MasechetSub>}

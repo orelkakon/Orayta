@@ -140,6 +140,12 @@ const SkipBtn = styled.button`
   &:hover { border-color: ${theme.colors.primary}; color: ${theme.colors.primary}; }
 `;
 
+const Top = styled.div`display: flex; align-items: center; justify-content: space-between;`;
+const Streak = styled.div`
+  background: linear-gradient(135deg, #FF6B35, #FF9F1C);
+  color: white; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
+`;
+
 const Empty = styled.div`color: ${theme.colors.textMuted};`;
 
 interface Props { onAnswered: () => void; }
@@ -150,6 +156,7 @@ export default function BioQuiz({ onAnswered }: Props) {
   const [question, setQuestion] = useState<Rabbi | null>(null);
   const [options, setOptions] = useState<Rabbi[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
+  const [streak, setStreak] = useState(0);
 
   useEffect(() => {
     fetch('/api/rabbis')
@@ -176,6 +183,7 @@ export default function BioQuiz({ onAnswered }: Props) {
     setSelected(id);
     const ok = id === question.id;
     addStat({ score: ok ? 1 : 0, content: question.name, mode: 'bio' });
+    setStreak(s => ok ? s + 1 : 0);
     onAnswered();
   };
 
@@ -199,7 +207,10 @@ export default function BioQuiz({ onAnswered }: Props) {
 
   return (
     <Wrapper>
-      <Label>{HE.QUIZ_BIO_QUESTION}</Label>
+      <Top>
+        <Label>{HE.QUIZ_BIO_QUESTION}</Label>
+        {streak > 0 && <Streak>🔥 {HE.QUIZ_STREAK(streak)}</Streak>}
+      </Top>
       <BioCard>{bio}</BioCard>
       <OptionsGrid>
         {options.map(r => (

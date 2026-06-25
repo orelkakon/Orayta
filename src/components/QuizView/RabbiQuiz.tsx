@@ -67,6 +67,11 @@ const SkipBtn = styled.button`
 `;
 const BtnRow = styled.div`display: flex; gap: ${theme.spacing.md};`;
 const Empty = styled.div`color: ${theme.colors.textMuted};`;
+const Top = styled.div`display: flex; align-items: center; justify-content: space-between;`;
+const Streak = styled.div`
+  background: linear-gradient(135deg, #FF6B35, #FF9F1C);
+  color: white; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
+`;
 
 interface Props { onAnswered: () => void; }
 
@@ -76,6 +81,7 @@ export default function RabbiQuiz({ onAnswered }: Props) {
   const [question, setQuestion] = useState<Rabbi | null>(null);
   const [options, setOptions] = useState<RabbiCategory[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
+  const [streak, setStreak] = useState(0);
 
   useEffect(() => {
     fetch('/api/rabbis')
@@ -101,6 +107,7 @@ export default function RabbiQuiz({ onAnswered }: Props) {
     setSelected(cat);
     const correct = cat === question.category;
     addStat({ score: correct ? 1 : 0, content: question.name, mode: 'rabbi' });
+    setStreak(s => correct ? s + 1 : 0);
     onAnswered();
   };
 
@@ -116,7 +123,10 @@ export default function RabbiQuiz({ onAnswered }: Props) {
 
   return (
     <Wrapper>
-      <Label>{HE.QUIZ_RABBI_QUESTION}</Label>
+      <Top>
+        <Label>{HE.QUIZ_RABBI_QUESTION}</Label>
+        {streak > 0 && <Streak>🔥 {HE.QUIZ_STREAK(streak)}</Streak>}
+      </Top>
       <div>
         <RabbiName>{question.name}</RabbiName>
         {question.fullName && <FullName>{question.fullName}</FullName>}

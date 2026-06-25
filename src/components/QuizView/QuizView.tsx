@@ -379,6 +379,12 @@ const ModeLabel = styled.span`
   }
 `;
 
+const QuizLabelRow = styled.div`display: flex; align-items: center; justify-content: space-between;`;
+const StreakBadge = styled.div`
+  background: linear-gradient(135deg, #FF6B35, #FF9F1C);
+  color: white; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
+`;
+
 interface AnswerResult {
   score: number;
   correctLocations: Citation['locations'];
@@ -411,6 +417,7 @@ export default function QuizView() {
   const [statsKey, setStatsKey] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hintShown, setHintShown] = useState(false);
+  const [streak, setStreak] = useState(0);
 
   const hasAmud = question?.locations.some((l) => l.amud) ?? false;
 
@@ -455,6 +462,7 @@ export default function QuizView() {
     const data = await res.json() as AnswerResult;
     setResult(data);
     addStat({ score: data.score, content: question.content.slice(0, 80), mode: 'classic' });
+    setStreak(s => data.score >= 1 ? s + 1 : 0);
     setLoading(false);
     bumpStats();
   };
@@ -473,6 +481,7 @@ export default function QuizView() {
   const handleModeSwitch = (mode: QuizMode) => {
     setQuizMode(mode);
     setNoResults(false);
+    setStreak(0);
   };
 
   return (
@@ -562,7 +571,10 @@ export default function QuizView() {
           />
         ) : (
         <QuestionCard>
-          <QuestionLabel>{HE.QUIZ_QUESTION}</QuestionLabel>
+          <QuizLabelRow>
+            <QuestionLabel>{HE.QUIZ_QUESTION}</QuestionLabel>
+            {streak > 0 && <StreakBadge>🔥 {HE.QUIZ_STREAK(streak)}</StreakBadge>}
+          </QuizLabelRow>
           <CitationText>{question?.content ?? HE.LOADING}</CitationText>
 
           {!result && !hintShown && (

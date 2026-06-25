@@ -179,6 +179,7 @@ export const HE = {
   QUIZ_WHO_FIRST_NOT_ENOUGH: 'אין מספיק רבנים לחידון זה',
   QUIZ_WHO_FIRST_CAME_FIRST: 'קדם',
   QUIZ_WHO_FIRST_STREAK: (n: number) => `רצף: ${n}`,
+  QUIZ_STREAK: (n: number) => `רצף: ${n}`,
 
   QUIZ_MODE_SEDER: 'ניחוש סדר',
   QUIZ_SEDER_QUESTION: 'לאיזה סדר שייכת המסכת?',

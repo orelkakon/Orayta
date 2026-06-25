@@ -86,6 +86,12 @@ const ResultBanner = styled.div<{ $correct: boolean }>`
   font-weight: 700;
 `;
 
+const Top = styled.div`display: flex; align-items: center; justify-content: space-between;`;
+const Streak = styled.div`
+  background: linear-gradient(135deg, #FF6B35, #FF9F1C);
+  color: white; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
+`;
+
 const BtnRow = styled.div`
   display: flex;
   gap: ${theme.spacing.md};
@@ -124,6 +130,7 @@ export default function MultipleChoiceQuiz({ filterSeder, filterMasechet, onAnsw
   const [eliminatedId, setEliminatedId] = useState<string | null>(null);
   const [score, setScore] = useState<number | null>(null);
   const [noResults, setNoResults] = useState(false);
+  const [streak, setStreak] = useState(0);
 
   const loadQuestion = useCallback(async () => {
     setSelectedId(null);
@@ -171,6 +178,7 @@ export default function MultipleChoiceQuiz({ filterSeder, filterMasechet, onAnsw
     const result = await res.json() as { score: number };
     setScore(result.score);
     addStat({ score: result.score, content: question.content.slice(0, 80), mode: 'multiple' });
+    setStreak(s => result.score >= 1 ? s + 1 : 0);
     onAnswered();
   };
 
@@ -194,7 +202,10 @@ export default function MultipleChoiceQuiz({ filterSeder, filterMasechet, onAnsw
 
   return (
     <Wrapper>
-      <QuestionLabel>{HE.QUIZ_MC_CHOOSE}</QuestionLabel>
+      <Top>
+        <QuestionLabel>{HE.QUIZ_MC_CHOOSE}</QuestionLabel>
+        {streak > 0 && <Streak>🔥 {HE.QUIZ_STREAK(streak)}</Streak>}
+      </Top>
       <CitationText>{question?.content ?? HE.LOADING}</CitationText>
       {!selectedId && !eliminatedId && (
         <HintBtn onClick={handleHint}>{HE.QUIZ_HINT_BUTTON}</HintBtn>

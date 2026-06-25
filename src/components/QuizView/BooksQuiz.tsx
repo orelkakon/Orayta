@@ -72,6 +72,11 @@ const SkipBtn = styled.button`
 `;
 const BtnRow = styled.div`display: flex; gap: ${theme.spacing.md};`;
 const Empty = styled.div`color: ${theme.colors.textMuted};`;
+const Top = styled.div`display: flex; align-items: center; justify-content: space-between;`;
+const Streak = styled.div`
+  background: linear-gradient(135deg, #FF6B35, #FF9F1C);
+  color: white; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
+`;
 
 interface Props { onAnswered: () => void; }
 
@@ -82,6 +87,7 @@ export default function BooksQuiz({ onAnswered }: Props) {
   const [options, setOptions] = useState<string[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [eliminated, setEliminated] = useState<string | null>(null);
+  const [streak, setStreak] = useState(0);
 
   useEffect(() => {
     fetch('/api/books')
@@ -116,6 +122,7 @@ export default function BooksQuiz({ onAnswered }: Props) {
     setSelected(author);
     const correct = author === question.author;
     addStat({ score: correct ? 1 : 0, content: question.title, mode: 'books' });
+    setStreak(s => correct ? s + 1 : 0);
     onAnswered();
   };
 
@@ -136,7 +143,10 @@ export default function BooksQuiz({ onAnswered }: Props) {
 
   return (
     <Wrapper>
-      <Label>{HE.QUIZ_BOOKS_QUESTION}</Label>
+      <Top>
+        <Label>{HE.QUIZ_BOOKS_QUESTION}</Label>
+        {streak > 0 && <Streak>🔥 {HE.QUIZ_STREAK(streak)}</Streak>}
+      </Top>
       <BookTitle>{question.title}</BookTitle>
       {selected === null && !eliminated && (
         <HintBtn onClick={handleHint}>{HE.QUIZ_HINT_BUTTON}</HintBtn>

@@ -134,6 +134,11 @@ const AnswersText = styled.span`
 `;
 
 const Empty = styled.div`color: ${theme.colors.textMuted};`;
+const Top = styled.div`display: flex; align-items: center; justify-content: space-between;`;
+const Streak = styled.div`
+  background: linear-gradient(135deg, #FF6B35, #FF9F1C);
+  color: white; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
+`;
 
 interface Question { value: number; hint: string; }
 interface Result { correct: boolean; answers: string[]; }
@@ -147,6 +152,7 @@ export default function GematriaQuiz({ onAnswered }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [noResults, setNoResults] = useState(false);
   const [hintShown, setHintShown] = useState(false);
+  const [streak, setStreak] = useState(0);
 
   const loadQuestion = useCallback(async () => {
     setInput('');
@@ -172,6 +178,7 @@ export default function GematriaQuiz({ onAnswered }: Props) {
       const data = await res.json() as Result;
       setResult(data);
       addStat({ score: data.correct ? 1 : 0, content: String(question.value), mode: 'gematria' });
+      setStreak(s => data.correct ? s + 1 : 0);
       onAnswered();
     } finally {
       setSubmitting(false);
@@ -182,7 +189,10 @@ export default function GematriaQuiz({ onAnswered }: Props) {
 
   return (
     <Wrapper>
-      <QuestionLabel>{HE.QUIZ_GEMATRIA_QUESTION}</QuestionLabel>
+      <Top>
+        <QuestionLabel>{HE.QUIZ_GEMATRIA_QUESTION}</QuestionLabel>
+        {streak > 0 && <Streak>🔥 {HE.QUIZ_STREAK(streak)}</Streak>}
+      </Top>
       <ValueBox>
         <ValueText>{question?.value ?? HE.LOADING}</ValueText>
       </ValueBox>

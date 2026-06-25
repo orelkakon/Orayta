@@ -174,6 +174,12 @@ const SourceValue = styled.span`
   direction: rtl;
 `;
 
+const Top = styled.div`display: flex; align-items: center; justify-content: space-between;`;
+const Streak = styled.div`
+  background: linear-gradient(135deg, #FF6B35, #FF9F1C);
+  color: white; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
+`;
+
 interface Props {
   filterSeder: string;
   filterMasechet: string;
@@ -206,6 +212,7 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
   const [submitting, setSubmitting] = useState(false);
   const [noResults, setNoResults] = useState(false);
   const [hintUsed, setHintUsed] = useState(false);
+  const [streak, setStreak] = useState(0);
 
   const loadQuestion = useCallback(async () => {
     setInput('');
@@ -236,6 +243,7 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
       const data = await res.json() as Result;
       setResult(data);
       addStat({ score: data.correct ? 1 : 0, content: question.content.slice(0, 80), mode: 'completion' });
+      setStreak(s => data.correct ? s + 1 : 0);
       onAnswered();
     } finally {
       setSubmitting(false);
@@ -253,7 +261,10 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
 
   return (
     <Wrapper>
-      <QuestionLabel>{HE.QUIZ_COMPLETION_PROMPT}</QuestionLabel>
+      <Top>
+        <QuestionLabel>{HE.QUIZ_COMPLETION_PROMPT}</QuestionLabel>
+        {streak > 0 && <Streak>🔥 {HE.QUIZ_STREAK(streak)}</Streak>}
+      </Top>
       <PromptBox>
         <PromptText>{prompt} <Ellipsis>...</Ellipsis></PromptText>
       </PromptBox>

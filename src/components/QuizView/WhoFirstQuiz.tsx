@@ -5,7 +5,7 @@ import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Rabbi, RabbiCategory } from '@/types';
-import { CATEGORY_LABELS, CATEGORY_COLORS } from '@/lib/rabbisData';
+import { CATEGORY_LABELS, CATEGORY_COLORS, CATEGORY_ORDER } from '@/lib/rabbisData';
 import { addStat } from '@/lib/statsStorage';
 
 type Sel = 'A' | 'B' | null;
@@ -174,13 +174,23 @@ export default function WhoFirstQuiz({ onAnswered }: Props) {
 
   const next = useCallback((list: Rabbi[]) => {
     if (list.length < 2) return;
-    let ra: Rabbi, rb: Rabbi, tries = 0;
-    do {
-      const i = Math.floor(Math.random() * list.length);
-      let j = Math.floor(Math.random() * (list.length - 1));
-      if (j >= i) j++;
-      ra = list[i]; rb = list[j]; tries++;
-    } while (ra.sortYear === rb.sortYear && tries < 30);
+    const ra = list[Math.floor(Math.random() * list.length)];
+    const catIdx = CATEGORY_ORDER.indexOf(ra.category as RabbiCategory);
+
+    // Prefer rabbis from the same or an adjacent category (harder, more educational)
+    const nearby = list.filter(r => {
+      if (r.id === ra.id) return false;
+      const idx = CATEGORY_ORDER.indexOf(r.category as RabbiCategory);
+      return Math.abs(idx - catIdx) <= 1;
+    });
+    const pool = nearby.length >= 1 ? nearby : list.filter(r => r.id !== ra.id);
+
+    let rb = pool[Math.floor(Math.random() * pool.length)];
+    let tries = 0;
+    while (rb.sortYear === ra.sortYear && tries < 30) {
+      rb = pool[Math.floor(Math.random() * pool.length)];
+      tries++;
+    }
     setA(ra); setB(rb); setSel(null);
   }, []);
 
