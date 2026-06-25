@@ -16,6 +16,7 @@ import BooksQuiz from './BooksQuiz';
 import WhoFirstQuiz from './WhoFirstQuiz';
 import SederQuiz from './SederQuiz';
 import BioQuiz from './BioQuiz';
+import ImageQuiz from './ImageQuiz';
 import StatsPanel from './StatsPanel';
 
 const fadeIn = keyframes`
@@ -402,7 +403,7 @@ function scoreLabel(score: number) {
   return HE.QUIZ_WRONG;
 }
 
-type QuizMode = 'classic' | 'multiple' | 'completion' | 'rabbi' | 'gematria' | 'books' | 'whoFirst' | 'seder' | 'bio';
+type QuizMode = 'classic' | 'multiple' | 'completion' | 'rabbi' | 'gematria' | 'books' | 'whoFirst' | 'seder' | 'bio' | 'image';
 
 export default function QuizView() {
   const [quizMode, setQuizMode] = useState<QuizMode>('classic');
@@ -527,9 +528,13 @@ export default function QuizView() {
           <ModeIcon>🔍</ModeIcon>
           <ModeLabel>{HE.QUIZ_MODE_BIO}</ModeLabel>
         </ModeButton>
+        <ModeButton $active={quizMode === 'image'} onClick={() => handleModeSwitch('image')}>
+          <ModeIcon>📸</ModeIcon>
+          <ModeLabel>{HE.QUIZ_MODE_IMAGE}</ModeLabel>
+        </ModeButton>
       </ModeGrid>
 
-      <FilterBar style={{ display: quizMode === 'rabbi' || quizMode === 'gematria' || quizMode === 'books' || quizMode === 'whoFirst' || quizMode === 'seder' || quizMode === 'bio' ? 'none' : undefined }}>
+      <FilterBar style={{ display: quizMode === 'rabbi' || quizMode === 'gematria' || quizMode === 'books' || quizMode === 'whoFirst' || quizMode === 'seder' || quizMode === 'bio' || quizMode === 'image' ? 'none' : undefined }}>
         <FilterLabel>{HE.QUIZ_FILTER_TITLE}</FilterLabel>
         <FilterSelect value={filterSeder} onChange={(e) => handleFilterSederChange(e.target.value)}>
           <option value="">{HE.QUIZ_FILTER_ALL}</option>
@@ -563,6 +568,8 @@ export default function QuizView() {
           <SederQuiz onAnswered={bumpStats} />
         ) : quizMode === 'bio' ? (
           <BioQuiz onAnswered={bumpStats} />
+        ) : quizMode === 'image' ? (
+          <ImageQuiz onAnswered={bumpStats} />
         ) : quizMode === 'completion' ? (
           <CompletionQuiz
             filterSeder={filterSeder}

@@ -60,6 +60,7 @@ export interface Rabbi {
   bio: string;
   category: string;
   deathDate: string | null;
+  imageUrl: string | null;
   createdAt: string;
 }
 

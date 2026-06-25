@@ -40,6 +40,7 @@ model Rabbi {
   category   String
   createdAt  DateTime @default(now())
   deathDate  String?
+  imageUrl   String?
 
   @@index([category])
   @@index([sortYear])
