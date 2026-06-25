@@ -61,10 +61,6 @@ const RabbiImg = styled.img`
   display: block;
 `;
 
-const ImgPlaceholder = styled.div`
-  font-size: 4rem;
-  color: ${theme.colors.border};
-`;
 
 const Grid = styled.div`
   display: grid;
@@ -155,7 +151,6 @@ export default function ImageQuiz({ onAnswered }: Props) {
   const [options, setOptions] = useState<Rabbi[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [streak, setStreak] = useState(0);
-  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
     fetch('/api/rabbis')
@@ -166,13 +161,12 @@ export default function ImageQuiz({ onAnswered }: Props) {
 
   const next = useCallback((list: Rabbi[]) => {
     const withImg = list.filter(r => r.imageUrl);
-    if (withImg.length < 1) return;
+    if (withImg.length < 4) return;
     const q = withImg[Math.floor(Math.random() * withImg.length)];
-    const others = list.filter(r => r.id !== q.id).sort(() => Math.random() - 0.5).slice(0, 3);
+    const others = withImg.filter(r => r.id !== q.id).sort(() => Math.random() - 0.5).slice(0, 3);
     setQuestion(q);
     setOptions([q, ...others].sort(() => Math.random() - 0.5));
     setSelected(null);
-    setImgError(false);
   }, []);
 
   useEffect(() => { if (all.length >= 1) next(all); }, [all, next]);
@@ -198,7 +192,7 @@ export default function ImageQuiz({ onAnswered }: Props) {
   if (!loaded) return <Wrapper><Empty>{HE.LOADING}</Empty></Wrapper>;
 
   const withImg = all.filter(r => r.imageUrl);
-  if (withImg.length < 1 || !question) {
+  if (withImg.length < 4 || !question) {
     return <Wrapper><Empty>{HE.QUIZ_IMAGE_NOT_ENOUGH}</Empty></Wrapper>;
   }
 
@@ -213,14 +207,12 @@ export default function ImageQuiz({ onAnswered }: Props) {
       </Top>
 
       <ImageFrame>
-        {question.imageUrl && !imgError ? (
+        {question.imageUrl && (
           <RabbiImg
             src={question.imageUrl}
             alt="?"
-            onError={() => setImgError(true)}
+            onError={() => next(all)}
           />
-        ) : (
-          <ImgPlaceholder>🧔</ImgPlaceholder>
         )}
       </ImageFrame>
 
