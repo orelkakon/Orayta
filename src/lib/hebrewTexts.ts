@@ -198,6 +198,7 @@ export const HE = {
 
   RABBIS_TIMELINE_VIEW: 'ציר זמן',
   RABBIS_LIST_VIEW: 'רשימה',
+  RABBIS_MAP_VIEW: 'מפה',
 
   ABOUT_SHARE_TITLE: 'שתף את אורייתא',
   ABOUT_SHARE_SUBTITLE: 'הפצה לחברים ובני משפחה',

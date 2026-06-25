@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -11,6 +12,17 @@ import RabbiCard from './RabbiCard';
 import RabbiForm from './RabbiForm';
 import RabbisTimeline from './RabbisTimeline';
 import SearchField from '@/components/common/SearchField';
+
+const RabbisMap = dynamic(() => import('./RabbisMapInner'), {
+  ssr: false,
+  loading: () => <MapLoading>טוען מפה...</MapLoading>,
+});
+
+const MapLoading = styled.div`
+  height: 420px; display: flex; align-items: center; justify-content: center;
+  color: ${theme.colors.textMuted}; font-size: 0.9rem;
+  border: 1px solid ${theme.colors.border}; border-radius: ${theme.radii.lg};
+`;
 
 const Container = styled.div`
   display: flex;
@@ -125,7 +137,7 @@ export default function RabbisView({ initialSearch = '' }: Props) {
   const [search, setSearch] = useState(initialSearch);
   const [editRabbi, setEditRabbi] = useState<Rabbi | null>(null);
   const [addOpen, setAddOpen] = useState(false);
-  const [showTimeline, setShowTimeline] = useState(false);
+  const [view, setView] = useState<'list' | 'timeline' | 'map'>('list');
   const role = useRole();
 
   const load = useCallback(() => {
@@ -178,8 +190,9 @@ export default function RabbisView({ initialSearch = '' }: Props) {
         </TitleGroup>
         <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.xs, alignItems: 'flex-end' }}>
           <SegmentRow>
-            <SegBtn $active={!showTimeline} onClick={() => setShowTimeline(false)}>📋 {HE.RABBIS_LIST_VIEW}</SegBtn>
-            <SegBtn $active={showTimeline}  onClick={() => setShowTimeline(true)}>📅 {HE.RABBIS_TIMELINE_VIEW}</SegBtn>
+            <SegBtn $active={view === 'list'}     onClick={() => setView('list')}>📋 {HE.RABBIS_LIST_VIEW}</SegBtn>
+            <SegBtn $active={view === 'timeline'} onClick={() => setView('timeline')}>📅 {HE.RABBIS_TIMELINE_VIEW}</SegBtn>
+            <SegBtn $active={view === 'map'}      onClick={() => setView('map')}>🗺️ {HE.RABBIS_MAP_VIEW}</SegBtn>
           </SegmentRow>
           {role === 'admin' && (
             <AddBtn onClick={() => setAddOpen(true)}>{HE.RABBI_ADD_BTN}</AddBtn>
@@ -209,9 +222,9 @@ export default function RabbisView({ initialSearch = '' }: Props) {
         ))}
       </TabsScroll>
 
-      {showTimeline ? (
-        <RabbisTimeline rabbis={filtered} />
-      ) : (
+      {view === 'timeline' && <RabbisTimeline rabbis={filtered} />}
+      {view === 'map'      && <RabbisMap rabbis={filtered} />}
+      {view === 'list'     && (
         <Grid>
           {filtered.length === 0
             ? <Empty>{HE.STUDY_EMPTY}</Empty>
