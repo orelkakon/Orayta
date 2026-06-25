@@ -53,11 +53,11 @@ const CountBadge = styled.span`
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: ${theme.spacing.lg};
-  @media (max-width: 700px) {
+  gap: ${theme.spacing.md};
+  @media (max-width: 600px) {
     grid-template-columns: repeat(2, 1fr);
   }
-  @media (max-width: 420px) {
+  @media (max-width: 380px) {
     grid-template-columns: 1fr;
   }
 `;

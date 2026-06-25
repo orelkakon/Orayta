@@ -8,14 +8,14 @@ import { Book } from '@/types';
 
 const Card = styled.div`
   background: ${theme.colors.surface};
-  border-radius: ${theme.radii.lg};
+  border-radius: ${theme.radii.md};
   border: 1px solid ${theme.colors.borderLight};
-  border-right: 4px solid ${theme.colors.secondary};
+  border-right: 3px solid ${theme.colors.secondary};
   box-shadow: ${theme.shadows.sm};
-  padding: ${theme.spacing.lg};
+  padding: ${theme.spacing.sm} ${theme.spacing.md};
   display: flex;
   flex-direction: column;
-  gap: ${theme.spacing.xs};
+  gap: 4px;
   transition: box-shadow 0.15s, transform 0.15s;
   &:hover {
     box-shadow: ${theme.shadows.md};
@@ -25,7 +25,7 @@ const Card = styled.div`
 
 const Title = styled.h3`
   font-family: ${theme.fonts.body};
-  font-size: 1.15rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: ${theme.colors.primary};
   line-height: 1.3;
@@ -42,7 +42,7 @@ const AuthorRow = styled.div`
 
 const Author = styled.div`
   font-family: ${theme.fonts.body};
-  font-size: 0.92rem;
+  font-size: 0.8rem;
   color: ${theme.colors.textMuted};
   overflow-wrap: break-word;
   word-break: break-word;
