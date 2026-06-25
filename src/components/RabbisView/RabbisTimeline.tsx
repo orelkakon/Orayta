@@ -242,7 +242,7 @@ export default function RabbisTimeline({ rabbis }: Props) {
                       {isOn && (
                         <EntryDetail>
                           {r.fullName && <FullName>{r.fullName}</FullName>}
-                          {r.isAlive && <AliveBadge>⬤ חי ופועל</AliveBadge>}
+                          {r.isAlive && <AliveBadge>⬤ חי וקיים</AliveBadge>}
                           <BioParagraph>{r.bio}</BioParagraph>
                         </EntryDetail>
                       )}
