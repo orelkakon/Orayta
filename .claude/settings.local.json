@@ -83,7 +83,9 @@
       "Bash(curl -s \"http://localhost:3000/api/rabbis\" -H \"Cookie: auth=admin\")",
       "Bash(curl -s \"http://localhost:3000/api/rabbis/$\\(curl -s \"http://localhost:3000/api/rabbis\" -H \"Cookie: auth=admin\")",
       "Bash(curl *)",
-      "Skill(update-config)"
+      "Skill(update-config)",
+      "Bash(echo \"fetched $\\(python3 -c \"import json; print\\(len\\(json.load\\(open\\('/tmp/rabbis_data.json'\\)\\)\\)\\)\"\\)\" rabbis)",
+      "Bash(xargs ls -la)"
     ]
   }
 }

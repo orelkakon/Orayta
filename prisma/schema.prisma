@@ -38,8 +38,8 @@ model Rabbi {
   isAlive    Boolean  @default(false)
   bio        String
   category   String
-  deathDate  String?
   createdAt  DateTime @default(now())
+  deathDate  String?
 
   @@index([category])
   @@index([sortYear])
@@ -58,8 +58,8 @@ model Book {
   id        String   @id @default(cuid())
   title     String
   author    String
-  rabbiId   String?
   createdAt DateTime @default(now())
+  rabbiId   String?
 
   @@index([author])
   @@index([rabbiId])
@@ -94,9 +94,9 @@ model Dedication {
 }
 
 model PageVisit {
-  id      String   @id @default(cuid())
-  ipHash  String   @unique
-  seenAt  DateTime @default(now())
+  id     String   @id @default(cuid())
+  ipHash String   @unique
+  seenAt DateTime @default(now())
 
   @@index([ipHash])
 }
@@ -109,8 +109,8 @@ model GlobalCounter {
 model QuizResult {
   id         String   @id @default(cuid())
   citationId String
-  score      Float
   answeredAt DateTime @default(now())
+  score      Float
   citation   Citation @relation(fields: [citationId], references: [id], onDelete: Cascade)
 
   @@index([citationId])
