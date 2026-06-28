@@ -19,6 +19,19 @@ function isAdmin(req: NextRequest) {
   return req.cookies.get('auth')?.value === 'admin';
 }
 
+function extractBooksFromBio(bio: string, author: string, rabbiId: string) {
+  const books: Array<{ title: string; author: string; rabbiId: string }> = [];
+  const regex = /כתב את\s+([^.]+)\.?/g;
+  let match;
+  while ((match = regex.exec(bio)) !== null) {
+    const titles = match[1].split(',').map(t => t.trim()).filter(t => t.length > 0);
+    for (const title of titles) {
+      books.push({ title, author, rabbiId });
+    }
+  }
+  return books;
+}
+
 export async function POST(request: NextRequest) {
   if (!isAdmin(request)) return NextResponse.json({ error: 'forbidden' }, { status: 403 });
 
@@ -45,6 +58,11 @@ export async function POST(request: NextRequest) {
       imageUrl: body.imageUrl?.trim() || null,
     },
   });
+
+  const booksToCreate = extractBooksFromBio(body.bio, rabbi.name, rabbi.id);
+  if (booksToCreate.length > 0) {
+    await prisma.book.createMany({ data: booksToCreate });
+  }
 
   return NextResponse.json(rabbi, { status: 201 });
 }
