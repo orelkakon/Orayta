@@ -74,9 +74,9 @@ const Streak = styled.div`
   color: white; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
 `;
 
-interface Props { onAnswered: () => void; }
+interface Props { onAnswered: () => void; filterCategory?: string; }
 
-export default function RabbiQuiz({ onAnswered }: Props) {
+export default function RabbiQuiz({ onAnswered, filterCategory = '' }: Props) {
   const [allRabbis, setAllRabbis] = useState<Rabbi[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [question, setQuestion] = useState<Rabbi | null>(null);
@@ -93,10 +93,9 @@ export default function RabbiQuiz({ onAnswered }: Props) {
       .catch(() => setLoaded(true));
   }, []);
 
-  const loadQuestion = useCallback((list: Rabbi[], excludeIds: string[] = []) => {
-    const available = excludeIds.length > 0
-      ? list.filter(r => !excludeIds.includes(r.id))
-      : list;
+  const loadQuestion = useCallback((list: Rabbi[], excludeIds: string[] = [], catFilter = '') => {
+    const pool = catFilter ? list.filter(r => r.category === catFilter) : list;
+    const available = excludeIds.length > 0 ? pool.filter(r => !excludeIds.includes(r.id)) : pool;
     if (available.length === 0) {
       if (excludeIds.length > 0) setAllDone(true);
       return;
@@ -114,9 +113,9 @@ export default function RabbiQuiz({ onAnswered }: Props) {
     if (allRabbis.length > 0) {
       setSeenIds([]);
       setAllDone(false);
-      loadQuestion(allRabbis, []);
+      loadQuestion(allRabbis, [], filterCategory);
     }
-  }, [allRabbis, loadQuestion]);
+  }, [allRabbis, filterCategory, loadQuestion]);
 
   const handleSelect = (cat: RabbiCategory) => {
     if (selected !== null || !question) return;
@@ -131,17 +130,17 @@ export default function RabbiQuiz({ onAnswered }: Props) {
     if (selected === question?.category && question) {
       const next = [...seenIds, question.id];
       setSeenIds(next);
-      loadQuestion(allRabbis, next);
+      loadQuestion(allRabbis, next, filterCategory);
     } else {
       setSeenIds([]);
-      loadQuestion(allRabbis, []);
+      loadQuestion(allRabbis, [], filterCategory);
     }
   };
 
   const handleSkip = () => {
     setSeenIds([]);
     setAllDone(false);
-    loadQuestion(allRabbis, []);
+    loadQuestion(allRabbis, [], filterCategory);
   };
 
   const getState = (cat: RabbiCategory): State => {
@@ -153,7 +152,7 @@ export default function RabbiQuiz({ onAnswered }: Props) {
 
   if (!loaded) return <Wrapper><Empty>{HE.LOADING}</Empty></Wrapper>;
   if (allRabbis.length === 0 || !question) return <Wrapper><Empty>{HE.QUIZ_RABBI_NOT_ENOUGH}</Empty></Wrapper>;
-  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); loadQuestion(allRabbis, []); }} /></Wrapper>;
+  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); loadQuestion(allRabbis, [], filterCategory); }} /></Wrapper>;
 
   return (
     <Wrapper>

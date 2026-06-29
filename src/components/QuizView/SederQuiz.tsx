@@ -6,6 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { MASECHTOT, SEDARIM } from '@/lib/hebrewData';
 import { addStat } from '@/lib/statsStorage';
+import AllDoneCard from './AllDoneCard';
 
 const SEDER_COLORS: Record<string, string> = {
   'סדר זרעים':  '#2D5A3D',
@@ -32,111 +33,64 @@ const Wrapper = styled.div`
   gap: ${theme.spacing.lg};
   min-width: 0;
 `;
-
 const Label = styled.div`
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: ${theme.colors.textMuted};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 0.8rem; font-weight: 600; color: ${theme.colors.textMuted};
+  text-transform: uppercase; letter-spacing: 0.05em;
 `;
-
 const MasechetCard = styled.div`
   background: linear-gradient(135deg, ${theme.colors.primary}10, ${theme.colors.secondary}18);
   border: 2px solid ${theme.colors.primary}30;
   border-radius: ${theme.radii.lg};
   padding: ${theme.spacing.xl} ${theme.spacing.xxl};
   text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: ${theme.spacing.xs};
+  display: flex; flex-direction: column; align-items: center; gap: ${theme.spacing.xs};
 `;
-
 const MasechetName = styled.div`
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: ${theme.colors.primary};
-  font-family: ${theme.fonts.body};
-  letter-spacing: -0.01em;
+  font-size: 2.2rem; font-weight: 800; color: ${theme.colors.primary};
+  font-family: ${theme.fonts.body}; letter-spacing: -0.01em;
 `;
-
 const MasechetSub = styled.div`
-  font-size: 0.82rem;
-  color: ${theme.colors.textMuted};
-  font-style: italic;
+  font-size: 0.82rem; color: ${theme.colors.textMuted}; font-style: italic;
 `;
-
 const OptionsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: ${theme.spacing.sm};
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: ${theme.spacing.sm};
   @media (max-width: 400px) { grid-template-columns: repeat(2, 1fr); }
 `;
-
 type BtnState = 'idle' | 'correct' | 'wrong' | 'dim';
-
 const SederBtn = styled.button<{ $st: BtnState; $color: string }>`
-  padding: ${theme.spacing.md} ${theme.spacing.sm};
-  border-radius: ${theme.radii.md};
+  padding: ${theme.spacing.md} ${theme.spacing.sm}; border-radius: ${theme.radii.md};
   border: 2px solid ${({ $st, $color }) =>
-    $st === 'correct' ? theme.colors.success :
-    $st === 'wrong'   ? theme.colors.error :
-    $color + '60'};
+    $st === 'correct' ? theme.colors.success : $st === 'wrong' ? theme.colors.error : $color + '60'};
   background: ${({ $st, $color }) =>
-    $st === 'correct' ? theme.colors.bgSuccess :
-    $st === 'wrong'   ? theme.colors.bgError :
-    $color + '10'};
+    $st === 'correct' ? theme.colors.bgSuccess : $st === 'wrong' ? theme.colors.bgError : $color + '10'};
   color: ${({ $st, $color }) =>
-    $st === 'correct' ? theme.colors.success :
-    $st === 'wrong'   ? theme.colors.error :
-    $st === 'dim'     ? theme.colors.textMuted :
-    $color};
+    $st === 'correct' ? theme.colors.success : $st === 'wrong' ? theme.colors.error :
+    $st === 'dim' ? theme.colors.textMuted : $color};
   opacity: ${({ $st }) => $st === 'dim' ? 0.4 : 1};
-  font-size: 0.9rem;
-  font-weight: 700;
-  font-family: ${theme.fonts.body};
+  font-size: 0.9rem; font-weight: 700; font-family: ${theme.fonts.body};
   cursor: ${({ $st }) => $st === 'idle' ? 'pointer' : 'default'};
   pointer-events: ${({ $st }) => $st !== 'idle' ? 'none' : 'auto'};
   transition: all 0.15s;
   &:hover { transform: translateY(-2px); box-shadow: 0 5px 14px ${({ $color }) => $color}28; border-color: ${({ $color }) => $color}; }
   &:active { transform: scale(0.97); }
 `;
-
 const Banner = styled.div<{ $ok: boolean }>`
-  padding: ${theme.spacing.md};
-  border-radius: ${theme.radii.md};
+  padding: ${theme.spacing.md}; border-radius: ${theme.radii.md};
   background: ${({ $ok }) => $ok ? theme.colors.bgSuccess : theme.colors.bgError};
   color: ${({ $ok }) => $ok ? theme.colors.success : theme.colors.error};
-  font-weight: 700;
-  text-align: center;
-  font-size: 1rem;
-  animation: ${pop} 0.25s ease;
+  font-weight: 700; text-align: center; font-size: 1rem; animation: ${pop} 0.25s ease;
 `;
-
 const NextBtn = styled.button`
-  padding: ${theme.spacing.md} ${theme.spacing.xl};
-  background: ${theme.colors.primary};
-  color: white;
-  border-radius: ${theme.radii.md};
-  font-size: 1rem;
-  font-weight: 600;
-  width: 100%;
-  transition: background 0.15s;
-  &:hover { background: ${theme.colors.primaryLight}; }
+  padding: ${theme.spacing.md} ${theme.spacing.xl}; background: ${theme.colors.primary};
+  color: white; border-radius: ${theme.radii.md}; font-size: 1rem; font-weight: 600;
+  width: 100%; transition: background 0.15s; &:hover { background: ${theme.colors.primaryLight}; }
 `;
-
 const SkipBtn = styled.button`
-  padding: ${theme.spacing.sm} ${theme.spacing.md};
-  border: 1.5px solid ${theme.colors.borderLight};
-  border-radius: ${theme.radii.md};
-  font-size: 0.9rem;
-  color: ${theme.colors.textMuted};
-  align-self: flex-start;
-  transition: all 0.15s;
+  padding: ${theme.spacing.sm} ${theme.spacing.md}; border: 1.5px solid ${theme.colors.borderLight};
+  border-radius: ${theme.radii.md}; font-size: 0.9rem; color: ${theme.colors.textMuted};
+  align-self: flex-start; transition: all 0.15s;
   &:hover { border-color: ${theme.colors.primary}; color: ${theme.colors.primary}; }
 `;
-
 const Top = styled.div`display: flex; align-items: center; justify-content: space-between;`;
 const Streak = styled.div`
   background: linear-gradient(135deg, #FF6B35, #FF9F1C);
@@ -144,18 +98,26 @@ const Streak = styled.div`
 `;
 
 interface Props { onAnswered: () => void; }
+type Masechet = { name: string; seder: string };
 
-function randomMasechet() {
-  return MASECHTOT[Math.floor(Math.random() * MASECHTOT.length)];
+function pickMasechet(exclude: string[]): Masechet {
+  const available = MASECHTOT.filter(m => !exclude.includes(m.name));
+  if (available.length === 0) return MASECHTOT[0];
+  return available[Math.floor(Math.random() * available.length)];
 }
 
 export default function SederQuiz({ onAnswered }: Props) {
-  const [masechet, setMasechet] = useState(randomMasechet);
+  const [masechet, setMasechet] = useState<Masechet>(() => pickMasechet([]));
   const [selected, setSelected] = useState<string | null>(null);
   const [streak, setStreak] = useState(0);
+  const [seenNames, setSeenNames] = useState<string[]>([]);
+  const [allDone, setAllDone] = useState(false);
 
-  const next = useCallback(() => {
-    setMasechet(randomMasechet());
+  const next = useCallback((excludeNames: string[]) => {
+    const available = MASECHTOT.filter(m => !excludeNames.includes(m.name));
+    if (available.length === 0) { setAllDone(true); return; }
+    setAllDone(false);
+    setMasechet(available[Math.floor(Math.random() * available.length)]);
     setSelected(null);
   }, []);
 
@@ -168,10 +130,32 @@ export default function SederQuiz({ onAnswered }: Props) {
     onAnswered();
   };
 
+  const handleNext = () => {
+    if (selected === masechet.seder) {
+      const nextSeen = [...seenNames, masechet.name];
+      setSeenNames(nextSeen);
+      next(nextSeen);
+    } else {
+      setSeenNames([]);
+      next([]);
+    }
+  };
+
+  const handleSkip = () => {
+    setSeenNames([]);
+    setAllDone(false);
+    next([]);
+  };
+
+  if (allDone) return (
+    <Wrapper>
+      <AllDoneCard onReset={() => { setSeenNames([]); setAllDone(false); next([]); }} />
+    </Wrapper>
+  );
+
   const answered = selected !== null;
   const isOk = selected === masechet.seder;
   const countInSeder = MASECHTOT.filter(m => m.seder === masechet.seder).length;
-
   const btnState = (seder: string): BtnState => {
     if (!answered) return 'idle';
     if (seder === masechet.seder) return 'correct';
@@ -204,10 +188,10 @@ export default function SederQuiz({ onAnswered }: Props) {
           <Banner $ok={isOk}>
             {isOk ? `✓ ${HE.QUIZ_CORRECT} — ${masechet.seder}` : `✗ ${HE.QUIZ_WRONG} — ${masechet.seder}`}
           </Banner>
-          <NextBtn onClick={next}>{HE.QUIZ_NEXT}</NextBtn>
+          <NextBtn onClick={handleNext}>{HE.QUIZ_NEXT}</NextBtn>
         </>
       )}
-      {!answered && <SkipBtn onClick={next}>{HE.QUIZ_SKIP}</SkipBtn>}
+      {!answered && <SkipBtn onClick={handleSkip}>{HE.QUIZ_SKIP}</SkipBtn>}
     </Wrapper>
   );
 }

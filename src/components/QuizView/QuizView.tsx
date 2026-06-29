@@ -17,6 +17,8 @@ import WhoFirstQuiz from './WhoFirstQuiz';
 import SederQuiz from './SederQuiz';
 import BioQuiz from './BioQuiz';
 import ImageQuiz from './ImageQuiz';
+import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/lib/rabbisData';
+import { RabbiCategory } from '@/types';
 import StatsPanel from './StatsPanel';
 import AllDoneCard from './AllDoneCard';
 
@@ -415,6 +417,7 @@ export default function QuizView() {
   const [noResults, setNoResults] = useState(false);
   const [filterSeder, setFilterSeder] = useState('');
   const [filterMasechet, setFilterMasechet] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
   const [masechet, setMasechet] = useState('');
   const [daf, setDaf] = useState('');
   const [amud, setAmud] = useState<Amud | null>(null);
@@ -502,6 +505,7 @@ export default function QuizView() {
     setStreak(0);
     setSeenIds([]);
     setAllDone(false);
+    setFilterCategory('');
   };
 
   return (
@@ -565,6 +569,18 @@ export default function QuizView() {
         </FilterSelect>
       </FilterBar>
 
+      {(quizMode === 'rabbi' || quizMode === 'bio') && (
+        <FilterBar>
+          <FilterLabel>{HE.QUIZ_FILTER_CATEGORY}</FilterLabel>
+          <FilterSelect value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
+            <option value="">{HE.QUIZ_FILTER_CATEGORY_ALL}</option>
+            {CATEGORY_ORDER.map(c => (
+              <option key={c} value={c}>{CATEGORY_LABELS[c as RabbiCategory]}</option>
+            ))}
+          </FilterSelect>
+        </FilterBar>
+      )}
+
       {quizMode === 'classic' && allDone ? (
         <AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); void loadQuestion([]); }} />
       ) : quizMode === 'classic' && noResults ? (
@@ -578,7 +594,7 @@ export default function QuizView() {
             onAnswered={bumpStats}
           />
         ) : quizMode === 'rabbi' ? (
-          <RabbiQuiz onAnswered={bumpStats} />
+          <RabbiQuiz onAnswered={bumpStats} filterCategory={filterCategory} />
         ) : quizMode === 'gematria' ? (
           <GematriaQuiz onAnswered={bumpStats} />
         ) : quizMode === 'books' ? (
@@ -588,7 +604,7 @@ export default function QuizView() {
         ) : quizMode === 'seder' ? (
           <SederQuiz onAnswered={bumpStats} />
         ) : quizMode === 'bio' ? (
-          <BioQuiz onAnswered={bumpStats} />
+          <BioQuiz onAnswered={bumpStats} filterCategory={filterCategory} />
         ) : quizMode === 'image' ? (
           <ImageQuiz onAnswered={bumpStats} />
         ) : quizMode === 'completion' ? (

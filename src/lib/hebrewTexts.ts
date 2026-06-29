@@ -370,6 +370,9 @@ export const HE = {
   QUIZ_STREAK_DONE_SUB: 'סיימת את כל השאלות הזמינות ברצף מושלם!',
   QUIZ_STREAK_RESET: 'התחל מחדש',
 
+  QUIZ_FILTER_CATEGORY: 'קטגוריה',
+  QUIZ_FILTER_CATEGORY_ALL: 'כל הקטגוריות',
+
   ERROR_REQUIRED: 'שדה זה חובה',
   LOADING: 'טוען...',
   SAVE: 'שמור',
