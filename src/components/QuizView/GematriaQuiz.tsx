@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { addStat } from '@/lib/statsStorage';
+import AllDoneCard from './AllDoneCard';
 
 const Wrapper = styled.div`
   background: ${theme.colors.surface};
@@ -153,14 +154,25 @@ export default function GematriaQuiz({ onAnswered }: Props) {
   const [noResults, setNoResults] = useState(false);
   const [hintShown, setHintShown] = useState(false);
   const [streak, setStreak] = useState(0);
+  const [seenValues, setSeenValues] = useState<number[]>([]);
+  const [allDone, setAllDone] = useState(false);
 
-  const loadQuestion = useCallback(async () => {
+  const loadQuestion = useCallback(async (excludeValues: number[] = []) => {
     setInput('');
     setResult(null);
     setHintShown(false);
     setNoResults(false);
-    const res = await fetch('/api/quiz/gematria');
-    if (res.status === 404) { setNoResults(true); return; }
+    setAllDone(false);
+
+    const params = new URLSearchParams();
+    excludeValues.forEach(v => params.append('exclude', String(v)));
+
+    const res = await fetch(`/api/quiz/gematria?${params}`);
+    if (res.status === 404) {
+      if (excludeValues.length > 0) setAllDone(true);
+      else setNoResults(true);
+      return;
+    }
     setQuestion(await res.json() as Question);
   }, []);
 
@@ -185,7 +197,25 @@ export default function GematriaQuiz({ onAnswered }: Props) {
     }
   };
 
+  const handleNext = () => {
+    if (result?.correct && question) {
+      const next = [...seenValues, question.value];
+      setSeenValues(next);
+      void loadQuestion(next);
+    } else {
+      setSeenValues([]);
+      void loadQuestion([]);
+    }
+  };
+
+  const handleSkip = () => {
+    setSeenValues([]);
+    setAllDone(false);
+    void loadQuestion([]);
+  };
+
   if (noResults) return <Wrapper><Empty>{HE.QUIZ_GEMATRIA_NOT_ENOUGH}</Empty></Wrapper>;
+  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenValues([]); setAllDone(false); void loadQuestion([]); }} /></Wrapper>;
 
   return (
     <Wrapper>
@@ -216,7 +246,7 @@ export default function GematriaQuiz({ onAnswered }: Props) {
             <PrimaryBtn onClick={handleSubmit} disabled={!input.trim() || submitting}>
               {submitting ? HE.LOADING : HE.QUIZ_GEMATRIA_SUBMIT}
             </PrimaryBtn>
-            <SkipBtn onClick={loadQuestion}>{HE.QUIZ_SKIP}</SkipBtn>
+            <SkipBtn onClick={handleSkip}>{HE.QUIZ_SKIP}</SkipBtn>
           </BtnRow>
         </>
       ) : (
@@ -228,7 +258,7 @@ export default function GematriaQuiz({ onAnswered }: Props) {
             <AnswersLabel>{HE.QUIZ_GEMATRIA_ANSWERS}</AnswersLabel>
             <AnswersText>{result.answers.join(' / ')}</AnswersText>
           </AnswersBox>
-          <PrimaryBtn onClick={loadQuestion}>{HE.QUIZ_NEXT}</PrimaryBtn>
+          <PrimaryBtn onClick={handleNext}>{HE.QUIZ_NEXT}</PrimaryBtn>
         </>
       )}
     </Wrapper>

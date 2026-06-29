@@ -366,6 +366,10 @@ export const HE = {
   A2HS_IOS_STEP2: 'גלול ובחר "הוסף למסך הבית"',
   A2HS_IOS_STEP3: 'לחץ "הוסף" לאישור',
 
+  QUIZ_STREAK_ALL_DONE: 'כל הכבוד! ענית נכון על הכל',
+  QUIZ_STREAK_DONE_SUB: 'סיימת את כל השאלות הזמינות ברצף מושלם!',
+  QUIZ_STREAK_RESET: 'התחל מחדש',
+
   ERROR_REQUIRED: 'שדה זה חובה',
   LOADING: 'טוען...',
   SAVE: 'שמור',

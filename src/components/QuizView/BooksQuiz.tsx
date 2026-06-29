@@ -6,6 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Book } from '@/types';
 import { addStat } from '@/lib/statsStorage';
+import AllDoneCard from './AllDoneCard';
 
 type State = 'default' | 'correct' | 'wrong' | 'faded' | 'eliminated';
 
@@ -88,6 +89,8 @@ export default function BooksQuiz({ onAnswered }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const [eliminated, setEliminated] = useState<string | null>(null);
   const [streak, setStreak] = useState(0);
+  const [seenIds, setSeenIds] = useState<string[]>([]);
+  const [allDone, setAllDone] = useState(false);
 
   useEffect(() => {
     fetch('/api/books')
@@ -96,9 +99,16 @@ export default function BooksQuiz({ onAnswered }: Props) {
       .catch(() => setLoaded(true));
   }, []);
 
-  const loadQuestion = useCallback((list: Book[]) => {
-    if (list.length === 0) return;
-    const q = list[Math.floor(Math.random() * list.length)];
+  const loadQuestion = useCallback((list: Book[], excludeIds: string[] = []) => {
+    const available = excludeIds.length > 0
+      ? list.filter(b => !excludeIds.includes(b.id))
+      : list;
+    if (available.length === 0) {
+      if (excludeIds.length > 0) setAllDone(true);
+      return;
+    }
+    setAllDone(false);
+    const q = available[Math.floor(Math.random() * available.length)];
     const correct = q.author;
     const otherAuthors = Array.from(new Set(
       list.filter(b => b.author !== correct).map(b => b.author)
@@ -109,7 +119,13 @@ export default function BooksQuiz({ onAnswered }: Props) {
     setEliminated(null);
   }, []);
 
-  useEffect(() => { if (allBooks.length > 0) loadQuestion(allBooks); }, [allBooks, loadQuestion]);
+  useEffect(() => {
+    if (allBooks.length > 0) {
+      setSeenIds([]);
+      setAllDone(false);
+      loadQuestion(allBooks, []);
+    }
+  }, [allBooks, loadQuestion]);
 
   const handleHint = () => {
     if (!question) return;
@@ -126,6 +142,23 @@ export default function BooksQuiz({ onAnswered }: Props) {
     onAnswered();
   };
 
+  const handleNext = () => {
+    if (selected === question?.author && question) {
+      const next = [...seenIds, question.id];
+      setSeenIds(next);
+      loadQuestion(allBooks, next);
+    } else {
+      setSeenIds([]);
+      loadQuestion(allBooks, []);
+    }
+  };
+
+  const handleSkip = () => {
+    setSeenIds([]);
+    setAllDone(false);
+    loadQuestion(allBooks, []);
+  };
+
   const getState = (author: string): State => {
     if (author === eliminated) return 'eliminated';
     if (selected === null) return 'default';
@@ -140,6 +173,7 @@ export default function BooksQuiz({ onAnswered }: Props) {
   if (allBooks.length === 0 || distinctAuthors < 2 || !question) {
     return <Wrapper><Empty>{HE.QUIZ_BOOKS_NOT_ENOUGH}</Empty></Wrapper>;
   }
+  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); loadQuestion(allBooks, []); }} /></Wrapper>;
 
   return (
     <Wrapper>
@@ -168,8 +202,8 @@ export default function BooksQuiz({ onAnswered }: Props) {
         </ResultBanner>
       )}
       {selected !== null
-        ? <NextBtn onClick={() => loadQuestion(allBooks)}>{HE.QUIZ_NEXT}</NextBtn>
-        : <BtnRow><SkipBtn onClick={() => loadQuestion(allBooks)}>{HE.QUIZ_SKIP}</SkipBtn></BtnRow>
+        ? <NextBtn onClick={handleNext}>{HE.QUIZ_NEXT}</NextBtn>
+        : <BtnRow><SkipBtn onClick={handleSkip}>{HE.QUIZ_SKIP}</SkipBtn></BtnRow>
       }
     </Wrapper>
   );

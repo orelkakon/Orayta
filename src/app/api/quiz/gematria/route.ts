@@ -4,12 +4,17 @@ import { normalizeHebrewWord } from '@/lib/gematria';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
-  const count = await prisma.gematria.count();
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const excludeValues = searchParams.getAll('exclude').map(Number).filter(v => !isNaN(v));
+
+  const where = excludeValues.length > 0 ? { NOT: { value: { in: excludeValues } } } : {};
+
+  const count = await prisma.gematria.count({ where });
   if (count === 0) return NextResponse.json({ error: 'no gematria' }, { status: 404 });
 
   const skip = Math.floor(Math.random() * count);
-  const row = await prisma.gematria.findFirst({ skip });
+  const row = await prisma.gematria.findFirst({ where, skip });
   const hint = row ? normalizeHebrewWord(row.word)[0] ?? '' : '';
 
   return NextResponse.json({ value: row?.value ?? 0, hint });
