@@ -14,6 +14,7 @@ import RabbiQuiz from './RabbiQuiz';
 import GematriaQuiz from './GematriaQuiz';
 import BooksQuiz from './BooksQuiz';
 import StatsPanel from './StatsPanel';
+import AllDoneCard from './AllDoneCard';
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(8px); }
@@ -415,21 +416,30 @@ export default function QuizView() {
   const [statsKey, setStatsKey] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hintShown, setHintShown] = useState(false);
+  const [seenIds, setSeenIds] = useState<string[]>([]);
+  const [allDone, setAllDone] = useState(false);
 
   const hasAmud = question?.locations.some((l) => l.amud) ?? false;
 
-  const loadQuestion = useCallback(async (seder = filterSeder, masechetF = filterMasechet) => {
+  const loadQuestion = useCallback(async (excludeIds: string[] = [], seder = filterSeder, masechetF = filterMasechet) => {
     setResult(null);
     setMasechet('');
     setDaf('');
     setAmud(null);
     setHintShown(false);
     setNoResults(false);
+    setAllDone(false);
     const params = new URLSearchParams();
     if (masechetF) params.set('masechet', masechetF);
     else if (seder) params.set('seder', seder);
+    excludeIds.forEach(id => params.append('exclude', id));
     const res = await fetch(`/api/quiz?${params}`);
-    if (res.status === 404) { setQuestion(null); setNoResults(true); return; }
+    if (res.status === 404) {
+      setQuestion(null);
+      if (excludeIds.length > 0) setAllDone(true);
+      else setNoResults(true);
+      return;
+    }
     if (res.ok) setQuestion(await res.json() as Citation);
   }, [filterSeder, filterMasechet]);
 
@@ -440,12 +450,16 @@ export default function QuizView() {
   const handleFilterSederChange = (val: string) => {
     setFilterSeder(val);
     setFilterMasechet('');
-    void loadQuestion(val, '');
+    setSeenIds([]);
+    setAllDone(false);
+    void loadQuestion([], val, '');
   };
 
   const handleFilterMasechetChange = (val: string) => {
     setFilterMasechet(val);
-    void loadQuestion(filterSeder, val);
+    setSeenIds([]);
+    setAllDone(false);
+    void loadQuestion([], filterSeder, val);
   };
 
   const handleSubmit = async () => {
@@ -477,6 +491,8 @@ export default function QuizView() {
   const handleModeSwitch = (mode: QuizMode) => {
     setQuizMode(mode);
     setNoResults(false);
+    setSeenIds([]);
+    setAllDone(false);
   };
 
   return (
@@ -524,7 +540,9 @@ export default function QuizView() {
         </FilterSelect>
       </FilterBar>
 
-      {quizMode === 'classic' && noResults ? (
+      {quizMode === 'classic' && allDone ? (
+        <AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); void loadQuestion([]); }} />
+      ) : quizMode === 'classic' && noResults ? (
         <NoResultsCard>{HE.QUIZ_NO_RESULTS}</NoResultsCard>
       ) : (
       <QuizGrid>
@@ -608,7 +626,7 @@ export default function QuizView() {
                 <PrimaryBtn onClick={handleSubmit} disabled={!masechet || !daf.trim() || loading}>
                   {loading ? HE.LOADING : HE.QUIZ_SUBMIT}
                 </PrimaryBtn>
-                <GhostBtn onClick={() => loadQuestion()}>{HE.QUIZ_SKIP}</GhostBtn>
+                <GhostBtn onClick={() => { setSeenIds([]); setAllDone(false); void loadQuestion([]); }}>{HE.QUIZ_SKIP}</GhostBtn>
               </ButtonRow>
             </>
           ) : (
@@ -622,7 +640,16 @@ export default function QuizView() {
                 {result.correctLocations.map(formatLocation).join(' / ')}
               </CorrectAnswer>
               <ButtonRow>
-                <PrimaryBtn onClick={() => loadQuestion()}>{HE.QUIZ_NEXT}</PrimaryBtn>
+                <PrimaryBtn onClick={() => {
+                  if (result.score >= 1 && question) {
+                    const next = [...seenIds, question.id];
+                    setSeenIds(next);
+                    void loadQuestion(next);
+                  } else {
+                    setSeenIds([]);
+                    void loadQuestion([]);
+                  }
+                }}>{HE.QUIZ_NEXT}</PrimaryBtn>
               </ButtonRow>
             </>
           )}

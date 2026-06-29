@@ -18,10 +18,16 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const masechet = searchParams.get('masechet');
   const seder = searchParams.get('seder');
+  const excludeIds = searchParams.getAll('exclude').filter(Boolean);
 
-  const where = masechet || seder
+  const locationFilter = masechet || seder
     ? { locations: { some: { ...(masechet ? { masechet } : {}), ...(seder ? { seder } : {}) } } }
     : {};
+
+  const where = {
+    ...locationFilter,
+    ...(excludeIds.length > 0 ? { NOT: { id: { in: excludeIds } } } : {}),
+  };
 
   const count = await prisma.citation.count({ where });
   if (count === 0) return NextResponse.json({ error: 'no citations' }, { status: 404 });

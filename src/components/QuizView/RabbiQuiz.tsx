@@ -7,6 +7,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { Rabbi, RabbiCategory } from '@/types';
 import { CATEGORY_LABELS, CATEGORY_ORDER, CATEGORY_COLORS } from '@/lib/rabbisData';
 import { addStat } from '@/lib/statsStorage';
+import AllDoneCard from './AllDoneCard';
 
 type State = 'default' | 'correct' | 'wrong' | 'faded';
 
@@ -76,6 +77,8 @@ export default function RabbiQuiz({ onAnswered }: Props) {
   const [question, setQuestion] = useState<Rabbi | null>(null);
   const [options, setOptions] = useState<RabbiCategory[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
+  const [seenIds, setSeenIds] = useState<string[]>([]);
+  const [allDone, setAllDone] = useState(false);
 
   useEffect(() => {
     fetch('/api/rabbis')
@@ -84,9 +87,16 @@ export default function RabbiQuiz({ onAnswered }: Props) {
       .catch(() => setLoaded(true));
   }, []);
 
-  const loadQuestion = useCallback((list: Rabbi[]) => {
-    if (list.length === 0) return;
-    const q = list[Math.floor(Math.random() * list.length)];
+  const loadQuestion = useCallback((list: Rabbi[], excludeIds: string[] = []) => {
+    const available = excludeIds.length > 0
+      ? list.filter(r => !excludeIds.includes(r.id))
+      : list;
+    if (available.length === 0) {
+      if (excludeIds.length > 0) setAllDone(true);
+      return;
+    }
+    setAllDone(false);
+    const q = available[Math.floor(Math.random() * available.length)];
     const correct = q.category as RabbiCategory;
     const others = CATEGORY_ORDER.filter(c => c !== correct).sort(() => Math.random() - 0.5).slice(0, 3);
     setQuestion(q);
@@ -94,7 +104,13 @@ export default function RabbiQuiz({ onAnswered }: Props) {
     setSelected(null);
   }, []);
 
-  useEffect(() => { if (allRabbis.length > 0) loadQuestion(allRabbis); }, [allRabbis, loadQuestion]);
+  useEffect(() => {
+    if (allRabbis.length > 0) {
+      setSeenIds([]);
+      setAllDone(false);
+      loadQuestion(allRabbis, []);
+    }
+  }, [allRabbis, loadQuestion]);
 
   const handleSelect = (cat: RabbiCategory) => {
     if (selected !== null || !question) return;
@@ -102,6 +118,23 @@ export default function RabbiQuiz({ onAnswered }: Props) {
     const correct = cat === question.category;
     addStat({ score: correct ? 1 : 0, content: question.name, mode: 'rabbi' });
     onAnswered();
+  };
+
+  const handleNext = () => {
+    if (selected === question?.category && question) {
+      const next = [...seenIds, question.id];
+      setSeenIds(next);
+      loadQuestion(allRabbis, next);
+    } else {
+      setSeenIds([]);
+      loadQuestion(allRabbis, []);
+    }
+  };
+
+  const handleSkip = () => {
+    setSeenIds([]);
+    setAllDone(false);
+    loadQuestion(allRabbis, []);
   };
 
   const getState = (cat: RabbiCategory): State => {
@@ -113,6 +146,7 @@ export default function RabbiQuiz({ onAnswered }: Props) {
 
   if (!loaded) return <Wrapper><Empty>{HE.LOADING}</Empty></Wrapper>;
   if (allRabbis.length === 0 || !question) return <Wrapper><Empty>{HE.QUIZ_RABBI_NOT_ENOUGH}</Empty></Wrapper>;
+  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); loadQuestion(allRabbis, []); }} /></Wrapper>;
 
   return (
     <Wrapper>
@@ -140,8 +174,8 @@ export default function RabbiQuiz({ onAnswered }: Props) {
         </ResultBanner>
       )}
       {selected !== null
-        ? <NextBtn onClick={() => loadQuestion(allRabbis)}>{HE.QUIZ_NEXT}</NextBtn>
-        : <BtnRow><SkipBtn onClick={() => loadQuestion(allRabbis)}>{HE.QUIZ_SKIP}</SkipBtn></BtnRow>
+        ? <NextBtn onClick={handleNext}>{HE.QUIZ_NEXT}</NextBtn>
+        : <BtnRow><SkipBtn onClick={handleSkip}>{HE.QUIZ_SKIP}</SkipBtn></BtnRow>
       }
     </Wrapper>
   );

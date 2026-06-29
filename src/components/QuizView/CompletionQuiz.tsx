@@ -6,6 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Citation } from '@/types';
 import { addStat } from '@/lib/statsStorage';
+import AllDoneCard from './AllDoneCard';
 
 function getStartWordCount(content: string): number {
   const n = content.trim().split(/\s+/).length;
@@ -206,23 +207,35 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
   const [submitting, setSubmitting] = useState(false);
   const [noResults, setNoResults] = useState(false);
   const [hintUsed, setHintUsed] = useState(false);
+  const [seenIds, setSeenIds] = useState<string[]>([]);
+  const [allDone, setAllDone] = useState(false);
 
-  const loadQuestion = useCallback(async () => {
+  const loadQuestion = useCallback(async (excludeIds: string[] = []) => {
     setInput('');
     setResult(null);
     setNoResults(false);
     setHintUsed(false);
+    setAllDone(false);
 
     const params = new URLSearchParams();
     if (filterMasechet) params.set('masechet', filterMasechet);
     else if (filterSeder) params.set('seder', filterSeder);
+    excludeIds.forEach(id => params.append('exclude', id));
 
     const res = await fetch(`/api/quiz?${params}`);
-    if (res.status === 404) { setNoResults(true); return; }
+    if (res.status === 404) {
+      if (excludeIds.length > 0) setAllDone(true);
+      else setNoResults(true);
+      return;
+    }
     setQuestion(await res.json() as Citation);
   }, [filterSeder, filterMasechet]);
 
-  useEffect(() => { void loadQuestion(); }, [loadQuestion]);
+  useEffect(() => {
+    setSeenIds([]);
+    setAllDone(false);
+    void loadQuestion();
+  }, [loadQuestion]);
 
   const handleSubmit = async () => {
     if (!question || !input.trim()) return;
@@ -242,7 +255,25 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
     }
   };
 
+  const handleNext = () => {
+    if (result?.correct && question) {
+      const next = [...seenIds, question.id];
+      setSeenIds(next);
+      void loadQuestion(next);
+    } else {
+      setSeenIds([]);
+      void loadQuestion([]);
+    }
+  };
+
+  const handleSkip = () => {
+    setSeenIds([]);
+    setAllDone(false);
+    void loadQuestion([]);
+  };
+
   if (noResults) return <Wrapper>{HE.QUIZ_NO_RESULTS}</Wrapper>;
+  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); void loadQuestion([]); }} /></Wrapper>;
 
   const allWords = question?.content.trim().split(/\s+/) ?? [];
   const startCount = question ? getStartWordCount(question.content) : 3;
@@ -274,7 +305,7 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
             <PrimaryBtn onClick={handleSubmit} disabled={!input.trim() || submitting}>
               {submitting ? HE.LOADING : HE.QUIZ_COMPLETION_SUBMIT}
             </PrimaryBtn>
-            <SkipBtn onClick={loadQuestion}>{HE.QUIZ_SKIP}</SkipBtn>
+            <SkipBtn onClick={handleSkip}>{HE.QUIZ_SKIP}</SkipBtn>
           </BtnRow>
         </>
       ) : (
@@ -295,7 +326,7 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
               </SourceRow>
             )}
           </FullCitationBox>
-          <PrimaryBtn onClick={loadQuestion}>{HE.QUIZ_NEXT}</PrimaryBtn>
+          <PrimaryBtn onClick={handleNext}>{HE.QUIZ_NEXT}</PrimaryBtn>
         </>
       )}
     </Wrapper>
