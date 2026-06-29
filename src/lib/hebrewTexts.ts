@@ -367,7 +367,7 @@ export const HE = {
   A2HS_IOS_STEP3: 'לחץ "הוסף" לאישור',
 
   QUIZ_STREAK_ALL_DONE: 'כל הכבוד! ענית נכון על הכל',
-  QUIZ_STREAK_DONE_SUB: 'סיימת את כל השאלות הזמינות ברצף מושלם!',
+  QUIZ_STREAK_DONE_SUB: 'ענית נכון על כל השאלות בפילטר הנוכחי — החלף פילטר להמשך או התחל מחדש.',
   QUIZ_STREAK_RESET: 'התחל מחדש',
 
   QUIZ_FILTER_CATEGORY: 'קטגוריה',
