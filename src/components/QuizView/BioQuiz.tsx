@@ -125,6 +125,7 @@ export default function BioQuiz({ onAnswered, filterCategory = '' }: Props) {
   useEffect(() => {
     setSeenIds([]);
     setAllDone(false);
+    setStreak(0);
     if (all.length >= 4) next(all, [], filterCategory);
   }, [all, filterCategory, next]);
 
@@ -164,7 +165,7 @@ export default function BioQuiz({ onAnswered, filterCategory = '' }: Props) {
   };
 
   if (!loaded) return <Wrapper><Empty>{HE.LOADING}</Empty></Wrapper>;
-  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); next(all, [], filterCategory); }} /></Wrapper>;
+  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); setStreak(0); next(all, [], filterCategory); }} /></Wrapper>;
   if (!question || options.length < 4) return <Wrapper><Empty>{HE.QUIZ_BIO_NOT_ENOUGH}</Empty></Wrapper>;
 
   const answered = selected !== null;

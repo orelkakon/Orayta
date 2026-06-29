@@ -229,7 +229,7 @@ export default function MultipleChoiceQuiz({ filterSeder, filterMasechet, onAnsw
   };
 
   if (noResults) return <Wrapper>{HE.QUIZ_MC_NOT_ENOUGH}</Wrapper>;
-  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); void loadQuestion([]); }} /></Wrapper>;
+  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); setStreak(0); void loadQuestion([]); }} /></Wrapper>;
 
   return (
     <Wrapper>

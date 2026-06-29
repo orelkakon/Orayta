@@ -149,12 +149,14 @@ export default function ImageQuiz({ onAnswered }: Props) {
   const toggleCat = (cat: RabbiCategory) => {
     setSeenIds([]);
     setAllDone(false);
+    setStreak(0);
     setSelectedCats(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
   };
 
   const clearCats = () => {
     setSeenIds([]);
     setAllDone(false);
+    setStreak(0);
     setSelectedCats([]);
   };
 
@@ -221,7 +223,7 @@ export default function ImageQuiz({ onAnswered }: Props) {
   if (allDone) return (
     <Wrapper>
       {filterChips}
-      <AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); next(all, selectedCats, []); }} />
+      <AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); setStreak(0); next(all, selectedCats, []); }} />
     </Wrapper>
   );
 

@@ -149,7 +149,7 @@ export default function SederQuiz({ onAnswered }: Props) {
 
   if (allDone) return (
     <Wrapper>
-      <AllDoneCard onReset={() => { setSeenNames([]); setAllDone(false); next([]); }} />
+      <AllDoneCard onReset={() => { setSeenNames([]); setAllDone(false); setStreak(0); next([]); }} />
     </Wrapper>
   );
 

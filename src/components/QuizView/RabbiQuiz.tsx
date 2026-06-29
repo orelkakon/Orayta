@@ -151,7 +151,7 @@ export default function RabbiQuiz({ onAnswered }: Props) {
 
   if (!loaded) return <Wrapper><Empty>{HE.LOADING}</Empty></Wrapper>;
   if (allRabbis.length === 0 || !question) return <Wrapper><Empty>{HE.QUIZ_RABBI_NOT_ENOUGH}</Empty></Wrapper>;
-  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); loadQuestion(allRabbis, []); }} /></Wrapper>;
+  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); setStreak(0); loadQuestion(allRabbis, []); }} /></Wrapper>;
 
   return (
     <Wrapper>

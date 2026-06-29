@@ -215,7 +215,7 @@ export default function GematriaQuiz({ onAnswered }: Props) {
   };
 
   if (noResults) return <Wrapper><Empty>{HE.QUIZ_GEMATRIA_NOT_ENOUGH}</Empty></Wrapper>;
-  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenValues([]); setAllDone(false); void loadQuestion([]); }} /></Wrapper>;
+  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenValues([]); setAllDone(false); setStreak(0); void loadQuestion([]); }} /></Wrapper>;
 
   return (
     <Wrapper>

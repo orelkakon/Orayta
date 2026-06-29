@@ -176,7 +176,7 @@ export default function WhoFirstQuiz({ onAnswered }: Props) {
 
   if (!loaded) return <Wrapper><Label>{HE.LOADING}</Label></Wrapper>;
   if (!a || !b) return <Wrapper><Label>{HE.QUIZ_WHO_FIRST_NOT_ENOUGH}</Label></Wrapper>;
-  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); next(all, []); }} /></Wrapper>;
+  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); setStreak(0); next(all, []); }} /></Wrapper>;
 
   return (
     <Wrapper>

@@ -87,7 +87,8 @@
       "Bash(echo \"fetched $\\(python3 -c \"import json; print\\(len\\(json.load\\(open\\('/tmp/rabbis_data.json'\\)\\)\\)\\)\"\\)\" rabbis)",
       "Bash(xargs ls -la)",
       "Bash(grep -v \"Use \\\\`node\")",
-      "Bash(npx playwright *)"
+      "Bash(npx playwright *)",
+      "Bash(echo \"started pid $!\")"
     ]
   }
 }

@@ -281,7 +281,7 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
   };
 
   if (noResults) return <Wrapper>{HE.QUIZ_NO_RESULTS}</Wrapper>;
-  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); void loadQuestion([]); }} /></Wrapper>;
+  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); setStreak(0); void loadQuestion([]); }} /></Wrapper>;
 
   const allWords = question?.content.trim().split(/\s+/) ?? [];
   const startCount = question ? getStartWordCount(question.content) : 3;

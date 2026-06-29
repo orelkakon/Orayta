@@ -173,7 +173,7 @@ export default function BooksQuiz({ onAnswered }: Props) {
   if (allBooks.length === 0 || distinctAuthors < 2 || !question) {
     return <Wrapper><Empty>{HE.QUIZ_BOOKS_NOT_ENOUGH}</Empty></Wrapper>;
   }
-  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); loadQuestion(allBooks, []); }} /></Wrapper>;
+  if (allDone) return <Wrapper><AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); setStreak(0); loadQuestion(allBooks, []); }} /></Wrapper>;
 
   return (
     <Wrapper>

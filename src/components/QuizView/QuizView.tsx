@@ -583,7 +583,7 @@ export default function QuizView() {
       )}
 
       {quizMode === 'classic' && allDone ? (
-        <AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); void loadQuestion([]); }} />
+        <AllDoneCard onReset={() => { setSeenIds([]); setAllDone(false); setStreak(0); void loadQuestion([]); }} />
       ) : quizMode === 'classic' && noResults ? (
         <NoResultsCard>{HE.QUIZ_NO_RESULTS}</NoResultsCard>
       ) : (
