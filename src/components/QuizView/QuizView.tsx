@@ -19,6 +19,7 @@ import BioQuiz from './BioQuiz';
 import ImageQuiz from './ImageQuiz';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/lib/rabbisData';
 import { RabbiCategory } from '@/types';
+
 import StatsPanel from './StatsPanel';
 import AllDoneCard from './AllDoneCard';
 
@@ -569,7 +570,7 @@ export default function QuizView() {
         </FilterSelect>
       </FilterBar>
 
-      {(quizMode === 'rabbi' || quizMode === 'bio') && (
+      {quizMode === 'bio' && (
         <FilterBar>
           <FilterLabel>{HE.QUIZ_FILTER_CATEGORY}</FilterLabel>
           <FilterSelect value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
@@ -594,7 +595,7 @@ export default function QuizView() {
             onAnswered={bumpStats}
           />
         ) : quizMode === 'rabbi' ? (
-          <RabbiQuiz onAnswered={bumpStats} filterCategory={filterCategory} />
+          <RabbiQuiz onAnswered={bumpStats} />
         ) : quizMode === 'gematria' ? (
           <GematriaQuiz onAnswered={bumpStats} />
         ) : quizMode === 'books' ? (
