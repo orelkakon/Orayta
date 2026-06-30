@@ -327,6 +327,7 @@ export const HE = {
   DEDICATION_TYPE_ILUY: 'לעילוי נשמת',
   DEDICATION_TYPE_REFUA: 'לרפואת',
   DEDICATION_TYPE_HATZLAHA: 'להצלחת',
+  DEDICATION_TYPE_ZIVUG: 'לזיווג',
   DEDICATION_FORM_NAME: 'שם',
   DEDICATION_FORM_NAME_PLACEHOLDER: 'שם + בן/בת שם האב',
   DEDICATION_DELETE_CONFIRM: 'למחוק הקדשה זו?',

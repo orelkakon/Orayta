@@ -52,7 +52,7 @@ const Item = styled.span`
 `;
 
 const TypeLabel = styled.span`
-  font-size: 0.75rem; color: ${theme.colors.textMuted}; font-weight: 600;
+  font-size: 0.85rem; color: ${theme.colors.textMuted}; font-weight: 600;
 `;
 
 const Dot = styled.span`
@@ -114,6 +114,7 @@ const TYPES = [
   { key: 'iluy',     label: HE.DEDICATION_TYPE_ILUY },
   { key: 'refua',    label: HE.DEDICATION_TYPE_REFUA },
   { key: 'hatzlaha', label: HE.DEDICATION_TYPE_HATZLAHA },
+  { key: 'zivug',    label: HE.DEDICATION_TYPE_ZIVUG },
 ];
 
 interface Props { part?: 'ticker' | 'admin'; }
@@ -166,7 +167,7 @@ export default function DedicationsBar({ part = 'ticker' }: Props) {
   if (part === 'ticker') {
     if (tickerLoading) return <BarSkeleton />;
     if (dedications.length === 0) return null;
-    const secs = Math.max(dedications.length * 3, 10);
+    const secs = Math.max(dedications.length * 2, 8);
     return (
       <Bar>
         <BarTitle>{HE.DEDICATIONS_TITLE}</BarTitle>
@@ -176,7 +177,6 @@ export default function DedicationsBar({ part = 'ticker' }: Props) {
               <Item key={`${d.id}-${i}`}>
                 <TypeLabel>{typeLabel(d.type)}</TypeLabel>
                 {d.name}
-                <Dot>•</Dot>
               </Item>
             ))}
           </Tape>
