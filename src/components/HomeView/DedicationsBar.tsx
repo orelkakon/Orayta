@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { useRole } from '@/components/common/RoleContext';
 import { Dedication } from '@/types';
 
-const scrollLeft = keyframes`
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+const scrollRight = keyframes`
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
 `;
 
 /* ── Ticker ── */
@@ -41,7 +41,7 @@ const BarSkeleton = styled.div`
 
 const Tape = styled.div<{ $secs: number }>`
   display: inline-flex; white-space: nowrap; will-change: transform;
-  animation: ${scrollLeft} ${p => p.$secs}s linear infinite;
+  animation: ${scrollRight} ${p => p.$secs}s linear infinite;
 `;
 
 const Item = styled.span`
@@ -158,17 +158,21 @@ export default function DedicationsBar({ part = 'ticker' }: Props) {
   const typeLabel = (key: string) => TYPES.find(t => t.key === key)?.label ?? key;
 
   /* ── Ticker part ── */
+  const shuffledDouble = useMemo(() => {
+    const arr = [...dedications].sort(() => Math.random() - 0.5);
+    return [...arr, ...arr];
+  }, [dedications]);
+
   if (part === 'ticker') {
     if (tickerLoading) return <BarSkeleton />;
     if (dedications.length === 0) return null;
-    const doubled = [...dedications, ...dedications];
-    const secs = Math.max(dedications.length * 5, 14);
+    const secs = Math.max(dedications.length * 3, 10);
     return (
       <Bar>
         <BarTitle>{HE.DEDICATIONS_TITLE}</BarTitle>
         <Track>
           <Tape $secs={secs}>
-            {doubled.map((d, i) => (
+            {shuffledDouble.map((d, i) => (
               <Item key={`${d.id}-${i}`}>
                 <TypeLabel>{typeLabel(d.type)}</TypeLabel>
                 {d.name}
