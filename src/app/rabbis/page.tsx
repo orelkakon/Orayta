@@ -1,14 +1,15 @@
 import AppLayout from '@/components/Layout/AppLayout';
-import RabbisView from '@/components/RabbisView/RabbisView';
+import RabbisAndBooksView from '@/components/RabbisAndBooksView/RabbisAndBooksView';
 
 interface Props {
-  searchParams: { q?: string };
+  searchParams: { q?: string; tab?: string };
 }
 
 export default function RabbisPage({ searchParams }: Props) {
+  const initialTab = searchParams.tab === 'books' ? 'books' : 'rabbis';
   return (
     <AppLayout>
-      <RabbisView initialSearch={searchParams.q ?? ''} />
+      <RabbisAndBooksView initialTab={initialTab} initialSearch={searchParams.q ?? ''} />
     </AppLayout>
   );
 }

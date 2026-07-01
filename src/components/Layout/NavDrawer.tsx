@@ -98,17 +98,17 @@ interface Props {
 
 export default function NavDrawer({ open, onClose, pathname, onLogout }: Props) {
   const links = [
-    { href: '/',           label: HE.HOME_SECTIONS.find(s => s.href === '/')?.label ?? 'בית',       icon: '🏠' },
-    { href: '/rabbis',     label: HE.NAV_RABBIS,    icon: '👥' },
-    { href: '/books',      label: HE.NAV_BOOKS,     icon: '📖' },
-    { href: '/study',      label: HE.NAV_TALMUD,    icon: '📜' },
-    { href: '/gematria',   label: HE.NAV_GEMATRIA,  icon: '🔢' },
-    { href: '/content',    label: HE.NAV_CONTENTS,  icon: '📚' },
-    { href: '/chidushim',  label: HE.NAV_CHIDUSHIM, icon: '💡' },
-    { href: '/quiz',       label: HE.NAV_LEARN,     icon: '🎯' },
-    { href: '/today',      label: HE.NAV_TODAY,     icon: '📅' },
-    { href: '/contact',    label: HE.NAV_CONTACT,   icon: '📞' },
-    { href: '/about',      label: HE.NAV_ABOUT,     icon: 'ℹ️' },
+    { href: '/',           label: HE.HOME_SECTIONS.find(s => s.href === '/')?.label ?? 'בית',   icon: '🏠' },
+    { href: '/rabbis',     label: HE.NAV_RABBIS_AND_BOOKS, icon: '👥' },
+    { href: '/sikumim',    label: HE.NAV_SIKUMIM,          icon: '📝' },
+    { href: '/study',      label: HE.NAV_TALMUD,           icon: '📜' },
+    { href: '/gematria',   label: HE.NAV_GEMATRIA,         icon: '🔢' },
+    { href: '/content',    label: HE.NAV_CONTENTS,         icon: '📚' },
+    { href: '/chidushim',  label: HE.NAV_CHIDUSHIM,        icon: '💡' },
+    { href: '/quiz',       label: HE.NAV_LEARN,            icon: '🎯' },
+    { href: '/today',      label: HE.NAV_TODAY,            icon: '📅' },
+    { href: '/contact',    label: HE.NAV_CONTACT,          icon: '📞' },
+    { href: '/about',      label: HE.NAV_ABOUT,            icon: 'ℹ️' },
   ];
 
   const isActive = (href: string) =>

@@ -100,3 +100,22 @@ export interface Dedication {
   name: string;
   createdAt: string;
 }
+
+export interface SikumBook {
+  id: string;
+  name: string;
+  author: string | null;
+  createdAt: string;
+  entryCount: number;
+}
+
+export interface SikumEntry {
+  id: string;
+  bookId: string;
+  title: string | null;
+  text: string;
+  date: string;
+  location: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

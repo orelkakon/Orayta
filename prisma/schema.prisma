@@ -116,3 +116,28 @@ model QuizResult {
 
   @@index([citationId])
 }
+
+model SikumBook {
+  id        String       @id @default(cuid())
+  name      String
+  author    String?
+  createdAt DateTime     @default(now())
+  entries   SikumEntry[]
+
+  @@index([name])
+}
+
+model SikumEntry {
+  id        String    @id @default(cuid())
+  bookId    String
+  book      SikumBook @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  title     String?
+  text      String
+  date      DateTime  @default(now())
+  location  String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([bookId])
+  @@index([date])
+}

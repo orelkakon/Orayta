@@ -1,10 +1,5 @@
-import AppLayout from '@/components/Layout/AppLayout';
-import BooksView from '@/components/BooksView/BooksView';
+import { redirect } from 'next/navigation';
 
 export default function BooksPage() {
-  return (
-    <AppLayout>
-      <BooksView />
-    </AppLayout>
-  );
+  redirect('/rabbis?tab=books');
 }

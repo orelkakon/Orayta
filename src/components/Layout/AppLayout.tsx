@@ -141,8 +141,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
         </LogoGroup>
 
         <Nav>
-          <NavLink href="/rabbis"    $active={isActive('/rabbis')}>👥 {HE.NAV_RABBIS}</NavLink>
-          <NavLink href="/books"     $active={isActive('/books')}>📖 {HE.NAV_BOOKS}</NavLink>
+          <NavLink href="/rabbis"    $active={isActive('/rabbis') || isActive('/books')}>👥 {HE.NAV_RABBIS_AND_BOOKS}</NavLink>
+          <NavLink href="/sikumim"   $active={isActive('/sikumim')}>📝 {HE.NAV_SIKUMIM}</NavLink>
           <NavLink href="/study"     $active={isActive('/study') || pathname === '/add'}>📜 {HE.NAV_TALMUD}</NavLink>
           <NavLink href="/gematria"  $active={isActive('/gematria')}>🔢 {HE.NAV_GEMATRIA}</NavLink>
           <NavLink href="/content"   $active={isActive('/content')}>📚 {HE.NAV_CONTENTS}</NavLink>
