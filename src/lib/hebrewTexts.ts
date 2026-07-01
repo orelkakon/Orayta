@@ -321,6 +321,8 @@ export const HE = {
   SIKUMIM_BOOK_FORM_NAME_PLACEHOLDER: 'למשל: מסילת ישרים',
   SIKUMIM_BOOK_FORM_AUTHOR: 'סופר (אופציונלי)',
   SIKUMIM_BOOK_FORM_AUTHOR_PLACEHOLDER: 'למשל: הרמח"ל',
+  SIKUMIM_BOOK_FORM_ICON: 'אייקון',
+  SIKUMIM_BOOK_FORM_COLOR: 'צבע',
   SIKUMIM_BOOK_FORM_SAVE: 'שמור',
   SIKUMIM_BOOK_DELETE_CONFIRM: 'למחוק את הספר וכל הסיכומים שלו?',
   SIKUMIM_BOOK_SAVE_ERROR: 'שגיאה בשמירה, נסה שנית',
@@ -350,7 +352,7 @@ export const HE = {
   SIKUMIM_ENTRY_LOCATION_LABEL: 'מיקום',
   SIKUMIM_SHARE_WA: 'שתף ב-WhatsApp',
   DAILY_SIKUM: 'סיכום היום',
-  DAILY_RABBI_AND_BOOK: 'רב וספר היום',
+  DAILY_RABBI_AND_BOOK: 'רב היום',
   STATS_CONTENT_TITLE: 'נתוני תוכן',
 
   SEARCH_CLEAR: 'נקה',

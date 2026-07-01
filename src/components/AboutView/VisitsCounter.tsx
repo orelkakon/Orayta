@@ -62,7 +62,7 @@ const ContentChip = styled.div`
   }
 `;
 
-const ChipEmoji = styled.div`font-size: 1rem; line-height: 1;`;
+const ChipEmoji = styled.div`font-size: 1rem; line-height: 1.4; padding-top: 2px;`;
 const ChipNum = styled.div`
   font-family: ${theme.fonts.body}; font-size: 1rem; font-weight: 800;
   color: ${theme.colors.primary}; line-height: 1;
