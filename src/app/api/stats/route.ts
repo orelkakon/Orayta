@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const [citations, rabbis, books, summaries, gematrias, chidushim] = await Promise.all([
     prisma.citation.count(),
