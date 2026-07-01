@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -9,6 +9,7 @@ import { useRole } from '@/components/common/RoleContext';
 import SikumEntryCard from './SikumEntryCard';
 import SikumEntryForm from './SikumEntryForm';
 import SikumEntryModal from './SikumEntryModal';
+import SearchField from '@/components/common/SearchField';
 
 const Container = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
 
@@ -72,6 +73,7 @@ interface Props {
 export default function SikumEntriesView({ book, onBack }: Props) {
   const [entries, setEntries] = useState<SikumEntry[]>([]);
   const [sortDir, setSortDir] = useState<SortDir>('desc');
+  const [search, setSearch] = useState('');
   const [addOpen, setAddOpen] = useState(false);
   const [editEntry, setEditEntry] = useState<SikumEntry | null>(null);
   const [viewEntry, setViewEntry] = useState<SikumEntry | null>(null);
@@ -85,10 +87,15 @@ export default function SikumEntriesView({ book, onBack }: Props) {
 
   useEffect(() => { load(); }, [load]);
 
-  const sorted = [...entries].sort((a, b) => {
-    const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
-    return sortDir === 'desc' ? -diff : diff;
-  });
+  const sorted = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return [...entries]
+      .filter(e => !q || (e.title ?? '').toLowerCase().includes(q))
+      .sort((a, b) => {
+        const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
+        return sortDir === 'desc' ? -diff : diff;
+      });
+  }, [entries, sortDir, search]);
 
   const handleDelete = async (entry: SikumEntry) => {
     if (!window.confirm(HE.SIKUMIM_ENTRY_DELETE_CONFIRM)) return;
@@ -121,13 +128,15 @@ export default function SikumEntriesView({ book, onBack }: Props) {
           <BackBtn onClick={onBack}>{HE.SIKUMIM_BACK}</BackBtn>
           <BookTitle>
             {book.name}
-            {book.author && <BookAuthor>· {book.author}</BookAuthor>}
+            {book.author && <BookAuthor>{book.author}</BookAuthor>}
           </BookTitle>
         </div>
         {role === 'admin' && (
           <AddBtn onClick={() => setAddOpen(true)}>{HE.SIKUMIM_ADD_ENTRY_BTN}</AddBtn>
         )}
       </HeaderRow>
+
+      <SearchField value={search} onChange={setSearch} placeholder={HE.SIKUMIM_SEARCH_ENTRIES_PLACEHOLDER} />
 
       <ControlRow>
         <SortRow>

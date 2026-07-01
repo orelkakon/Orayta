@@ -11,6 +11,7 @@ const Card = styled.button`
   border-top: 3px solid ${theme.colors.secondary};
   border-radius: ${theme.radii.lg};
   padding: ${theme.spacing.md};
+  padding-bottom: calc(${theme.spacing.md} + 28px);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -58,10 +59,11 @@ const CountBadge = styled.div`
 `;
 
 const AdminRow = styled.div`
+  position: absolute;
+  bottom: ${theme.spacing.sm};
+  left: ${theme.spacing.sm};
   display: flex;
   gap: ${theme.spacing.xs};
-  margin-top: ${theme.spacing.xs};
-  align-self: flex-end;
 `;
 
 const ActionBtn = styled.button<{ $danger?: boolean }>`

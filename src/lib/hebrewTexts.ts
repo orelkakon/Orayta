@@ -312,6 +312,7 @@ export const HE = {
   SIKUMIM_TITLE: 'סיכומים',
   SIKUMIM_SUBTITLE: 'סיכומי לימוד יומיים לפי ספר',
   SIKUMIM_SEARCH_PLACEHOLDER: 'חיפוש לפי שם ספר או סופר...',
+  SIKUMIM_SEARCH_ENTRIES_PLACEHOLDER: 'חיפוש לפי כותרת...',
   SIKUMIM_BOOKS_EMPTY: 'עדיין אין ספרים — הוסף ספר כדי להתחיל',
   SIKUMIM_ADD_BOOK_BTN: '+ ספר חדש',
   SIKUMIM_BOOK_FORM_ADD_TITLE: 'הוסף ספר חדש',
