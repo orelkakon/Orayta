@@ -122,7 +122,6 @@ model SikumBook {
   name      String
   author    String?
   icon      String?      @default("📒")
-  color     String?
   createdAt DateTime     @default(now())
   entries   SikumEntry[]
 

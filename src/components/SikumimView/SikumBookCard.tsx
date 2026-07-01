@@ -5,10 +5,10 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { SikumBook } from '@/types';
 
-const Card = styled.button<{ $color?: string }>`
+const Card = styled.button`
   background: ${theme.colors.surface};
   border: 1px solid ${theme.colors.borderLight};
-  border-top: 3px solid ${({ $color }) => $color || theme.colors.secondary};
+  border-top: 3px solid ${theme.colors.secondary};
   border-radius: ${theme.radii.lg};
   padding: ${theme.spacing.md};
   padding-bottom: calc(${theme.spacing.md} + 28px);
@@ -25,7 +25,7 @@ const Card = styled.button<{ $color?: string }>`
   &:hover {
     box-shadow: ${theme.shadows.md};
     transform: translateY(-3px);
-    border-top-color: ${({ $color }) => $color || theme.colors.primary};
+    border-top-color: ${theme.colors.primary};
   }
 `;
 
@@ -44,15 +44,15 @@ const BookAuthor = styled.div`
   color: ${theme.colors.textMuted};
 `;
 
-const CountBadge = styled.div<{ $color?: string }>`
+const CountBadge = styled.div`
   position: absolute;
   top: ${theme.spacing.sm};
   left: ${theme.spacing.sm};
   font-size: 0.72rem;
   font-weight: 700;
-  color: ${({ $color }) => $color || theme.colors.primary};
-  background: ${({ $color }) => ($color ? $color + '20' : theme.colors.primary + '14')};
-  border: 1px solid ${({ $color }) => ($color ? $color + '40' : theme.colors.primary + '28')};
+  color: ${theme.colors.primary};
+  background: ${theme.colors.primary}14;
+  border: 1px solid ${theme.colors.primary}28;
   border-radius: ${'9999px'};
   padding: 2px 8px;
   line-height: 1.4;
@@ -85,13 +85,12 @@ interface Props {
 }
 
 export default function SikumBookCard({ book, onClick, onEdit, onDelete }: Props) {
-  const accent = book.color || undefined;
   return (
-    <Card onClick={onClick} $color={accent}>
+    <Card onClick={onClick}>
       <BookIcon>{book.icon ?? '📒'}</BookIcon>
       <BookName>{book.name}</BookName>
       {book.author && <BookAuthor>{book.author}</BookAuthor>}
-      <CountBadge $color={accent}>{book.entryCount}</CountBadge>
+      <CountBadge>{book.entryCount}</CountBadge>
       {(onEdit || onDelete) && (
         <AdminRow>
           {onEdit && (

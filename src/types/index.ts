@@ -106,7 +106,6 @@ export interface SikumBook {
   name: string;
   author: string | null;
   icon: string | null;
-  color: string | null;
   createdAt: string;
   entryCount: number;
 }

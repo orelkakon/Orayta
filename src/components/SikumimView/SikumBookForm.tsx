@@ -67,7 +67,7 @@ export default function SikumBookForm({ book, onClose, onSaved }: Props) {
       const res = await fetch(url, {
         method: book ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, author, icon, color: '' }),
+        body: JSON.stringify({ name, author, icon }),
       });
       if (!res.ok) throw new Error();
       onSaved(); onClose();
