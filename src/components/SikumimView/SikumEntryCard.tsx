@@ -83,7 +83,7 @@ export default function SikumEntryCard({ entry, onClick, onEdit, onDelete }: Pro
       <TopRow>
         <Tags>
           <DateTag>{formatDate(entry.date)}</DateTag>
-          {entry.location && <LocationTag>{HE.SIKUMIM_ENTRY_LOCATION_LABEL}: {entry.location}</LocationTag>}
+          {entry.location && <LocationTag>{entry.location}</LocationTag>}
         </Tags>
         {(onEdit || onDelete) && (
           <AdminBtns>

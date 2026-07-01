@@ -19,6 +19,7 @@ const Card = styled.button`
   width: 100%;
   cursor: pointer;
   box-shadow: ${theme.shadows.sm};
+  position: relative;
   transition: box-shadow 0.18s, transform 0.18s, border-top-color 0.18s;
   &:hover {
     box-shadow: ${theme.shadows.md};
@@ -43,13 +44,17 @@ const BookAuthor = styled.div`
 `;
 
 const CountBadge = styled.div`
-  margin-top: auto;
-  font-size: 0.75rem;
-  color: ${theme.colors.textLight};
-  background: ${theme.colors.borderLight};
+  position: absolute;
+  top: ${theme.spacing.sm};
+  left: ${theme.spacing.sm};
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: ${theme.colors.primary};
+  background: ${theme.colors.primary}14;
+  border: 1px solid ${theme.colors.primary}28;
   border-radius: ${'9999px'};
-  padding: 2px 10px;
-  align-self: flex-end;
+  padding: 2px 8px;
+  line-height: 1.4;
 `;
 
 const AdminRow = styled.div`
@@ -83,7 +88,7 @@ export default function SikumBookCard({ book, onClick, onEdit, onDelete }: Props
       <BookIcon>📒</BookIcon>
       <BookName>{book.name}</BookName>
       {book.author && <BookAuthor>{book.author}</BookAuthor>}
-      <CountBadge>{HE.SIKUMIM_BOOK_ENTRY_COUNT(book.entryCount)}</CountBadge>
+      <CountBadge>{book.entryCount}</CountBadge>
       {(onEdit || onDelete) && (
         <AdminRow>
           {onEdit && (

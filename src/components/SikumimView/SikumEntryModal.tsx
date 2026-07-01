@@ -73,7 +73,7 @@ export default function SikumEntryModal({ entry, onClose, onEdit, onDelete }: Pr
       <Body>
         <MetaRow>
           <Tag $accent>{formatDate(entry.date)}</Tag>
-          {entry.location && <Tag>{HE.SIKUMIM_ENTRY_LOCATION_LABEL}: {entry.location}</Tag>}
+          {entry.location && <Tag>{entry.location}</Tag>}
         </MetaRow>
         <TextBlock>{entry.text}</TextBlock>
         {(onEdit || onDelete) && (
