@@ -69,7 +69,9 @@ const Empty = styled.div`
   padding: ${theme.spacing.xxl};
 `;
 
-export default function BooksView() {
+interface Props { onViewRabbi?: (name: string) => void; }
+
+export default function BooksView({ onViewRabbi }: Props) {
   const [books, setBooks] = useState<Book[]>([]);
   const [search, setSearch] = useState('');
   const [editBook, setEditBook] = useState<Book | null>(null);
@@ -134,6 +136,7 @@ export default function BooksView() {
                 book={b}
                 onEdit={role === 'admin' ? () => setEditBook(b) : undefined}
                 onDelete={role === 'admin' ? () => handleDelete(b) : undefined}
+                onViewRabbi={onViewRabbi}
               />
             ))
         }

@@ -117,6 +117,8 @@ export default function SikumEntriesView({ book, onBack }: Props) {
       {viewEntry && (
         <SikumEntryModal
           entry={viewEntry}
+          bookName={book.name}
+          bookAuthor={book.author}
           onClose={() => setViewEntry(null)}
           onEdit={role === 'admin' ? () => { setEditEntry(viewEntry); setViewEntry(null); } : undefined}
           onDelete={role === 'admin' ? () => handleDelete(viewEntry) : undefined}

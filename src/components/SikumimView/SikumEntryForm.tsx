@@ -10,7 +10,7 @@ import { SikumEntry } from '@/types';
 const DRAFT_TTL = 24 * 60 * 60 * 1000;
 const draftKey = (bookId: string) => `orayta_sikum_draft_${bookId}`;
 
-interface DraftData { title: string; text: string; date: string; location: string; at: number; }
+interface DraftData { title: string; text: string; date: string; dateEnd: string; isRange: boolean; location: string; at: number; }
 
 function loadDraft(bookId: string): DraftData | null {
   try {
@@ -21,23 +21,18 @@ function loadDraft(bookId: string): DraftData | null {
     return d;
   } catch { return null; }
 }
-
 function saveDraft(bookId: string, data: Omit<DraftData, 'at'>) {
   try { localStorage.setItem(draftKey(bookId), JSON.stringify({ ...data, at: Date.now() })); } catch {}
 }
-
 function clearDraft(bookId: string) {
   try { localStorage.removeItem(draftKey(bookId)); } catch {}
 }
 
-/* ─── styled ─── */
 const Form = styled.form`display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
-
 const Label = styled.label`
   display: flex; flex-direction: column; gap: ${theme.spacing.xs};
   font-size: 0.9rem; font-weight: 600; color: ${theme.colors.text};
 `;
-
 const Input = styled.input`
   padding: ${theme.spacing.sm} ${theme.spacing.md};
   border: 1px solid ${theme.colors.border}; border-radius: ${theme.radii.md};
@@ -45,7 +40,6 @@ const Input = styled.input`
   direction: rtl;
   &:focus { outline: 2px solid ${theme.colors.primary}40; border-color: ${theme.colors.primary}; }
 `;
-
 const Textarea = styled.textarea`
   padding: ${theme.spacing.sm} ${theme.spacing.md};
   border: 1px solid ${theme.colors.border}; border-radius: ${theme.radii.md};
@@ -54,31 +48,29 @@ const Textarea = styled.textarea`
   font-family: ${theme.fonts.body};
   &:focus { outline: 2px solid ${theme.colors.primary}40; border-color: ${theme.colors.primary}; }
 `;
-
 const TwoCol = styled.div`
   display: grid; grid-template-columns: 1fr 1fr; gap: ${theme.spacing.md};
   @media (max-width: 480px) { grid-template-columns: 1fr; }
 `;
-
+const RangeToggle = styled.label`
+  display: flex; align-items: center; gap: ${theme.spacing.sm};
+  font-size: 0.82rem; color: ${theme.colors.textMuted}; cursor: pointer;
+  user-select: none;
+  input[type="checkbox"] { accent-color: ${theme.colors.primary}; width: 15px; height: 15px; }
+`;
 const DraftBadge = styled.div`
   font-size: 0.76rem; color: ${theme.colors.primary};
-  background: ${theme.colors.primary}12;
-  border: 1px solid ${theme.colors.primary}28;
-  border-radius: ${theme.radii.sm};
-  padding: 4px 10px; align-self: flex-start;
+  background: ${theme.colors.primary}12; border: 1px solid ${theme.colors.primary}28;
+  border-radius: ${theme.radii.sm}; padding: 4px 10px; align-self: flex-start;
 `;
-
 const ErrorMsg = styled.p`font-size: 0.82rem; color: #dc2626;`;
 const BtnRow = styled.div`display: flex; gap: ${theme.spacing.sm}; justify-content: flex-end;`;
-
 const SaveBtn = styled.button`
   padding: ${theme.spacing.sm} ${theme.spacing.xl};
   background: ${theme.colors.primary}; color: white;
   border-radius: ${theme.radii.md}; font-size: 0.9rem; font-weight: 600;
-  &:hover { background: ${theme.colors.primaryLight}; }
-  &:disabled { opacity: 0.5; }
+  &:hover { background: ${theme.colors.primaryLight}; } &:disabled { opacity: 0.5; }
 `;
-
 const CancelBtn = styled.button`
   padding: ${theme.spacing.sm} ${theme.spacing.lg};
   border: 1px solid ${theme.colors.border}; border-radius: ${theme.radii.md};
@@ -86,34 +78,28 @@ const CancelBtn = styled.button`
   &:hover { background: ${theme.colors.borderLight}; }
 `;
 
-function toDateInput(dateStr: string) { return new Date(dateStr).toISOString().slice(0, 10); }
+function toDateInput(d: string) { return new Date(d).toISOString().slice(0, 10); }
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
-/* ─── component ─── */
 interface Props { entry?: SikumEntry; bookId: string; onClose: () => void; onSaved: () => void; }
 
 export default function SikumEntryForm({ entry, bookId, onClose, onSaved }: Props) {
   const isNew = !entry;
+  const [draft] = useState<DraftData | null>(() => isNew ? loadDraft(bookId) : null);
 
-  /* lazy-init: load draft only for new entries */
-  const [restoredDraft] = useState<DraftData | null>(() => isNew ? loadDraft(bookId) : null);
-
-  const [title,    setTitle]    = useState(entry?.title    ?? restoredDraft?.title    ?? '');
-  const [text,     setText]     = useState(entry?.text     ?? restoredDraft?.text     ?? '');
-  const [date,     setDate]     = useState(entry ? toDateInput(entry.date) : restoredDraft?.date ?? todayStr());
-  const [location, setLocation] = useState(entry?.location ?? restoredDraft?.location ?? '');
+  const [title,    setTitle]    = useState(entry?.title    ?? draft?.title    ?? '');
+  const [text,     setText]     = useState(entry?.text     ?? draft?.text     ?? '');
+  const [date,     setDate]     = useState(entry ? toDateInput(entry.date) : draft?.date ?? todayStr());
+  const [dateEnd,  setDateEnd]  = useState(entry?.dateEnd ? toDateInput(entry.dateEnd) : draft?.dateEnd ?? '');
+  const [isRange,  setIsRange]  = useState(!!(entry?.dateEnd ?? draft?.isRange));
+  const [location, setLocation] = useState(entry?.location ?? draft?.location ?? '');
   const [error,    setError]    = useState('');
   const [saving,   setSaving]   = useState(false);
 
-  /* auto-save draft on every field change (new entries only) */
   useEffect(() => {
     if (!isNew) return;
-    saveDraft(bookId, { title, text, date, location });
-  }, [isNew, bookId, title, text, date, location]);
-
-  const finish = (shouldClearDraft: boolean) => {
-    if (shouldClearDraft) clearDraft(bookId);
-  };
+    saveDraft(bookId, { title, text, date, dateEnd, isRange, location });
+  }, [isNew, bookId, title, text, date, dateEnd, isRange, location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,51 +110,53 @@ export default function SikumEntryForm({ entry, bookId, onClose, onSaved }: Prop
       const res = await fetch(url, {
         method: entry ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookId, title, text, date, location }),
+        body: JSON.stringify({ bookId, title, text, date, dateEnd: isRange ? dateEnd : null, location }),
       });
       if (!res.ok) throw new Error();
-      finish(true);
-      onSaved();
-      onClose();
+      clearDraft(bookId);
+      onSaved(); onClose();
     } catch {
       setError(HE.SIKUMIM_ENTRY_SAVE_ERROR);
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   };
 
-  const handleCancel = () => { finish(true); onClose(); };
-
   return (
-    <Modal onClose={handleCancel} title={entry ? HE.SIKUMIM_ENTRY_FORM_EDIT_TITLE : HE.SIKUMIM_ENTRY_FORM_ADD_TITLE}>
+    <Modal onClose={onClose} title={entry ? HE.SIKUMIM_ENTRY_FORM_EDIT_TITLE : HE.SIKUMIM_ENTRY_FORM_ADD_TITLE}>
       <Form onSubmit={handleSubmit}>
-        {isNew && restoredDraft && restoredDraft.text && (
-          <DraftBadge>✏️ {HE.SIKUMIM_DRAFT_RESTORED}</DraftBadge>
-        )}
+        {isNew && draft?.text && <DraftBadge>✏️ {HE.SIKUMIM_DRAFT_RESTORED}</DraftBadge>}
         <TwoCol>
           <Label>
             {HE.SIKUMIM_ENTRY_FORM_TITLE}
-            <Input value={title} onChange={e => setTitle(e.target.value)}
-              placeholder={HE.SIKUMIM_ENTRY_FORM_TITLE_PLACEHOLDER} />
+            <Input value={title} onChange={e => setTitle(e.target.value)} placeholder={HE.SIKUMIM_ENTRY_FORM_TITLE_PLACEHOLDER} />
           </Label>
           <Label>
             {HE.SIKUMIM_ENTRY_FORM_DATE}
             <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
           </Label>
         </TwoCol>
+        <TwoCol>
+          <RangeToggle>
+            <input type="checkbox" checked={isRange} onChange={e => setIsRange(e.target.checked)} />
+            {HE.SIKUMIM_ENTRY_FORM_RANGE_TOGGLE}
+          </RangeToggle>
+          {isRange && (
+            <Label>
+              {HE.SIKUMIM_ENTRY_FORM_DATE_END}
+              <Input type="date" value={dateEnd} min={date} onChange={e => setDateEnd(e.target.value)} />
+            </Label>
+          )}
+        </TwoCol>
         <Label>
           {HE.SIKUMIM_ENTRY_FORM_LOCATION}
-          <Input value={location} onChange={e => setLocation(e.target.value)}
-            placeholder={HE.SIKUMIM_ENTRY_FORM_LOCATION_PLACEHOLDER} />
+          <Input value={location} onChange={e => setLocation(e.target.value)} placeholder={HE.SIKUMIM_ENTRY_FORM_LOCATION_PLACEHOLDER} />
         </Label>
         <Label>
           {HE.SIKUMIM_ENTRY_FORM_TEXT} *
-          <Textarea value={text} onChange={e => setText(e.target.value)}
-            placeholder={HE.SIKUMIM_ENTRY_FORM_TEXT_PLACEHOLDER} autoFocus={!entry} />
+          <Textarea value={text} onChange={e => setText(e.target.value)} placeholder={HE.SIKUMIM_ENTRY_FORM_TEXT_PLACEHOLDER} autoFocus={!entry} />
         </Label>
         {error && <ErrorMsg>{error}</ErrorMsg>}
         <BtnRow>
-          <CancelBtn type="button" onClick={handleCancel}>{HE.CANCEL}</CancelBtn>
+          <CancelBtn type="button" onClick={() => { clearDraft(bookId); onClose(); }}>{HE.CANCEL}</CancelBtn>
           <SaveBtn type="submit" disabled={saving}>{HE.SIKUMIM_ENTRY_FORM_SAVE}</SaveBtn>
         </BtnRow>
       </Form>

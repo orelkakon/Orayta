@@ -88,7 +88,11 @@
       "Bash(xargs ls -la)",
       "Bash(grep -v \"Use \\\\`node\")",
       "Bash(npx playwright *)",
-      "Bash(echo \"started pid $!\")"
+      "Bash(echo \"started pid $!\")",
+      "Bash(mkdir -p /Users/user/Desktop/Claude/orayta/src/app/api/sikum-books/\\\\[id\\\\])",
+      "Bash(mkdir -p /Users/user/Desktop/Claude/orayta/src/app/api/sikum-entries/\\\\[id\\\\])",
+      "Bash(mkdir -p /Users/user/Desktop/Claude/orayta/src/components/RabbisAndBooksView)",
+      "Bash(mkdir -p /Users/user/Desktop/Claude/orayta/src/components/SikumimView)"
     ]
   }
 }

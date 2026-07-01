@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -49,7 +48,7 @@ const Author = styled.div`
   word-break: break-word;
 `;
 
-const RabbiLink = styled(Link)`
+const RabbiBtn = styled.button`
   font-size: 0.72rem;
   font-weight: 600;
   color: ${theme.colors.primaryLight};
@@ -84,18 +83,19 @@ interface Props {
   book: Book;
   onEdit?: () => void;
   onDelete?: () => void;
+  onViewRabbi?: (name: string) => void;
 }
 
-export default function BookCard({ book, onEdit, onDelete }: Props) {
+export default function BookCard({ book, onEdit, onDelete, onViewRabbi }: Props) {
   return (
     <Card>
       <Title>{book.title}</Title>
       <AuthorRow>
         <Author>{book.author}</Author>
-        {book.rabbiId && (
-          <RabbiLink href={`/rabbis?q=${encodeURIComponent(book.author)}`}>
+        {book.rabbiId && onViewRabbi && (
+          <RabbiBtn onClick={() => onViewRabbi(book.author)}>
             👤 {HE.BOOK_VIEW_RABBI}
-          </RabbiLink>
+          </RabbiBtn>
         )}
       </AuthorRow>
       {(onEdit || onDelete) && (

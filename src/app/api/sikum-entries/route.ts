@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
     title?: string;
     text: string;
     date: string;
+    dateEnd?: string;
     location?: string;
   };
   if (!body.text?.trim()) return NextResponse.json({ error: 'text required' }, { status: 400 });
@@ -32,6 +33,7 @@ export async function POST(req: NextRequest) {
       title: body.title?.trim() || null,
       text: body.text.trim(),
       date: new Date(body.date),
+      dateEnd: body.dateEnd ? new Date(body.dateEnd) : null,
       location: body.location?.trim() || null,
     },
   });

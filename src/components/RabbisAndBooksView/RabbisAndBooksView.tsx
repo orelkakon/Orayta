@@ -9,23 +9,16 @@ import BooksView from '@/components/BooksView/BooksView';
 
 type Tab = 'rabbis' | 'books';
 
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${theme.spacing.lg};
-`;
+const Wrapper = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
 
 const SubNav = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${theme.spacing.xs};
+  display: flex; align-items: center; gap: ${theme.spacing.xs};
   border-bottom: 2px solid ${theme.colors.borderLight};
 `;
 
 const TabBtn = styled.button<{ $active: boolean }>`
   padding: ${theme.spacing.sm} ${theme.spacing.lg};
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 0.95rem; font-weight: 600;
   color: ${({ $active }) => ($active ? theme.colors.primary : theme.colors.textMuted)};
   border-bottom: 2px solid ${({ $active }) => ($active ? theme.colors.primary : 'transparent')};
   margin-bottom: -2px;
@@ -34,13 +27,18 @@ const TabBtn = styled.button<{ $active: boolean }>`
   &:hover { color: ${theme.colors.primary}; }
 `;
 
-interface Props {
-  initialTab?: Tab;
-  initialSearch?: string;
-}
+interface Props { initialTab?: Tab; initialSearch?: string; }
 
 export default function RabbisAndBooksView({ initialTab = 'rabbis', initialSearch = '' }: Props) {
   const [tab, setTab] = useState<Tab>(initialTab);
+  const [rabbisKey, setRabbisKey] = useState(0);
+  const [rabbisSearch, setRabbisSearch] = useState(initialSearch);
+
+  const handleViewRabbi = (name: string) => {
+    setRabbisSearch(name);
+    setRabbisKey(k => k + 1);
+    setTab('rabbis');
+  };
 
   return (
     <Wrapper>
@@ -54,8 +52,8 @@ export default function RabbisAndBooksView({ initialTab = 'rabbis', initialSearc
       </SubNav>
 
       {tab === 'rabbis'
-        ? <RabbisView initialSearch={initialSearch} />
-        : <BooksView />
+        ? <RabbisView key={rabbisKey} initialSearch={rabbisSearch} />
+        : <BooksView onViewRabbi={handleViewRabbi} />
       }
     </Wrapper>
   );

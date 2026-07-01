@@ -115,6 +115,7 @@ export interface SikumEntry {
   title: string | null;
   text: string;
   date: string;
+  dateEnd: string | null;
   location: string | null;
   createdAt: string;
   updatedAt: string;

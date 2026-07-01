@@ -66,8 +66,11 @@ const Preview = styled.div`
   overflow: hidden;
 `;
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' });
+function formatDate(d: string) {
+  return new Date(d).toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' });
+}
+function dateLabel(date: string, dateEnd: string | null) {
+  return dateEnd ? `${formatDate(date)} – ${formatDate(dateEnd)}` : formatDate(date);
 }
 
 interface Props {
@@ -82,7 +85,7 @@ export default function SikumEntryCard({ entry, onClick, onEdit, onDelete }: Pro
     <Card onClick={onClick}>
       <TopRow>
         <Tags>
-          <DateTag>{formatDate(entry.date)}</DateTag>
+          <DateTag>{dateLabel(entry.date, entry.dateEnd)}</DateTag>
           {entry.location && <LocationTag>{entry.location}</LocationTag>}
         </Tags>
         {(onEdit || onDelete) && (
