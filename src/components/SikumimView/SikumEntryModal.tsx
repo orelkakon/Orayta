@@ -81,7 +81,7 @@ export default function SikumEntryModal({ entry, bookName, bookAuthor, onClose, 
     return lines.join('\n');
   };
 
-  const waHref = `https://wa.me/?text=${encodeURIComponent(buildShareText())}`;
+  const waHref = `https://api.whatsapp.com/send?text=${encodeURIComponent(buildShareText())}`;
 
   return (
     <Modal onClose={onClose} title={modalTitle}>

@@ -7,19 +7,7 @@ import { HE } from '@/lib/hebrewTexts';
 import Modal from '@/components/common/Modal';
 import { SikumBook } from '@/types';
 
-export const BOOK_ICONS = ['📒', '📕', '📗', '📘', '📙', '📖', '📜', '🗒️', '📚', '✡️', '🕍', '🔖'];
-export const BOOK_COLORS = [
-  { label: 'ברירת מחדל', value: '' },
-  { label: 'כחול',       value: '#3B82F6' },
-  { label: 'ירוק',       value: '#22C55E' },
-  { label: 'סגול',       value: '#7C3AED' },
-  { label: 'אדום',       value: '#EF4444' },
-  { label: 'כתום',       value: '#F97316' },
-  { label: 'טורקיז',     value: '#0D9488' },
-  { label: 'ורוד',       value: '#DB2777' },
-  { label: 'זהב',        value: '#D97706' },
-  { label: 'אינדיגו',    value: '#4F46E5' },
-];
+export const BOOK_ICONS = ['📒', '📕', '📗', '📘', '📙'];
 
 const Form = styled.form`display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
 const Label = styled.label`
@@ -46,17 +34,6 @@ const IconBtn = styled.button<{ $active: boolean }>`
   transition: border-color 0.15s, background 0.15s;
   &:hover { border-color: ${theme.colors.primary}; }
 `;
-const ColorRow = styled.div`display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;`;
-const ColorDot = styled.button<{ $value: string; $active: boolean }>`
-  width: 28px; height: 28px; border-radius: 50%;
-  background: ${({ $value }) => $value || theme.colors.secondary};
-  border: 3px solid ${({ $active }) => ($active ? '#000' : 'transparent')};
-  outline: ${({ $active, $value }) => $active ? `2px solid ${$value || theme.colors.secondary}` : 'none'};
-  outline-offset: 2px;
-  transition: outline 0.12s, border-color 0.12s;
-  &:hover { outline: 2px solid ${({ $value }) => $value || theme.colors.secondary}; outline-offset: 2px; }
-  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
-`;
 const ErrorMsg = styled.p`font-size: 0.82rem; color: #dc2626;`;
 const BtnRow = styled.div`display: flex; gap: ${theme.spacing.sm}; justify-content: flex-end;`;
 const SaveBtn = styled.button`
@@ -78,7 +55,6 @@ export default function SikumBookForm({ book, onClose, onSaved }: Props) {
   const [name,   setName]   = useState(book?.name   ?? '');
   const [author, setAuthor] = useState(book?.author ?? '');
   const [icon,   setIcon]   = useState(book?.icon   ?? '📒');
-  const [color,  setColor]  = useState(book?.color  ?? '');
   const [error,  setError]  = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -91,7 +67,7 @@ export default function SikumBookForm({ book, onClose, onSaved }: Props) {
       const res = await fetch(url, {
         method: book ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, author, icon, color }),
+        body: JSON.stringify({ name, author, icon, color: '' }),
       });
       if (!res.ok) throw new Error();
       onSaved(); onClose();
@@ -119,16 +95,6 @@ export default function SikumBookForm({ book, onClose, onSaved }: Props) {
               <IconBtn key={ic} type="button" $active={icon === ic} onClick={() => setIcon(ic)} title={ic}>{ic}</IconBtn>
             ))}
           </IconGrid>
-        </div>
-
-        <div>
-          <PickerLabel>{HE.SIKUMIM_BOOK_FORM_COLOR}</PickerLabel>
-          <ColorRow>
-            {BOOK_COLORS.map(c => (
-              <ColorDot key={c.value} type="button" $value={c.value} $active={color === c.value}
-                onClick={() => setColor(c.value)} title={c.label} />
-            ))}
-          </ColorRow>
         </div>
 
         {error && <ErrorMsg>{error}</ErrorMsg>}
