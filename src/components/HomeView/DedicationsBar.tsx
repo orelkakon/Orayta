@@ -180,7 +180,10 @@ export default function DedicationsBar({ part = 'ticker' }: Props) {
           <Track>
             <Tape $secs={iluySeconds}>
               {iluyItems.map((d, i) => (
-                <Item key={`${d.id}-${i}`}>{d.name}</Item>
+                <Item key={`${d.id}-${i}`}>
+                  <TypeLabel>{HE.DEDICATION_TYPE_ILUY}</TypeLabel>
+                  {d.name}
+                </Item>
               ))}
             </Tape>
           </Track>
