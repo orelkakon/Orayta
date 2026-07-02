@@ -54,12 +54,17 @@ const QuoteSource = styled.span`
 `;
 
 /* 3 × 3 grid — all screen sizes */
+const Divider = styled.div`
+  width: 140px; height: 2px;
+  background: linear-gradient(90deg, transparent, ${theme.colors.secondary}, transparent);
+  border-radius: 2px;
+`;
+
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: ${theme.spacing.md};
   width: 100%;
-  margin-top: ${theme.spacing.sm};
   @media (max-width: 480px) { gap: ${theme.spacing.sm}; }
 `;
 
@@ -124,6 +129,8 @@ export default function HomeView() {
       </Hero>
 
       <DedicationsBar part="ticker" />
+
+      <Divider />
 
       <Grid>
         {HE.HOME_SECTIONS.map(s => (
