@@ -101,9 +101,9 @@ export async function POST(req: NextRequest) {
     // WhatsApp — conversational, written from the user's perspective
     const phone  = process.env.CONTACT_PHONE ?? '';
     const intro  = name?.trim() ? `היי, אני ${name.trim()} 👋` : 'היי 👋';
-    const stars  = typeof rating === 'number' ? `\n${'⭐'.repeat(rating)}` : '';
+    const stars  = typeof rating === 'number' ? `\nדירוג: ${rating}/5` : '';
     const waText = encodeURIComponent(
-      `${intro}\nפניתי דרך אפליקציית אורייתא 📖\n\n${message.trim()}${stars}`
+      `${intro}\nפניתי דרך אפליקציית אורייתא\n\n${message.trim()}${stars}`
     );
     const waUrl = `https://wa.me/${phone}?text=${waText}`;
 

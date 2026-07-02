@@ -12,7 +12,6 @@ const scrollRight = keyframes`
   to   { transform: translateX(0); }
 `;
 
-/* ── Two-row ticker ── */
 const Bar = styled.div`
   width: 100%; background: ${theme.colors.surface};
   border: 1px solid ${theme.colors.borderLight};
@@ -22,27 +21,13 @@ const Bar = styled.div`
 `;
 
 const BarTitle = styled.div`
-  padding: 5px ${theme.spacing.md};
+  padding: 4px ${theme.spacing.md};
   background: ${theme.colors.primary};
-  color: white; font-size: 0.72rem; font-weight: 700;
-  letter-spacing: 0.07em; text-align: center;
+  color: white; font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.08em; text-align: center;
 `;
 
-const RowWrap = styled.div`
-  display: flex; align-items: stretch;
-`;
-
-const RowLabel = styled.div<{ $iluy?: boolean }>`
-  flex-shrink: 0; width: 90px; padding: 8px ${theme.spacing.sm};
-  display: flex; align-items: center; justify-content: center; text-align: center;
-  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.03em;
-  background: ${({ $iluy }) => $iluy ? theme.colors.primary + '12' : theme.colors.secondary + '0D'};
-  color: ${({ $iluy }) => $iluy ? theme.colors.primary : theme.colors.secondary};
-  border-left: 1px solid ${theme.colors.borderLight};
-  @media (max-width: 480px) { width: 70px; font-size: 0.6rem; }
-`;
-
-const RowTrack = styled.div`overflow: hidden; flex: 1; direction: ltr; padding: 8px 0;`;
+const Track = styled.div`overflow: hidden; padding: 9px 0; direction: ltr;`;
 
 const RowDivider = styled.div`height: 1px; background: ${theme.colors.borderLight};`;
 
@@ -52,22 +37,18 @@ const Tape = styled.div<{ $secs: number }>`
 `;
 
 const Item = styled.span`
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 0 24px;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0 28px;
   font-family: ${theme.fonts.body}; font-size: 0.9rem;
   color: ${theme.colors.primary}; white-space: nowrap; direction: rtl;
 `;
 
 const TypeLabel = styled.span`
-  font-size: 0.8rem; color: ${theme.colors.textMuted}; font-weight: 600;
-`;
-
-const Dot = styled.span`
-  color: ${theme.colors.secondary}; font-size: 0.8rem; user-select: none;
+  font-size: 0.78rem; color: ${theme.colors.textMuted}; font-weight: 600;
 `;
 
 const BarSkeleton = styled.div`
-  width: 100%; height: 88px;
+  width: 100%; height: 82px;
   background: ${theme.colors.surface};
   border: 1px solid ${theme.colors.borderLight};
   border-right: 3px solid ${theme.colors.secondary};
@@ -146,10 +127,7 @@ export default function DedicationsBar({ part = 'ticker' }: Props) {
   const load = useCallback(() => {
     void fetch('/api/dedications')
       .then(r => r.json())
-      .then((data: unknown) => {
-        setDedications(data as Dedication[]);
-        setTickerLoading(false);
-      })
+      .then((data: unknown) => { setDedications(data as Dedication[]); setTickerLoading(false); })
       .catch(() => setTickerLoading(false));
   }, []);
 
@@ -199,38 +177,28 @@ export default function DedicationsBar({ part = 'ticker' }: Props) {
         <BarTitle>{HE.DEDICATIONS_TITLE}</BarTitle>
 
         {iluyCount > 0 && (
-          <RowWrap>
-            <RowLabel $iluy>🕯️ {HE.DEDICATION_TYPE_ILUY}</RowLabel>
-            <RowTrack>
-              <Tape $secs={iluySeconds}>
-                {iluyItems.map((d, i) => (
-                  <Item key={`${d.id}-${i}`}>
-                    {d.name}
-                    <Dot>·</Dot>
-                  </Item>
-                ))}
-              </Tape>
-            </RowTrack>
-          </RowWrap>
+          <Track>
+            <Tape $secs={iluySeconds}>
+              {iluyItems.map((d, i) => (
+                <Item key={`${d.id}-${i}`}>{d.name}</Item>
+              ))}
+            </Tape>
+          </Track>
         )}
 
         {iluyCount > 0 && otherCount > 0 && <RowDivider />}
 
         {otherCount > 0 && (
-          <RowWrap>
-            <RowLabel>🙏 ברכות</RowLabel>
-            <RowTrack>
-              <Tape $secs={otherSeconds}>
-                {otherItems.map((d, i) => (
-                  <Item key={`${d.id}-${i}`}>
-                    <TypeLabel>{typeLabel(d.type)}</TypeLabel>
-                    {d.name}
-                    <Dot>·</Dot>
-                  </Item>
-                ))}
-              </Tape>
-            </RowTrack>
-          </RowWrap>
+          <Track>
+            <Tape $secs={otherSeconds}>
+              {otherItems.map((d, i) => (
+                <Item key={`${d.id}-${i}`}>
+                  <TypeLabel>{typeLabel(d.type)}</TypeLabel>
+                  {d.name}
+                </Item>
+              ))}
+            </Tape>
+          </Track>
         )}
       </Bar>
     );

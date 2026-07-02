@@ -61,7 +61,7 @@ const Empty = styled.div`
   font-size: 0.95rem;
 `;
 
-type BookSort = 'default' | 'count' | 'alpha';
+type BookSort = 'default' | 'count' | 'alpha' | 'icon';
 
 export default function SikumimView() {
   const [books, setBooks] = useState<SikumBook[]>([]);
@@ -85,6 +85,8 @@ export default function SikumimView() {
       : [...books];
     if (bookSort === 'count') return base.sort((a, b) => b.entryCount - a.entryCount);
     if (bookSort === 'alpha') return base.sort((a, b) => a.name.localeCompare(b.name, 'he'));
+    if (bookSort === 'icon') return base.sort((a, b) =>
+      (a.icon ?? '📒').codePointAt(0)! - (b.icon ?? '📒').codePointAt(0)!);
     return base;
   }, [books, search, bookSort]);
 
@@ -130,6 +132,7 @@ export default function SikumimView() {
         <SortBtn $active={bookSort === 'default'} onClick={() => setBookSort('default')}>{HE.SIKUMIM_BOOKS_SORT_DEFAULT}</SortBtn>
         <SortBtn $active={bookSort === 'count'} onClick={() => setBookSort('count')}>{HE.SIKUMIM_BOOKS_SORT_COUNT}</SortBtn>
         <SortBtn $active={bookSort === 'alpha'} onClick={() => setBookSort('alpha')}>{HE.SIKUMIM_BOOKS_SORT_ALPHA}</SortBtn>
+        <SortBtn $active={bookSort === 'icon'} onClick={() => setBookSort('icon')}>{HE.SIKUMIM_BOOKS_SORT_ICON}</SortBtn>
       </ControlBar>
 
       <Grid>

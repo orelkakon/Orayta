@@ -335,6 +335,7 @@ export const HE = {
   SIKUMIM_BOOKS_SORT_DEFAULT: 'ברירת מחדל',
   SIKUMIM_BOOKS_SORT_COUNT: 'לפי כמות',
   SIKUMIM_BOOKS_SORT_ALPHA: 'א׳-ב׳',
+  SIKUMIM_BOOKS_SORT_ICON: 'לפי אייקון',
   SIKUMIM_ENTRY_FORM_ADD_TITLE: 'הוסף סיכום',
   SIKUMIM_ENTRY_FORM_EDIT_TITLE: 'עריכת סיכום',
   SIKUMIM_ENTRY_FORM_TITLE: 'כותרת (אופציונלי)',

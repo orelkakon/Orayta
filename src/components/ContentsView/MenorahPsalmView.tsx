@@ -5,6 +5,7 @@ import { theme } from '@/lib/theme';
 
 const HEADER = 'לַמְנַצֵּחַ בִּנְגִינֹת מִזְמוֹר שִׁיר';
 
+/* Psalm 67 — ordered v1…v7 (Hebrew right-to-left reading order) */
 const VERSES = [
   { n: 'א', text: 'אֱלֹהִים יְחָנֵּנוּ וִיבָרְכֵנוּ יָאֵר פָּנָיו אִתָּנוּ סֶלָה' },
   { n: 'ב', text: 'לָדַעַת בָּאָרֶץ דַּרְכֶּךָ בְּכָל גּוֹיִם יְשׁוּעָתֶךָ' },
@@ -15,92 +16,69 @@ const VERSES = [
   { n: 'ז', text: 'יְבָרְכֵנוּ אֱלֹהִים וְיִירְאוּ אוֹתוֹ כָּל אַפְסֵי אָרֶץ' },
 ];
 
-/* Branch heights in px — outer shortest, center tallest */
-const HEIGHTS = [130, 175, 220, 270, 220, 175, 130];
+/* In RTL display: index 0 (v1) is rightmost, index 3 (v4) is center, index 6 (v7) is leftmost */
+/* Branch x-positions in 560 viewbox — right side = v1, center = v4, left = v7             */
+const BX = [519, 439, 359, 280, 201, 121, 41];   // branch x per verse
+const FY = [118,  85,  55,  20,  55,  85, 118];   // flame tip y per verse
+const AY = [230, 192, 154];                        // arm connection y on center pole (pairs 1/7, 2/6, 3/5)
+
+const GOLD   = '#B8830F';
+const GOLD_L = '#D4A520';
+const GOLD_D = '#7A5A08';
 
 const Wrap = styled.div`
   display: flex; flex-direction: column; align-items: center;
-  gap: ${theme.spacing.xl};
+  gap: ${theme.spacing.lg};
 `;
 
 const HeaderBox = styled.div`
-  text-align: center; padding: ${theme.spacing.md} ${theme.spacing.xl};
-  background: ${theme.colors.surfaceAlt};
-  border: 1px solid ${theme.colors.borderLight};
+  text-align: center;
+  padding: ${theme.spacing.sm} ${theme.spacing.xl};
+  background: ${GOLD}14;
+  border: 1px solid ${GOLD}40;
   border-radius: ${theme.radii.lg};
 `;
 
 const HeaderText = styled.p`
-  font-family: ${theme.fonts.body}; font-size: 1.1rem;
-  color: ${theme.colors.textMuted}; font-style: italic;
-`;
-
-const MenorahOuter = styled.div`
-  display: flex; flex-direction: column; align-items: center;
-  width: 100%;
-`;
-
-const BranchesRow = styled.div`
-  display: flex; align-items: flex-end; justify-content: center;
-  gap: 2px;
-  @media (max-width: 600px) { gap: 1px; }
-`;
-
-const Branch = styled.div<{ $h: number }>`
-  display: flex; flex-direction: column; align-items: center;
-  height: ${p => p.$h}px;
-  width: 88px;
-  @media (max-width: 600px) { width: 42px; }
-`;
-
-const Flame = styled.div`
-  font-size: 1.1rem; line-height: 1; margin-bottom: 3px;
-  @media (max-width: 600px) { font-size: 0.8rem; }
-`;
-
-const VerseNum = styled.div`
-  font-size: 0.62rem; font-weight: 700;
-  color: ${theme.colors.textLight};
-  margin-bottom: 2px;
-`;
-
-const VerseText = styled.div`
   font-family: ${theme.fonts.body};
-  font-size: 0.68rem;
-  color: ${theme.colors.text};
-  text-align: center;
-  line-height: 1.5;
-  padding: 0 3px;
+  font-size: 1.1rem; font-weight: 600;
+  color: ${GOLD_D};
+  letter-spacing: 0.03em;
+`;
+
+const SVGWrap = styled.div`
+  width: 100%; max-width: 560px;
+  filter: drop-shadow(0 4px 16px ${GOLD}30);
+`;
+
+const VerseList = styled.div`
+  width: 100%; display: flex; flex-direction: column; gap: ${theme.spacing.sm};
+  border: 1px solid ${GOLD}30; border-radius: ${theme.radii.lg};
+  padding: ${theme.spacing.md} ${theme.spacing.lg};
+  background: ${GOLD}08;
+`;
+
+const VerseRow = styled.div`
+  display: flex; align-items: baseline; gap: ${theme.spacing.sm};
+  padding: ${theme.spacing.xs} 0;
+  border-bottom: 1px dashed ${theme.colors.borderLight};
+  &:last-child { border-bottom: none; }
   direction: rtl;
-  @media (max-width: 600px) { font-size: 0.55rem; padding: 0 1px; }
 `;
 
-const Pole = styled.div`
-  flex: 1; width: 5px; margin-top: 6px;
-  background: linear-gradient(to bottom, ${theme.colors.secondary}CC, ${theme.colors.primary});
-  border-radius: 3px 3px 0 0;
+const VerseNum = styled.span`
+  font-size: 0.72rem; font-weight: 700;
+  color: ${GOLD}; min-width: 20px; flex-shrink: 0;
 `;
 
-const Base = styled.div`
-  width: 100%; height: 10px;
-  background: linear-gradient(90deg, ${theme.colors.primary}55, ${theme.colors.primary}, ${theme.colors.primary}55);
-  border-radius: ${theme.radii.sm};
+const VerseText = styled.span`
+  font-family: ${theme.fonts.body};
+  font-size: 0.95rem; color: ${theme.colors.text};
+  line-height: 1.7;
 `;
 
-const Stem = styled.div`
-  width: 14px; height: 32px;
-  background: ${theme.colors.primary};
-`;
-
-const Stand = styled.div`
-  width: 140px; height: 12px;
-  background: ${theme.colors.primary};
-  border-radius: 0 0 ${theme.radii.md} ${theme.radii.md};
-  box-shadow: 0 4px 12px ${theme.colors.primary}40;
-`;
-
-const PsalmLabel = styled.div`
-  font-size: 0.75rem; color: ${theme.colors.textMuted};
+const Label = styled.div`
+  font-size: 0.72rem; color: ${theme.colors.textMuted};
   text-align: center; letter-spacing: 0.04em;
 `;
 
@@ -111,23 +89,76 @@ export default function MenorahPsalmView() {
         <HeaderText>{HEADER}</HeaderText>
       </HeaderBox>
 
-      <MenorahOuter>
-        <BranchesRow>
-          {VERSES.map((v, i) => (
-            <Branch key={i} $h={HEIGHTS[i]}>
-              <Flame>🕯️</Flame>
-              <VerseNum>({v.n})</VerseNum>
-              <VerseText>{v.text}</VerseText>
-              <Pole />
-            </Branch>
-          ))}
-        </BranchesRow>
-        <Base />
-        <Stem />
-        <Stand />
-      </MenorahOuter>
+      <SVGWrap>
+        <svg
+          viewBox="0 0 560 330"
+          width="100%"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-label="צורת המנורה — תהילים ס״ז"
+        >
+          {/* ── Base & stand ─────────────────────────────────── */}
+          <rect x="40"  y="300" width="480" height="10" rx="5" fill={GOLD}/>
+          <rect x="200" y="310" width="160" height="8"  rx="4" fill={GOLD_D}/>
+          <rect x="220" y="318" width="120" height="6"  rx="3" fill={GOLD_D}/>
 
-      <PsalmLabel>תהילים פרק ס״ז · מנורת המזמור</PsalmLabel>
+          {/* ── Central vertical pole ────────────────────────── */}
+          <rect x="272" y="20" width="16" height="280" rx="6" fill={GOLD}/>
+
+          {/* ── Outer arms (v1 right / v7 left) — connect at AY[0]=230 ── */}
+          <path d={`M288,${AY[0]} H${BX[0]} V${FY[0]}`}
+            stroke={GOLD} strokeWidth="10" fill="none"
+            strokeLinecap="round" strokeLinejoin="round"/>
+          <path d={`M272,${AY[0]} H${BX[6]} V${FY[6]}`}
+            stroke={GOLD} strokeWidth="10" fill="none"
+            strokeLinecap="round" strokeLinejoin="round"/>
+
+          {/* ── Middle arms (v2 right / v6 left) — connect at AY[1]=192 ── */}
+          <path d={`M288,${AY[1]} H${BX[1]} V${FY[1]}`}
+            stroke={GOLD} strokeWidth="10" fill="none"
+            strokeLinecap="round" strokeLinejoin="round"/>
+          <path d={`M272,${AY[1]} H${BX[5]} V${FY[5]}`}
+            stroke={GOLD} strokeWidth="10" fill="none"
+            strokeLinecap="round" strokeLinejoin="round"/>
+
+          {/* ── Inner arms (v3 right / v5 left) — connect at AY[2]=154 ── */}
+          <path d={`M288,${AY[2]} H${BX[2]} V${FY[2]}`}
+            stroke={GOLD} strokeWidth="10" fill="none"
+            strokeLinecap="round" strokeLinejoin="round"/>
+          <path d={`M272,${AY[2]} H${BX[4]} V${FY[4]}`}
+            stroke={GOLD} strokeWidth="10" fill="none"
+            strokeLinecap="round" strokeLinejoin="round"/>
+
+          {/* ── Flame cups & numbers at top of each branch ───── */}
+          {VERSES.map((v, i) => (
+            <g key={i}>
+              {/* Cup */}
+              <ellipse cx={BX[i]} cy={FY[i]} rx="11" ry="7" fill={GOLD_L}/>
+              {/* Flame glow */}
+              <ellipse cx={BX[i]} cy={FY[i] - 10} rx="5" ry="8" fill="#F5A623" opacity="0.85"/>
+              <ellipse cx={BX[i]} cy={FY[i] - 15} rx="3" ry="5" fill="#FFDE59" opacity="0.9"/>
+              {/* Branch number */}
+              <text
+                x={BX[i]} y={FY[i] + 22}
+                textAnchor="middle" fontSize="10" fill={GOLD_D}
+                fontWeight="bold" fontFamily="sans-serif"
+              >
+                ({v.n})
+              </text>
+            </g>
+          ))}
+        </svg>
+      </SVGWrap>
+
+      <VerseList>
+        {VERSES.map((v, i) => (
+          <VerseRow key={i}>
+            <VerseNum>({v.n})</VerseNum>
+            <VerseText>{v.text}</VerseText>
+          </VerseRow>
+        ))}
+      </VerseList>
+
+      <Label>תהילים פרק ס״ז — צורת המנורה</Label>
     </Wrap>
   );
 }
