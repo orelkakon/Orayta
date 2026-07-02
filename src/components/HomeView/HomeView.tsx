@@ -59,6 +59,7 @@ const Grid = styled.div`
   grid-template-columns: repeat(3, 1fr);
   gap: ${theme.spacing.md};
   width: 100%;
+  margin-top: ${theme.spacing.sm};
   @media (max-width: 480px) { gap: ${theme.spacing.sm}; }
 `;
 
