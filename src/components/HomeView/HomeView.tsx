@@ -14,18 +14,18 @@ const fadeUp = keyframes`
 
 const Page = styled.div`
   display: flex; flex-direction: column; align-items: center;
-  gap: ${theme.spacing.sm};
-  padding: ${theme.spacing.sm} 0 ${theme.spacing.lg};
+  gap: ${theme.spacing.md};
+  padding: ${theme.spacing.sm} 0 ${theme.spacing.xl};
   animation: ${fadeUp} 0.45s ease;
 `;
 
 const Hero = styled.div`
   display: flex; flex-direction: column; align-items: center;
-  gap: 6px; text-align: center;
+  gap: ${theme.spacing.sm}; text-align: center;
 `;
 
 const LogoRing = styled.div`
-  width: 72px; height: 72px; border-radius: 50%;
+  width: 84px; height: 84px; border-radius: 50%;
   background: ${theme.colors.primary};
   display: flex; align-items: center; justify-content: center;
   box-shadow: ${theme.shadows.lg};
@@ -34,32 +34,32 @@ const LogoRing = styled.div`
 
 const AppTitle = styled.h1`
   font-family: ${theme.fonts.body};
-  font-size: 2rem; font-weight: 700; color: ${theme.colors.primary};
+  font-size: 2.2rem; font-weight: 700; color: ${theme.colors.primary};
 `;
 
 const QuoteBlock = styled.blockquote`
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   border-right: 3px solid ${theme.colors.secondary};
-  padding-right: ${theme.spacing.sm};
+  padding-right: ${theme.spacing.md};
 `;
 
 const QuoteText = styled.p`
   font-family: ${theme.fonts.body};
-  font-size: 0.88rem; color: ${theme.colors.textMuted};
-  font-style: italic; line-height: 1.5;
+  font-size: 0.95rem; color: ${theme.colors.textMuted};
+  font-style: italic; line-height: 1.6;
 `;
 
 const QuoteSource = styled.span`
-  font-size: 0.7rem; color: ${theme.colors.textLight}; letter-spacing: 0.03em;
+  font-size: 0.76rem; color: ${theme.colors.textLight}; letter-spacing: 0.03em;
 `;
 
 /* 3 × 3 grid — all screen sizes */
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: ${theme.spacing.sm};
+  gap: ${theme.spacing.md};
   width: 100%;
-  @media (max-width: 480px) { gap: ${theme.spacing.xs}; }
+  @media (max-width: 480px) { gap: ${theme.spacing.sm}; }
 `;
 
 const SectionCard = styled(Link)`
@@ -67,9 +67,9 @@ const SectionCard = styled(Link)`
   border: 1px solid ${theme.colors.borderLight};
   border-top: 3px solid ${theme.colors.secondary};
   border-radius: ${theme.radii.lg};
-  padding: ${theme.spacing.sm} ${theme.spacing.xs};
+  padding: 10px ${theme.spacing.md};
   display: flex; flex-direction: column; align-items: center;
-  gap: 4px; text-align: center;
+  gap: ${theme.spacing.xs}; text-align: center;
   box-shadow: ${theme.shadows.sm};
   transition: box-shadow 0.18s, transform 0.18s, border-top-color 0.18s;
   &:hover {
@@ -79,13 +79,13 @@ const SectionCard = styled(Link)`
   }
 `;
 
-const CardIcon = styled.span`font-size: 1.45rem; line-height: 1;`;
+const CardIcon = styled.span`font-size: 1.7rem; line-height: 1;`;
 const CardLabel = styled.span`
   font-family: ${theme.fonts.body};
-  font-size: 0.86rem; font-weight: 700; color: ${theme.colors.primary};
+  font-size: 0.92rem; font-weight: 700; color: ${theme.colors.primary};
 `;
 const CardDesc = styled.span`
-  font-size: 0.66rem; color: ${theme.colors.textMuted}; line-height: 1.35;
+  font-size: 0.7rem; color: ${theme.colors.textMuted}; line-height: 1.4;
 `;
 
 const ContactBanner = styled(Link)`
