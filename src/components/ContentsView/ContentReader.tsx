@@ -9,6 +9,7 @@ import { toHebrewNumeral } from '@/lib/hebrewNumerals';
 import SpeakButton from '@/components/common/SpeakButton';
 import StaticGroupsView from './StaticGroupsView';
 import SefariaPrayerView from './SefariaPrayerView';
+import MenorahPsalmView from './MenorahPsalmView';
 
 interface SefariaResp { he: string[]; heRef?: string; }
 
@@ -32,6 +33,14 @@ const NavBtn = styled.button`
   transition: all 0.15s;
   &:hover:not(:disabled) { border-color: ${theme.colors.primary}; color: ${theme.colors.primary}; }
   &:disabled { opacity: 0.3; }
+`;
+
+const JumpBtn = styled.button`
+  padding: 6px 14px; border-radius: ${theme.radii.sm};
+  border: 1.5px solid ${theme.colors.secondary};
+  font-size: 0.82rem; font-weight: 600; color: ${theme.colors.secondary};
+  transition: all 0.15s;
+  &:hover { background: ${theme.colors.secondary}14; }
 `;
 
 const RefLabel = styled.div`
@@ -128,9 +137,11 @@ export default function ContentReader({ section }: Props) {
             ))}
           </Select>
         </Controls>
-        {current.sefariaRef
-          ? <SefariaPrayerView sefariaRef={current.sefariaRef} />
-          : <StaticGroupsView groups={current.groups ?? []} />
+        {current.isMenorah
+          ? <MenorahPsalmView />
+          : current.sefariaRef
+            ? <SefariaPrayerView sefariaRef={current.sefariaRef} />
+            : <StaticGroupsView groups={current.groups ?? []} />
         }
       </Wrap>
     );
@@ -173,6 +184,11 @@ export default function ContentReader({ section }: Props) {
           </>
         )}
         {refLabel && <RefLabel>{refLabel}</RefLabel>}
+        {section.id === 'tehillim' && chapter !== 100 && (
+          <JumpBtn onClick={() => setChapter(100)} title="מזמור לתודה — תהילים ק׳">
+            🕊️ מזמור לתודה
+          </JumpBtn>
+        )}
         {fullText && <SpeakButton text={fullText} />}
       </Controls>
 

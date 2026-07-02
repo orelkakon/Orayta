@@ -8,4 +8,5 @@ export const SIDDUR_SECTIONS: SiddurSection[] = [
   { name: 'קריאת שמע', sefariaRef: 'Siddur_Edot_HaMizrach, Weekday_Shacharit, The_Shema' },
   { name: 'עמידה', sefariaRef: 'Siddur_Edot_HaMizrach, Weekday_Shacharit, Amida' },
   { name: 'עלינו לשבח', sefariaRef: 'Siddur_Edot_HaMizrach, Weekday_Shacharit, Alenu' },
+  { name: 'למנצח בנגינות', isMenorah: true },
 ];

@@ -110,6 +110,7 @@ export default function TodayView() {
         <Subtitle>{HE.TODAY_SUBTITLE}</Subtitle>
       </Header>
       <DailySection />
+      <EventsCard date={dateStr} />
       <Grid>
         <Col>
           <ZmanimCard location={location} locState={locState} date={dateStr} onRetry={requestLocation} />
@@ -117,7 +118,6 @@ export default function TodayView() {
         </Col>
         <Col>
           <DafYomiCard />
-          <EventsCard date={dateStr} />
         </Col>
       </Grid>
     </Container>

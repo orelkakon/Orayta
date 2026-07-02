@@ -75,8 +75,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json() as { name?: string; message: string; rating?: number };
-    const { name, message, rating } = body;
+    const body = await req.json() as { name?: string; message: string; rating?: number; channel?: 'wa' | 'email' };
+    const { name, message, rating, channel } = body;
 
     if (!message || typeof message !== 'string' || !message.trim()) {
       return NextResponse.json({ error: 'message required' }, { status: 400 });
@@ -93,8 +93,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    sendEmail(name?.trim(), message.trim(), typeof rating === 'number' ? rating : undefined)
-      .catch(() => { /* swallow */ });
+    if (channel !== 'wa') {
+      sendEmail(name?.trim(), message.trim(), typeof rating === 'number' ? rating : undefined)
+        .catch(() => { /* swallow */ });
+    }
 
     // WhatsApp — conversational, written from the user's perspective
     const phone  = process.env.CONTACT_PHONE ?? '';

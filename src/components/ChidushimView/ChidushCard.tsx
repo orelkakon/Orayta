@@ -54,6 +54,17 @@ const UnknownSource = styled.span`
   color: ${theme.colors.textLight};
 `;
 
+const ShareBtn = styled.a`
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 0.75rem; font-weight: 600;
+  padding: 2px ${theme.spacing.sm};
+  background: #25D36618; color: #128C7E;
+  border: 1px solid #25D36630;
+  border-radius: ${theme.radii.sm};
+  cursor: pointer; text-decoration: none;
+  &:hover { background: #25D36630; }
+`;
+
 const AdminRow = styled.div`
   display: flex;
   gap: ${theme.spacing.xs};
@@ -80,6 +91,17 @@ interface Props {
   onDelete?: () => void;
 }
 
+function buildWaUrl(chidush: Chidush): string {
+  const lines: string[] = [];
+  if (chidush.author) lines.push(`👤 *${chidush.author}*`);
+  if (chidush.source) lines.push(`📖 ${chidush.source}`);
+  lines.push('');
+  lines.push(chidush.text);
+  lines.push('');
+  lines.push('_שיתוף מאורייתא 📖_');
+  return `https://api.whatsapp.com/send?text=${encodeURIComponent(lines.join('\n'))}`;
+}
+
 export default function ChidushCard({ chidush, onEdit, onDelete }: Props) {
   const hasSource = !!chidush.source;
   const hasAuthor = !!chidush.author;
@@ -93,6 +115,9 @@ export default function ChidushCard({ chidush, onEdit, onDelete }: Props) {
         {hasAuthor && <Chip>👤 {chidush.author}</Chip>}
         {hasSource && <Chip>📖 {chidush.source}</Chip>}
         {!hasMeta && <UnknownSource>{HE.CHIDUSH_UNKNOWN_SOURCE}</UnknownSource>}
+        <ShareBtn href={buildWaUrl(chidush)} target="_blank" rel="noopener noreferrer">
+          💬 {HE.CHIDUSH_SHARE_WA}
+        </ShareBtn>
       </MetaRow>
       {(onEdit || onDelete) && (
         <AdminRow>

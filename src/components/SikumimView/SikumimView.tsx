@@ -32,6 +32,21 @@ const AddBtn = styled.button`
   &:hover { background: ${theme.colors.primaryLight}; }
 `;
 
+const ControlBar = styled.div`
+  display: flex; align-items: center; gap: ${theme.spacing.xs}; flex-wrap: wrap;
+`;
+
+const SortBtn = styled.button<{ $active?: boolean }>`
+  font-size: 0.8rem; padding: 4px 12px; border-radius: ${'9999px'};
+  border: 1px solid ${({ $active }) => ($active ? theme.colors.primary : theme.colors.border)};
+  background: ${({ $active }) => ($active ? theme.colors.primary + '12' : 'transparent')};
+  color: ${({ $active }) => ($active ? theme.colors.primary : theme.colors.textMuted)};
+  font-weight: ${({ $active }) => ($active ? '700' : '400')};
+  transition: all 0.15s;
+`;
+
+const SortLabel = styled.span`font-size: 0.78rem; color: ${theme.colors.textLight}; margin-left: 4px;`;
+
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -46,9 +61,12 @@ const Empty = styled.div`
   font-size: 0.95rem;
 `;
 
+type BookSort = 'default' | 'count' | 'alpha';
+
 export default function SikumimView() {
   const [books, setBooks] = useState<SikumBook[]>([]);
   const [search, setSearch] = useState('');
+  const [bookSort, setBookSort] = useState<BookSort>('default');
   const [addOpen, setAddOpen] = useState(false);
   const [editBook, setEditBook] = useState<SikumBook | null>(null);
   const [selectedBook, setSelectedBook] = useState<SikumBook | null>(null);
@@ -62,11 +80,13 @@ export default function SikumimView() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return books;
-    return books.filter(b =>
-      b.name.toLowerCase().includes(q) || (b.author ?? '').toLowerCase().includes(q)
-    );
-  }, [books, search]);
+    const base = q
+      ? books.filter(b => b.name.toLowerCase().includes(q) || (b.author ?? '').toLowerCase().includes(q))
+      : [...books];
+    if (bookSort === 'count') return base.sort((a, b) => b.entryCount - a.entryCount);
+    if (bookSort === 'alpha') return base.sort((a, b) => a.name.localeCompare(b.name, 'he'));
+    return base;
+  }, [books, search, bookSort]);
 
   const handleDelete = async (book: SikumBook) => {
     if (!window.confirm(HE.SIKUMIM_BOOK_DELETE_CONFIRM)) return;
@@ -104,6 +124,13 @@ export default function SikumimView() {
       </TitleRow>
 
       <SearchField value={search} onChange={setSearch} placeholder={HE.SIKUMIM_SEARCH_PLACEHOLDER} />
+
+      <ControlBar>
+        <SortLabel>מיון:</SortLabel>
+        <SortBtn $active={bookSort === 'default'} onClick={() => setBookSort('default')}>{HE.SIKUMIM_BOOKS_SORT_DEFAULT}</SortBtn>
+        <SortBtn $active={bookSort === 'count'} onClick={() => setBookSort('count')}>{HE.SIKUMIM_BOOKS_SORT_COUNT}</SortBtn>
+        <SortBtn $active={bookSort === 'alpha'} onClick={() => setBookSort('alpha')}>{HE.SIKUMIM_BOOKS_SORT_ALPHA}</SortBtn>
+      </ControlBar>
 
       <Grid>
         {filtered.length === 0

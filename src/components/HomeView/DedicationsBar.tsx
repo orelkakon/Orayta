@@ -12,7 +12,7 @@ const scrollRight = keyframes`
   to   { transform: translateX(0); }
 `;
 
-/* ── Ticker ── */
+/* ── Two-row ticker ── */
 const Bar = styled.div`
   width: 100%; background: ${theme.colors.surface};
   border: 1px solid ${theme.colors.borderLight};
@@ -28,16 +28,23 @@ const BarTitle = styled.div`
   letter-spacing: 0.07em; text-align: center;
 `;
 
-const Track = styled.div`overflow: hidden; padding: 10px 0; direction: ltr;`;
-
-const BarSkeleton = styled.div`
-  width: 100%; height: 69px;
-  background: ${theme.colors.surface};
-  border: 1px solid ${theme.colors.borderLight};
-  border-right: 3px solid ${theme.colors.secondary};
-  border-radius: ${theme.radii.md};
-  box-shadow: ${theme.shadows.sm};
+const RowWrap = styled.div`
+  display: flex; align-items: stretch;
 `;
+
+const RowLabel = styled.div<{ $iluy?: boolean }>`
+  flex-shrink: 0; width: 90px; padding: 8px ${theme.spacing.sm};
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.03em;
+  background: ${({ $iluy }) => $iluy ? theme.colors.primary + '12' : theme.colors.secondary + '0D'};
+  color: ${({ $iluy }) => $iluy ? theme.colors.primary : theme.colors.secondary};
+  border-left: 1px solid ${theme.colors.borderLight};
+  @media (max-width: 480px) { width: 70px; font-size: 0.6rem; }
+`;
+
+const RowTrack = styled.div`overflow: hidden; flex: 1; direction: ltr; padding: 8px 0;`;
+
+const RowDivider = styled.div`height: 1px; background: ${theme.colors.borderLight};`;
 
 const Tape = styled.div<{ $secs: number }>`
   display: inline-flex; white-space: nowrap; will-change: transform;
@@ -46,17 +53,26 @@ const Tape = styled.div<{ $secs: number }>`
 
 const Item = styled.span`
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 0 28px;
-  font-family: ${theme.fonts.body}; font-size: 0.92rem;
+  padding: 0 24px;
+  font-family: ${theme.fonts.body}; font-size: 0.9rem;
   color: ${theme.colors.primary}; white-space: nowrap; direction: rtl;
 `;
 
 const TypeLabel = styled.span`
-  font-size: 0.85rem; color: ${theme.colors.textMuted}; font-weight: 600;
+  font-size: 0.8rem; color: ${theme.colors.textMuted}; font-weight: 600;
 `;
 
 const Dot = styled.span`
-  color: ${theme.colors.secondary}; font-size: 1rem; user-select: none;
+  color: ${theme.colors.secondary}; font-size: 0.8rem; user-select: none;
+`;
+
+const BarSkeleton = styled.div`
+  width: 100%; height: 88px;
+  background: ${theme.colors.surface};
+  border: 1px solid ${theme.colors.borderLight};
+  border-right: 3px solid ${theme.colors.secondary};
+  border-radius: ${theme.radii.md};
+  box-shadow: ${theme.shadows.sm};
 `;
 
 /* ── Admin section ── */
@@ -139,6 +155,16 @@ export default function DedicationsBar({ part = 'ticker' }: Props) {
 
   useEffect(() => { load(); }, [load]);
 
+  const iluyItems = useMemo(() => {
+    const arr = [...dedications.filter(d => d.type === 'iluy')].sort(() => Math.random() - 0.5);
+    return [...arr, ...arr];
+  }, [dedications]);
+
+  const otherItems = useMemo(() => {
+    const arr = [...dedications.filter(d => d.type !== 'iluy')].sort(() => Math.random() - 0.5);
+    return [...arr, ...arr];
+  }, [dedications]);
+
   const handleAdd = async () => {
     if (!name.trim()) return;
     setSaving(true);
@@ -159,28 +185,53 @@ export default function DedicationsBar({ part = 'ticker' }: Props) {
   const typeLabel = (key: string) => TYPES.find(t => t.key === key)?.label ?? key;
 
   /* ── Ticker part ── */
-  const shuffledDouble = useMemo(() => {
-    const arr = [...dedications].sort(() => Math.random() - 0.5);
-    return [...arr, ...arr];
-  }, [dedications]);
-
   if (part === 'ticker') {
     if (tickerLoading) return <BarSkeleton />;
     if (dedications.length === 0) return null;
-    const secs = Math.max(dedications.length * 2, 8);
+
+    const iluyCount = iluyItems.length / 2;
+    const otherCount = otherItems.length / 2;
+    const iluySeconds = Math.max(iluyCount * 2.5, 10);
+    const otherSeconds = Math.max(otherCount * 2.5, 10);
+
     return (
       <Bar>
         <BarTitle>{HE.DEDICATIONS_TITLE}</BarTitle>
-        <Track>
-          <Tape $secs={secs}>
-            {shuffledDouble.map((d, i) => (
-              <Item key={`${d.id}-${i}`}>
-                <TypeLabel>{typeLabel(d.type)}</TypeLabel>
-                {d.name}
-              </Item>
-            ))}
-          </Tape>
-        </Track>
+
+        {iluyCount > 0 && (
+          <RowWrap>
+            <RowLabel $iluy>🕯️ {HE.DEDICATION_TYPE_ILUY}</RowLabel>
+            <RowTrack>
+              <Tape $secs={iluySeconds}>
+                {iluyItems.map((d, i) => (
+                  <Item key={`${d.id}-${i}`}>
+                    {d.name}
+                    <Dot>·</Dot>
+                  </Item>
+                ))}
+              </Tape>
+            </RowTrack>
+          </RowWrap>
+        )}
+
+        {iluyCount > 0 && otherCount > 0 && <RowDivider />}
+
+        {otherCount > 0 && (
+          <RowWrap>
+            <RowLabel>🙏 ברכות</RowLabel>
+            <RowTrack>
+              <Tape $secs={otherSeconds}>
+                {otherItems.map((d, i) => (
+                  <Item key={`${d.id}-${i}`}>
+                    <TypeLabel>{typeLabel(d.type)}</TypeLabel>
+                    {d.name}
+                    <Dot>·</Dot>
+                  </Item>
+                ))}
+              </Tape>
+            </RowTrack>
+          </RowWrap>
+        )}
       </Bar>
     );
   }

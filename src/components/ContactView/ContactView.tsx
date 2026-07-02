@@ -16,7 +16,6 @@ const Page = styled.div`
   animation: ${fadeUp} 0.4s ease;
 `;
 
-
 const Hero = styled.div`
   text-align: center; display: flex; flex-direction: column; align-items: center; gap: ${theme.spacing.sm};
 `;
@@ -60,28 +59,35 @@ const Star = styled.button<{ $on: boolean }>`
   &:hover { transform: scale(1.2); }
 `;
 
-const SubmitBtn = styled.button`
-  width: 100%; padding: ${theme.spacing.md};
+const ChannelRow = styled.div`
+  display: flex; gap: ${theme.spacing.md};
+  @media (max-width: 480px) { flex-direction: column; }
+`;
+
+const WaBtn = styled.button`
+  flex: 1; padding: ${theme.spacing.md};
+  background: #25D366; color: white; border-radius: ${theme.radii.md};
+  font-size: 1rem; font-weight: 700; display: flex; align-items: center;
+  justify-content: center; gap: ${theme.spacing.sm};
+  transition: transform 0.15s, box-shadow 0.15s;
+  &:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 18px #25D36640; }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+`;
+
+const EmailBtn = styled.button`
+  flex: 1; padding: ${theme.spacing.md};
   background: linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.primaryLight});
-  color: white; border-radius: ${theme.radii.md}; font-size: 1rem; font-weight: 600;
+  color: white; border-radius: ${theme.radii.md}; font-size: 1rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; gap: ${theme.spacing.sm};
   transition: transform 0.15s, box-shadow 0.15s;
   &:hover:not(:disabled) { transform: translateY(-2px); box-shadow: ${theme.shadows.md}; }
   &:disabled { opacity: 0.55; cursor: not-allowed; }
 `;
 
-const WaBtn = styled.a`
-  display: flex; align-items: center; justify-content: center; gap: ${theme.spacing.sm};
-  width: 100%; padding: ${theme.spacing.md};
-  background: #25D366; color: white; border-radius: ${theme.radii.md};
-  font-size: 1rem; font-weight: 600; text-align: center;
-  transition: opacity 0.15s;
-  &:hover { opacity: 0.88; }
-`;
-
 const SuccessBox = styled.div`
   text-align: center; display: flex; flex-direction: column; align-items: center; gap: ${theme.spacing.md};
 `;
-const BigCheck = styled.div`font-size: 3rem;`;
+const BigIcon = styled.div`font-size: 3rem;`;
 const SuccessTitle = styled.h2`font-size: 1.4rem; font-weight: 700; color: ${theme.colors.primary};`;
 const SuccessText = styled.p`font-size: 0.95rem; color: ${theme.colors.textMuted}; line-height: 1.6;`;
 const NewBtn = styled.button`
@@ -97,31 +103,47 @@ export default function ContactView() {
   const [rating, setRating] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const [waUrl, setWaUrl] = useState('');
+  const [sent, setSent] = useState<'wa' | 'email' | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!message.trim()) return;
+  const canSend = message.trim().length > 0;
+
+  const handleWA = async () => {
+    if (!canSend) return;
     setLoading(true); setError(false);
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim() || undefined, message, rating: rating || undefined }),
+        body: JSON.stringify({ name: name.trim() || undefined, message, rating: rating || undefined, channel: 'wa' }),
       });
       const data = await res.json() as { ok?: boolean; waUrl?: string };
-      if (res.ok && data.ok) {
-        setWaUrl(data.waUrl ?? '');
+      if (res.ok && data.waUrl) {
+        window.open(data.waUrl, '_blank');
+        setSent('wa');
       } else {
         setError(true);
       }
-    } catch {
-      setError(true);
-    }
+    } catch { setError(true); }
     setLoading(false);
   };
 
-  const reset = () => { setName(''); setMessage(''); setRating(0); setWaUrl(''); setError(false); };
+  const handleEmail = async () => {
+    if (!canSend) return;
+    setLoading(true); setError(false);
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim() || undefined, message, rating: rating || undefined, channel: 'email' }),
+      });
+      const data = await res.json() as { ok?: boolean };
+      if (res.ok && data.ok) { setSent('email'); }
+      else { setError(true); }
+    } catch { setError(true); }
+    setLoading(false);
+  };
+
+  const reset = () => { setName(''); setMessage(''); setRating(0); setSent(null); setError(false); };
 
   return (
     <Page>
@@ -132,18 +154,15 @@ export default function ContactView() {
       </Hero>
 
       <Card>
-        {waUrl ? (
+        {sent ? (
           <SuccessBox>
-            <BigCheck>✅</BigCheck>
-            <SuccessTitle>{HE.CONTACT_SUCCESS_TITLE}</SuccessTitle>
-            <SuccessText>{HE.CONTACT_SUCCESS_MSG}</SuccessText>
-            <WaBtn href={waUrl} target="_blank" rel="noopener noreferrer">
-              💬 {HE.CONTACT_WA_BTN}
-            </WaBtn>
+            <BigIcon>{sent === 'wa' ? '💬' : '✅'}</BigIcon>
+            <SuccessTitle>{sent === 'wa' ? HE.CONTACT_WA_SUCCESS_TITLE : HE.CONTACT_EMAIL_SUCCESS_TITLE}</SuccessTitle>
+            <SuccessText>{sent === 'wa' ? HE.CONTACT_WA_SUCCESS_MSG : HE.CONTACT_SUCCESS_MSG}</SuccessText>
             <NewBtn onClick={reset}>{HE.CONTACT_NEW}</NewBtn>
           </SuccessBox>
         ) : (
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.md }}>
+          <>
             <div>
               <FieldLabel htmlFor="contact-name">{HE.CONTACT_FORM_NAME}</FieldLabel>
               <Input id="contact-name" value={name} onChange={e => setName(e.target.value)} placeholder="שם (לא חובה)" />
@@ -161,10 +180,15 @@ export default function ContactView() {
               </StarsRow>
             </div>
             {error && <ErrMsg>{HE.CONTACT_SAVE_ERROR}</ErrMsg>}
-            <SubmitBtn type="submit" disabled={loading || !message.trim()}>
-              {loading ? HE.LOADING : HE.CONTACT_FORM_SUBMIT}
-            </SubmitBtn>
-          </form>
+            <ChannelRow>
+              <WaBtn onClick={handleWA} disabled={loading || !canSend}>
+                💬 {HE.CONTACT_SEND_WA}
+              </WaBtn>
+              <EmailBtn onClick={handleEmail} disabled={loading || !canSend}>
+                📧 {HE.CONTACT_SEND_EMAIL}
+              </EmailBtn>
+            </ChannelRow>
+          </>
         )}
       </Card>
     </Page>

@@ -14,4 +14,5 @@ export interface SiddurSection {
   name: string;
   sefariaRef?: string;
   groups?: StaticGroup[];
+  isMenorah?: boolean;
 }
