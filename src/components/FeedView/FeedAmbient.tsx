@@ -14,7 +14,6 @@ const SONGS = [
   { id: 'C590zIn1znM', name: 'כל עכבה לטובה',  artist: 'בן צור' },
   { id: '-1L6W2Z2KwI', name: 'אהבת השם',       artist: 'בן צור' },
   // ישי ריבו
-  { id: 'xmq_5H-6dJE', name: 'לשוב הביתה',     artist: 'ישי ריבו' },
   { id: '_HTyC9emB74', name: 'השבעתי אתכם',    artist: 'ישי ריבו' },
   { id: 'a470tNqmYJg', name: 'אחת ולתמיד',     artist: 'ישי ריבו' },
   { id: 'iG_XzBrfcl8', name: 'רבי שמעון',      artist: 'ישי ריבו' },
@@ -22,7 +21,6 @@ const SONGS = [
   { id: 'tGilTBGfP1E', name: 'הלב שלי',        artist: 'ישי ריבו' },
   { id: 'kq67kMNGgpg', name: 'כתר מלוכה',      artist: 'ישי ריבו' },
   { id: 'j9cPwwhah0c', name: 'סדר העבודה',     artist: 'ישי ריבו' },
-  { id: 'u2FzBma7eIA', name: 'עוד ישמע',       artist: 'ישי ריבו' },
   // חנן בן ארי
   { id: 'E5mCRmuaSXU', name: 'לילה טוב שון',   artist: 'חנן בן ארי' },
   { id: 'gQaCWeAIrHI', name: 'שבורי לב',       artist: 'חנן בן ארי' },
