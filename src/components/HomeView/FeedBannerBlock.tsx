@@ -5,44 +5,44 @@ import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 
-const breathe = keyframes`
-  0%, 100% { box-shadow: 0 4px 24px rgba(160,130,60,0.1), inset 0 0 40px rgba(180,150,60,0.03); }
-  50%       { box-shadow: 0 6px 40px rgba(160,130,60,0.22), inset 0 0 60px rgba(180,150,60,0.07); }
+const glow = keyframes`
+  0%, 100% { box-shadow: 0 4px 20px rgba(92,61,30,0.28), 0 1px 0 rgba(196,149,106,0.15) inset; }
+  50%       { box-shadow: 0 6px 32px rgba(92,61,30,0.42), 0 1px 0 rgba(196,149,106,0.25) inset; }
 `;
 
 const Banner = styled(Link)`
   width: 100%; position: relative; overflow: hidden;
-  background: linear-gradient(160deg, #07050f 0%, #100c1c 55%, #080612 100%);
+  background: linear-gradient(135deg, ${theme.colors.primary} 0%, #7a4e28 50%, #9b6535 100%);
   border-radius: ${theme.radii.xl};
   padding: ${theme.spacing.lg} ${theme.spacing.xl};
-  display: flex; flex-direction: column; gap: 8px;
-  border: 1px solid rgba(200,170,90,0.22);
-  animation: ${breathe} 3.5s ease-in-out infinite;
-  transition: transform 0.22s, opacity 0.22s;
-  &:hover { transform: translateY(-3px); opacity: 0.95; }
+  display: flex; flex-direction: column; gap: 6px;
+  border: 1px solid rgba(196,149,106,0.4);
+  animation: ${glow} 3s ease-in-out infinite;
+  transition: transform 0.2s;
+  &:hover { transform: translateY(-3px); }
   &::before {
     content: ''; position: absolute; inset: 0; pointer-events: none;
-    background: radial-gradient(ellipse at 50% 70%, rgba(200,165,70,0.07), transparent 65%);
+    background: radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.08), transparent 60%);
   }
 `;
 
 const NewBadge = styled.div`
   display: inline-flex; align-items: center; gap: 5px; width: fit-content;
-  background: rgba(200,170,80,0.1); border: 1px solid rgba(200,170,80,0.28);
-  color: rgba(210,180,90,0.85); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.1em;
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.9); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.1em;
   padding: 3px 10px; border-radius: 12px;
 `;
 
 const Row = styled.div`display: flex; align-items: center; justify-content: space-between;`;
 
 const Title = styled.div`
-  color: rgba(255,255,255,0.9); font-family: ${theme.fonts.body}; font-size: 1.4rem; font-weight: 900;
-  text-shadow: 0 0 24px rgba(200,165,80,0.35);
+  color: white; font-family: ${theme.fonts.body}; font-size: 1.45rem; font-weight: 900;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.25);
 `;
 
-const Sub = styled.div`color: rgba(200,185,155,0.65); font-size: 0.82rem; line-height: 1.5;`;
+const Sub = styled.div`color: rgba(255,255,255,0.78); font-size: 0.83rem; line-height: 1.5;`;
 
-const Arrow = styled.div`color: rgba(200,170,80,0.45); font-size: 1.5rem;`;
+const Arrow = styled.div`color: rgba(255,255,255,0.5); font-size: 1.5rem;`;
 
 export default function FeedBannerBlock() {
   return (
