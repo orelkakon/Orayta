@@ -92,7 +92,10 @@
       "Bash(mkdir -p /Users/user/Desktop/Claude/orayta/src/app/api/sikum-books/\\\\[id\\\\])",
       "Bash(mkdir -p /Users/user/Desktop/Claude/orayta/src/app/api/sikum-entries/\\\\[id\\\\])",
       "Bash(mkdir -p /Users/user/Desktop/Claude/orayta/src/components/RabbisAndBooksView)",
-      "Bash(mkdir -p /Users/user/Desktop/Claude/orayta/src/components/SikumimView)"
+      "Bash(mkdir -p /Users/user/Desktop/Claude/orayta/src/components/SikumimView)",
+      "Bash(wait)",
+      "Bash(gh run *)",
+      "Bash(grep -E '\\\\.\\(tsx|ts\\)$')"
     ]
   }
 }

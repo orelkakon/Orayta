@@ -40,6 +40,14 @@ export async function GET() {
     }),
   ]);
 
+  // Fetch gematria matches in one query
+  const gValues = gematrias.map(g => g.value);
+  const gematriaPeers = gValues.length > 0
+    ? await prisma.gematria.findMany({ where: { value: { in: gValues } }, select: { word: true, value: true, id: true } })
+    : [];
+  const peersMap = new Map<number, string[]>();
+  gematriaPeers.forEach(p => { const l = peersMap.get(p.value) ?? []; l.push(p.word); peersMap.set(p.value, l); });
+
   const refs = [
     ...citations.map(c => ({ itemType: 'citation', itemId: c.id })),
     ...rabbis.map(r => ({ itemType: 'rabbi', itemId: r.id })),
@@ -48,37 +56,22 @@ export async function GET() {
     ...chidushim.map(c => ({ itemType: 'chidush', itemId: c.id })),
     ...sikumEntries.map(s => ({ itemType: 'sikum', itemId: s.id })),
   ];
-
-  const likeRecords = refs.length > 0
-    ? await prisma.feedLike.findMany({ where: { OR: refs } })
-    : [];
+  const likeRecords = refs.length > 0 ? await prisma.feedLike.findMany({ where: { OR: refs } }) : [];
   const likesMap = new Map(likeRecords.map(l => [`${l.itemType}:${l.itemId}`, l.likes]));
   const getLikes = (type: string, id: string) => likesMap.get(`${type}:${id}`) ?? 0;
 
   const items: unknown[] = shuffle([
-    ...citations.map(c => ({
-      type: 'citation' as const, id: c.id, likes: getLikes('citation', c.id),
-      data: { id: c.id, content: c.content, locations: c.locations, createdAt: c.createdAt, updatedAt: c.updatedAt },
-    })),
-    ...rabbis.map(r => ({
-      type: 'rabbi' as const, id: r.id, likes: getLikes('rabbi', r.id),
-      data: { ...r },
-    })),
-    ...books.map(b => ({
-      type: 'book' as const, id: b.id, likes: getLikes('book', b.id),
-      data: { ...b },
-    })),
+    ...citations.map(c => ({ type: 'citation', id: c.id, likes: getLikes('citation', c.id), data: { ...c } })),
+    ...rabbis.map(r => ({ type: 'rabbi', id: r.id, likes: getLikes('rabbi', r.id), data: { ...r } })),
+    ...books.map(b => ({ type: 'book', id: b.id, likes: getLikes('book', b.id), data: { ...b } })),
     ...gematrias.map(g => ({
-      type: 'gematria' as const, id: g.id, likes: getLikes('gematria', g.id),
-      data: { ...g },
+      type: 'gematria', id: g.id, likes: getLikes('gematria', g.id),
+      data: { ...g, matches: (peersMap.get(g.value) ?? []).filter(w => w !== g.word).slice(0, 5) },
     })),
-    ...chidushim.map(c => ({
-      type: 'chidush' as const, id: c.id, likes: getLikes('chidush', c.id),
-      data: { ...c },
-    })),
+    ...chidushim.map(c => ({ type: 'chidush', id: c.id, likes: getLikes('chidush', c.id), data: { ...c } })),
     ...sikumEntries.map(s => ({
-      type: 'sikum' as const, id: s.id, likes: getLikes('sikum', s.id),
-      data: { id: s.id, title: s.title, text: s.text, bookName: s.book.name, bookIcon: s.book.icon },
+      type: 'sikum', id: s.id, likes: getLikes('sikum', s.id),
+      data: { id: s.id, title: s.title, text: s.text, bookName: s.book.name, bookIcon: s.book.icon, location: s.location, date: s.date },
     })),
   ]);
 

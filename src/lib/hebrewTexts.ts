@@ -440,9 +440,9 @@ export const HE = {
   CANCEL: 'ביטול',
   CLOSE: 'סגור',
 
-  FEED_TITLE: 'גלגל תורה',
-  FEED_SUBTITLE: 'תוכן אקראי מכל מדורי אורייתא — גלול וגלה',
-  FEED_NEW_BADGE: '✨ חדש',
+  FEED_TITLE: 'רגע של תורה',
+  FEED_SUBTITLE: 'עצור, קרא, העשר — תוכן אקראי מכל מדורי אורייתא',
+  FEED_NEW_BADGE: 'חדש',
   FEED_BACK: '← חזרה',
   FEED_LOADING: 'טוען...',
   FEED_LOADING_MORE: 'טוען עוד...',

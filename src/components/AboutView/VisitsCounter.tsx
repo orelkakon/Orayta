@@ -12,7 +12,7 @@ const pulse = keyframes`
 
 const Card = styled.div`
   background: ${theme.colors.surface}; border: 1px solid ${theme.colors.borderLight};
-  border-radius: ${theme.radii.xl}; padding: ${theme.spacing.xl} ${theme.spacing.xxl};
+  border-radius: ${theme.radii.xl}; padding: ${theme.spacing.xl} ${theme.spacing.lg};
   box-shadow: ${theme.shadows.md}; width: 100%; max-width: 560px;
   display: flex; flex-direction: column; align-items: center;
   gap: ${theme.spacing.lg}; text-align: center; position: relative; overflow: hidden;
@@ -30,22 +30,23 @@ const SectionTitle = styled.h2`
 `;
 
 const StatsRow = styled.div`
-  display: flex; gap: ${theme.spacing.xxl}; align-items: flex-start;
-  justify-content: center; flex-wrap: wrap; width: 100%;
+  display: flex; gap: 0; align-items: stretch;
+  justify-content: center; width: 100%;
 `;
 
-const StatBlock = styled.div`display: flex; flex-direction: column; align-items: center; gap: 4px;`;
-const Emoji = styled.div`font-size: 2rem; line-height: 1;`;
+const StatBlock = styled.div`
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 8px;
+`;
+const Emoji = styled.div`font-size: 1.6rem; line-height: 1;`;
 const CountNum = styled.div`
-  font-family: ${theme.fonts.body}; font-size: 3.2rem; font-weight: 900; line-height: 1;
+  font-family: ${theme.fonts.body}; font-size: 2.1rem; font-weight: 900; line-height: 1;
   color: ${theme.colors.primary}; letter-spacing: -0.02em;
   animation: ${pulse} 2s ease-in-out infinite;
 `;
-const CountLabel = styled.div`font-size: 0.9rem; font-weight: 600; color: ${theme.colors.text};`;
-const CountSub = styled.div`font-size: 0.75rem; color: ${theme.colors.textMuted};`;
+const CountLabel = styled.div`font-size: 0.78rem; font-weight: 600; color: ${theme.colors.text};`;
+const CountSub = styled.div`font-size: 0.66rem; color: ${theme.colors.textMuted};`;
 const Divider = styled.div`
-  width: 1px; height: 80px; background: ${theme.colors.borderLight}; align-self: center;
-  @media (max-width: 360px) { display: none; }
+  width: 1px; background: ${theme.colors.borderLight}; align-self: stretch; flex-shrink: 0;
 `;
 
 const ContentRow = styled.div`

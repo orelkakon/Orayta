@@ -130,11 +130,26 @@ export interface FeedSikumData {
   text: string;
   bookName: string;
   bookIcon: string | null;
+  location: string | null;
+  date: string;
+}
+
+export interface FeedGematriaData extends Gematria {
+  matches: string[];
 }
 
 export interface FeedItem {
   type: FeedItemType;
   id: string;
   likes: number;
-  data: Citation | Rabbi | Book | Chidush | Gematria | FeedSikumData;
+  data: Citation | Rabbi | Book | Chidush | FeedGematriaData | FeedSikumData;
 }
+
+export interface FeedDedicationSlide {
+  slideType: 'dedication';
+  id: string;
+  dedType: string;
+  name: string;
+}
+
+export type FeedSlide = FeedItem | FeedDedicationSlide;
