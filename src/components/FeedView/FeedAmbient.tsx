@@ -3,6 +3,24 @@
 import { useRef, useState, useEffect } from 'react';
 import styled from 'styled-components';
 
+// Piano-only (קריוקי פסנתר) versions — melody, no vocals
+const SONGS = [
+  { id: 'xilcxmW7xYo', name: 'אישתי' },
+  { id: 'Z7OD4VEeOu8', name: 'טאטע תטהר' },
+  { id: 'qHdf4FOtqdo', name: 'אמונה' },
+  { id: 'QBrY-J9Vm-s', name: 'סולי' },
+  { id: 'Jhx8kKQOUDQ', name: 'נשמות צמאות' },
+  { id: 'C590zIn1znM', name: 'כל עכבה לטובה' },
+  { id: '-1L6W2Z2KwI', name: 'אהבת השם' },
+];
+
+// Iframe sits exactly behind the button so it is technically present in the DOM
+const HiddenFrame = styled.iframe`
+  position: fixed; bottom: 26px; left: 14px; z-index: 300;
+  width: 36px; height: 36px; border: none; border-radius: 50%;
+  opacity: 0; pointer-events: none;
+`;
+
 const Btn = styled.button<{ $on: boolean }>`
   position: fixed; bottom: 26px; left: 14px; z-index: 301;
   width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
@@ -16,119 +34,72 @@ const Btn = styled.button<{ $on: boolean }>`
 
 const Label = styled.div<{ $visible: boolean }>`
   position: fixed; bottom: 30px; left: 58px; z-index: 301;
-  color: rgba(255,255,255,0.5); font-size: 0.72rem;
+  color: rgba(255,255,255,0.55); font-size: 0.72rem; white-space: nowrap;
   opacity: ${p => p.$visible ? 1 : 0}; transition: opacity 0.4s;
   pointer-events: none;
 `;
 
-const MASTER_VOL = 0.048;
-
-type Tone = [freq: number, vol: number];
-type CleanupFn = () => void;
-type PresetFn = (ctx: AudioContext, out: GainNode) => CleanupFn;
-
-function drone(ctx: AudioContext, out: GainNode, tones: Tone[]): CleanupFn {
-  const pairs = tones.map(([f, v]) => {
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = 'sine'; o.frequency.value = f; g.gain.value = v;
-    o.connect(g); g.connect(out); o.start();
-    return { o, g };
-  });
-  return () => pairs.forEach(({ o, g }) => { try { o.stop(); } catch {} o.disconnect(); g.disconnect(); });
+function ytCmd(iframe: HTMLIFrameElement, func: string) {
+  iframe.contentWindow?.postMessage(
+    JSON.stringify({ event: 'command', func, args: [] }),
+    'https://www.youtube.com'
+  );
 }
-
-function arpeggio(ctx: AudioContext, out: GainNode, notes: number[], ms: number, vol: number): CleanupFn {
-  let alive = true; let idx = 0;
-  function tick() {
-    if (!alive) return;
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = 'triangle'; o.frequency.value = notes[idx++ % notes.length];
-    g.gain.setValueAtTime(0, ctx.currentTime);
-    g.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.08);
-    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + ms / 1000 * 0.88);
-    o.connect(g); g.connect(out);
-    o.start(); o.stop(ctx.currentTime + ms / 1000);
-    setTimeout(tick, ms);
-  }
-  tick();
-  return () => { alive = false; };
-}
-
-const PRESETS: { name: string; play: PresetFn }[] = [
-  { name: 'נשמה',  play: (ctx, out) => drone(ctx, out,    [[110, 0.6], [220, 0.3], [330, 0.14]]) },
-  { name: 'שלווה', play: (ctx, out) => drone(ctx, out,    [[147, 0.55], [220, 0.45], [294, 0.18]]) },
-  { name: 'תפילה', play: (ctx, out) => arpeggio(ctx, out, [220, 261.6, 329.6, 392, 440], 1500, 0.55) },
-  { name: 'עומק',  play: (ctx, out) => drone(ctx, out,    [[55, 0.65], [110, 0.38]]) },
-  { name: 'אור',   play: (ctx, out) => drone(ctx, out,    [[329.6, 0.4], [494, 0.28], [659.3, 0.16]]) },
-  { name: 'שיר',   play: (ctx, out) => drone(ctx, out,    [[130.8, 0.5], [196, 0.38], [261.6, 0.28], [329.6, 0.15]]) },
-  { name: 'מנוחה', play: (ctx, out) => arpeggio(ctx, out, [440, 392, 329.6, 261.6, 220], 2000, 0.52) },
-];
 
 export default function FeedAmbient() {
-  const [on, setOn]           = useState(false);
-  const [showLabel, setShowLabel] = useState(false);
-  const [preset]              = useState(() => PRESETS[Math.floor(Math.random() * PRESETS.length)]);
-  const ctxRef                = useRef<AudioContext | null>(null);
-  const masterRef             = useRef<GainNode | null>(null);
-  const stopRef               = useRef<CleanupFn | null>(null);
-  const startedRef            = useRef(false);
+  const [on, setOn]                   = useState(false);
+  const [showLabel, setShowLabel]     = useState(false);
+  const [song]                        = useState(() => SONGS[Math.floor(Math.random() * SONGS.length)]);
+  const iframeRef                     = useRef<HTMLIFrameElement>(null);
+  const unlockedRef                   = useRef(false);
 
   useEffect(() => {
-    const ctx = new AudioContext();
-    const master = ctx.createGain();
-    master.gain.value = 0; // silent until unlocked
-    master.connect(ctx.destination);
-    ctxRef.current  = ctx;
-    masterRef.current = master;
-    // Build the sound graph now (oscillators run as soon as context resumes)
-    stopRef.current = preset.play(ctx, master);
-
     function unlock() {
-      if (startedRef.current) return;
-      startedRef.current = true;
-      ctx.resume().then(() => {
-        master.gain.setValueAtTime(0, ctx.currentTime);
-        master.gain.linearRampToValueAtTime(MASTER_VOL, ctx.currentTime + 3.5);
-        setOn(true);
-        setShowLabel(true);
-        setTimeout(() => setShowLabel(false), 2800);
-      });
+      if (unlockedRef.current) return;
+      unlockedRef.current = true;
+      // Send unMute at 300 ms and again at 1 s to survive slow loads
+      [300, 1000].forEach(d => setTimeout(() => {
+        if (iframeRef.current) ytCmd(iframeRef.current, 'unMute');
+      }, d));
+      setOn(true);
+      setShowLabel(true);
+      setTimeout(() => setShowLabel(false), 3000);
     }
 
-    // Any touch/click on the page unlocks — happens on the very first scroll swipe
-    document.addEventListener('touchstart', unlock, { passive: true, once: true });
+    document.addEventListener('touchstart',  unlock, { passive: true, once: true });
     document.addEventListener('pointerdown', unlock, { once: true });
-
     return () => {
-      document.removeEventListener('touchstart', unlock);
+      document.removeEventListener('touchstart',  unlock);
       document.removeEventListener('pointerdown', unlock);
-      stopRef.current?.();
-      master.disconnect();
-      void ctx.close();
-      ctxRef.current = null; masterRef.current = null; stopRef.current = null;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // runs once; preset is stable
+  }, []);
 
   const toggle = () => {
-    const ctx    = ctxRef.current;
-    const master = masterRef.current;
-    if (!ctx || !master) return;
+    if (!iframeRef.current) return;
     if (on) {
-      master.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.5);
+      ytCmd(iframeRef.current, 'mute');
       setOn(false);
     } else {
-      master.gain.linearRampToValueAtTime(MASTER_VOL, ctx.currentTime + 2);
+      ytCmd(iframeRef.current, 'unMute');
       setOn(true);
     }
   };
 
+  const src =
+    `https://www.youtube.com/embed/${song.id}` +
+    `?autoplay=1&mute=1&controls=0&loop=1&playlist=${song.id}` +
+    `&playsinline=1&rel=0&enablejsapi=1`;
+
   return (
     <>
+      <HiddenFrame
+        ref={iframeRef}
+        src={src}
+        title={song.name}
+        allow="autoplay; encrypted-media"
+      />
       <Btn $on={on} onClick={toggle} title={on ? 'כבה מוזיקה' : 'הפעל מוזיקה'}>♪</Btn>
-      <Label $visible={showLabel}>{preset.name}</Label>
+      <Label $visible={showLabel}>♪ {song.name} — בן צור</Label>
     </>
   );
 }
