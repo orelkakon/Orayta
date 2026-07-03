@@ -88,7 +88,7 @@ export default function FeedAmbient() {
   const src =
     `https://www.youtube.com/embed/${song.id}` +
     `?autoplay=1&mute=1&controls=0&loop=1&playlist=${song.id}` +
-    `&playsinline=1&rel=0&enablejsapi=1`;
+    `&playsinline=1&rel=0&enablejsapi=1&start=20`;
 
   return (
     <>
