@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
+import Link from 'next/link';
 import type { FeedItem, Citation, Rabbi, Book, Chidush, FeedGematriaData, FeedSikumData, RabbiCategory } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
 import { CATEGORY_LABELS } from '@/lib/rabbisData';
@@ -62,10 +63,21 @@ const MetaRow = styled.div`
   display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px;
 `;
 
-const MetaChip = styled.div`
+const chipBase = `
   background: rgba(255,255,255,0.1); backdrop-filter: blur(6px);
   border: 1px solid rgba(255,255,255,0.18); border-radius: 14px;
   color: rgba(255,255,255,0.8); font-size: 0.76rem; padding: 4px 11px; white-space: nowrap;
+`;
+
+const MetaChip = styled.div`${chipBase}`;
+
+const MetaChipLink = styled(Link)`
+  ${chipBase}
+  border-color: rgba(255,255,255,0.35);
+  color: rgba(255,255,255,0.95);
+  transition: background 0.15s, border-color 0.15s;
+  &:hover { background: rgba(255,255,255,0.2); }
+  &::after { content: ' ↗'; font-size: 0.68rem; opacity: 0.7; }
 `;
 
 const RabbiImg = styled.img`
@@ -140,10 +152,13 @@ function buildShareText(item: FeedItem): string {
   return sig;
 }
 
-function renderContent(item: FeedItem): { body: React.ReactNode; meta: string[] } {
+type MetaItem = { label: string; href?: string };
+
+function renderContent(item: FeedItem): { body: React.ReactNode; meta: MetaItem[] } {
   if (item.type === 'citation') {
     const d = item.data as Citation;
-    return { body: <MainText>{d.content}</MainText>, meta: d.locations.map(l => `${l.masechet} · דף ${l.daf}${l.amud ? ` ${l.amud}` : ''}`) };
+    const meta: MetaItem[] = d.locations.map(l => ({ label: `${l.masechet} · דף ${l.daf}${l.amud ? ` ${l.amud}` : ''}`, href: '/study' }));
+    return { body: <MainText>{d.content}</MainText>, meta };
   }
   if (item.type === 'rabbi') {
     const d = item.data as Rabbi;
@@ -155,22 +170,27 @@ function renderContent(item: FeedItem): { body: React.ReactNode; meta: string[] 
         <SubText>{d.datePeriod}</SubText>
         <MainText>{d.bio}</MainText>
       </>,
-      meta: [CATEGORY_LABELS[d.category as RabbiCategory] ?? d.category],
+      meta: [{ label: CATEGORY_LABELS[d.category as RabbiCategory] ?? d.category, href: '/rabbis' }],
     };
   }
-  if (item.type === 'book')    { const d = item.data as Book;    return { body: <><BigWord>{d.title}</BigWord><SubText>מאת {d.author}</SubText></>, meta: [] }; }
-  if (item.type === 'chidush') { const d = item.data as Chidush; return { body: <MainText>{d.text}</MainText>, meta: [d.source, d.author].filter((x): x is string => Boolean(x)) }; }
+  if (item.type === 'book') {
+    const d = item.data as Book;
+    return { body: <><BigWord>{d.title}</BigWord><SubText>מאת {d.author}</SubText></>, meta: [{ label: d.author, href: '/rabbis' }] };
+  }
+  if (item.type === 'chidush') {
+    const d = item.data as Chidush;
+    const meta: MetaItem[] = [d.source, d.author].filter((x): x is string => Boolean(x)).map(s => ({ label: s, href: '/chidushim' }));
+    return { body: <MainText>{d.text}</MainText>, meta };
+  }
   if (item.type === 'gematria') {
     const d = item.data as FeedGematriaData;
-    return {
-      body: <><BigWord>{d.word}</BigWord><BigNum>{d.value}</BigNum><SubText>בגימטריה</SubText></>,
-      meta: d.matches.length > 0 ? [`ערך שווה: ${d.matches.join(' · ')}`] : [],
-    };
+    const meta: MetaItem[] = d.matches.length > 0 ? [{ label: `ערך שווה: ${d.matches.join(' · ')}`, href: '/gematria' }] : [];
+    return { body: <><BigWord>{d.word}</BigWord><BigNum>{d.value}</BigNum><SubText>בגימטריה</SubText></>, meta };
   }
   if (item.type === 'sikum') {
     const d = item.data as FeedSikumData;
-    const meta = [`${d.bookIcon ?? '📝'} ${d.bookName}`];
-    if (d.location) meta.push(d.location);
+    const meta: MetaItem[] = [{ label: `${d.bookIcon ?? '📝'} ${d.bookName}`, href: '/sikumim' }];
+    if (d.location) meta.push({ label: d.location });
     return { body: <>{d.title && <BigWord>{d.title}</BigWord>}<MainText>{d.text}</MainText></>, meta };
   }
   return { body: null, meta: [] };
@@ -200,7 +220,14 @@ export default function FeedCard({ item, isLiked, onLike }: Props) {
       <TypeBadge>{cfg.icon} {cfg.label}</TypeBadge>
       <ContentArea>
         {body}
-        {meta.length > 0 && <MetaRow>{meta.map((m, i) => <MetaChip key={i}>{m}</MetaChip>)}</MetaRow>}
+        {meta.length > 0 && (
+          <MetaRow onClick={e => e.stopPropagation()}>
+            {meta.map((m, i) => m.href
+              ? <MetaChipLink key={i} href={m.href}>{m.label}</MetaChipLink>
+              : <MetaChip key={i}>{m.label}</MetaChip>
+            )}
+          </MetaRow>
+        )}
       </ContentArea>
       <Actions>
         <ActionGroup>
