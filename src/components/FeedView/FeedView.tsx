@@ -144,7 +144,7 @@ export default function FeedView() {
             const d = slide as FeedDedicationSlide;
             return (
               <DedSlide key={`ded-${d.id}-${i}`}>
-                <DedIcon>🕯️</DedIcon>
+                <DedIcon>{d.dedType === 'iluy' ? '🕯️' : '🙏'}</DedIcon>
                 <DedType>{DED_LABELS[d.dedType] ?? d.dedType}</DedType>
                 <DedName>{d.name}</DedName>
               </DedSlide>
