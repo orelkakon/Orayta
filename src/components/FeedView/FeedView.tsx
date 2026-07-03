@@ -90,7 +90,10 @@ export default function FeedView() {
       setLiked(initial);
     } catch {}
     void fetchMore();
-    void fetch('/api/dedications').then(r => r.json()).then((d: Dedication[]) => setDedications(d));
+    void fetch('/api/dedications').then(r => r.json()).then((d: Dedication[]) => {
+      const shuffled = [...d].sort(() => Math.random() - 0.5);
+      setDedications(shuffled);
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
