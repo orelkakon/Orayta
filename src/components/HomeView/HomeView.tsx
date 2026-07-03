@@ -14,8 +14,8 @@ const fadeUp = keyframes`
 
 const Page = styled.div`
   display: flex; flex-direction: column; align-items: center;
-  gap: ${theme.spacing.sm};
-  padding: ${theme.spacing.sm} 0 ${theme.spacing.xl};
+  gap: ${theme.spacing.md};
+  padding: ${theme.spacing.md} 0 ${theme.spacing.xl};
   animation: ${fadeUp} 0.45s ease;
 `;
 
