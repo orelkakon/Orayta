@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import styled from 'styled-components';
 
 const Btn = styled.button<{ $on: boolean }>`
@@ -21,7 +21,7 @@ const Label = styled.div<{ $visible: boolean }>`
   pointer-events: none;
 `;
 
-const MASTER_VOL = 0.048; // ambient — barely heard, just sets the mood
+const MASTER_VOL = 0.048;
 
 type Tone = [freq: number, vol: number];
 type CleanupFn = () => void;
@@ -57,85 +57,77 @@ function arpeggio(ctx: AudioContext, out: GainNode, notes: number[], ms: number,
 }
 
 const PRESETS: { name: string; play: PresetFn }[] = [
-  {
-    name: 'נשמה', // Soul – A harmonic series, almost inaudible hum
-    play: (ctx, out) => drone(ctx, out, [[110, 0.6], [220, 0.3], [330, 0.14]]),
-  },
-  {
-    name: 'שלווה', // Serenity – perfect fifth D + A
-    play: (ctx, out) => drone(ctx, out, [[147, 0.55], [220, 0.45], [294, 0.18]]),
-  },
-  {
-    name: 'תפילה', // Prayer – rising A-minor pentatonic arpeggio
-    play: (ctx, out) => arpeggio(ctx, out, [220, 261.6, 329.6, 392, 440], 1500, 0.55),
-  },
-  {
-    name: 'עומק', // Depth – very low A sub-bass
-    play: (ctx, out) => drone(ctx, out, [[55, 0.65], [110, 0.38]]),
-  },
-  {
-    name: 'אור', // Light – high E register, ethereal
-    play: (ctx, out) => drone(ctx, out, [[329.6, 0.4], [494, 0.28], [659.3, 0.16]]),
-  },
-  {
-    name: 'שיר', // Song – soft C-major pad
-    play: (ctx, out) => drone(ctx, out, [[130.8, 0.5], [196, 0.38], [261.6, 0.28], [329.6, 0.15]]),
-  },
-  {
-    name: 'מנוחה', // Rest – descending A-minor arpeggio
-    play: (ctx, out) => arpeggio(ctx, out, [440, 392, 329.6, 261.6, 220], 2000, 0.52),
-  },
+  { name: 'נשמה',  play: (ctx, out) => drone(ctx, out,    [[110, 0.6], [220, 0.3], [330, 0.14]]) },
+  { name: 'שלווה', play: (ctx, out) => drone(ctx, out,    [[147, 0.55], [220, 0.45], [294, 0.18]]) },
+  { name: 'תפילה', play: (ctx, out) => arpeggio(ctx, out, [220, 261.6, 329.6, 392, 440], 1500, 0.55) },
+  { name: 'עומק',  play: (ctx, out) => drone(ctx, out,    [[55, 0.65], [110, 0.38]]) },
+  { name: 'אור',   play: (ctx, out) => drone(ctx, out,    [[329.6, 0.4], [494, 0.28], [659.3, 0.16]]) },
+  { name: 'שיר',   play: (ctx, out) => drone(ctx, out,    [[130.8, 0.5], [196, 0.38], [261.6, 0.28], [329.6, 0.15]]) },
+  { name: 'מנוחה', play: (ctx, out) => arpeggio(ctx, out, [440, 392, 329.6, 261.6, 220], 2000, 0.52) },
 ];
 
 export default function FeedAmbient() {
-  const [on, setOn] = useState(false);
+  const [on, setOn]           = useState(false);
   const [showLabel, setShowLabel] = useState(false);
-  const [preset] = useState(() => PRESETS[Math.floor(Math.random() * PRESETS.length)]);
-  const ctxRef    = useRef<AudioContext | null>(null);
-  const masterRef = useRef<GainNode | null>(null);
-  const stopRef   = useRef<CleanupFn | null>(null);
+  const [preset]              = useState(() => PRESETS[Math.floor(Math.random() * PRESETS.length)]);
+  const ctxRef                = useRef<AudioContext | null>(null);
+  const masterRef             = useRef<GainNode | null>(null);
+  const stopRef               = useRef<CleanupFn | null>(null);
+  const startedRef            = useRef(false);
 
-  const startMusic = useCallback(() => {
+  useEffect(() => {
     const ctx = new AudioContext();
     const master = ctx.createGain();
-    master.gain.setValueAtTime(0, ctx.currentTime);
-    master.gain.linearRampToValueAtTime(MASTER_VOL, ctx.currentTime + 3.5);
+    master.gain.value = 0; // silent until unlocked
     master.connect(ctx.destination);
-    ctxRef.current = ctx;
+    ctxRef.current  = ctx;
     masterRef.current = master;
+    // Build the sound graph now (oscillators run as soon as context resumes)
     stopRef.current = preset.play(ctx, master);
-    setOn(true);
-    setShowLabel(true);
-    setTimeout(() => setShowLabel(false), 2500);
-  }, [preset]);
 
-  const stopMusic = useCallback(() => {
-    const ctx = ctxRef.current;
-    const master = masterRef.current;
-    if (!ctx || !master) return;
-    master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
-    master.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.5);
-    setTimeout(() => {
+    function unlock() {
+      if (startedRef.current) return;
+      startedRef.current = true;
+      ctx.resume().then(() => {
+        master.gain.setValueAtTime(0, ctx.currentTime);
+        master.gain.linearRampToValueAtTime(MASTER_VOL, ctx.currentTime + 3.5);
+        setOn(true);
+        setShowLabel(true);
+        setTimeout(() => setShowLabel(false), 2800);
+      });
+    }
+
+    // Any touch/click on the page unlocks — happens on the very first scroll swipe
+    document.addEventListener('touchstart', unlock, { passive: true, once: true });
+    document.addEventListener('pointerdown', unlock, { once: true });
+
+    return () => {
+      document.removeEventListener('touchstart', unlock);
+      document.removeEventListener('pointerdown', unlock);
       stopRef.current?.();
       master.disconnect();
       void ctx.close();
       ctxRef.current = null; masterRef.current = null; stopRef.current = null;
-    }, 1600);
-    setOn(false);
-  }, []);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // runs once; preset is stable
 
-  // Cleanup on unmount
-  useEffect(() => () => {
-    stopRef.current?.();
-    masterRef.current?.disconnect();
-    void ctxRef.current?.close();
-  }, []);
+  const toggle = () => {
+    const ctx    = ctxRef.current;
+    const master = masterRef.current;
+    if (!ctx || !master) return;
+    if (on) {
+      master.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.5);
+      setOn(false);
+    } else {
+      master.gain.linearRampToValueAtTime(MASTER_VOL, ctx.currentTime + 2);
+      setOn(true);
+    }
+  };
 
   return (
     <>
-      <Btn $on={on} onClick={on ? stopMusic : startMusic} title={on ? 'כבה מוזיקה' : 'הפעל מוזיקה'}>
-        ♪
-      </Btn>
+      <Btn $on={on} onClick={toggle} title={on ? 'כבה מוזיקה' : 'הפעל מוזיקה'}>♪</Btn>
       <Label $visible={showLabel}>{preset.name}</Label>
     </>
   );
