@@ -5,13 +5,31 @@ import styled from 'styled-components';
 
 // Piano-only (קריוקי פסנתר) versions — melody, no vocals
 const SONGS = [
-  { id: 'xilcxmW7xYo', name: 'אישתי' },
-  { id: 'Z7OD4VEeOu8', name: 'טאטע תטהר' },
-  { id: 'qHdf4FOtqdo', name: 'אמונה' },
-  { id: 'QBrY-J9Vm-s', name: 'סולי' },
-  { id: 'Jhx8kKQOUDQ', name: 'נשמות צמאות' },
-  { id: 'C590zIn1znM', name: 'כל עכבה לטובה' },
-  { id: '-1L6W2Z2KwI', name: 'אהבת השם' },
+  // בן צור
+  { id: 'xilcxmW7xYo', name: 'אישתי',          artist: 'בן צור' },
+  { id: 'Z7OD4VEeOu8', name: 'טאטע תטהר',      artist: 'בן צור' },
+  { id: 'qHdf4FOtqdo', name: 'אמונה',           artist: 'בן צור' },
+  { id: 'QBrY-J9Vm-s', name: 'סולי',            artist: 'בן צור' },
+  { id: 'Jhx8kKQOUDQ', name: 'נשמות צמאות',    artist: 'בן צור' },
+  { id: 'C590zIn1znM', name: 'כל עכבה לטובה',  artist: 'בן צור' },
+  { id: '-1L6W2Z2KwI', name: 'אהבת השם',       artist: 'בן צור' },
+  // ישי ריבו
+  { id: 'xmq_5H-6dJE', name: 'לשוב הביתה',     artist: 'ישי ריבו' },
+  { id: '_HTyC9emB74', name: 'השבעתי אתכם',    artist: 'ישי ריבו' },
+  { id: 'a470tNqmYJg', name: 'אחת ולתמיד',     artist: 'ישי ריבו' },
+  { id: 'iG_XzBrfcl8', name: 'רבי שמעון',      artist: 'ישי ריבו' },
+  { id: 'GVqt0MRI1q8', name: 'אין לי מלבדך',   artist: 'ישי ריבו' },
+  { id: 'tGilTBGfP1E', name: 'הלב שלי',        artist: 'ישי ריבו' },
+  { id: 'kq67kMNGgpg', name: 'כתר מלוכה',      artist: 'ישי ריבו' },
+  { id: 'j9cPwwhah0c', name: 'סדר העבודה',     artist: 'ישי ריבו' },
+  { id: 'u2FzBma7eIA', name: 'עוד ישמע',       artist: 'ישי ריבו' },
+  // חנן בן ארי
+  { id: 'E5mCRmuaSXU', name: 'לילה טוב שון',   artist: 'חנן בן ארי' },
+  { id: 'gQaCWeAIrHI', name: 'שבורי לב',       artist: 'חנן בן ארי' },
+  { id: '-gACoOrsQZM', name: 'מולדת',           artist: 'חנן בן ארי' },
+  { id: 'tm-0AW0MoSs', name: 'שמש',             artist: 'חנן בן ארי' },
+  { id: 'WUSzwJFXh2o', name: 'בסוף זה הלחן',   artist: 'חנן בן ארי' },
+  { id: 'WPpuU-8cvb0', name: 'חנניה',           artist: 'חנן בן ארי' },
 ];
 
 // Iframe sits exactly behind the button so it is technically present in the DOM
@@ -99,7 +117,7 @@ export default function FeedAmbient() {
         allow="autoplay; encrypted-media"
       />
       <Btn $on={on} onClick={toggle} title={on ? 'כבה מוזיקה' : 'הפעל מוזיקה'}>♪</Btn>
-      <Label $visible={showLabel}>♪ {song.name} — בן צור</Label>
+      <Label $visible={showLabel}>♪ {song.name} — {song.artist}</Label>
     </>
   );
 }
