@@ -31,9 +31,9 @@ const Scroll = styled.div`
   &::-webkit-scrollbar { display: none; }
 `;
 
-const FullSlide = styled.div`
-  height: 100dvh; scroll-snap-align: start; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.4); font-size: 1rem;
+const Sentinel = styled.div`
+  height: 60px; display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.4); font-size: 0.88rem;
 `;
 
 const DedSlide = styled.div`
@@ -133,7 +133,7 @@ export default function FeedView() {
     return (
       <Wrapper>
         <Header><BackBtn href="/">{HE.FEED_BACK}</BackBtn><Title>{HE.FEED_TITLE}</Title></Header>
-        <FullSlide>{HE.FEED_LOADING}</FullSlide>
+        <Sentinel>{HE.FEED_LOADING}</Sentinel>
       </Wrapper>
     );
   }
@@ -156,7 +156,7 @@ export default function FeedView() {
           const item = slide as FeedItem;
           return <FeedCard key={`${item.type}:${item.id}`} item={item} isLiked={Boolean(liked[`${item.type}:${item.id}`])} onLike={handleLike} />;
         })}
-        <FullSlide ref={sentinelRef}>{fetching ? HE.FEED_LOADING_MORE : ''}</FullSlide>
+        <Sentinel ref={sentinelRef}>{fetching ? HE.FEED_LOADING_MORE : ''}</Sentinel>
       </Scroll>
     </Wrapper>
   );

@@ -82,7 +82,14 @@ const MetaChipLink = styled(Link)`
 
 const RabbiImg = styled.img`
   width: 82px; height: 82px; border-radius: 50%; object-fit: cover;
-  border: 2px solid rgba(255,255,255,0.22); margin-bottom: 4px;
+  border: 2px solid rgba(255,255,255,0.22); margin-bottom: 4px; cursor: pointer;
+  transition: transform 0.15s;
+  &:active { transform: scale(0.93); }
+`;
+
+const ImgOverlay = styled.div`
+  position: fixed; inset: 0; z-index: 999; background: rgba(0,0,0,0.92);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
 `;
 
 const YahrzeitTag = styled.div`
@@ -121,6 +128,15 @@ const HeartBurst = styled.div`
   animation: ${heartBurst} 0.65s ease forwards;
 `;
 
+function CameraIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+      <circle cx="12" cy="13" r="4"/>
+    </svg>
+  );
+}
+
 function ShareIcon() {
   return (
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -154,7 +170,7 @@ function buildShareText(item: FeedItem): string {
 
 type MetaItem = { label: string; href?: string };
 
-function renderContent(item: FeedItem): { body: React.ReactNode; meta: MetaItem[] } {
+function renderContent(item: FeedItem, onImgClick: (src: string) => void): { body: React.ReactNode; meta: MetaItem[] } {
   if (item.type === 'citation') {
     const d = item.data as Citation;
     const meta: MetaItem[] = d.locations.map(l => ({ label: `${l.masechet} · דף ${l.daf}${l.amud ? ` ${l.amud}` : ''}`, href: '/study' }));
@@ -164,7 +180,9 @@ function renderContent(item: FeedItem): { body: React.ReactNode; meta: MetaItem[
     const d = item.data as Rabbi;
     return {
       body: <>
-        {d.imageUrl && <RabbiImg src={d.imageUrl} alt={d.name} onError={e => { (e.target as HTMLImageElement).style.display='none'; }} />}
+        {d.imageUrl && <RabbiImg src={d.imageUrl} alt={d.name}
+          onClick={e => { e.stopPropagation(); onImgClick(d.imageUrl!); }}
+          onError={e => { (e.target as HTMLImageElement).style.display='none'; }} />}
         <BigWord>{d.name}</BigWord>
         {d.deathDate && <YahrzeitTag>🕯️ יארצייט: {d.deathDate}</YahrzeitTag>}
         <SubText>{d.datePeriod}</SubText>
@@ -200,9 +218,11 @@ interface Props { item: FeedItem; isLiked: boolean; onLike: (item: FeedItem) => 
 
 export default function FeedCard({ item, isLiked, onLike }: Props) {
   const cfg = TYPE_CONFIG[item.type];
-  const { body, meta } = renderContent(item);
   const [showBurst, setShowBurst] = useState(false);
+  const [imgPopup, setImgPopup] = useState<string | null>(null);
   const lastTapRef = useRef(0);
+  const slideRef = useRef<HTMLDivElement>(null);
+  const { body, meta } = renderContent(item, setImgPopup);
 
   const handleDoubleTap = () => {
     const now = Date.now();
@@ -214,9 +234,33 @@ export default function FeedCard({ item, isLiked, onLike }: Props) {
     lastTapRef.current = now;
   };
 
+  const doSave = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!slideRef.current) return;
+    const { default: html2canvas } = await import('html2canvas');
+    const canvas = await html2canvas(slideRef.current, { useCORS: true, scale: 2, backgroundColor: null });
+    canvas.toBlob(async blob => {
+      if (!blob) return;
+      const file = new File([blob], 'orayta.png', { type: 'image/png' });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file] }).catch(() => {});
+      } else {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'orayta.png';
+        a.click();
+      }
+    });
+  };
+
   return (
-    <Slide $grad={cfg.grad} onClick={handleDoubleTap}>
+    <Slide $grad={cfg.grad} onClick={handleDoubleTap} ref={slideRef}>
       {showBurst && <HeartBurst>❤️</HeartBurst>}
+      {imgPopup && (
+        <ImgOverlay onClick={e => { e.stopPropagation(); setImgPopup(null); }}>
+          <img src={imgPopup} alt="" style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 12, objectFit: 'contain' }} />
+        </ImgOverlay>
+      )}
       <TypeBadge>{cfg.icon} {cfg.label}</TypeBadge>
       <ContentArea>
         {body}
@@ -235,6 +279,7 @@ export default function FeedCard({ item, isLiked, onLike }: Props) {
           {item.likes > 0 && <ActionCount>{item.likes}</ActionCount>}
         </ActionGroup>
         <ActionBtn onClick={() => doShare(buildShareText(item))}><ShareIcon /></ActionBtn>
+        <ActionBtn onClick={doSave}><CameraIcon /></ActionBtn>
       </Actions>
     </Slide>
   );
