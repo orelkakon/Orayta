@@ -91,15 +91,18 @@ export default function VisitsCounter() {
   const [visits, setVisits]         = useState<number | null>(null);
   const [questions, setQuestions]   = useState<number | null>(null);
   const [content, setContent]       = useState<ContentStats | null>(null);
+  const [likes, setLikes]           = useState<number | null>(null);
 
   useEffect(() => {
     void fetch('/api/visits').then(r => r.json()).then((d: { count: number }) => setVisits(d.count));
     void fetch('/api/quiz/answered').then(r => r.json()).then((d: { count: number }) => setQuestions(d.count));
     void fetch('/api/stats').then(r => r.json()).then(setContent as (v: unknown) => void);
+    void fetch('/api/feed/like').then(r => r.json()).then((d: { total: number }) => setLikes(d.total));
   }, []);
 
   const displayedVisits    = useAnimatedCount(visits);
   const displayedQuestions = useAnimatedCount(questions);
+  const displayedLikes     = useAnimatedCount(likes);
 
   const chips = content ? [
     { emoji: '📜', num: content.citations,  label: 'ציטוטים' },
@@ -126,6 +129,13 @@ export default function VisitsCounter() {
           <CountNum>{questions === null ? '...' : displayedQuestions.toLocaleString('he-IL')}</CountNum>
           <CountLabel>שאלות נענו</CountLabel>
           <CountSub>מכל המשתמשים</CountSub>
+        </StatBlock>
+        <Divider />
+        <StatBlock>
+          <Emoji>❤️</Emoji>
+          <CountNum>{likes === null ? '...' : displayedLikes.toLocaleString('he-IL')}</CountNum>
+          <CountLabel>{HE.ABOUT_FEED_LIKES}</CountLabel>
+          <CountSub>{HE.FEED_TOTAL_LIKES_SUB}</CountSub>
         </StatBlock>
       </StatsRow>
 

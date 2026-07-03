@@ -121,3 +121,20 @@ export interface SikumEntry {
   createdAt: string;
   updatedAt: string;
 }
+
+export type FeedItemType = 'citation' | 'rabbi' | 'book' | 'chidush' | 'gematria' | 'sikum';
+
+export interface FeedSikumData {
+  id: string;
+  title: string | null;
+  text: string;
+  bookName: string;
+  bookIcon: string | null;
+}
+
+export interface FeedItem {
+  type: FeedItemType;
+  id: string;
+  likes: number;
+  data: Citation | Rabbi | Book | Chidush | Gematria | FeedSikumData;
+}

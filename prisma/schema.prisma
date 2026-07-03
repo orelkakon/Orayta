@@ -107,6 +107,16 @@ model GlobalCounter {
   value Int    @default(0)
 }
 
+model FeedLike {
+  id       String @id @default(cuid())
+  itemType String
+  itemId   String
+  likes    Int    @default(0)
+
+  @@unique([itemType, itemId])
+  @@index([itemType])
+}
+
 model QuizResult {
   id         String   @id @default(cuid())
   citationId String

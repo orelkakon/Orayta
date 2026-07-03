@@ -6,6 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import OraytaLogo from '@/components/common/OraytaLogo';
 import DedicationsBar from './DedicationsBar';
+import FeedBannerBlock from './FeedBannerBlock';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(18px); }
@@ -53,7 +54,6 @@ const QuoteSource = styled.span`
   font-size: 0.76rem; color: ${theme.colors.textLight}; letter-spacing: 0.03em;
 `;
 
-/* 3 × 3 grid — all screen sizes */
 const Divider = styled.div`
   width: 140px; height: 2px;
   background: linear-gradient(90deg, transparent, ${theme.colors.secondary}, transparent);
@@ -141,6 +141,8 @@ export default function HomeView() {
           </SectionCard>
         ))}
       </Grid>
+
+      <FeedBannerBlock />
 
       <ContactBanner href="/contact">
         <ContactLeft>
