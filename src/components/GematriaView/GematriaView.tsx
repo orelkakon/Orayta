@@ -67,9 +67,9 @@ const Empty = styled.div`
   padding: ${theme.spacing.xxl};
 `;
 
-export default function GematriaView() {
+export default function GematriaView({ initialSearch = '' }: { initialSearch?: string }) {
   const [items, setItems] = useState<Gematria[]>([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(initialSearch);
   const [editItem, setEditItem] = useState<Gematria | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const role = useRole();

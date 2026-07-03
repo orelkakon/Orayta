@@ -36,9 +36,9 @@ const Empty = styled.div`
   text-align: center; color: ${theme.colors.textMuted}; padding: ${theme.spacing.xxl};
 `;
 
-export default function ChidushimView() {
+export default function ChidushimView({ initialSearch = '' }: { initialSearch?: string }) {
   const [items,    setItems]    = useState<Chidush[]>([]);
-  const [search,   setSearch]   = useState('');
+  const [search,   setSearch]   = useState(initialSearch);
   const [editItem, setEditItem] = useState<Chidush | null>(null);
   const [addOpen,  setAddOpen]  = useState(false);
   const role = useRole();

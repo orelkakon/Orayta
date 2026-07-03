@@ -97,10 +97,10 @@ const Empty = styled.div`
   font-size: 1rem;
 `;
 
-export default function StudyView() {
+export default function StudyView({ initialMasechet = '' }: { initialMasechet?: string }) {
   const [citations, setCitations] = useState<Citation[]>([]);
   const [seder, setSeder] = useState('');
-  const [masechet, setMasechet] = useState('');
+  const [masechet, setMasechet] = useState(initialMasechet);
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<Citation | null>(null);
   const [loading, setLoading] = useState(true);

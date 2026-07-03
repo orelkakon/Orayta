@@ -1,10 +1,12 @@
 import AppLayout from '@/components/Layout/AppLayout';
 import TalmudView from '@/components/TalmudView/TalmudView';
 
-export default function StudyPage() {
+interface Props { searchParams: { masechet?: string } }
+
+export default function StudyPage({ searchParams }: Props) {
   return (
     <AppLayout>
-      <TalmudView />
+      <TalmudView initialMasechet={searchParams.masechet ?? ''} />
     </AppLayout>
   );
 }

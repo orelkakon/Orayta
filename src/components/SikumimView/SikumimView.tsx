@@ -63,9 +63,9 @@ const Empty = styled.div`
 
 type BookSort = 'default' | 'count' | 'alpha' | 'icon';
 
-export default function SikumimView() {
+export default function SikumimView({ initialSearch = '' }: { initialSearch?: string }) {
   const [books, setBooks] = useState<SikumBook[]>([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(initialSearch);
   const [bookSort, setBookSort] = useState<BookSort>('default');
   const [addOpen, setAddOpen] = useState(false);
   const [editBook, setEditBook] = useState<SikumBook | null>(null);

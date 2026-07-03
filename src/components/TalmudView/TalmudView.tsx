@@ -36,7 +36,7 @@ const TabBtn = styled.button<{ $active: boolean }>`
   &:hover { color: ${theme.colors.primary}; }
 `;
 
-export default function TalmudView() {
+export default function TalmudView({ initialMasechet = '' }: { initialMasechet?: string }) {
   const [tab, setTab] = useState<Tab>('view');
   const role = useRole();
 
@@ -53,7 +53,7 @@ export default function TalmudView() {
         )}
       </SubNav>
 
-      {tab === 'view' ? <StudyView /> : <AddCitation />}
+      {tab === 'view' ? <StudyView initialMasechet={initialMasechet} /> : <AddCitation />}
     </Wrapper>
   );
 }

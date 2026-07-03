@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import Link from 'next/link';
 import FeedCard from './FeedCard';
 import type { FeedItem, FeedDedicationSlide, Dedication } from '@/types';
@@ -31,9 +31,18 @@ const Scroll = styled.div`
   &::-webkit-scrollbar { display: none; }
 `;
 
-const Sentinel = styled.div`
-  height: 60px; display: flex; align-items: center; justify-content: center;
-  color: rgba(255,255,255,0.4); font-size: 0.88rem;
+const LoadingSlide = styled.div`
+  height: 100dvh; scroll-snap-align: start; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.4); font-size: 0.95rem;
+`;
+
+const spin = keyframes`to { transform: rotate(360deg); }`;
+const Spinner = styled.div`
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  width: 22px; height: 22px; border: 2px solid rgba(255,255,255,0.15);
+  border-top-color: rgba(255,255,255,0.6); border-radius: 50%;
+  animation: ${spin} 0.7s linear infinite; z-index: 300;
 `;
 
 const DedSlide = styled.div`
@@ -56,6 +65,7 @@ const DED_LABELS: Record<string, string> = {
 };
 
 const LIKED_PREFIX = 'orayta_feed_liked_';
+const PRELOAD_THRESHOLD = 6; // fetch more when this many slides remain
 
 export default function FeedView() {
   const [cards, setCards] = useState<FeedItem[]>([]);
@@ -63,8 +73,9 @@ export default function FeedView() {
   const [initialLoaded, setInitialLoaded] = useState(false);
   const [liked, setLiked] = useState<Record<string, true>>({});
   const [dedications, setDedications] = useState<Dedication[]>([]);
-  const sentinelRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const fetchingRef = useRef(false);
+  const slidesLenRef = useRef(0);
 
   const fetchMore = useCallback(async () => {
     if (fetchingRef.current) return;
@@ -91,30 +102,10 @@ export default function FeedView() {
     } catch {}
     void fetchMore();
     void fetch('/api/dedications').then(r => r.json()).then((d: Dedication[]) => {
-      const shuffled = [...d].sort(() => Math.random() - 0.5);
-      setDedications(shuffled);
+      setDedications([...d].sort(() => Math.random() - 0.5));
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([entry]) => { if (entry?.isIntersecting) void fetchMore(); }, { threshold: 0.1 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [fetchMore]);
-
-  const handleLike = useCallback(async (item: FeedItem) => {
-    const key = `${item.type}:${item.id}`;
-    if (liked[key]) return;
-    try { localStorage.setItem(`${LIKED_PREFIX}${key}`, '1'); } catch {}
-    setLiked(prev => ({ ...prev, [key]: true }));
-    setCards(prev => prev.map(c => c.type === item.type && c.id === item.id ? { ...c, likes: c.likes + 1 } : c));
-    try {
-      await fetch('/api/feed/like', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: item.type, id: item.id }) });
-    } catch {}
-  }, [liked]);
 
   const displaySlides = useMemo((): Array<FeedItem | FeedDedicationSlide> => {
     if (dedications.length === 0) return cards;
@@ -129,11 +120,32 @@ export default function FeedView() {
     return result;
   }, [cards, dedications]);
 
+  // Keep a stable ref so the scroll handler doesn't go stale
+  slidesLenRef.current = displaySlides.length;
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const idx = Math.round(el.scrollTop / window.innerHeight);
+    if (idx >= slidesLenRef.current - PRELOAD_THRESHOLD) void fetchMore();
+  }, [fetchMore]);
+
+  const handleLike = useCallback(async (item: FeedItem) => {
+    const key = `${item.type}:${item.id}`;
+    if (liked[key]) return;
+    try { localStorage.setItem(`${LIKED_PREFIX}${key}`, '1'); } catch {}
+    setLiked(prev => ({ ...prev, [key]: true }));
+    setCards(prev => prev.map(c => c.type === item.type && c.id === item.id ? { ...c, likes: c.likes + 1 } : c));
+    try {
+      await fetch('/api/feed/like', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: item.type, id: item.id }) });
+    } catch {}
+  }, [liked]);
+
   if (!initialLoaded) {
     return (
       <Wrapper>
         <Header><BackBtn href="/">{HE.FEED_BACK}</BackBtn><Title>{HE.FEED_TITLE}</Title></Header>
-        <Sentinel>{HE.FEED_LOADING}</Sentinel>
+        <LoadingSlide>{HE.FEED_LOADING}</LoadingSlide>
       </Wrapper>
     );
   }
@@ -141,7 +153,8 @@ export default function FeedView() {
   return (
     <Wrapper>
       <Header><BackBtn href="/">{HE.FEED_BACK}</BackBtn><Title>{HE.FEED_TITLE}</Title></Header>
-      <Scroll>
+      {fetching && <Spinner />}
+      <Scroll ref={scrollRef} onScroll={handleScroll}>
         {displaySlides.map((slide, i) => {
           if ('slideType' in slide) {
             const d = slide as FeedDedicationSlide;
@@ -156,7 +169,6 @@ export default function FeedView() {
           const item = slide as FeedItem;
           return <FeedCard key={`${item.type}:${item.id}`} item={item} isLiked={Boolean(liked[`${item.type}:${item.id}`])} onLike={handleLike} />;
         })}
-        <Sentinel ref={sentinelRef}>{fetching ? HE.FEED_LOADING_MORE : ''}</Sentinel>
       </Scroll>
     </Wrapper>
   );

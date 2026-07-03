@@ -1,10 +1,12 @@
 import AppLayout from '@/components/Layout/AppLayout';
 import SikumimView from '@/components/SikumimView/SikumimView';
 
-export default function SikumimPage() {
+interface Props { searchParams: { q?: string } }
+
+export default function SikumimPage({ searchParams }: Props) {
   return (
     <AppLayout>
-      <SikumimView />
+      <SikumimView initialSearch={searchParams.q ?? ''} />
     </AppLayout>
   );
 }

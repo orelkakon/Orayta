@@ -98,7 +98,7 @@ const YahrzeitTag = styled.div`
 `;
 
 const Actions = styled.div`
-  position: absolute; left: 14px; bottom: 28px;
+  position: absolute; right: 14px; bottom: 28px;
   display: flex; flex-direction: column; gap: 22px; align-items: center;
 `;
 
@@ -173,7 +173,7 @@ type MetaItem = { label: string; href?: string };
 function renderContent(item: FeedItem, onImgClick: (src: string) => void): { body: React.ReactNode; meta: MetaItem[] } {
   if (item.type === 'citation') {
     const d = item.data as Citation;
-    const meta: MetaItem[] = d.locations.map(l => ({ label: `${l.masechet} · דף ${l.daf}${l.amud ? ` ${l.amud}` : ''}`, href: '/study' }));
+    const meta: MetaItem[] = d.locations.map(l => ({ label: `${l.masechet} · דף ${l.daf}${l.amud ? ` ${l.amud}` : ''}`, href: `/study?masechet=${encodeURIComponent(l.masechet)}` }));
     return { body: <MainText>{d.content}</MainText>, meta };
   }
   if (item.type === 'rabbi') {
@@ -188,26 +188,26 @@ function renderContent(item: FeedItem, onImgClick: (src: string) => void): { bod
         <SubText>{d.datePeriod}</SubText>
         <MainText>{d.bio}</MainText>
       </>,
-      meta: [{ label: CATEGORY_LABELS[d.category as RabbiCategory] ?? d.category, href: '/rabbis' }],
+      meta: [{ label: CATEGORY_LABELS[d.category as RabbiCategory] ?? d.category, href: `/rabbis?q=${encodeURIComponent(d.name)}` }],
     };
   }
   if (item.type === 'book') {
     const d = item.data as Book;
-    return { body: <><BigWord>{d.title}</BigWord><SubText>מאת {d.author}</SubText></>, meta: [{ label: d.author, href: '/rabbis' }] };
+    return { body: <><BigWord>{d.title}</BigWord><SubText>מאת {d.author}</SubText></>, meta: [{ label: d.author, href: `/rabbis?q=${encodeURIComponent(d.author)}` }] };
   }
   if (item.type === 'chidush') {
     const d = item.data as Chidush;
-    const meta: MetaItem[] = [d.source, d.author].filter((x): x is string => Boolean(x)).map(s => ({ label: s, href: '/chidushim' }));
+    const meta: MetaItem[] = [d.source, d.author].filter((x): x is string => Boolean(x)).map(s => ({ label: s, href: `/chidushim?q=${encodeURIComponent(s)}` }));
     return { body: <MainText>{d.text}</MainText>, meta };
   }
   if (item.type === 'gematria') {
     const d = item.data as FeedGematriaData;
-    const meta: MetaItem[] = d.matches.length > 0 ? [{ label: `ערך שווה: ${d.matches.join(' · ')}`, href: '/gematria' }] : [];
+    const meta: MetaItem[] = d.matches.length > 0 ? [{ label: `ערך שווה: ${d.matches.join(' · ')}`, href: `/gematria?q=${encodeURIComponent(d.word)}` }] : [];
     return { body: <><BigWord>{d.word}</BigWord><BigNum>{d.value}</BigNum><SubText>בגימטריה</SubText></>, meta };
   }
   if (item.type === 'sikum') {
     const d = item.data as FeedSikumData;
-    const meta: MetaItem[] = [{ label: `${d.bookIcon ?? '📝'} ${d.bookName}`, href: '/sikumim' }];
+    const meta: MetaItem[] = [{ label: `${d.bookIcon ?? '📝'} ${d.bookName}`, href: `/sikumim?q=${encodeURIComponent(d.bookName)}` }];
     if (d.location) meta.push({ label: d.location });
     return { body: <>{d.title && <BigWord>{d.title}</BigWord>}<MainText>{d.text}</MainText></>, meta };
   }

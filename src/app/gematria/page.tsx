@@ -1,10 +1,12 @@
 import AppLayout from '@/components/Layout/AppLayout';
 import GematriaView from '@/components/GematriaView/GematriaView';
 
-export default function GematriaPage() {
+interface Props { searchParams: { q?: string } }
+
+export default function GematriaPage({ searchParams }: Props) {
   return (
     <AppLayout>
-      <GematriaView />
+      <GematriaView initialSearch={searchParams.q ?? ''} />
     </AppLayout>
   );
 }

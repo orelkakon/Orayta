@@ -1,10 +1,12 @@
 import AppLayout from '@/components/Layout/AppLayout';
 import ChidushimView from '@/components/ChidushimView/ChidushimView';
 
-export default function ChidushimPage() {
+interface Props { searchParams: { q?: string } }
+
+export default function ChidushimPage({ searchParams }: Props) {
   return (
     <AppLayout>
-      <ChidushimView />
+      <ChidushimView initialSearch={searchParams.q ?? ''} />
     </AppLayout>
   );
 }
