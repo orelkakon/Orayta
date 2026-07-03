@@ -55,9 +55,9 @@ const Label = styled.div<{ $visible: boolean }>`
   pointer-events: none;
 `;
 
-function ytCmd(iframe: HTMLIFrameElement, func: string) {
+function ytCmd(iframe: HTMLIFrameElement, func: string, args: unknown[] = []) {
   iframe.contentWindow?.postMessage(
-    JSON.stringify({ event: 'command', func, args: [] }),
+    JSON.stringify({ event: 'command', func, args }),
     'https://www.youtube.com'
   );
 }
@@ -68,6 +68,21 @@ export default function FeedAmbient() {
   const [song]                        = useState(() => SONGS[Math.floor(Math.random() * SONGS.length)]);
   const iframeRef                     = useRef<HTMLIFrameElement>(null);
   const unlockedRef                   = useRef(false);
+
+  useEffect(() => {
+    function handleMessage(e: MessageEvent) {
+      if (e.origin !== 'https://www.youtube.com') return;
+      try {
+        const data = JSON.parse(e.data as string) as { event?: string; info?: number };
+        if (data.event === 'onStateChange' && data.info === 0 && iframeRef.current) {
+          ytCmd(iframeRef.current, 'seekTo', [30, true]);
+          ytCmd(iframeRef.current, 'playVideo');
+        }
+      } catch {}
+    }
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   useEffect(() => {
     function unlock() {
@@ -101,9 +116,11 @@ export default function FeedAmbient() {
     }
   };
 
+  // No loop=1 — we handle looping manually via onStateChange so the video
+  // always seeks back to 30s instead of restarting from 0.
   const src =
     `https://www.youtube.com/embed/${song.id}` +
-    `?autoplay=1&mute=1&controls=0&loop=1&playlist=${song.id}` +
+    `?autoplay=1&mute=1&controls=0` +
     `&playsinline=1&rel=0&enablejsapi=1&start=30`;
 
   return (
