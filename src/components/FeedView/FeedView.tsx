@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import styled, { keyframes } from 'styled-components';
 import Link from 'next/link';
 import FeedCard from './FeedCard';
+import FeedAmbient from './FeedAmbient';
 import type { FeedItem, FeedDedicationSlide, Dedication } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
 
@@ -154,6 +155,7 @@ export default function FeedView() {
     <Wrapper>
       <Header><BackBtn href="/">{HE.FEED_BACK}</BackBtn><Title>{HE.FEED_TITLE}</Title></Header>
       {fetching && <Spinner />}
+      <FeedAmbient />
       <Scroll ref={scrollRef} onScroll={handleScroll}>
         {displaySlides.map((slide, i) => {
           if ('slideType' in slide) {
