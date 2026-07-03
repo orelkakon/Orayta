@@ -4,7 +4,6 @@ import styled, { keyframes } from 'styled-components';
 import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
-import OraytaLogo from '@/components/common/OraytaLogo';
 import DedicationsBar from './DedicationsBar';
 import FeedBannerBlock from './FeedBannerBlock';
 
@@ -15,22 +14,14 @@ const fadeUp = keyframes`
 
 const Page = styled.div`
   display: flex; flex-direction: column; align-items: center;
-  gap: 6px;
-  padding: ${theme.spacing.xs} 0 ${theme.spacing.lg};
+  gap: ${theme.spacing.sm};
+  padding: ${theme.spacing.sm} 0 ${theme.spacing.xl};
   animation: ${fadeUp} 0.45s ease;
 `;
 
 const Hero = styled.div`
   display: flex; flex-direction: column; align-items: center;
   gap: ${theme.spacing.sm}; text-align: center;
-`;
-
-const LogoRing = styled.div`
-  width: 84px; height: 84px; border-radius: 50%;
-  background: ${theme.colors.primary};
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: ${theme.shadows.lg};
-  border: 3px solid ${theme.colors.secondary}44;
 `;
 
 const AppTitle = styled.h1`
@@ -120,7 +111,6 @@ export default function HomeView() {
   return (
     <Page>
       <Hero>
-        <LogoRing><OraytaLogo size={52} /></LogoRing>
         <AppTitle>{HE.APP_NAME}</AppTitle>
         <QuoteBlock>
           <QuoteText>{HE.HOME_QUOTE}</QuoteText>
