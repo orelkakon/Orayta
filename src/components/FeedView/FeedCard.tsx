@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import styled from 'styled-components';
+import React, { useRef, useState } from 'react';
+import styled, { keyframes } from 'styled-components';
 import type { FeedItem, Citation, Rabbi, Book, Chidush, FeedGematriaData, FeedSikumData, RabbiCategory } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
 import { CATEGORY_LABELS } from '@/lib/rabbisData';
@@ -96,6 +96,19 @@ const ActionBtn = styled.button<{ $liked?: boolean }>`
 
 const ActionCount = styled.span`color: rgba(255,255,255,0.8); font-size: 0.72rem; font-weight: 700;`;
 
+const heartBurst = keyframes`
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.4); }
+  40%  { opacity: 1; transform: translate(-50%,-50%) scale(1.4); }
+  70%  { opacity: 0.9; transform: translate(-50%,-50%) scale(1.1); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.6); }
+`;
+
+const HeartBurst = styled.div`
+  position: absolute; top: 50%; left: 50%; pointer-events: none;
+  font-size: 5rem; line-height: 1; z-index: 50;
+  animation: ${heartBurst} 0.65s ease forwards;
+`;
+
 function ShareIcon() {
   return (
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -168,8 +181,22 @@ interface Props { item: FeedItem; isLiked: boolean; onLike: (item: FeedItem) => 
 export default function FeedCard({ item, isLiked, onLike }: Props) {
   const cfg = TYPE_CONFIG[item.type];
   const { body, meta } = renderContent(item);
+  const [showBurst, setShowBurst] = useState(false);
+  const lastTapRef = useRef(0);
+
+  const handleDoubleTap = () => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      onLike(item);
+      setShowBurst(true);
+      setTimeout(() => setShowBurst(false), 700);
+    }
+    lastTapRef.current = now;
+  };
+
   return (
-    <Slide $grad={cfg.grad}>
+    <Slide $grad={cfg.grad} onClick={handleDoubleTap}>
+      {showBurst && <HeartBurst>❤️</HeartBurst>}
       <TypeBadge>{cfg.icon} {cfg.label}</TypeBadge>
       <ContentArea>
         {body}
