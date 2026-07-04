@@ -41,7 +41,7 @@ const TypeBadge = styled.div<{ $v: boolean }>`
 const ContentArea = styled.div`
   flex: 1; display: flex; flex-direction: column;
   justify-content: center; align-items: center; text-align: center;
-  padding: 72px 60px 160px 16px; gap: 12px;
+  padding: 72px 16px 150px 16px; gap: 12px;
 `;
 
 const AnimBody = styled.div<{ $v: boolean }>`

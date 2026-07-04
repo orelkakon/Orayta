@@ -29,9 +29,12 @@ const CopyPill = styled.button<{ $copied: boolean }>`
   ${btnReset}
   background: ${p => p.$copied ? 'rgba(100,220,130,0.18)' : 'rgba(255,255,255,0.1)'};
   border: 1px solid ${p => p.$copied ? 'rgba(100,220,130,0.45)' : 'rgba(255,255,255,0.2)'};
-  border-radius: 14px; padding: 6px 10px; cursor: pointer;
+  border-radius: 14px; cursor: pointer;
   color: ${p => p.$copied ? 'rgba(140,255,160,0.95)' : 'rgba(255,255,255,0.75)'};
   font-size: 1.05rem; line-height: 1;
+  /* Fixed size so icon swap (📋↔✓) never shifts sibling buttons */
+  width: 42px; height: 42px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
   transition: background 0.2s, border-color 0.2s, color 0.2s;
   backdrop-filter: blur(6px);
   &:active { transform: scale(0.88); }

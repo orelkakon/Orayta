@@ -102,6 +102,45 @@ const CandleGlow = styled.div`
   pointer-events: none;
 `;
 
+// --- Refua icon: glowing medical cross ---
+const RefuaWrap = styled.div`position: relative; width: 44px; height: 44px; margin: 0 auto;`;
+const RefuaGlow = styled.div`
+  position: absolute; inset: -14px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(100,190,255,0.18) 0%, transparent 70%);
+  animation: ${glowPulse} 1.4s ease-in-out infinite;
+`;
+const RefuaCross = styled.div`
+  position: absolute; inset: 0;
+  &::before { content:''; position:absolute; width:13px; height:44px; left:15.5px; top:0; background:rgba(130,200,255,0.85); border-radius:5px; }
+  &::after  { content:''; position:absolute; width:44px; height:13px; left:0; top:15.5px; background:rgba(130,200,255,0.85); border-radius:5px; }
+`;
+
+// --- Hatzlaha icon: glowing 5-pointed star ---
+const StarWrap = styled.div`position: relative; width: 46px; height: 46px; margin: 0 auto;`;
+const StarGlow = styled.div`
+  position: absolute; inset: -10px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%);
+  animation: ${glowPulse} 1.2s ease-in-out infinite 0.1s;
+`;
+const Star = styled.div`
+  position: absolute; inset: 0;
+  background: rgba(255,215,50,0.9);
+  clip-path: polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+`;
+
+// --- Zivug icon: two overlapping rings ---
+const RingsWrap = styled.div`position: relative; width: 62px; height: 36px; margin: 0 auto;`;
+const Ring1 = styled.div`
+  position: absolute; width: 34px; height: 34px; top: 1px; left: 0;
+  border: 3.5px solid rgba(255,215,80,0.85); border-radius: 50%;
+  box-shadow: 0 0 12px rgba(255,215,0,0.28);
+`;
+const Ring2 = styled.div`
+  position: absolute; width: 34px; height: 34px; top: 1px; left: 28px;
+  border: 3.5px solid rgba(255,215,80,0.85); border-radius: 50%;
+  box-shadow: 0 0 12px rgba(255,215,0,0.28);
+`;
+
 const DedType = styled.div`color: rgba(200,170,100,0.65); font-size: 0.85rem; letter-spacing: 0.06em;`;
 const DedName = styled.div`
   color: rgba(255,255,255,0.92); font-family: var(--font-frank,serif);
@@ -212,16 +251,30 @@ export default function FeedView() {
 
   const handleReact = useCallback(async (item: FeedItem, reaction: FeedReaction) => {
     const key = `${item.type}:${item.id}`;
-    if (reacted[key]?.[reaction]) return;
-    try { localStorage.setItem(`${REACTED_PREFIX}${reaction}_${key}`, '1'); } catch {}
-    setReacted(prev => ({ ...prev, [key]: { ...prev[key], [reaction]: true } }));
-    setCards(prev => prev.map(c => c.type === item.type && c.id === item.id
-      ? { ...c, reactions: { ...c.reactions, [reaction]: c.reactions[reaction] + 1 } }
-      : c
-    ));
-    try {
-      await fetch('/api/feed/like', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: item.type, id: item.id, reaction }) });
-    } catch {}
+    const isOn = Boolean(reacted[key]?.[reaction]);
+    if (isOn) {
+      // un-react: remove locally only
+      try { localStorage.removeItem(`${REACTED_PREFIX}${reaction}_${key}`); } catch {}
+      setReacted(prev => {
+        const copy = { ...prev[key] };
+        delete copy[reaction];
+        return { ...prev, [key]: copy };
+      });
+      setCards(prev => prev.map(c => c.type === item.type && c.id === item.id
+        ? { ...c, reactions: { ...c.reactions, [reaction]: Math.max(0, c.reactions[reaction] - 1) } }
+        : c
+      ));
+    } else {
+      try { localStorage.setItem(`${REACTED_PREFIX}${reaction}_${key}`, '1'); } catch {}
+      setReacted(prev => ({ ...prev, [key]: { ...prev[key], [reaction]: true } }));
+      setCards(prev => prev.map(c => c.type === item.type && c.id === item.id
+        ? { ...c, reactions: { ...c.reactions, [reaction]: c.reactions[reaction] + 1 } }
+        : c
+      ));
+      try {
+        await fetch('/api/feed/like', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: item.type, id: item.id, reaction }) });
+      } catch {}
+    }
   }, [reacted]);
 
   const handleBookmark = useCallback((item: FeedItem) => {
@@ -287,6 +340,12 @@ export default function FeedView() {
                     <Wick />
                     <CandleBase />
                   </CandleWrap>
+                ) : d.dedType === 'refua' ? (
+                  <RefuaWrap><RefuaGlow /><RefuaCross /></RefuaWrap>
+                ) : d.dedType === 'hatzlaha' ? (
+                  <StarWrap><StarGlow /><Star /></StarWrap>
+                ) : d.dedType === 'zivug' ? (
+                  <RingsWrap><Ring1 /><Ring2 /></RingsWrap>
                 ) : (
                   <div style={{ fontSize: '2.4rem', marginBottom: 6 }}>🙏</div>
                 )}
