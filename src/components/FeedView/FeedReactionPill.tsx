@@ -7,7 +7,7 @@ import type { FeedItem, FeedReaction } from '@/types';
 const REACTIONS: { key: FeedReaction; emoji: string; bg: string }[] = [
   { key: 'heart', emoji: '❤️', bg: 'rgba(255,55,70,0.25)'  },
   { key: 'fire',  emoji: '🔥', bg: 'rgba(255,115,0,0.25)' },
-  { key: 'spark', emoji: '✨', bg: 'rgba(255,215,0,0.22)' },
+  { key: 'spark', emoji: '👏', bg: 'rgba(255,215,0,0.22)' },
 ];
 
 const pop = keyframes`

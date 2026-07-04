@@ -76,7 +76,7 @@ const Preview = styled.div`
 const Meta = styled.div`color: rgba(255,255,255,0.4); font-size: 0.72rem;`;
 
 const RemoveBtn = styled.button`
-  position: absolute; top: 10px; left: 10px;
+  flex-shrink: 0; align-self: flex-start; margin-top: 1px;
   background: rgba(255,255,255,0.08); border: none; border-radius: 50%;
   width: 24px; height: 24px; color: rgba(255,255,255,0.45);
   font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
