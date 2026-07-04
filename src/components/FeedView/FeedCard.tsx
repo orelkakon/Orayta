@@ -5,14 +5,15 @@ import styled, { keyframes } from 'styled-components';
 import type { FeedItem, FeedReaction } from '@/types';
 import { renderContent, MetaChip, MetaChipLink } from './FeedCardContent';
 import FeedCardActions from './FeedCardActions';
+import FeedReactionPill from './FeedReactionPill';
 
 const TYPE_CONFIG: Record<string, { icon: string; label: string; grad: string }> = {
   citation: { icon: '📜', label: 'ציטוט תלמודי', grad: 'linear-gradient(160deg,#050a1e 0%,#0d1a52 60%,#1a2a7a 100%)' },
   rabbi:    { icon: '👥', label: 'רב ומנהיג',    grad: 'linear-gradient(160deg,#150800 0%,#3d1e00 60%,#6b3200 100%)' },
   book:     { icon: '📚', label: 'ספר קודש',     grad: 'linear-gradient(160deg,#041008 0%,#0a2e14 60%,#114022 100%)' },
-  chidush:  { icon: '💡', label: 'חידוש תורה',  grad: 'linear-gradient(160deg,#120800 0%,#3d1800 60%,#6b2800 100%)' },
-  gematria: { icon: '🔢', label: 'גימטריה',      grad: 'linear-gradient(160deg,#06021a 0%,#140852 60%,#220d8c 100%)' },
-  sikum:    { icon: '📝', label: 'סיכום לימוד',  grad: 'linear-gradient(160deg,#12041a 0%,#320a40 60%,#4a1060 100%)' },
+  chidush:  { icon: '💡', label: 'חידוש תורה',   grad: 'linear-gradient(160deg,#120800 0%,#3d1800 60%,#6b2800 100%)' },
+  gematria: { icon: '🔢', label: 'גימטריה',       grad: 'linear-gradient(160deg,#06021a 0%,#140852 60%,#220d8c 100%)' },
+  sikum:    { icon: '📝', label: 'סיכום לימוד',   grad: 'linear-gradient(160deg,#12041a 0%,#320a40 60%,#4a1060 100%)' },
 };
 
 const Slide = styled.div<{ $grad: string }>`
@@ -34,13 +35,13 @@ const TypeBadge = styled.div<{ $v: boolean }>`
   border: 1px solid rgba(255,255,255,0.14);
   opacity: ${p => p.$v ? 1 : 0};
   transform: ${p => p.$v ? 'none' : 'translateX(14px)'};
-  transition: opacity 0.3s 0s, transform 0.3s 0s;
+  transition: opacity 0.3s, transform 0.3s;
 `;
 
 const ContentArea = styled.div`
   flex: 1; display: flex; flex-direction: column;
   justify-content: center; align-items: center; text-align: center;
-  padding: 72px 16px 150px 16px; gap: 12px;
+  padding: 72px 60px 160px 16px; gap: 12px;
 `;
 
 const AnimBody = styled.div<{ $v: boolean }>`
@@ -65,7 +66,6 @@ const heartBurst = keyframes`
   70%  { opacity: 0.9; transform: translate(-50%,-50%) scale(1.1); }
   100% { opacity: 0; transform: translate(-50%,-50%) scale(1.6); }
 `;
-
 const HeartBurst = styled.div`
   position: absolute; top: 50%; left: 50%; pointer-events: none;
   font-size: 5rem; line-height: 1; z-index: 50;
@@ -97,12 +97,12 @@ export default function FeedCard({ item, reacted, isSaved, onReact, onBookmark }
   useEffect(() => {
     const el = slideRef.current;
     if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
       { threshold: 0.55 }
     );
-    observer.observe(el);
-    return () => observer.disconnect();
+    obs.observe(el);
+    return () => obs.disconnect();
   }, []);
 
   const handleDoubleTap = () => {
@@ -135,10 +135,10 @@ export default function FeedCard({ item, reacted, isSaved, onReact, onBookmark }
           </MetaRow>
         )}
       </ContentArea>
+      <FeedReactionPill item={item} reacted={reacted} visible={visible} onReact={onReact} />
       <FeedCardActions
-        item={item} reacted={reacted} isSaved={isSaved}
-        slideRef={slideRef} onReact={onReact} onBookmark={onBookmark}
-        copyText={copyText}
+        item={item} isSaved={isSaved} slideRef={slideRef}
+        onBookmark={onBookmark} copyText={copyText}
       />
     </Slide>
   );
