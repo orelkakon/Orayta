@@ -3,10 +3,11 @@ import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-const PER_TYPE = 4;
+// 70% priority: citation, chidush, sikum — 20%: rabbi — 10%: book, gematria
+const N = { citation: 5, chidush: 5, sikum: 4, rabbi: 4, book: 1, gematria: 1 };
 
-function randOffset(total: number) {
-  return total <= PER_TYPE ? 0 : Math.floor(Math.random() * (total - PER_TYPE));
+function randOffset(total: number, take: number) {
+  return total <= take ? 0 : Math.floor(Math.random() * (total - take));
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -29,13 +30,13 @@ export async function GET() {
   ]);
 
   const [citations, rabbis, books, gematrias, chidushim, sikumEntries] = await Promise.all([
-    prisma.citation.findMany({ skip: randOffset(cC), take: PER_TYPE, include: { locations: true } }),
-    prisma.rabbi.findMany({ skip: randOffset(rC), take: PER_TYPE }),
-    prisma.book.findMany({ skip: randOffset(bC), take: PER_TYPE }),
-    prisma.gematria.findMany({ skip: randOffset(gC), take: PER_TYPE }),
-    prisma.chidush.findMany({ skip: randOffset(chC), take: PER_TYPE }),
+    prisma.citation.findMany({ skip: randOffset(cC, N.citation), take: N.citation, include: { locations: true } }),
+    prisma.rabbi.findMany({ skip: randOffset(rC, N.rabbi), take: N.rabbi }),
+    prisma.book.findMany({ skip: randOffset(bC, N.book), take: N.book }),
+    prisma.gematria.findMany({ skip: randOffset(gC, N.gematria), take: N.gematria }),
+    prisma.chidush.findMany({ skip: randOffset(chC, N.chidush), take: N.chidush }),
     prisma.sikumEntry.findMany({
-      skip: randOffset(sC), take: PER_TYPE,
+      skip: randOffset(sC, N.sikum), take: N.sikum,
       include: { book: { select: { name: true, icon: true } } },
     }),
   ]);

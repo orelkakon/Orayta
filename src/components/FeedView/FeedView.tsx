@@ -113,8 +113,8 @@ export default function FeedView() {
     const result: Array<FeedItem | FeedDedicationSlide> = [];
     cards.forEach((card, i) => {
       result.push(card);
-      if ((i + 1) % 5 === 0) {
-        const ded = dedications[Math.floor((i + 1) / 5 - 1) % dedications.length];
+      if ((i + 1) % 8 === 0) {
+        const ded = dedications[Math.floor((i + 1) / 8 - 1) % dedications.length];
         result.push({ slideType: 'dedication', id: ded.id, dedType: ded.type, name: ded.name });
       }
     });
