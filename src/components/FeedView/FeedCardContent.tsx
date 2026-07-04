@@ -66,6 +66,7 @@ export function renderContent(item: FeedItem, onImgClick: (src: string) => void)
           onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
         {item.isYahrzeit && <YahrzeitTag>🕯️ יארצייט היום</YahrzeitTag>}
         <BigWord>{d.name}</BigWord>
+        {d.fullName && d.fullName !== d.name && <SubText style={{ fontSize: '0.96rem', opacity: 0.75 }}>{d.fullName}</SubText>}
         {d.deathDate && !item.isYahrzeit && <YahrzeitTag>🕯️ יארצייט: {d.deathDate}</YahrzeitTag>}
         <SubText>{d.datePeriod}</SubText>
         <MainText>{d.bio}</MainText>
