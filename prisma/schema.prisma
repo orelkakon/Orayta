@@ -111,10 +111,12 @@ model FeedLike {
   id       String @id @default(cuid())
   itemType String
   itemId   String
+  reaction String @default("heart")
   likes    Int    @default(0)
 
-  @@unique([itemType, itemId])
+  @@unique([itemType, itemId, reaction])
   @@index([itemType])
+  @@index([reaction])
 }
 
 model QuizResult {

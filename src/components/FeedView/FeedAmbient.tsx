@@ -1,11 +1,9 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
-import styled from 'styled-components';
+import { useRef, useState, useEffect, useCallback } from 'react';
+import styled, { keyframes, css } from 'styled-components';
 
-// Piano-only (קריוקי פסנתר) versions — melody, no vocals
 const SONGS = [
-  // בן צור
   { id: 'xilcxmW7xYo', name: 'אישתי',          artist: 'בן צור' },
   { id: 'Z7OD4VEeOu8', name: 'טאטע תטהר',      artist: 'בן צור' },
   { id: 'qHdf4FOtqdo', name: 'אמונה',           artist: 'בן צור' },
@@ -13,7 +11,6 @@ const SONGS = [
   { id: 'Jhx8kKQOUDQ', name: 'נשמות צמאות',    artist: 'בן צור' },
   { id: 'C590zIn1znM', name: 'כל עכבה לטובה',  artist: 'בן צור' },
   { id: '-1L6W2Z2KwI', name: 'אהבת השם',       artist: 'בן צור' },
-  // ישי ריבו
   { id: '_HTyC9emB74', name: 'השבעתי אתכם',    artist: 'ישי ריבו' },
   { id: 'a470tNqmYJg', name: 'אחת ולתמיד',     artist: 'ישי ריבו' },
   { id: 'iG_XzBrfcl8', name: 'רבי שמעון',      artist: 'ישי ריבו' },
@@ -21,7 +18,6 @@ const SONGS = [
   { id: 'tGilTBGfP1E', name: 'הלב שלי',        artist: 'ישי ריבו' },
   { id: 'kq67kMNGgpg', name: 'כתר מלוכה',      artist: 'ישי ריבו' },
   { id: 'j9cPwwhah0c', name: 'סדר העבודה',     artist: 'ישי ריבו' },
-  // חנן בן ארי
   { id: 'E5mCRmuaSXU', name: 'לילה טוב שון',   artist: 'חנן בן ארי' },
   { id: 'gQaCWeAIrHI', name: 'שבורי לב',       artist: 'חנן בן ארי' },
   { id: '-gACoOrsQZM', name: 'מולדת',           artist: 'חנן בן ארי' },
@@ -30,7 +26,6 @@ const SONGS = [
   { id: 'WPpuU-8cvb0', name: 'חנניה',           artist: 'חנן בן ארי' },
 ];
 
-// Iframe sits exactly behind the button so it is technically present in the DOM
 const HiddenFrame = styled.iframe`
   position: fixed; bottom: 26px; left: 14px; z-index: 300;
   width: 36px; height: 36px; border: none; border-radius: 50%;
@@ -48,26 +43,51 @@ const Btn = styled.button<{ $on: boolean }>`
   backdrop-filter: blur(8px);
 `;
 
-const Label = styled.div<{ $visible: boolean }>`
-  position: fixed; bottom: 30px; left: 58px; z-index: 301;
-  color: rgba(255,255,255,0.55); font-size: 0.72rem; white-space: nowrap;
-  opacity: ${p => p.$visible ? 1 : 0}; transition: opacity 0.4s;
-  pointer-events: none;
+const b1 = keyframes`0%,100%{height:4px} 50%{height:14px}`;
+const b2 = keyframes`0%,100%{height:10px} 33%{height:4px} 66%{height:16px}`;
+const b3 = keyframes`0%,100%{height:7px} 25%{height:16px} 75%{height:3px}`;
+
+const EqWrap = styled.div<{ $on: boolean }>`
+  position: fixed; bottom: 32px; left: 56px; z-index: 301;
+  display: flex; gap: 2px; align-items: flex-end; height: 18px;
+  opacity: ${p => p.$on ? 1 : 0}; transition: opacity 0.3s; pointer-events: none;
 `;
 
+const Bar = styled.div<{ $i: number }>`
+  width: 3px; border-radius: 2px; background: rgba(255,220,140,0.75);
+  ${p => p.$i === 0 && css`animation: ${b1} 0.75s ease-in-out infinite;`}
+  ${p => p.$i === 1 && css`animation: ${b2} 0.9s ease-in-out infinite 0.15s;`}
+  ${p => p.$i === 2 && css`animation: ${b3} 0.65s ease-in-out infinite 0.3s;`}
+`;
+
+const Pill = styled.div<{ $visible: boolean }>`
+  position: fixed; bottom: 70px; left: 12px; z-index: 301;
+  background: rgba(10,8,20,0.82); backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,220,140,0.28); border-radius: 20px;
+  padding: 6px 14px; pointer-events: none;
+  opacity: ${p => p.$visible ? 1 : 0}; transition: opacity 0.45s;
+  white-space: nowrap; max-width: 200px;
+`;
+const PillName = styled.div`color: rgba(255,220,140,0.92); font-size: 0.75rem; font-weight: 700;`;
+const PillArtist = styled.div`color: rgba(255,255,255,0.5); font-size: 0.66rem;`;
+
 function ytCmd(iframe: HTMLIFrameElement, func: string, args: unknown[] = []) {
-  iframe.contentWindow?.postMessage(
-    JSON.stringify({ event: 'command', func, args }),
-    'https://www.youtube.com'
-  );
+  iframe.contentWindow?.postMessage(JSON.stringify({ event: 'command', func, args }), 'https://www.youtube.com');
 }
 
 export default function FeedAmbient() {
-  const [on, setOn]                   = useState(false);
-  const [showLabel, setShowLabel]     = useState(false);
-  const [song]                        = useState(() => SONGS[Math.floor(Math.random() * SONGS.length)]);
-  const iframeRef                     = useRef<HTMLIFrameElement>(null);
-  const unlockedRef                   = useRef(false);
+  const [on, setOn]             = useState(false);
+  const [pillVisible, setPill]  = useState(false);
+  const [song]                  = useState(() => SONGS[Math.floor(Math.random() * SONGS.length)]);
+  const iframeRef               = useRef<HTMLIFrameElement>(null);
+  const unlockedRef             = useRef(false);
+  const pillTimerRef            = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showPill = useCallback(() => {
+    setPill(true);
+    if (pillTimerRef.current) clearTimeout(pillTimerRef.current);
+    pillTimerRef.current = setTimeout(() => setPill(false), 4000);
+  }, []);
 
   useEffect(() => {
     function handleMessage(e: MessageEvent) {
@@ -88,51 +108,49 @@ export default function FeedAmbient() {
     function unlock() {
       if (unlockedRef.current) return;
       unlockedRef.current = true;
-      // Send unMute at 300 ms and again at 1 s to survive slow loads
       [300, 1000].forEach(d => setTimeout(() => {
         if (iframeRef.current) ytCmd(iframeRef.current, 'unMute');
       }, d));
       setOn(true);
-      setShowLabel(true);
-      setTimeout(() => setShowLabel(false), 3000);
+      showPill();
     }
-
-    document.addEventListener('touchstart',  unlock, { passive: true, once: true });
+    document.addEventListener('touchstart', unlock, { passive: true, once: true });
     document.addEventListener('pointerdown', unlock, { once: true });
     return () => {
-      document.removeEventListener('touchstart',  unlock);
+      document.removeEventListener('touchstart', unlock);
       document.removeEventListener('pointerdown', unlock);
     };
-  }, []);
+  }, [showPill]);
 
   const toggle = () => {
     if (!iframeRef.current) return;
     if (on) {
       ytCmd(iframeRef.current, 'mute');
       setOn(false);
+      setPill(false);
     } else {
       ytCmd(iframeRef.current, 'unMute');
       setOn(true);
+      showPill();
     }
   };
 
-  // No loop=1 — we handle looping manually via onStateChange so the video
-  // always seeks back to 30s instead of restarting from 0.
-  const src =
-    `https://www.youtube.com/embed/${song.id}` +
-    `?autoplay=1&mute=1&controls=0` +
-    `&playsinline=1&rel=0&enablejsapi=1&start=30`;
+  const handleBtnClick = () => {
+    if (on) showPill();
+    toggle();
+  };
+
+  const src = `https://www.youtube.com/embed/${song.id}?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&enablejsapi=1&start=30`;
 
   return (
     <>
-      <HiddenFrame
-        ref={iframeRef}
-        src={src}
-        title={song.name}
-        allow="autoplay; encrypted-media"
-      />
-      <Btn $on={on} onClick={toggle} title={on ? 'כבה מוזיקה' : 'הפעל מוזיקה'}>♪</Btn>
-      <Label $visible={showLabel}>♪ {song.name} — {song.artist}</Label>
+      <HiddenFrame ref={iframeRef} src={src} title={song.name} allow="autoplay; encrypted-media" />
+      <Btn $on={on} onClick={handleBtnClick} title={on ? 'כבה מוזיקה' : 'הפעל מוזיקה'}>♪</Btn>
+      <EqWrap $on={on}><Bar $i={0} /><Bar $i={1} /><Bar $i={2} /></EqWrap>
+      <Pill $visible={pillVisible}>
+        <PillName>♪ {song.name}</PillName>
+        <PillArtist>{song.artist}</PillArtist>
+      </Pill>
     </>
   );
 }

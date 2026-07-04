@@ -87,23 +87,27 @@ function useAnimatedCount(target: number | null): number {
 }
 
 interface ContentStats { citations: number; rabbis: number; books: number; summaries: number; gematrias: number; chidushim: number; }
+interface ReactionsData { total: number; heart: number; fire: number; spark: number; }
 
 export default function VisitsCounter() {
   const [visits, setVisits]         = useState<number | null>(null);
   const [questions, setQuestions]   = useState<number | null>(null);
   const [content, setContent]       = useState<ContentStats | null>(null);
-  const [likes, setLikes]           = useState<number | null>(null);
+  const [reactions, setReactions]   = useState<ReactionsData | null>(null);
 
   useEffect(() => {
     void fetch('/api/visits').then(r => r.json()).then((d: { count: number }) => setVisits(d.count));
     void fetch('/api/quiz/answered').then(r => r.json()).then((d: { count: number }) => setQuestions(d.count));
     void fetch('/api/stats').then(r => r.json()).then(setContent as (v: unknown) => void);
-    void fetch('/api/feed/like').then(r => r.json()).then((d: { total: number }) => setLikes(d.total));
+    void fetch('/api/feed/like').then(r => r.json()).then((d: ReactionsData) => setReactions(d));
   }, []);
 
   const displayedVisits    = useAnimatedCount(visits);
   const displayedQuestions = useAnimatedCount(questions);
-  const displayedLikes     = useAnimatedCount(likes);
+  const displayedTotal     = useAnimatedCount(reactions?.total ?? null);
+  const displayedHeart     = useAnimatedCount(reactions?.heart ?? null);
+  const displayedFire      = useAnimatedCount(reactions?.fire ?? null);
+  const displayedSpark     = useAnimatedCount(reactions?.spark ?? null);
 
   const chips = content ? [
     { emoji: '📜', num: content.citations,  label: 'ציטוטים' },
@@ -133,12 +137,28 @@ export default function VisitsCounter() {
         </StatBlock>
         <Divider />
         <StatBlock>
-          <Emoji>❤️</Emoji>
-          <CountNum>{likes === null ? '...' : displayedLikes.toLocaleString('he-IL')}</CountNum>
+          <Emoji>🎭</Emoji>
+          <CountNum>{reactions === null ? '...' : displayedTotal.toLocaleString('he-IL')}</CountNum>
           <CountLabel>{HE.ABOUT_FEED_LIKES}</CountLabel>
           <CountSub>{HE.FEED_TOTAL_LIKES_SUB}</CountSub>
         </StatBlock>
       </StatsRow>
+
+      {reactions && (
+        <ContentRow style={{ marginTop: -4 }}>
+          {[
+            { emoji: '❤️', num: displayedHeart, label: HE.ABOUT_REACTIONS_HEART },
+            { emoji: '🔥', num: displayedFire,  label: HE.ABOUT_REACTIONS_FIRE },
+            { emoji: '✨', num: displayedSpark,  label: HE.ABOUT_REACTIONS_SPARK },
+          ].map(c => (
+            <ContentChip key={c.label}>
+              <ChipEmoji>{c.emoji}</ChipEmoji>
+              <ChipNum>{c.num}</ChipNum>
+              <ChipLabel>{c.label}</ChipLabel>
+            </ContentChip>
+          ))}
+        </ContentRow>
+      )}
 
       {chips && (
         <>

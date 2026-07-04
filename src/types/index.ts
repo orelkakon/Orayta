@@ -123,6 +123,13 @@ export interface SikumEntry {
 }
 
 export type FeedItemType = 'citation' | 'rabbi' | 'book' | 'chidush' | 'gematria' | 'sikum';
+export type FeedReaction = 'heart' | 'fire' | 'spark';
+
+export interface FeedReactions {
+  heart: number;
+  fire: number;
+  spark: number;
+}
 
 export interface FeedSikumData {
   id: string;
@@ -141,7 +148,8 @@ export interface FeedGematriaData extends Gematria {
 export interface FeedItem {
   type: FeedItemType;
   id: string;
-  likes: number;
+  reactions: FeedReactions;
+  isYahrzeit?: boolean;
   data: Citation | Rabbi | Book | Chidush | FeedGematriaData | FeedSikumData;
 }
 
