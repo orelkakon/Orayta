@@ -75,7 +75,7 @@ const flicker = keyframes`
 
 const CandleWrap = styled.div`position: relative; width: 28px; height: 46px; margin: 0 auto;`;
 const Flame = styled.div`
-  position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+  position: absolute; bottom: 12px; left: 0; right: 0; margin: auto;
   width: 18px; height: 28px;
   background: radial-gradient(ellipse at 50% 80%, #fff8a0 0%, #ffbe00 38%, #ff6200 68%, transparent 100%);
   border-radius: 50% 50% 30% 30% / 60% 60% 40% 40%;
@@ -83,11 +83,11 @@ const Flame = styled.div`
   box-shadow: 0 0 14px 5px rgba(255,140,0,0.45), 0 0 36px 10px rgba(255,90,0,0.12);
 `;
 const Wick = styled.div`
-  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  position: absolute; bottom: 10px; left: 0; right: 0; margin: auto;
   width: 2px; height: 8px; background: #3a2000; border-radius: 1px; z-index: 1;
 `;
 const CandleBase = styled.div`
-  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  position: absolute; bottom: 0; left: 0; right: 0; margin: auto;
   width: 16px; height: 12px;
   background: linear-gradient(to bottom, rgba(255,220,150,0.18), rgba(255,200,120,0.08));
   border-radius: 3px;
@@ -95,7 +95,7 @@ const CandleBase = styled.div`
 
 const glowPulse = keyframes`0%,100%{opacity:0.55} 50%{opacity:0.9}`;
 const CandleGlow = styled.div`
-  position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+  position: absolute; bottom: 8px; left: 0; right: 0; margin: auto;
   width: 60px; height: 60px; border-radius: 50%;
   background: radial-gradient(circle, rgba(255,160,0,0.18) 0%, transparent 70%);
   animation: ${glowPulse} 1.1s ease-in-out infinite;

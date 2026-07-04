@@ -19,6 +19,7 @@ const Slide = styled.div<{ $grad: string }>`
   height: 100dvh; scroll-snap-align: start; flex-shrink: 0;
   background: ${p => p.$grad}; position: relative; overflow: hidden;
   display: flex; flex-direction: column;
+  -webkit-tap-highlight-color: transparent;
   &::before {
     content: ''; position: absolute; inset: 0; pointer-events: none;
     background: radial-gradient(ellipse at 30% 40%, rgba(255,255,255,0.04), transparent 70%);

@@ -12,7 +12,15 @@ const Actions = styled.div`
 
 const ActionGroup = styled.div`display: flex; flex-direction: column; align-items: center; gap: 3px;`;
 
+const btnReset = `
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+`;
+
 const ActionBtn = styled.button<{ $active?: boolean }>`
+  ${btnReset}
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 2px; padding: 4px; background: none; border: none; color: white;
   font-size: 1.85rem; line-height: 1; cursor: pointer;
@@ -22,6 +30,7 @@ const ActionBtn = styled.button<{ $active?: boolean }>`
 `;
 
 const SvgBtn = styled.button`
+  ${btnReset}
   background: none; border: none; color: white; cursor: pointer; padding: 4px;
   filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
   transition: transform 0.15s, filter 0.15s;
@@ -29,7 +38,18 @@ const SvgBtn = styled.button`
 `;
 
 const ActionCount = styled.span`color: rgba(255,255,255,0.75); font-size: 0.68rem; font-weight: 700;`;
-const CopiedTag = styled.span`color: rgba(180,255,180,0.9); font-size: 0.62rem; font-weight: 700;`;
+
+const CopyPill = styled.button<{ $copied: boolean }>`
+  ${btnReset}
+  background: ${p => p.$copied ? 'rgba(100,220,130,0.18)' : 'rgba(255,255,255,0.1)'};
+  border: 1px solid ${p => p.$copied ? 'rgba(100,220,130,0.45)' : 'rgba(255,255,255,0.2)'};
+  border-radius: 14px; padding: 5px 9px; cursor: pointer;
+  color: ${p => p.$copied ? 'rgba(140,255,160,0.95)' : 'rgba(255,255,255,0.75)'};
+  font-size: 1rem; line-height: 1;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  backdrop-filter: blur(6px);
+  &:active { transform: scale(0.88); }
+`;
 
 const bookmarkPop = keyframes`
   0%   { transform: scale(1); }
@@ -39,6 +59,7 @@ const bookmarkPop = keyframes`
 `;
 
 const BookmarkBtn = styled.button<{ $saved: boolean }>`
+  ${btnReset}
   background: none; border: none; cursor: pointer; padding: 4px;
   font-size: 1.6rem; line-height: 1;
   filter: ${p => p.$saved ? 'drop-shadow(0 0 8px rgba(255,220,80,0.8))' : 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))'};
@@ -64,14 +85,6 @@ function CameraIcon() {
   );
 }
 
-function ClipboardIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-3"/>
-      <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
-    </svg>
-  );
-}
 
 const REACTIONS: { key: FeedReaction; emoji: string }[] = [
   { key: 'heart', emoji: '❤️' },
@@ -139,7 +152,7 @@ export default function FeedCardActions({ item, reacted, isSaved, slideRef, onRe
     if (!copyText) return;
     await navigator.clipboard.writeText(copyText).catch(() => {});
     setCopied(true);
-    setTimeout(() => setCopied(false), 1600);
+    setTimeout(() => setCopied(false), 1800);
   }
 
   function handleBookmark(e: React.MouseEvent) {
@@ -166,7 +179,9 @@ export default function FeedCardActions({ item, reacted, isSaved, slideRef, onRe
       </ActionGroup>
       {copyText && (
         <ActionGroup>
-          <SvgBtn onClick={doCopy}>{copied ? <CopiedTag>✓</CopiedTag> : <ClipboardIcon />}</SvgBtn>
+          <CopyPill onClick={doCopy} $copied={copied}>
+            {copied ? '✓' : '📋'}
+          </CopyPill>
         </ActionGroup>
       )}
       <SvgBtn onClick={e => { e.stopPropagation(); doShare(buildShareText()); }}><ShareIcon /></SvgBtn>
