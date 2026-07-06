@@ -20,6 +20,7 @@ const StickyBar = styled.div`
   background: ${theme.colors.background};
   margin-top: -${theme.spacing.xl};
   padding-top: ${theme.spacing.xl};
+  padding-bottom: 2px;
   display: flex; flex-direction: column; gap: ${theme.spacing.sm};
   @media (max-width: 600px) { margin-top: -${theme.spacing.md}; padding-top: ${theme.spacing.md}; }
   @media (max-width: 480px) { top: 52px; }

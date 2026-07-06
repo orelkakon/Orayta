@@ -14,6 +14,11 @@ const Wrapper = styled.div`display: flex; flex-direction: column; gap: ${theme.s
 const SubNav = styled.div`
   display: flex; align-items: center; gap: ${theme.spacing.xs};
   border-bottom: 2px solid ${theme.colors.borderLight};
+  position: sticky;
+  top: 60px;
+  z-index: 51;
+  background: ${theme.colors.background};
+  @media (max-width: 480px) { top: 52px; }
 `;
 
 const TabBtn = styled.button<{ $active: boolean }>`

@@ -22,6 +22,11 @@ const SubNav = styled.div`
   gap: ${theme.spacing.xs};
   border-bottom: 2px solid ${theme.colors.borderLight};
   padding-bottom: 0;
+  position: sticky;
+  top: 60px;
+  z-index: 51;
+  background: ${theme.colors.background};
+  @media (max-width: 480px) { top: 52px; }
 `;
 
 const TabBtn = styled.button<{ $active: boolean }>`
