@@ -17,6 +17,15 @@ const Container = styled.div`
   gap: ${theme.spacing.lg};
 `;
 
+const StickyBar = styled.div`
+  position: sticky;
+  top: 60px;
+  z-index: 50;
+  background: ${theme.colors.background};
+  display: flex; flex-direction: column; gap: ${theme.spacing.sm};
+  @media (max-width: 480px) { top: 52px; }
+`;
+
 const TitleRow = styled.div`
   display: flex;
   align-items: flex-start;
@@ -116,24 +125,26 @@ export default function GematriaView({ initialSearch = '' }: { initialSearch?: s
         />
       )}
 
-      <TitleRow>
-        <TitleGroup>
-          <Title>{HE.GEMATRIA_TITLE}</Title>
-          <Subtitle>
-            {HE.GEMATRIA_SUBTITLE}
-            {items.length > 0 && <CountBadge> {HE.GEMATRIA_COUNT(items.length)}</CountBadge>}
-          </Subtitle>
-        </TitleGroup>
-        {role === 'admin' && (
-          <AddBtn onClick={() => setAddOpen(true)}>{HE.GEMATRIA_ADD_BTN}</AddBtn>
-        )}
-      </TitleRow>
+      <StickyBar>
+        <TitleRow>
+          <TitleGroup>
+            <Title>{HE.GEMATRIA_TITLE}</Title>
+            <Subtitle>
+              {HE.GEMATRIA_SUBTITLE}
+              {items.length > 0 && <CountBadge> {HE.GEMATRIA_COUNT(items.length)}</CountBadge>}
+            </Subtitle>
+          </TitleGroup>
+          {role === 'admin' && (
+            <AddBtn onClick={() => setAddOpen(true)}>{HE.GEMATRIA_ADD_BTN}</AddBtn>
+          )}
+        </TitleRow>
 
-      <SearchField
-        value={search}
-        onChange={setSearch}
-        placeholder={HE.GEMATRIA_SEARCH_PLACEHOLDER}
-      />
+        <SearchField
+          value={search}
+          onChange={setSearch}
+          placeholder={HE.GEMATRIA_SEARCH_PLACEHOLDER}
+        />
+      </StickyBar>
 
       <Grid>
         {filtered.length === 0 ? (

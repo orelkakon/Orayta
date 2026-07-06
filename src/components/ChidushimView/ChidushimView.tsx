@@ -12,6 +12,15 @@ import SearchField from '@/components/common/SearchField';
 
 const Container = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
 
+const StickyBar = styled.div`
+  position: sticky;
+  top: 60px;
+  z-index: 50;
+  background: ${theme.colors.background};
+  display: flex; flex-direction: column; gap: ${theme.spacing.sm};
+  @media (max-width: 480px) { top: 52px; }
+`;
+
 const TitleRow = styled.div`
   display: flex; align-items: flex-start;
   justify-content: space-between; flex-wrap: wrap; gap: ${theme.spacing.md};
@@ -75,24 +84,26 @@ export default function ChidushimView({ initialSearch = '' }: { initialSearch?: 
         />
       )}
 
-      <TitleRow>
-        <TitleGroup>
-          <Title>{HE.CHIDUSHIM_TITLE}</Title>
-          <Subtitle>
-            {HE.CHIDUSHIM_SUBTITLE}
-            {items.length > 0 && <CountBadge> {HE.CHIDUSHIM_COUNT(items.length)}</CountBadge>}
-          </Subtitle>
-        </TitleGroup>
-        {role === 'admin' && (
-          <AddBtn onClick={() => setAddOpen(true)}>{HE.CHIDUSHIM_ADD_BTN}</AddBtn>
-        )}
-      </TitleRow>
+      <StickyBar>
+        <TitleRow>
+          <TitleGroup>
+            <Title>{HE.CHIDUSHIM_TITLE}</Title>
+            <Subtitle>
+              {HE.CHIDUSHIM_SUBTITLE}
+              {items.length > 0 && <CountBadge> {HE.CHIDUSHIM_COUNT(items.length)}</CountBadge>}
+            </Subtitle>
+          </TitleGroup>
+          {role === 'admin' && (
+            <AddBtn onClick={() => setAddOpen(true)}>{HE.CHIDUSHIM_ADD_BTN}</AddBtn>
+          )}
+        </TitleRow>
 
-      <SearchField
-        value={search}
-        onChange={setSearch}
-        placeholder={HE.CHIDUSHIM_SEARCH_PLACEHOLDER}
-      />
+        <SearchField
+          value={search}
+          onChange={setSearch}
+          placeholder={HE.CHIDUSHIM_SEARCH_PLACEHOLDER}
+        />
+      </StickyBar>
 
       <List>
         {filtered.length === 0

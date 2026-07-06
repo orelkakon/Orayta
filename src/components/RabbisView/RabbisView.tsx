@@ -30,6 +30,15 @@ const Container = styled.div`
   gap: ${theme.spacing.lg};
 `;
 
+const StickyBar = styled.div`
+  position: sticky;
+  top: 60px;
+  z-index: 50;
+  background: ${theme.colors.background};
+  display: flex; flex-direction: column; gap: ${theme.spacing.sm};
+  @media (max-width: 480px) { top: 52px; }
+`;
+
 const TitleRow = styled.div`
   display: flex;
   align-items: flex-start;
@@ -180,47 +189,49 @@ export default function RabbisView({ initialSearch = '' }: Props) {
         />
       )}
 
-      <TitleRow>
-        <TitleGroup>
-          <Title>{HE.RABBIS_TITLE}</Title>
-          <Subtitle>
-            {HE.RABBIS_SUBTITLE}
-            {rabbis.length > 0 && <CountBadge> {HE.RABBIS_COUNT(rabbis.length)}</CountBadge>}
-          </Subtitle>
-        </TitleGroup>
-        <div style={{ display: 'flex', flexDirection: 'row', gap: theme.spacing.sm, alignItems: 'center' }}>
-          {role === 'admin' && (
-            <AddBtn onClick={() => setAddOpen(true)}>{HE.RABBI_ADD_BTN}</AddBtn>
-          )}
-          <SegmentRow>
-            <SegBtn $active={view === 'list'}     onClick={() => setView('list')}>📋 {HE.RABBIS_LIST_VIEW}</SegBtn>
-            <SegBtn $active={view === 'timeline'} onClick={() => setView('timeline')}>📅 {HE.RABBIS_TIMELINE_VIEW}</SegBtn>
-            <SegBtn $active={view === 'map'}      onClick={() => setView('map')}>🗺️ {HE.RABBIS_MAP_VIEW}</SegBtn>
-          </SegmentRow>
-        </div>
-      </TitleRow>
+      <StickyBar>
+        <TitleRow>
+          <TitleGroup>
+            <Title>{HE.RABBIS_TITLE}</Title>
+            <Subtitle>
+              {HE.RABBIS_SUBTITLE}
+              {rabbis.length > 0 && <CountBadge> {HE.RABBIS_COUNT(rabbis.length)}</CountBadge>}
+            </Subtitle>
+          </TitleGroup>
+          <div style={{ display: 'flex', flexDirection: 'row', gap: theme.spacing.sm, alignItems: 'center' }}>
+            {role === 'admin' && (
+              <AddBtn onClick={() => setAddOpen(true)}>{HE.RABBI_ADD_BTN}</AddBtn>
+            )}
+            <SegmentRow>
+              <SegBtn $active={view === 'list'}     onClick={() => setView('list')}>📋 {HE.RABBIS_LIST_VIEW}</SegBtn>
+              <SegBtn $active={view === 'timeline'} onClick={() => setView('timeline')}>📅 {HE.RABBIS_TIMELINE_VIEW}</SegBtn>
+              <SegBtn $active={view === 'map'}      onClick={() => setView('map')}>🗺️ {HE.RABBIS_MAP_VIEW}</SegBtn>
+            </SegmentRow>
+          </div>
+        </TitleRow>
 
-      <SearchField
-        value={search}
-        onChange={setSearch}
-        placeholder={HE.RABBIS_SEARCH_PLACEHOLDER}
-      />
+        <SearchField
+          value={search}
+          onChange={setSearch}
+          placeholder={HE.RABBIS_SEARCH_PLACEHOLDER}
+        />
 
-      <TabsScroll>
-        <Tab $active={category === 'all'} onClick={() => setCategory('all')}>
-          {HE.RABBIS_FILTER_ALL} ({countFor('all')})
-        </Tab>
-        {CATEGORY_ORDER.map(cat => (
-          <Tab
-            key={cat}
-            $active={category === cat}
-            $color={CATEGORY_COLORS[cat]}
-            onClick={() => setCategory(cat)}
-          >
-            {CATEGORY_LABELS[cat]} ({countFor(cat)})
+        <TabsScroll>
+          <Tab $active={category === 'all'} onClick={() => setCategory('all')}>
+            {HE.RABBIS_FILTER_ALL} ({countFor('all')})
           </Tab>
-        ))}
-      </TabsScroll>
+          {CATEGORY_ORDER.map(cat => (
+            <Tab
+              key={cat}
+              $active={category === cat}
+              $color={CATEGORY_COLORS[cat]}
+              onClick={() => setCategory(cat)}
+            >
+              {CATEGORY_LABELS[cat]} ({countFor(cat)})
+            </Tab>
+          ))}
+        </TabsScroll>
+      </StickyBar>
 
       {view === 'timeline' && <RabbisTimeline rabbis={filtered} />}
       {view === 'map'      && <RabbisMap rabbis={filtered} />}
