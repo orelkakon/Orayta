@@ -13,6 +13,17 @@ import SearchField from '@/components/common/SearchField';
 
 const Container = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
 
+const StickyBar = styled.div`
+  position: sticky;
+  top: 60px;
+  z-index: 50;
+  background: ${theme.colors.background};
+  padding-bottom: ${theme.spacing.sm};
+  display: flex; flex-direction: column; gap: ${theme.spacing.sm};
+  box-shadow: 0 4px 12px ${theme.colors.primary}18;
+  @media (max-width: 480px) { top: 52px; }
+`;
+
 const HeaderRow = styled.div`
   display: flex; align-items: center; flex-wrap: wrap;
   justify-content: space-between; gap: ${theme.spacing.md};
@@ -125,31 +136,33 @@ export default function SikumEntriesView({ book, onBack }: Props) {
         />
       )}
 
-      <HeaderRow>
-        <div>
-          <BackBtn onClick={onBack}>{HE.SIKUMIM_BACK}</BackBtn>
-          <BookTitle>
-            {book.name}
-            {book.author && <BookAuthor>{book.author}</BookAuthor>}
-          </BookTitle>
-        </div>
-        {role === 'admin' && (
-          <AddBtn onClick={() => setAddOpen(true)}>{HE.SIKUMIM_ADD_ENTRY_BTN}</AddBtn>
-        )}
-      </HeaderRow>
+      <StickyBar>
+        <HeaderRow>
+          <div>
+            <BackBtn onClick={onBack}>{HE.SIKUMIM_BACK}</BackBtn>
+            <BookTitle>
+              {book.name}
+              {book.author && <BookAuthor>{book.author}</BookAuthor>}
+            </BookTitle>
+          </div>
+          {role === 'admin' && (
+            <AddBtn onClick={() => setAddOpen(true)}>{HE.SIKUMIM_ADD_ENTRY_BTN}</AddBtn>
+          )}
+        </HeaderRow>
 
-      <SearchField value={search} onChange={setSearch} placeholder={HE.SIKUMIM_SEARCH_ENTRIES_PLACEHOLDER} />
+        <SearchField value={search} onChange={setSearch} placeholder={HE.SIKUMIM_SEARCH_ENTRIES_PLACEHOLDER} />
 
-      <ControlRow>
-        <SortRow>
-          <SortBtn $active={sortDir === 'desc'} onClick={() => setSortDir('desc')}>
-            {HE.SIKUMIM_SORT_DESC}
-          </SortBtn>
-          <SortBtn $active={sortDir === 'asc'} onClick={() => setSortDir('asc')}>
-            {HE.SIKUMIM_SORT_ASC}
-          </SortBtn>
-        </SortRow>
-      </ControlRow>
+        <ControlRow>
+          <SortRow>
+            <SortBtn $active={sortDir === 'desc'} onClick={() => setSortDir('desc')}>
+              {HE.SIKUMIM_SORT_DESC}
+            </SortBtn>
+            <SortBtn $active={sortDir === 'asc'} onClick={() => setSortDir('asc')}>
+              {HE.SIKUMIM_SORT_ASC}
+            </SortBtn>
+          </SortRow>
+        </ControlRow>
+      </StickyBar>
 
       <List>
         {sorted.length === 0

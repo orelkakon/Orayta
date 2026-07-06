@@ -13,6 +13,17 @@ import SikumEntriesView from './SikumEntriesView';
 
 const Container = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
 
+const StickyBar = styled.div`
+  position: sticky;
+  top: 60px;
+  z-index: 50;
+  background: ${theme.colors.background};
+  padding-bottom: ${theme.spacing.sm};
+  display: flex; flex-direction: column; gap: ${theme.spacing.sm};
+  box-shadow: 0 4px 12px ${theme.colors.primary}18;
+  @media (max-width: 480px) { top: 52px; }
+`;
+
 const TitleRow = styled.div`
   display: flex; align-items: flex-start;
   justify-content: space-between; flex-wrap: wrap; gap: ${theme.spacing.md};
@@ -115,25 +126,27 @@ export default function SikumimView({ initialSearch = '' }: { initialSearch?: st
         />
       )}
 
-      <TitleRow>
-        <TitleGroup>
-          <Title>{HE.SIKUMIM_TITLE}</Title>
-          <Subtitle>{HE.SIKUMIM_SUBTITLE}</Subtitle>
-        </TitleGroup>
-        {role === 'admin' && (
-          <AddBtn onClick={() => setAddOpen(true)}>{HE.SIKUMIM_ADD_BOOK_BTN}</AddBtn>
-        )}
-      </TitleRow>
+      <StickyBar>
+        <TitleRow>
+          <TitleGroup>
+            <Title>{HE.SIKUMIM_TITLE}</Title>
+            <Subtitle>{HE.SIKUMIM_SUBTITLE}</Subtitle>
+          </TitleGroup>
+          {role === 'admin' && (
+            <AddBtn onClick={() => setAddOpen(true)}>{HE.SIKUMIM_ADD_BOOK_BTN}</AddBtn>
+          )}
+        </TitleRow>
 
-      <SearchField value={search} onChange={setSearch} placeholder={HE.SIKUMIM_SEARCH_PLACEHOLDER} />
+        <SearchField value={search} onChange={setSearch} placeholder={HE.SIKUMIM_SEARCH_PLACEHOLDER} />
 
-      <ControlBar>
-        <SortLabel>מיון:</SortLabel>
-        <SortBtn $active={bookSort === 'default'} onClick={() => setBookSort('default')}>{HE.SIKUMIM_BOOKS_SORT_DEFAULT}</SortBtn>
-        <SortBtn $active={bookSort === 'count'} onClick={() => setBookSort('count')}>{HE.SIKUMIM_BOOKS_SORT_COUNT}</SortBtn>
-        <SortBtn $active={bookSort === 'alpha'} onClick={() => setBookSort('alpha')}>{HE.SIKUMIM_BOOKS_SORT_ALPHA}</SortBtn>
-        <SortBtn $active={bookSort === 'icon'} onClick={() => setBookSort('icon')}>{HE.SIKUMIM_BOOKS_SORT_ICON}</SortBtn>
-      </ControlBar>
+        <ControlBar>
+          <SortLabel>מיון:</SortLabel>
+          <SortBtn $active={bookSort === 'default'} onClick={() => setBookSort('default')}>{HE.SIKUMIM_BOOKS_SORT_DEFAULT}</SortBtn>
+          <SortBtn $active={bookSort === 'count'} onClick={() => setBookSort('count')}>{HE.SIKUMIM_BOOKS_SORT_COUNT}</SortBtn>
+          <SortBtn $active={bookSort === 'alpha'} onClick={() => setBookSort('alpha')}>{HE.SIKUMIM_BOOKS_SORT_ALPHA}</SortBtn>
+          <SortBtn $active={bookSort === 'icon'} onClick={() => setBookSort('icon')}>{HE.SIKUMIM_BOOKS_SORT_ICON}</SortBtn>
+        </ControlBar>
+      </StickyBar>
 
       <Grid>
         {filtered.length === 0
