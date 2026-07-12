@@ -95,7 +95,18 @@
       "Bash(mkdir -p /Users/user/Desktop/Claude/orayta/src/components/SikumimView)",
       "Bash(wait)",
       "Bash(gh run *)",
-      "Bash(grep -E '\\\\.\\(tsx|ts\\)$')"
+      "Bash(grep -E '\\\\.\\(tsx|ts\\)$')",
+      "Bash(git commit -m ' *)",
+      "Bash(defaults read *)",
+      "Bash(/usr/libexec/PlistBuddy -c \"Print :CFBundleVersion\" \"/Applications/Visual Studio Code.app/Contents/Info.plist\")",
+      "Bash(code --version)",
+      "Read(//Users/user/Applications/**)",
+      "Read(//usr/local/bin/**)",
+      "Bash(mdfind \"kMDItemFSName == 'Visual Studio Code.app'\")",
+      "Bash(mdfind \"kMDItemCFBundleIdentifier == 'com.microsoft.VSCode'\")",
+      "Bash(osascript -e 'tell application \"Finder\" to delete POSIX file \"/Users/user/Downloads/Visual Studio Code.app\"')",
+      "Bash(diskutil eject *)",
+      "Bash(/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user)"
     ]
   }
 }
