@@ -1,10 +1,27 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import type { FeedReactions } from '@/types';
+import type { FeedReactions, FeedItemType } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
-const N = { citation: 5, chidush: 5, sikum: 4, rabbi: 4, book: 1, gematria: 1 };
+const BASE_N: Record<FeedItemType, number> = { citation: 5, chidush: 5, sikum: 4, rabbi: 4, book: 1, gematria: 1 };
+const PAGE_SIZE = 20;
+const ALL_TYPES = Object.keys(BASE_N) as FeedItemType[];
+
+function parseTypes(param: string | null): FeedItemType[] {
+  const requested = (param ?? '')
+    .split(',')
+    .filter((t): t is FeedItemType => ALL_TYPES.includes(t as FeedItemType));
+  return requested.length > 0 ? requested : ALL_TYPES;
+}
+
+// Scale per-type counts so a filtered feed still fills a full page
+function computeTakes(enabled: FeedItemType[]): Record<FeedItemType, number> {
+  const baseSum = enabled.reduce((sum, t) => sum + BASE_N[t], 0);
+  const takes: Record<FeedItemType, number> = { citation: 0, chidush: 0, sikum: 0, rabbi: 0, book: 0, gematria: 0 };
+  enabled.forEach(t => { takes[t] = Math.max(1, Math.round(BASE_N[t] * PAGE_SIZE / baseSum)); });
+  return takes;
+}
 
 function randOffset(total: number, take: number) {
   return total <= take ? 0 : Math.floor(Math.random() * (total - take));
@@ -35,20 +52,26 @@ async function getYahrzeitRabbiIds(): Promise<Set<string>> {
   } catch { return new Set(); }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const N = computeTakes(parseTypes(req.nextUrl.searchParams.get('types')));
+
   const [cC, rC, bC, gC, chC, sC] = await Promise.all([
-    prisma.citation.count(), prisma.rabbi.count(), prisma.book.count(),
-    prisma.gematria.count(), prisma.chidush.count(), prisma.sikumEntry.count(),
+    N.citation ? prisma.citation.count() : 0,
+    N.rabbi ? prisma.rabbi.count() : 0,
+    N.book ? prisma.book.count() : 0,
+    N.gematria ? prisma.gematria.count() : 0,
+    N.chidush ? prisma.chidush.count() : 0,
+    N.sikum ? prisma.sikumEntry.count() : 0,
   ]);
 
   const [citations, rabbis, books, gematrias, chidushim, sikumEntries, yahrzeitIds] = await Promise.all([
-    prisma.citation.findMany({ skip: randOffset(cC, N.citation), take: N.citation, include: { locations: true } }),
-    prisma.rabbi.findMany({ skip: randOffset(rC, N.rabbi), take: N.rabbi }),
-    prisma.book.findMany({ skip: randOffset(bC, N.book), take: N.book }),
-    prisma.gematria.findMany({ skip: randOffset(gC, N.gematria), take: N.gematria }),
-    prisma.chidush.findMany({ skip: randOffset(chC, N.chidush), take: N.chidush }),
-    prisma.sikumEntry.findMany({ skip: randOffset(sC, N.sikum), take: N.sikum, include: { book: { select: { name: true, icon: true } } } }),
-    getYahrzeitRabbiIds(),
+    N.citation ? prisma.citation.findMany({ skip: randOffset(cC, N.citation), take: N.citation, include: { locations: true } }) : [],
+    N.rabbi ? prisma.rabbi.findMany({ skip: randOffset(rC, N.rabbi), take: N.rabbi }) : [],
+    N.book ? prisma.book.findMany({ skip: randOffset(bC, N.book), take: N.book }) : [],
+    N.gematria ? prisma.gematria.findMany({ skip: randOffset(gC, N.gematria), take: N.gematria }) : [],
+    N.chidush ? prisma.chidush.findMany({ skip: randOffset(chC, N.chidush), take: N.chidush }) : [],
+    N.sikum ? prisma.sikumEntry.findMany({ skip: randOffset(sC, N.sikum), take: N.sikum, include: { book: { select: { name: true, icon: true } } } }) : [],
+    N.rabbi ? getYahrzeitRabbiIds() : new Set<string>(),
   ]);
 
   // Yahrzeit rabbis fetched separately (may not be in the random slice)

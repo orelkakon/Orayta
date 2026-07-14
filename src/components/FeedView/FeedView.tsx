@@ -1,14 +1,17 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import styled, { keyframes, css } from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import Link from 'next/link';
 import FeedCard from './FeedCard';
 import FeedAmbient from './FeedAmbient';
 import FeedBackground from './FeedBackground';
+import FeedDedication from './FeedDedication';
+import FeedSettings from './FeedSettings';
 import SavedPanel from './SavedPanel';
-import type { FeedItem, FeedReaction, FeedDedicationSlide, Dedication } from '@/types';
+import type { FeedItem, FeedItemType, FeedReaction, FeedDedicationSlide, Dedication } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
+import { ALL_FEED_TYPES, getFeedPrefs, saveFeedPrefs } from '@/lib/feedPrefs';
 
 const Wrapper = styled.div`position: fixed; inset: 0; background: #050505; z-index: 900; overflow: hidden;`;
 
@@ -28,6 +31,8 @@ const BackBtn = styled(Link)`
 
 const Title = styled.div`color: white; font-family: var(--font-frank,serif); font-size: 1.05rem; font-weight: 700;`;
 
+const HeaderSide = styled.div`display: flex; align-items: center; gap: 8px;`;
+
 const BookmarkBtn = styled.button<{ $count: number }>`
   background: ${p => p.$count > 0 ? 'rgba(255,220,80,0.15)' : 'rgba(255,255,255,0.1)'};
   border: 1px solid ${p => p.$count > 0 ? 'rgba(255,220,80,0.4)' : 'rgba(255,255,255,0.18)'};
@@ -35,6 +40,16 @@ const BookmarkBtn = styled.button<{ $count: number }>`
   color: ${p => p.$count > 0 ? 'rgba(255,220,80,0.95)' : 'rgba(255,255,255,0.7)'};
   font-size: 0.85rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;
   transition: background 0.2s, border-color 0.2s, color 0.2s;
+`;
+
+const SettingsBtn = styled.button<{ $custom: boolean }>`
+  background: ${p => p.$custom ? 'rgba(160,130,255,0.18)' : 'rgba(255,255,255,0.1)'};
+  border: 1px solid ${p => p.$custom ? 'rgba(160,130,255,0.45)' : 'rgba(255,255,255,0.18)'};
+  backdrop-filter: blur(10px); border-radius: 50%;
+  width: 34px; height: 34px; font-size: 0.95rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s, border-color 0.2s;
+  &:hover { background: rgba(255,255,255,0.2); }
 `;
 
 const Scroll = styled.div`
@@ -57,100 +72,6 @@ const Spinner = styled.div`
   animation: ${spin} 0.7s linear infinite; z-index: 300;
 `;
 
-// Dedication slide with flickering candle
-const DedSlide = styled.div`
-  height: 100dvh; scroll-snap-align: start; flex-shrink: 0;
-  background: linear-gradient(160deg, #080610 0%, #10081a 50%, #080610 100%);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 14px; padding: 40px 32px; text-align: center;
-  border-top: 1px solid rgba(200,170,100,0.08);
-`;
-
-const flicker = keyframes`
-  0%,100% { transform: scaleX(1) scaleY(1); opacity: 0.92; }
-  20%      { transform: scaleX(0.88) scaleY(1.06); opacity: 1; }
-  45%      { transform: scaleX(1.1) scaleY(0.95); opacity: 0.85; }
-  70%      { transform: scaleX(0.93) scaleY(1.09); opacity: 0.95; }
-`;
-
-const CandleWrap = styled.div`position: relative; width: 28px; height: 46px; margin: 0 auto;`;
-const Flame = styled.div`
-  position: absolute; bottom: 12px; left: 0; right: 0; margin: auto;
-  width: 18px; height: 28px;
-  background: radial-gradient(ellipse at 50% 80%, #fff8a0 0%, #ffbe00 38%, #ff6200 68%, transparent 100%);
-  border-radius: 50% 50% 30% 30% / 60% 60% 40% 40%;
-  animation: ${flicker} 0.55s ease-in-out infinite;
-  box-shadow: 0 0 14px 5px rgba(255,140,0,0.45), 0 0 36px 10px rgba(255,90,0,0.12);
-`;
-const Wick = styled.div`
-  position: absolute; bottom: 10px; left: 0; right: 0; margin: auto;
-  width: 2px; height: 8px; background: #3a2000; border-radius: 1px; z-index: 1;
-`;
-const CandleBase = styled.div`
-  position: absolute; bottom: 0; left: 0; right: 0; margin: auto;
-  width: 16px; height: 12px;
-  background: linear-gradient(to bottom, rgba(255,220,150,0.18), rgba(255,200,120,0.08));
-  border-radius: 3px;
-`;
-
-const glowPulse = keyframes`0%,100%{opacity:0.55} 50%{opacity:0.9}`;
-const CandleGlow = styled.div`
-  position: absolute; bottom: 8px; left: 0; right: 0; margin: auto;
-  width: 60px; height: 60px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,160,0,0.18) 0%, transparent 70%);
-  animation: ${glowPulse} 1.1s ease-in-out infinite;
-  pointer-events: none;
-`;
-
-// --- Refua icon: glowing medical cross ---
-const RefuaWrap = styled.div`position: relative; width: 44px; height: 44px; margin: 0 auto;`;
-const RefuaGlow = styled.div`
-  position: absolute; inset: -14px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(100,190,255,0.18) 0%, transparent 70%);
-  animation: ${glowPulse} 1.4s ease-in-out infinite;
-`;
-const RefuaCross = styled.div`
-  position: absolute; inset: 0;
-  &::before { content:''; position:absolute; width:13px; height:44px; left:15.5px; top:0; background:rgba(130,200,255,0.85); border-radius:5px; }
-  &::after  { content:''; position:absolute; width:44px; height:13px; left:0; top:15.5px; background:rgba(130,200,255,0.85); border-radius:5px; }
-`;
-
-// --- Hatzlaha icon: glowing 5-pointed star ---
-const StarWrap = styled.div`position: relative; width: 46px; height: 46px; margin: 0 auto;`;
-const StarGlow = styled.div`
-  position: absolute; inset: -10px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%);
-  animation: ${glowPulse} 1.2s ease-in-out infinite 0.1s;
-`;
-const Star = styled.div`
-  position: absolute; inset: 0;
-  background: rgba(255,215,50,0.9);
-  clip-path: polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
-`;
-
-// --- Zivug icon: two overlapping rings ---
-const RingsWrap = styled.div`position: relative; width: 62px; height: 36px; margin: 0 auto;`;
-const Ring1 = styled.div`
-  position: absolute; width: 34px; height: 34px; top: 1px; left: 0;
-  border: 3.5px solid rgba(255,215,80,0.85); border-radius: 50%;
-  box-shadow: 0 0 12px rgba(255,215,0,0.28);
-`;
-const Ring2 = styled.div`
-  position: absolute; width: 34px; height: 34px; top: 1px; left: 28px;
-  border: 3.5px solid rgba(255,215,80,0.85); border-radius: 50%;
-  box-shadow: 0 0 12px rgba(255,215,0,0.28);
-`;
-
-const DedType = styled.div`color: rgba(200,170,100,0.65); font-size: 0.85rem; letter-spacing: 0.06em;`;
-const DedName = styled.div`
-  color: rgba(255,255,255,0.92); font-family: var(--font-frank,serif);
-  font-size: 1.6rem; font-weight: 700; line-height: 1.4;
-`;
-
-const DED_LABELS: Record<string, string> = {
-  iluy: 'לעילוי נשמת', refua: 'לרפואת', hatzlaha: 'להצלחת', zivug: 'לזיווג',
-};
-
 const REACTED_PREFIX = 'orayta_feed_reacted_';
 const SAVED_PREFIX   = 'orayta_feed_saved_';
 const PRELOAD_THRESHOLD = 6;
@@ -171,9 +92,13 @@ export default function FeedView() {
   const [savedIds, setSavedIds]         = useState<Set<string>>(new Set());
   const [savedItems, setSavedItems]     = useState<FeedItem[]>([]);
   const [savedMode, setSavedMode]       = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [prefs, setPrefs]               = useState<FeedItemType[]>(ALL_FEED_TYPES);
   const [dedications, setDedications]   = useState<Dedication[]>([]);
   const scrollRef   = useRef<HTMLDivElement>(null);
   const fetchingRef = useRef(false);
+  const prefsRef    = useRef<FeedItemType[]>(ALL_FEED_TYPES);
+  const genRef      = useRef(0);
   const slidesLenRef = useRef(0);
   const swipeStartX = useRef<number | null>(null);
 
@@ -181,10 +106,13 @@ export default function FeedView() {
     if (fetchingRef.current) return;
     fetchingRef.current = true;
     setFetching(true);
+    const gen = genRef.current;
     try {
-      const res = await fetch('/api/feed');
+      const types = prefsRef.current;
+      const query = types.length < ALL_FEED_TYPES.length ? `?types=${types.join(',')}` : '';
+      const res = await fetch(`/api/feed${query}`);
       const items: FeedItem[] = await res.json();
-      setCards(prev => [...prev, ...items]);
+      if (gen === genRef.current) setCards(prev => [...prev, ...items]);
     } finally {
       fetchingRef.current = false;
       setFetching(false);
@@ -220,6 +148,11 @@ export default function FeedView() {
     setSavedItems(saved);
     setSavedIds(new Set(saved.map(i => `${i.type}:${i.id}`)));
 
+    // Load feed preferences before the first fetch
+    const loadedPrefs = getFeedPrefs();
+    prefsRef.current = loadedPrefs;
+    setPrefs(loadedPrefs);
+
     void fetchMore();
     void fetch('/api/dedications').then(r => r.json()).then((d: Dedication[]) => {
       setDedications([...d].sort(() => Math.random() - 0.5));
@@ -247,6 +180,18 @@ export default function FeedView() {
     if (!el) return;
     const idx = Math.round(el.scrollTop / window.innerHeight);
     if (idx >= slidesLenRef.current - PRELOAD_THRESHOLD) void fetchMore();
+  }, [fetchMore]);
+
+  const handleSaveSettings = useCallback((types: FeedItemType[]) => {
+    saveFeedPrefs(types);
+    prefsRef.current = types;
+    setPrefs(types);
+    setSettingsOpen(false);
+    genRef.current += 1;       // discard any in-flight page of the old mix
+    fetchingRef.current = false;
+    setCards([]);
+    scrollRef.current?.scrollTo({ top: 0 });
+    void fetchMore();
   }, [fetchMore]);
 
   const handleReact = useCallback(async (item: FeedItem, reaction: FeedReaction) => {
@@ -319,9 +264,18 @@ export default function FeedView() {
       <Header>
         <BackBtn href="/">{HE.FEED_BACK}</BackBtn>
         <Title>{HE.FEED_TITLE}</Title>
-        <BookmarkBtn $count={savedItems.length} onClick={() => setSavedMode(true)}>
-          🔖{savedItems.length > 0 && ` ${savedItems.length}`}
-        </BookmarkBtn>
+        <HeaderSide>
+          <SettingsBtn
+            $custom={prefs.length < ALL_FEED_TYPES.length}
+            onClick={() => setSettingsOpen(true)}
+            aria-label={HE.FEED_SETTINGS_OPEN}
+          >
+            ⚙️
+          </SettingsBtn>
+          <BookmarkBtn $count={savedItems.length} onClick={() => setSavedMode(true)}>
+            🔖{savedItems.length > 0 && ` ${savedItems.length}`}
+          </BookmarkBtn>
+        </HeaderSide>
       </Header>
       {fetching && <Spinner />}
       <FeedBackground />
@@ -329,30 +283,7 @@ export default function FeedView() {
       <Scroll ref={scrollRef} onScroll={handleScroll} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
         {displaySlides.map((slide, i) => {
           if ('slideType' in slide) {
-            const d = slide as FeedDedicationSlide;
-            const isIluy = d.dedType === 'iluy';
-            return (
-              <DedSlide key={`ded-${d.id}-${i}`}>
-                {isIluy ? (
-                  <CandleWrap>
-                    <CandleGlow />
-                    <Flame />
-                    <Wick />
-                    <CandleBase />
-                  </CandleWrap>
-                ) : d.dedType === 'refua' ? (
-                  <RefuaWrap><RefuaGlow /><RefuaCross /></RefuaWrap>
-                ) : d.dedType === 'hatzlaha' ? (
-                  <StarWrap><StarGlow /><Star /></StarWrap>
-                ) : d.dedType === 'zivug' ? (
-                  <RingsWrap><Ring1 /><Ring2 /></RingsWrap>
-                ) : (
-                  <div style={{ fontSize: '2.4rem', marginBottom: 6 }}>🙏</div>
-                )}
-                <DedType>{DED_LABELS[d.dedType] ?? d.dedType}</DedType>
-                <DedName>{d.name}</DedName>
-              </DedSlide>
-            );
+            return <FeedDedication key={`ded-${slide.id}-${i}`} slide={slide} />;
           }
           const item = slide as FeedItem;
           const key = `${item.type}:${item.id}`;
@@ -374,6 +305,12 @@ export default function FeedView() {
         reacted={reacted}
         onClose={() => setSavedMode(false)}
         onRemove={handleBookmark}
+      />
+      <FeedSettings
+        open={settingsOpen}
+        selected={prefs}
+        onClose={() => setSettingsOpen(false)}
+        onSave={handleSaveSettings}
       />
     </Wrapper>
   );

@@ -1,9 +1,11 @@
 import type { SiddurSection } from './prayers/types';
 import { ASHREI_GROUPS } from './prayers/ashrei';
+import { TEFILLIN_GROUPS } from './prayers/tefillin';
 
 export const SIDDUR_SECTIONS: SiddurSection[] = [
   { name: 'ברכות השחר', sefariaRef: 'Siddur_Edot_HaMizrach, Preparatory_Prayers, Morning_Blessings' },
   { name: 'ברכות התורה', sefariaRef: 'Siddur_Edot_HaMizrach, Preparatory_Prayers, Torah_Blessings' },
+  { name: 'ברכות התפילין', groups: TEFILLIN_GROUPS },
   { name: 'למנצח בנגינות', isMenorah: true },
   { name: 'אשרי יושבי ביתך', groups: ASHREI_GROUPS },
   { name: 'קריאת שמע', sefariaRef: 'Siddur_Edot_HaMizrach, Weekday_Shacharit, The_Shema' },
