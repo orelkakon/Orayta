@@ -3,10 +3,10 @@
 import React, { useRef, useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import type { FeedItem, FeedReaction } from '@/types';
-import { renderContent, MetaChip, MetaChipLink, ReaderPayload } from './FeedCardContent';
+import { renderContent, MetaChip, MetaChipLink } from './FeedCardContent';
 import FeedCardActions from './FeedCardActions';
 import FeedReactionPill from './FeedReactionPill';
-import FeedReader from './FeedReader';
+import type { ReaderData } from './FeedReader';
 
 const TYPE_CONFIG: Record<string, { icon: string; label: string; grad: string }> = {
   citation: { icon: '📜', label: 'ציטוט תלמודי', grad: 'linear-gradient(160deg,#050a1e 0%,#0d1a52 60%,#1a2a7a 100%)' },
@@ -84,17 +84,18 @@ interface Props {
   isSaved: boolean;
   onReact: (item: FeedItem, r: FeedReaction) => void;
   onBookmark: (item: FeedItem) => void;
+  onExpand: (data: ReaderData) => void;
 }
 
-export default function FeedCard({ item, reacted, isSaved, onReact, onBookmark }: Props) {
+export default function FeedCard({ item, reacted, isSaved, onReact, onBookmark, onExpand }: Props) {
   const cfg = TYPE_CONFIG[item.type];
   const [visible, setVisible] = useState(false);
   const [showBurst, setShowBurst] = useState(false);
   const [imgPopup, setImgPopup] = useState<string | null>(null);
-  const [reader, setReader] = useState<ReaderPayload | null>(null);
   const slideRef = useRef<HTMLDivElement>(null);
   const lastTapRef = useRef(0);
-  const { body, meta, copyText } = renderContent(item, setImgPopup, setReader);
+  const { body, meta, copyText } = renderContent(item, setImgPopup,
+    r => onExpand({ ...r, icon: cfg.icon, label: cfg.label }));
 
   useEffect(() => {
     const el = slideRef.current;
@@ -124,12 +125,6 @@ export default function FeedCard({ item, reacted, isSaved, onReact, onBookmark }
         <ImgOverlay onClick={e => { e.stopPropagation(); setImgPopup(null); }}>
           <img src={imgPopup} alt="" style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 12, objectFit: 'contain' }} />
         </ImgOverlay>
-      )}
-      {reader && (
-        <FeedReader
-          data={{ ...reader, icon: cfg.icon, label: cfg.label }}
-          onClose={() => setReader(null)}
-        />
       )}
       <TypeBadge $v={visible}>{cfg.icon} {cfg.label}</TypeBadge>
       <ContentArea>

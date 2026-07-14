@@ -8,6 +8,7 @@ import FeedAmbient from './FeedAmbient';
 import FeedBackground from './FeedBackground';
 import FeedDedication from './FeedDedication';
 import FeedSettings from './FeedSettings';
+import FeedReader, { ReaderData } from './FeedReader';
 import SavedPanel from './SavedPanel';
 import type { FeedItem, FeedItemType, FeedReaction, FeedDedicationSlide, Dedication } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
@@ -17,21 +18,26 @@ const Wrapper = styled.div`position: fixed; inset: 0; background: #050505; z-ind
 
 const Header = styled.div`
   position: absolute; top: 0; left: 0; right: 0; height: 60px; z-index: 200;
-  display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  gap: 8px; padding: 0 12px;
   background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
 `;
 
 const BackBtn = styled(Link)`
-  color: white; font-size: 0.88rem; font-weight: 700;
+  justify-self: start; white-space: nowrap;
+  color: white; font-size: 0.85rem; font-weight: 700;
   background: rgba(255,255,255,0.12); backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; padding: 7px 16px;
+  border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; padding: 7px 14px;
   transition: background 0.15s;
   &:hover { background: rgba(255,255,255,0.22); }
 `;
 
-const Title = styled.div`color: white; font-family: var(--font-frank,serif); font-size: 1.05rem; font-weight: 700;`;
+const Title = styled.div`
+  color: white; font-family: var(--font-frank,serif); font-size: 1.05rem; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center;
+`;
 
-const HeaderSide = styled.div`display: flex; align-items: center; gap: 8px;`;
+const HeaderSide = styled.div`justify-self: end; display: flex; align-items: center; gap: 6px;`;
 
 const BookmarkBtn = styled.button<{ $count: number }>`
   background: ${p => p.$count > 0 ? 'rgba(255,220,80,0.15)' : 'rgba(255,255,255,0.1)'};
@@ -93,6 +99,7 @@ export default function FeedView() {
   const [savedItems, setSavedItems]     = useState<FeedItem[]>([]);
   const [savedMode, setSavedMode]       = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [reader, setReader]             = useState<ReaderData | null>(null);
   const [prefs, setPrefs]               = useState<FeedItemType[]>(ALL_FEED_TYPES);
   const [dedications, setDedications]   = useState<Dedication[]>([]);
   const scrollRef   = useRef<HTMLDivElement>(null);
@@ -295,10 +302,12 @@ export default function FeedView() {
               isSaved={savedIds.has(key)}
               onReact={handleReact}
               onBookmark={handleBookmark}
+              onExpand={setReader}
             />
           );
         })}
       </Scroll>
+      {reader && <FeedReader data={reader} onClose={() => setReader(null)} />}
       <SavedPanel
         open={savedMode}
         items={savedItems}

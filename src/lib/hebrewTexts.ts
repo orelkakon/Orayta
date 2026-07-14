@@ -475,6 +475,7 @@ export const HE = {
   FEED_SETTINGS_OPEN: 'הגדרות פיד',
   FEED_READ_MORE: 'קרא עוד',
   FEED_READER_SOURCE: 'למקור המלא',
+  FEED_READER_CLOSE: 'חזרה לגלילה',
   ABOUT_REACTIONS_HEART: 'אהבתי',
   ABOUT_REACTIONS_FIRE: 'מדהים',
   ABOUT_REACTIONS_SPARK: 'השראה',
