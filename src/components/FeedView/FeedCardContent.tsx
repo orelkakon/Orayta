@@ -3,13 +3,7 @@ import styled from 'styled-components';
 import Link from 'next/link';
 import type { FeedItem, Citation, Rabbi, Book, Chidush, FeedGematriaData, FeedSikumData, RabbiCategory } from '@/types';
 import { CATEGORY_LABELS } from '@/lib/rabbisData';
-
-export const MainText = styled.p`
-  color: rgba(255,255,255,0.95); font-family: var(--font-frank,serif);
-  font-size: 1.25rem; line-height: 1.75; max-width: 95%;
-  overflow: hidden; display: -webkit-box;
-  -webkit-line-clamp: 7; -webkit-box-orient: vertical;
-`;
+import ClampText from './FeedClampText';
 
 export const BigWord = styled.div`
   color: white; font-family: var(--font-frank,serif);
@@ -50,15 +44,24 @@ export const MetaChipLink = styled(Link)`
 `;
 
 export type MetaItem = { label: string; href?: string };
+export type ReaderPayload = { title?: string; text: string; href?: string };
 
-export function renderContent(item: FeedItem, onImgClick: (src: string) => void): { body: React.ReactNode; meta: MetaItem[]; copyText?: string } {
+export function renderContent(
+  item: FeedItem,
+  onImgClick: (src: string) => void,
+  onExpand: (reader: ReaderPayload) => void,
+): { body: React.ReactNode; meta: MetaItem[]; copyText?: string } {
   if (item.type === 'citation') {
     const d = item.data as Citation;
     const meta: MetaItem[] = d.locations.map(l => ({ label: `${l.masechet} · דף ${l.daf}${l.amud ? ` ${l.amud}` : ''}`, href: `/study?masechet=${encodeURIComponent(l.masechet)}` }));
-    return { body: <MainText>{d.content}</MainText>, meta, copyText: d.content };
+    return {
+      body: <ClampText text={d.content} onExpand={() => onExpand({ title: meta[0]?.label, text: d.content, href: meta[0]?.href })} />,
+      meta, copyText: d.content,
+    };
   }
   if (item.type === 'rabbi') {
     const d = item.data as Rabbi;
+    const href = `/rabbis?q=${encodeURIComponent(d.name)}`;
     return {
       body: <>
         {d.imageUrl && <RabbiImg src={d.imageUrl} alt={d.name}
@@ -69,9 +72,9 @@ export function renderContent(item: FeedItem, onImgClick: (src: string) => void)
         {d.fullName && d.fullName !== d.name && <SubText style={{ fontSize: '0.96rem', opacity: 0.75 }}>{d.fullName}</SubText>}
         {d.deathDate && !item.isYahrzeit && <YahrzeitTag>🕯️ יארצייט: {d.deathDate}</YahrzeitTag>}
         <SubText>{d.datePeriod}</SubText>
-        <MainText>{d.bio}</MainText>
+        <ClampText text={d.bio} onExpand={() => onExpand({ title: d.name, text: d.bio, href })} />
       </>,
-      meta: [{ label: CATEGORY_LABELS[d.category as RabbiCategory] ?? d.category, href: `/rabbis?q=${encodeURIComponent(d.name)}` }],
+      meta: [{ label: CATEGORY_LABELS[d.category as RabbiCategory] ?? d.category, href }],
     };
   }
   if (item.type === 'book') {
@@ -80,8 +83,15 @@ export function renderContent(item: FeedItem, onImgClick: (src: string) => void)
   }
   if (item.type === 'chidush') {
     const d = item.data as Chidush;
-    const meta: MetaItem[] = [d.source, d.author].filter((x): x is string => Boolean(x)).map(s => ({ label: s }));
-    return { body: <MainText>{d.text}</MainText>, meta, copyText: d.text };
+    const href = `/chidushim?q=${encodeURIComponent(d.text.slice(0, 25).trim())}`;
+    const meta: MetaItem[] = [
+      ...(d.source ? [{ label: d.source, href: `/chidushim?q=${encodeURIComponent(d.source)}` }] : []),
+      ...(d.author ? [{ label: d.author }] : []),
+    ];
+    return {
+      body: <ClampText text={d.text} onExpand={() => onExpand({ title: d.source ?? undefined, text: d.text, href })} />,
+      meta, copyText: d.text,
+    };
   }
   if (item.type === 'gematria') {
     const d = item.data as FeedGematriaData;
@@ -90,9 +100,16 @@ export function renderContent(item: FeedItem, onImgClick: (src: string) => void)
   }
   if (item.type === 'sikum') {
     const d = item.data as FeedSikumData;
-    const meta: MetaItem[] = [{ label: `${d.bookIcon ?? '📝'} ${d.bookName}`, href: `/sikumim?q=${encodeURIComponent(d.bookName)}` }];
+    const href = `/sikumim?q=${encodeURIComponent(d.bookName)}`;
+    const meta: MetaItem[] = [{ label: `${d.bookIcon ?? '📝'} ${d.bookName}`, href }];
     if (d.location) meta.push({ label: d.location });
-    return { body: <>{d.title && <BigWord>{d.title}</BigWord>}<MainText>{d.text}</MainText></>, meta };
+    return {
+      body: <>
+        {d.title && <BigWord>{d.title}</BigWord>}
+        <ClampText text={d.text} onExpand={() => onExpand({ title: d.title || d.bookName, text: d.text, href })} />
+      </>,
+      meta,
+    };
   }
   return { body: null, meta: [] };
 }
