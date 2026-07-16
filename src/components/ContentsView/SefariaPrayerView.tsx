@@ -67,7 +67,9 @@ export default function SefariaPrayerView({ sefariaRef }: { sefariaRef: string }
   useEffect(() => {
     setLoading(true);
     setError(false);
-    fetch(`https://www.sefaria.org/api/texts/${toUrl(sefariaRef)}?lang=he`)
+    // context=0: for segment-range refs (e.g. The_Shema.2-9) return only the
+    // requested range instead of the whole surrounding node
+    fetch(`https://www.sefaria.org/api/texts/${toUrl(sefariaRef)}?lang=he&context=0`)
       .then(r => r.json())
       .then((d: SefariaResp) => {
         const items = d.he ?? [];
