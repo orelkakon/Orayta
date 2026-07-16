@@ -41,11 +41,11 @@ const TypeLabel = styled.span`
   font-size: 0.72rem; color: ${theme.colors.secondary}; font-weight: 700;
 `;
 
-const TYPE_LABELS: Record<string, string> = {
-  iluy:     HE.DEDICATION_TYPE_ILUY,
-  refua:    HE.DEDICATION_TYPE_REFUA,
-  hatzlaha: HE.DEDICATION_TYPE_HATZLAHA,
-  zivug:    HE.DEDICATION_TYPE_ZIVUG,
+const TYPES: Record<string, { icon: string; label: string }> = {
+  iluy:     { icon: '🕯️', label: HE.DEDICATION_TYPE_ILUY },
+  refua:    { icon: '❤️‍🩹', label: HE.DEDICATION_TYPE_REFUA },
+  hatzlaha: { icon: '🌟', label: HE.DEDICATION_TYPE_HATZLAHA },
+  zivug:    { icon: '💍', label: HE.DEDICATION_TYPE_ZIVUG },
 };
 
 export default function DedicationsTicker() {
@@ -70,8 +70,8 @@ export default function DedicationsTicker() {
       <Tape $secs={secs}>
         {items.map((d, i) => (
           <Item key={`${d.id}-${i}`}>
-            <span>🕯️</span>
-            <TypeLabel>{TYPE_LABELS[d.type] ?? d.type}</TypeLabel>
+            <span>{TYPES[d.type]?.icon ?? '🕯️'}</span>
+            <TypeLabel>{TYPES[d.type]?.label ?? d.type}</TypeLabel>
             {d.name}
           </Item>
         ))}
