@@ -63,9 +63,9 @@ const SectionCard = styled(Link)`
   border: 1px solid ${theme.colors.borderLight};
   border-top: 3px solid ${theme.colors.secondary};
   border-radius: ${theme.radii.lg};
-  padding: ${theme.spacing.md} ${theme.spacing.xs};
+  padding: ${theme.spacing.lg} ${theme.spacing.sm};
   display: flex; flex-direction: column; align-items: center;
-  gap: 4px; text-align: center;
+  gap: 5px; text-align: center;
   box-shadow: ${theme.shadows.sm};
   transition: box-shadow 0.18s, transform 0.18s, border-top-color 0.18s;
   &:hover {
@@ -73,17 +73,18 @@ const SectionCard = styled(Link)`
     transform: translateY(-3px);
     border-top-color: ${theme.colors.primary};
   }
+  @media (max-width: 480px) { padding: ${theme.spacing.md} ${theme.spacing.xs}; }
 `;
 
-const CardIcon = styled.span`font-size: 1.55rem; line-height: 1;`;
+const CardIcon = styled.span`font-size: 1.9rem; line-height: 1;`;
 const CardLabel = styled.span`
   font-family: ${theme.fonts.body};
-  font-size: 1.02rem; font-weight: 800; color: ${theme.colors.primary};
+  font-size: 1.18rem; font-weight: 800; color: ${theme.colors.primary};
   line-height: 1.25;
-  @media (max-width: 480px) { font-size: 0.94rem; }
+  @media (max-width: 480px) { font-size: 1.02rem; }
 `;
 const CardDesc = styled.span`
-  font-size: 0.72rem; color: ${theme.colors.textMuted}; line-height: 1.4;
+  font-size: 0.75rem; color: ${theme.colors.textMuted}; line-height: 1.4;
   @media (max-width: 400px) { display: none; }
 `;
 

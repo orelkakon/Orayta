@@ -61,10 +61,20 @@ export function buildDailyShareMessage(d: DailyShareData): string {
   return parts.join('\n\n');
 }
 
-/** Opens WhatsApp with the message, letting the user pick a chat. */
+/**
+ * Opens WhatsApp with the message, letting the user pick a chat.
+ * Same strategy as the feed share (which works everywhere): native share
+ * sheet first — the user taps WhatsApp and gets its chat picker — and the
+ * wa.me link only as a fallback for browsers without navigator.share.
+ */
 export function shareDailyToWhatsApp(d: DailyShareData): void {
-  const url = `https://wa.me/?text=${encodeURIComponent(buildDailyShareMessage(d))}`;
-  // window.open is blocked in some in-app/PWA contexts — fall back to direct navigation
-  const win = window.open(url, '_blank', 'noopener,noreferrer');
-  if (!win) window.location.href = url;
+  const text = buildDailyShareMessage(d);
+  const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  if (typeof navigator !== 'undefined' && navigator.share) {
+    navigator.share({ text, title: HE.DAILY_SHARE_TITLE }).catch(err => {
+      if ((err as Error)?.name !== 'AbortError') window.open(waUrl, '_blank');
+    });
+  } else {
+    window.open(waUrl, '_blank');
+  }
 }
