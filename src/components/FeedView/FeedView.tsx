@@ -241,6 +241,7 @@ export default function FeedView() {
         next.add(key);
         try { localStorage.setItem(`${SAVED_PREFIX}${key}`, JSON.stringify(item)); } catch {}
         setSavedItems(prev2 => [...prev2, item]);
+        void fetch('/api/feed/save', { method: 'POST' }).catch(() => {});
       }
       return next;
     });

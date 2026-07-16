@@ -4,7 +4,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
-import { SECTIONS, ContentSection } from '@/lib/contentsSections';
+import { SECTIONS, CONTENT_GROUPS, ContentSection } from '@/lib/contentsSections';
 import ContentReader from './ContentReader';
 
 const Page = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
@@ -23,14 +23,24 @@ const BackBtn = styled.button`
 const Title = styled.h1`font-size: 1.8rem; color: ${theme.colors.primary};`;
 const Subtitle = styled.p`font-size: 0.95rem; color: ${theme.colors.textMuted};`;
 
+const GroupBlock = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.sm};`;
+
+const GroupTitle = styled.h2`
+  display: flex; align-items: center; gap: ${theme.spacing.sm};
+  font-family: ${theme.fonts.body}; font-size: 1.1rem; font-weight: 700;
+  color: ${theme.colors.primary};
+  padding-bottom: 6px;
+  border-bottom: 2px solid ${theme.colors.borderLight};
+`;
+
+const GroupIcon = styled.span`font-size: 1rem; line-height: 1;`;
+
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-auto-rows: 1fr;
+  grid-template-columns: repeat(4, 1fr);
   gap: ${theme.spacing.sm};
-  height: calc(85vh - 140px);
-  @media (max-width: 700px) { grid-template-columns: repeat(4, 1fr); height: calc(85vh - 120px); }
-  @media (max-width: 480px) { grid-template-columns: repeat(2, 1fr); height: calc(85vh - 110px); }
+  @media (max-width: 700px) { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 480px) { grid-template-columns: repeat(2, 1fr); }
 `;
 
 const SectionCard = styled.button`
@@ -51,11 +61,11 @@ const SectionCard = styled.button`
 const CardIcon = styled.div`font-size: 1.9rem; line-height: 1;`;
 
 const CardTitle = styled.div`
-  font-family: ${theme.fonts.body}; font-size: 0.88rem; font-weight: 700;
+  font-family: ${theme.fonts.body}; font-size: 0.95rem; font-weight: 700;
   color: ${theme.colors.primary}; line-height: 1.3;
 `;
 
-const CardDesc = styled.div`font-size: 0.72rem; color: ${theme.colors.textMuted}; line-height: 1.3;`;
+const CardDesc = styled.div`font-size: 0.74rem; color: ${theme.colors.textMuted}; line-height: 1.3;`;
 
 const ReaderHeader = styled.div`
   display: flex; align-items: center; gap: ${theme.spacing.md};
@@ -95,15 +105,20 @@ export default function ContentsView() {
           <Subtitle>{HE.CONTENTS_SUBTITLE}</Subtitle>
         </div>
       </Header>
-      <Grid>
-        {SECTIONS.map(s => (
-          <SectionCard key={s.id} onClick={() => setActive(s)}>
-            <CardIcon>{s.icon}</CardIcon>
-            <CardTitle>{s.title}</CardTitle>
-            <CardDesc>{s.desc}</CardDesc>
-          </SectionCard>
-        ))}
-      </Grid>
+      {CONTENT_GROUPS.map(g => (
+        <GroupBlock key={g.key}>
+          <GroupTitle><GroupIcon>{g.icon}</GroupIcon>{g.title}</GroupTitle>
+          <Grid>
+            {SECTIONS.filter(s => s.group === g.key).map(s => (
+              <SectionCard key={s.id} onClick={() => setActive(s)}>
+                <CardIcon>{s.icon}</CardIcon>
+                <CardTitle>{s.title}</CardTitle>
+                <CardDesc>{s.desc}</CardDesc>
+              </SectionCard>
+            ))}
+          </Grid>
+        </GroupBlock>
+      ))}
     </Page>
   );
 }

@@ -2,6 +2,7 @@ export type { StaticItem, StaticGroup, SiddurSection } from './prayers/types';
 import type { StaticGroup, SiddurSection } from './prayers/types';
 import { BRACHOT_NEHENIN_GROUPS } from './prayers/brachotNehenin';
 import { BRACHOT_REIYA_GROUPS } from './prayers/brachotReiya';
+import { BRACHOT_ACHARONOT_GROUPS } from './prayers/brachotAchronot';
 import { KADDISH_GROUPS } from './prayers/kaddish';
 import { ASHER_YATZAR } from './staticPrayers';
 import { SIDDUR_SECTIONS } from './siddurContent';
@@ -10,11 +11,20 @@ export interface SefariaBook { ref: string; name: string; chapters: number; }
 
 export type SectionType = 'sefaria-chapters' | 'sefaria-books' | 'static' | 'static-sections' | 'sefaria-prayer';
 
+export type ContentGroupKey = 'tefillot' | 'brachot' | 'tanakh';
+
+export const CONTENT_GROUPS: { key: ContentGroupKey; icon: string; title: string }[] = [
+  { key: 'tefillot', icon: '🕯️', title: 'תפילות' },
+  { key: 'brachot',  icon: '🙏', title: 'ברכות' },
+  { key: 'tanakh',   icon: '📖', title: 'תנ״ך' },
+];
+
 export interface ContentSection {
   id: string;
   icon: string;
   title: string;
   desc: string;
+  group: ContentGroupKey;
   type: SectionType;
   ref?: string;
   sefariaRef?: string;
@@ -68,11 +78,13 @@ export const KETUVIM_BOOKS: SefariaBook[] = [
 ];
 
 export const SECTIONS: ContentSection[] = [
+  /* ── תפילות ── */
   {
     id: 'siddur',
     icon: '🕯️',
     title: 'סידור',
     desc: 'ברכות השחר, קריאת שמע, עמידה',
+    group: 'tefillot',
     type: 'static-sections',
     staticSections: SIDDUR_SECTIONS,
   },
@@ -81,47 +93,76 @@ export const SECTIONS: ContentSection[] = [
     icon: '📿',
     title: 'תהילים',
     desc: '150 פרקים',
+    group: 'tefillot',
     type: 'sefaria-chapters',
     ref: 'Psalms',
     totalChapters: 150,
   },
   {
+    id: 'kaddish',
+    icon: '🕯️',
+    title: 'קדיש',
+    desc: 'קדיש יתום, שלם ודרבנן',
+    group: 'tefillot',
+    type: 'static',
+    staticGroups: KADDISH_GROUPS,
+  },
+  /* ── ברכות ── */
+  {
     id: 'birkhat-hamazon',
     icon: '🍞',
-    title: 'ברכת המזון',
-    desc: 'נוסח עדות המזרח',
-    type: 'sefaria-prayer',
-    sefariaRef: 'Siddur_Edot_HaMizrach, Post_Meal_Blessing',
+    title: 'ברכות אחרונות',
+    desc: 'ברכת המזון, מעין שלוש ובורא נפשות',
+    group: 'brachot',
+    type: 'static-sections',
+    staticSections: [
+      { name: 'ברכת המזון', sefariaRef: 'Siddur_Edot_HaMizrach, Post_Meal_Blessing' },
+      { name: 'מעין שלוש ובורא נפשות', groups: BRACHOT_ACHARONOT_GROUPS },
+    ],
   },
   {
     id: 'brachot-nehenin',
     icon: '🙏',
     title: 'ברכות הנהנין',
     desc: 'ברכות על אוכל, שתייה וריח',
+    group: 'brachot',
     type: 'static',
     staticGroups: BRACHOT_NEHENIN_GROUPS,
+  },
+  {
+    id: 'asher-yatzar',
+    icon: '🤲',
+    title: 'אשר יצר',
+    desc: 'ברכת אשר יצר',
+    group: 'brachot',
+    type: 'static',
+    staticGroups: [{ title: 'אשר יצר', items: ASHER_YATZAR }],
   },
   {
     id: 'brachot-reiya',
     icon: '👁️',
     title: 'ברכות הראייה',
     desc: 'ברכות על תופעות טבע ואנשים',
+    group: 'brachot',
     type: 'static',
     staticGroups: BRACHOT_REIYA_GROUPS,
   },
+  /* ── תנ״ך ── */
   {
     id: 'torah',
     icon: '📜',
     title: 'תורה',
     desc: 'חמשה חומשי תורה',
+    group: 'tanakh',
     type: 'sefaria-books',
     books: TORAH_BOOKS,
   },
   {
     id: 'neviim',
-    icon: '📣',
+    icon: '🕊️',
     title: 'נביאים',
     desc: 'נביאים ראשונים ואחרונים',
+    group: 'tanakh',
     type: 'sefaria-books',
     books: NEVIIM_BOOKS,
   },
@@ -130,23 +171,8 @@ export const SECTIONS: ContentSection[] = [
     icon: '📚',
     title: 'כתובים',
     desc: 'כתבי הקודש',
+    group: 'tanakh',
     type: 'sefaria-books',
     books: KETUVIM_BOOKS,
-  },
-  {
-    id: 'asher-yatzar',
-    icon: '🤲',
-    title: 'אשר יצר',
-    desc: 'ברכת אשר יצר',
-    type: 'static',
-    staticGroups: [{ title: 'אשר יצר', items: ASHER_YATZAR }],
-  },
-  {
-    id: 'kaddish',
-    icon: '🕯️',
-    title: 'קדיש',
-    desc: 'קדיש יתום, שלם ודרבנן',
-    type: 'static',
-    staticGroups: KADDISH_GROUPS,
   },
 ];

@@ -9,27 +9,35 @@ import { GeoLocation, LocState } from './TodayView';
 interface ZmanimTimes {
   alotHaShachar?: string;
   sunrise?: string;
-  sofZmanShma?: string;
-  sofZmanTfilla?: string;
+  sofZmanShmaMGA?: string;
+  sofZmanShma?: string;      // גר״א
+  sofZmanTfillaMGA?: string;
+  sofZmanTfilla?: string;    // גר״א
   chatzot?: string;
   minchaGedola?: string;
   plagHaMincha?: string;
   sunset?: string;
   tzeit7083deg?: string;
+  tzeit72min?: string;
   dusk?: string;
 }
 interface HebcalZmanim { times: ZmanimTimes; }
 
+/* hebcal: sofZmanShma/sofZmanTfilla are per the גר״א; the מג״א values
+   carry an explicit MGA suffix — do not swap them. */
 const ENTRIES: { key: keyof ZmanimTimes; label: string }[] = [
-  { key: 'alotHaShachar',  label: HE.TODAY_ALOT },
-  { key: 'sunrise',        label: HE.TODAY_SUNRISE },
-  { key: 'sofZmanShma',    label: HE.TODAY_SHMA },
-  { key: 'sofZmanTfilla',  label: HE.TODAY_TFILLA },
-  { key: 'chatzot',        label: HE.TODAY_CHATZOT },
-  { key: 'minchaGedola',   label: HE.TODAY_MINCHA_GEDOLA },
-  { key: 'plagHaMincha',   label: HE.TODAY_PLAG },
-  { key: 'sunset',         label: HE.TODAY_SUNSET },
-  { key: 'tzeit7083deg',   label: HE.TODAY_TZEIT },
+  { key: 'alotHaShachar',   label: HE.TODAY_ALOT },
+  { key: 'sunrise',         label: HE.TODAY_SUNRISE },
+  { key: 'sofZmanShmaMGA',  label: HE.TODAY_SHMA },
+  { key: 'sofZmanShma',     label: HE.TODAY_SHMA_GRA },
+  { key: 'sofZmanTfillaMGA',label: HE.TODAY_TFILLA },
+  { key: 'sofZmanTfilla',   label: HE.TODAY_TFILLA_GRA },
+  { key: 'chatzot',         label: HE.TODAY_CHATZOT },
+  { key: 'minchaGedola',    label: HE.TODAY_MINCHA_GEDOLA },
+  { key: 'plagHaMincha',    label: HE.TODAY_PLAG },
+  { key: 'sunset',          label: HE.TODAY_SUNSET },
+  { key: 'tzeit7083deg',    label: HE.TODAY_TZEIT },
+  { key: 'tzeit72min',      label: HE.TODAY_TZEIT_RT },
 ];
 
 const Card = styled.div`

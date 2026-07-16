@@ -63,6 +63,40 @@ const GlobalStylesheet = createGlobalStyle`
     font-size: 16px;
   }
 
+  /* ── Accessibility overrides (set by AccessibilityWidget via data-attrs) ── */
+  html[data-acc-font="1"] { font-size: 18px; }
+  html[data-acc-font="2"] { font-size: 20px; }
+
+  html[data-acc-contrast="on"] {
+    --color-background:   #FFFFFF;
+    --color-surface:      #FFFFFF;
+    --color-surface-alt:  #F2F2F2;
+    --color-primary:      #2A1500;
+    --color-primary-light:#3D2A10;
+    --color-secondary:    #6B3E12;
+    --color-text:         #000000;
+    --color-text-muted:   #1A1A1A;
+    --color-text-light:   #333333;
+    --color-border:       #444444;
+    --color-border-light: #666666;
+  }
+
+  html[data-acc-readable="on"] * {
+    font-family: var(--font-heebo, 'Heebo', system-ui, sans-serif) !important;
+  }
+
+  html[data-acc-links="on"] a {
+    text-decoration: underline !important;
+    text-underline-offset: 2px;
+  }
+
+  html[data-acc-motion="on"] *,
+  html[data-acc-motion="on"] *::before,
+  html[data-acc-motion="on"] *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
   body {
     font-family: ${theme.fonts.ui};
     background-color: ${theme.colors.background};

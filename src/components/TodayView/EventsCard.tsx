@@ -5,10 +5,10 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Rabbi } from '@/types';
+import { matchYahrzeitRabbis, HebDateParts } from '@/lib/yahrzeit';
 
 interface HebItem { title: string; date: string; category: string; hebrew?: string; memo?: string; }
 interface HebResp { items: HebItem[]; }
-interface HebDate { hd: number; hm: string; }
 
 const CATEGORY_COLORS: Record<string, string> = {
   holiday:    'var(--color-accent)',
@@ -28,21 +28,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   shabbat:    'שבת',
   yahrzeit:   HE.YAHRZEIT_BADGE,
 };
-
-const GEMATRIA = ['', 'א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י',
-  'י״א', 'י״ב', 'י״ג', 'י״ד', 'ט״ו', 'ט״ז', 'י״ז', 'י״ח', 'י״ט', 'כ',
-  'כ״א', 'כ״ב', 'כ״ג', 'כ״ד', 'כ״ה', 'כ״ו', 'כ״ז', 'כ״ח', 'כ״ט', 'ל'];
-
-const MONTHS_HE: Record<string, string> = {
-  'Nisan': 'ניסן', 'Iyyar': 'אייר', 'Sivan': 'סיון', 'Tamuz': 'תמוז',
-  'Av': 'אב', 'Elul': 'אלול', 'Tishrei': 'תשרי', 'Cheshvan': 'חשוון',
-  'Kislev': 'כסלו', 'Tevet': 'טבת', 'Shvat': 'שבט', 'Adar': 'אדר',
-  'Adar I': 'אדר א׳', 'Adar II': 'אדר ב׳',
-};
-
-function normalize(s: string) {
-  return s.replace(/[״׳"']/g, '').replace(/\s+/g, ' ').trim();
-}
 
 const Card = styled.div`
   background: ${theme.colors.surface};
@@ -117,7 +102,7 @@ export default function EventsCard({ date }: Props) {
       fetch(`https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=on&nx=on&mf=on&ss=on&omer=on&year=${year}&month=${month}&gy=gregorian&lg=he`)
         .then(r => r.json() as Promise<HebResp>),
       fetch(`https://www.hebcal.com/converter?cfg=json&date=${date}&g2h=1&strict=1`)
-        .then(r => r.json() as Promise<HebDate>),
+        .then(r => r.json() as Promise<HebDateParts>),
       fetch('/api/rabbis').then(r => r.json() as Promise<Rabbi[]>),
     ]).then(([calData, hd, rabbis]) => {
       const today = (calData.items ?? []).filter(
@@ -125,8 +110,7 @@ export default function EventsCard({ date }: Props) {
       );
       setEvents(today);
 
-      const todayKey = normalize(`${GEMATRIA[hd.hd] ?? ''} ${MONTHS_HE[hd.hm] ?? hd.hm}`);
-      const matchingRabbis = rabbis.filter(r => r.deathDate && normalize(r.deathDate) === todayKey);
+      const matchingRabbis = matchYahrzeitRabbis(rabbis, hd);
       setYahrzeits(matchingRabbis.map(r => ({
         title: r.name,
         date,

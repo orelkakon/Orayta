@@ -4,6 +4,7 @@ import StyledComponentsRegistry from './StyledComponentsRegistry';
 import GlobalStyles from './GlobalStyles';
 import { RoleProvider } from './RoleContext';
 import { ThemeProvider } from './ThemeContext';
+import AccessibilityWidget from './AccessibilityWidget';
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
@@ -12,6 +13,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
       <ThemeProvider>
         <RoleProvider>
           {children}
+          <AccessibilityWidget />
         </RoleProvider>
       </ThemeProvider>
     </StyledComponentsRegistry>

@@ -56,7 +56,10 @@ const Grid = styled.div`
   grid-template-columns: repeat(3, 1fr);
   gap: ${theme.spacing.md};
   width: 100%;
-  @media (max-width: 480px) { gap: ${theme.spacing.sm}; }
+  @media (max-width: 560px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: ${theme.spacing.sm};
+  }
 `;
 
 const SectionCard = styled(Link)`
@@ -64,9 +67,9 @@ const SectionCard = styled(Link)`
   border: 1px solid ${theme.colors.borderLight};
   border-top: 3px solid ${theme.colors.secondary};
   border-radius: ${theme.radii.lg};
-  padding: 10px ${theme.spacing.md};
+  padding: ${theme.spacing.lg} ${theme.spacing.md};
   display: flex; flex-direction: column; align-items: center;
-  gap: ${theme.spacing.xs}; text-align: center;
+  gap: 6px; text-align: center;
   box-shadow: ${theme.shadows.sm};
   transition: box-shadow 0.18s, transform 0.18s, border-top-color 0.18s;
   &:hover {
@@ -74,15 +77,17 @@ const SectionCard = styled(Link)`
     transform: translateY(-3px);
     border-top-color: ${theme.colors.primary};
   }
+  @media (max-width: 560px) { padding: ${theme.spacing.md} ${theme.spacing.sm}; }
 `;
 
-const CardIcon = styled.span`font-size: 1.7rem; line-height: 1;`;
+const CardIcon = styled.span`font-size: 2.1rem; line-height: 1;`;
 const CardLabel = styled.span`
   font-family: ${theme.fonts.body};
-  font-size: 0.92rem; font-weight: 700; color: ${theme.colors.primary};
+  font-size: 1.18rem; font-weight: 800; color: ${theme.colors.primary};
+  line-height: 1.25;
 `;
 const CardDesc = styled.span`
-  font-size: 0.7rem; color: ${theme.colors.textMuted}; line-height: 1.4;
+  font-size: 0.82rem; color: ${theme.colors.textMuted}; line-height: 1.45;
 `;
 
 const ContactBanner = styled(Link)`
@@ -118,8 +123,6 @@ export default function HomeView() {
         </QuoteBlock>
       </Hero>
 
-      <DedicationsBar part="ticker" />
-
       <Divider />
 
       <Grid>
@@ -133,6 +136,8 @@ export default function HomeView() {
       </Grid>
 
       <FeedBannerBlock />
+
+      <DedicationsBar part="ticker" />
 
       <ContactBanner href="/contact">
         <ContactLeft>

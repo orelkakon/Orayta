@@ -7,14 +7,13 @@ import { HE } from '@/lib/hebrewTexts';
 import { Rabbi, Citation, Chidush } from '@/types';
 import { CATEGORY_LABELS, CATEGORY_COLORS } from '@/lib/rabbisData';
 import type { RabbiCategory } from '@/types';
+import { matchYahrzeitRabbis, HebDateParts } from '@/lib/yahrzeit';
+import { shareDailyToWhatsApp, DailySikum } from '@/lib/dailyShare';
 
 const DAY = Math.floor(Date.now() / 86400000);
 const pick = <T,>(arr: T[]): T | null => arr.length ? arr[DAY % arr.length] : null;
 
-interface DailySikum {
-  id: string; title: string | null; text: string; date: string;
-  book: { name: string; author: string | null; };
-}
+interface HebConverterResp extends HebDateParts { hebrew: string; }
 
 const Wrapper = styled.div`width: 100%; display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
 
@@ -24,6 +23,18 @@ const Header = styled.div`
 `;
 
 const Title = styled.h2`font-size: 1rem; font-weight: 600; color: ${theme.colors.textMuted};`;
+
+const ShareBtn = styled.button`
+  margin-inline-start: auto;
+  display: inline-flex; align-items: center; gap: 6px;
+  background: linear-gradient(135deg, #25D366 0%, #1DA851 100%);
+  color: white; font-size: 0.8rem; font-weight: 700;
+  padding: 6px 14px; border-radius: 20px;
+  box-shadow: ${theme.shadows.sm};
+  transition: transform 0.15s, box-shadow 0.15s;
+  &:hover { transform: translateY(-1px); box-shadow: ${theme.shadows.md}; }
+  &:active { transform: scale(0.96); }
+`;
 
 const Cards = styled.div`
   display: grid; grid-template-columns: repeat(4, 1fr); gap: ${theme.spacing.sm};
@@ -61,19 +72,29 @@ export default function DailySection() {
   const [citation, setCitation] = useState<Citation | null>(null);
   const [sikum, setSikum] = useState<DailySikum | null>(null);
   const [chidush, setChidush] = useState<Chidush | null>(null);
+  const [yahrzeitNames, setYahrzeitNames] = useState<string[]>([]);
+  const [hebrewDate, setHebrewDate] = useState('');
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     void Promise.all([
       fetch('/api/rabbis').then(r => r.json()) as Promise<Rabbi[]>,
       fetch('/api/citations').then(r => r.json()) as Promise<Citation[]>,
       fetch('/api/sikum-entries/daily').then(r => r.json()) as Promise<DailySikum | null>,
       fetch('/api/chidushim').then(r => r.json()) as Promise<Chidush[]>,
-    ]).then(([rs, cs, sk, chs]) => {
+      fetch(`https://www.hebcal.com/converter?cfg=json&date=${dateStr}&g2h=1&strict=1`)
+        .then(r => r.json() as Promise<HebConverterResp>).catch(() => null),
+    ]).then(([rs, cs, sk, chs, hd]) => {
       setRabbi(pick(rs));
       setCitation(pick(cs));
       setSikum(sk);
       setChidush(pick(chs));
+      if (hd) {
+        setHebrewDate(hd.hebrew ?? '');
+        setYahrzeitNames(matchYahrzeitRabbis(rs, hd).map(r => r.name));
+      }
       setReady(true);
     });
   }, []);
@@ -84,11 +105,16 @@ export default function DailySection() {
   const catColor = rabbi ? CATEGORY_COLORS[rabbi.category as RabbiCategory] : '';
   const catLabel = rabbi ? CATEGORY_LABELS[rabbi.category as RabbiCategory] : '';
 
+  const handleShare = () => shareDailyToWhatsApp({
+    hebrewDate, rabbi, citation, sikum, chidush, yahrzeitNames,
+  });
+
   return (
     <Wrapper>
       <Header>
         <span>📅</span>
         <Title>{HE.DAILY_TITLE}</Title>
+        <ShareBtn onClick={handleShare}>💬 {HE.DAILY_SHARE_WA}</ShareBtn>
       </Header>
       <Cards>
         {/* Combined rabbi + book card */}

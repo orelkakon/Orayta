@@ -94,12 +94,14 @@ export default function VisitsCounter() {
   const [questions, setQuestions]   = useState<number | null>(null);
   const [content, setContent]       = useState<ContentStats | null>(null);
   const [reactions, setReactions]   = useState<ReactionsData | null>(null);
+  const [saves, setSaves]           = useState<number | null>(null);
 
   useEffect(() => {
     void fetch('/api/visits').then(r => r.json()).then((d: { count: number }) => setVisits(d.count));
     void fetch('/api/quiz/answered').then(r => r.json()).then((d: { count: number }) => setQuestions(d.count));
     void fetch('/api/stats').then(r => r.json()).then(setContent as (v: unknown) => void);
     void fetch('/api/feed/like').then(r => r.json()).then((d: ReactionsData) => setReactions(d));
+    void fetch('/api/feed/save').then(r => r.json()).then((d: { count: number }) => setSaves(d.count));
   }, []);
 
   const displayedVisits    = useAnimatedCount(visits);
@@ -108,6 +110,7 @@ export default function VisitsCounter() {
   const displayedHeart     = useAnimatedCount(reactions?.heart ?? null);
   const displayedFire      = useAnimatedCount(reactions?.fire ?? null);
   const displayedSpark     = useAnimatedCount(reactions?.spark ?? null);
+  const displayedSaves     = useAnimatedCount(saves);
 
   const chips = content ? [
     { emoji: '📜', num: content.citations,  label: 'ציטוטים' },
@@ -150,6 +153,7 @@ export default function VisitsCounter() {
             { emoji: '❤️', num: displayedHeart, label: HE.ABOUT_REACTIONS_HEART },
             { emoji: '🔥', num: displayedFire,  label: HE.ABOUT_REACTIONS_FIRE },
             { emoji: '✨', num: displayedSpark,  label: HE.ABOUT_REACTIONS_SPARK },
+            { emoji: '🔖', num: displayedSaves,  label: HE.ABOUT_FEED_SAVES },
           ].map(c => (
             <ContentChip key={c.label}>
               <ChipEmoji>{c.emoji}</ChipEmoji>
