@@ -6,8 +6,10 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { A11ySettings, DEFAULT_A11Y, loadA11y, saveA11y, applyA11y } from '@/lib/a11y';
 
+/* z-index 140: below the nav drawer (150/160), feed overlay (900) and modals,
+   so the button never covers them — it simply disappears behind. */
 const Fab = styled.button`
-  position: fixed; bottom: 18px; right: 18px; z-index: 1200;
+  position: fixed; bottom: 18px; right: 18px; z-index: 140;
   width: 46px; height: 46px; border-radius: 50%;
   background: ${theme.colors.primary}; color: white;
   display: flex; align-items: center; justify-content: center;
@@ -19,7 +21,7 @@ const Fab = styled.button`
 `;
 
 const Panel = styled.div`
-  position: fixed; bottom: 74px; right: 18px; z-index: 1200;
+  position: fixed; bottom: 74px; right: 18px; z-index: 140;
   width: 250px; direction: rtl;
   background: ${theme.colors.surface};
   border: 1px solid ${theme.colors.border};

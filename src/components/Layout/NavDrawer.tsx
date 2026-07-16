@@ -94,9 +94,10 @@ interface Props {
   onClose: () => void;
   pathname: string;
   onLogout: () => void;
+  isAdmin: boolean;
 }
 
-export default function NavDrawer({ open, onClose, pathname, onLogout }: Props) {
+export default function NavDrawer({ open, onClose, pathname, onLogout, isAdmin }: Props) {
   const links = [
     { href: '/',           label: HE.HOME_SECTIONS.find(s => s.href === '/')?.label ?? 'בית',   icon: '🏠' },
     { href: '/rabbis',     label: HE.NAV_RABBIS_AND_BOOKS, icon: '👥' },
@@ -130,7 +131,14 @@ export default function NavDrawer({ open, onClose, pathname, onLogout }: Props) 
           </DrawerLink>
         ))}
         <Divider />
-        <DrawerLogout onClick={onLogout}>{HE.NAV_LOGOUT} →</DrawerLogout>
+        {isAdmin
+          ? <DrawerLogout onClick={onLogout}>{HE.NAV_LOGOUT} →</DrawerLogout>
+          : (
+            <DrawerLink href="/login" $active={isActive('/login')} onClick={onClose}>
+              🔑 {HE.NAV_ADMIN_LOGIN}
+            </DrawerLink>
+          )
+        }
       </Drawer>
     </>
   );

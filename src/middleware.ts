@@ -1,24 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// The site is public (read-only for everyone). Login exists only for the admin;
+// API routes still verify the httpOnly `auth` cookie for any mutation.
 export function middleware(request: NextRequest) {
   const auth = request.cookies.get('auth')?.value;
   const { pathname } = request.nextUrl;
 
-  const isPublic =
-    pathname.startsWith('/login') ||
-    pathname.startsWith('/api/auth') ||
-    pathname === '/icon' ||
-    pathname === '/apple-icon' ||
-    pathname === '/opengraph-image' ||
-    pathname.startsWith('/manifest');
-  const isAuthenticated = auth === 'admin' || auth === 'reader';
-
-  if (!isAuthenticated && !isPublic) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  if (isAuthenticated && pathname === '/login') {
-    return NextResponse.redirect(new URL('/study', request.url));
+  if (auth === 'admin' && pathname === '/login') {
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return NextResponse.next();

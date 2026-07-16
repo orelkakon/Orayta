@@ -3,6 +3,7 @@ export const HE = {
   APP_SUBTITLE: 'תלמוד · רבנים · סיכומים · גימטריות · חידושים · תרגול · תכנים ועוד',
 
   NAV_ADD: 'הוסף ציטוט',
+  NAV_ADMIN_LOGIN: 'כניסת מנהל',
   NAV_STUDY: 'לימוד',
   NAV_QUIZ: 'חידון',
   NAV_HOME: 'בית',
@@ -80,10 +81,11 @@ export const HE = {
   DUPLICATE_GEMATRIA: 'מילה זו כבר קיימת במאגר',
 
   LOGIN_TITLE: 'ברוך הבא לאורייתא',
-  LOGIN_SUBTITLE: 'הזן קוד כניסה',
-  LOGIN_PLACEHOLDER: 'קוד כניסה',
+  LOGIN_SUBTITLE: 'כניסת מנהל — הזן קוד',
+  LOGIN_PLACEHOLDER: 'קוד מנהל',
   LOGIN_BUTTON: 'כניסה',
   LOGIN_ERROR: 'קוד שגוי, נסה שנית',
+  LOGIN_BACK_TO_SITE: '→ חזרה לאתר',
 
   ADD_TITLE: 'הוספת ציטוט חדש',
   ADD_CONTENT_LABEL: 'תוכן הציטוט',
@@ -333,6 +335,8 @@ export const HE = {
   SIKUMIM_ADD_ENTRY_BTN: '+ סיכום חדש',
   SIKUMIM_SORT_ASC: 'מהישן לחדש',
   SIKUMIM_SORT_DESC: 'מהחדש לישן',
+  SIKUMIM_VIEW_LIST: 'רשימה',
+  SIKUMIM_VIEW_GRID: 'קוביות',
   SIKUMIM_BOOKS_SORT_DEFAULT: 'ברירת מחדל',
   SIKUMIM_BOOKS_SORT_COUNT: 'לפי כמות',
   SIKUMIM_BOOKS_SORT_ALPHA: 'א׳-ב׳',
@@ -382,6 +386,8 @@ export const HE = {
   CONTACT_EMAIL_SUCCESS_TITLE: 'המייל נשלח! 📧',
 
   DEDICATIONS_TITLE: 'הקדשות',
+  DEDICATIONS_STRIP_SHOW: 'הצג רצועת הקדשות',
+  DEDICATIONS_STRIP_HIDE: 'הסתר רצועת הקדשות',
   DEDICATION_ADD_BTN: '+ הוסף הקדשה',
   DEDICATION_FORM_TITLE: 'הוסף הקדשה',
   DEDICATION_TYPE_ILUY: 'לעילוי נשמת',

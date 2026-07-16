@@ -9,6 +9,7 @@ import { useRole } from '@/components/common/RoleContext';
 import SikumEntryCard from './SikumEntryCard';
 import SikumEntryForm from './SikumEntryForm';
 import SikumEntryModal from './SikumEntryModal';
+import SikumCubesGrid from './SikumCubesGrid';
 import SearchField from '@/components/common/SearchField';
 
 const Container = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
@@ -77,6 +78,7 @@ const Empty = styled.div`
 `;
 
 type SortDir = 'desc' | 'asc';
+type ViewMode = 'list' | 'grid';
 
 interface Props {
   book: SikumBook;
@@ -86,6 +88,7 @@ interface Props {
 export default function SikumEntriesView({ book, onBack }: Props) {
   const [entries, setEntries] = useState<SikumEntry[]>([]);
   const [sortDir, setSortDir] = useState<SortDir>('desc');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [search, setSearch] = useState('');
   const [addOpen, setAddOpen] = useState(false);
   const [editEntry, setEditEntry] = useState<SikumEntry | null>(null);
@@ -163,23 +166,35 @@ export default function SikumEntriesView({ book, onBack }: Props) {
               {HE.SIKUMIM_SORT_ASC}
             </SortBtn>
           </SortRow>
+          <SortRow>
+            <SortBtn $active={viewMode === 'list'} onClick={() => setViewMode('list')}>
+              ☰ {HE.SIKUMIM_VIEW_LIST}
+            </SortBtn>
+            <SortBtn $active={viewMode === 'grid'} onClick={() => setViewMode('grid')}>
+              ▦ {HE.SIKUMIM_VIEW_GRID}
+            </SortBtn>
+          </SortRow>
         </ControlRow>
       </StickyBar>
 
-      <List>
-        {sorted.length === 0
-          ? <Empty>{HE.SIKUMIM_ENTRIES_EMPTY}</Empty>
-          : sorted.map(e => (
-              <SikumEntryCard
-                key={e.id}
-                entry={e}
-                onClick={() => setViewEntry(e)}
-                onEdit={role === 'admin' ? () => setEditEntry(e) : undefined}
-                onDelete={role === 'admin' ? () => handleDelete(e) : undefined}
-              />
-            ))
-        }
-      </List>
+      {sorted.length === 0
+        ? <Empty>{HE.SIKUMIM_ENTRIES_EMPTY}</Empty>
+        : viewMode === 'grid'
+          ? <SikumCubesGrid entries={sorted} onOpen={setViewEntry} />
+          : (
+            <List>
+              {sorted.map(e => (
+                <SikumEntryCard
+                  key={e.id}
+                  entry={e}
+                  onClick={() => setViewEntry(e)}
+                  onEdit={role === 'admin' ? () => setEditEntry(e) : undefined}
+                  onDelete={role === 'admin' ? () => handleDelete(e) : undefined}
+                />
+              ))}
+            </List>
+          )
+      }
     </Container>
   );
 }

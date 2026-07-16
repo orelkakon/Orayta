@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -8,10 +8,14 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import OraytaLogo from '@/components/common/OraytaLogo';
 import { useDarkMode } from '@/components/common/ThemeContext';
+import { useRole } from '@/components/common/RoleContext';
 import { clearStats } from '@/lib/statsStorage';
 import NavDrawer from './NavDrawer';
+import DedicationsTicker from './DedicationsTicker';
 import AddToHomeScreen from '@/components/common/AddToHomeScreen';
 import VisitTracker from '@/components/common/VisitTracker';
+
+const TICKER_KEY = 'orayta_dedications_strip';
 
 const Wrapper = styled.div`min-height: 100vh; display: flex; flex-direction: column;`;
 
@@ -113,16 +117,31 @@ const Main = styled.main`
 function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname   = usePathname();
   const { isDark, toggle } = useDarkMode();
+  const role = useRole();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [tickerOn, setTickerOn] = useState(true);
+
+  useEffect(() => {
+    try { setTickerOn(localStorage.getItem(TICKER_KEY) !== 'off'); } catch {}
+  }, []);
+
+  const toggleTicker = () => {
+    setTickerOn(prev => {
+      try { localStorage.setItem(TICKER_KEY, prev ? 'off' : 'on'); } catch {}
+      return !prev;
+    });
+  };
 
   const handleLogout = async () => {
     clearStats();
     await fetch('/api/auth/logout', { method: 'POST' });
-    window.location.href = '/login';
+    window.location.href = '/';
   };
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href);
+
+  const isHome = pathname === '/';
 
   return (
     <Wrapper>
@@ -138,6 +157,15 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           <ThemeBtn onClick={toggle} title={isDark ? HE.THEME_LIGHT : HE.THEME_DARK}>
             {isDark ? '☀' : '☾'}
           </ThemeBtn>
+          {isHome && (
+            <ThemeBtn
+              onClick={toggleTicker}
+              title={tickerOn ? HE.DEDICATIONS_STRIP_HIDE : HE.DEDICATIONS_STRIP_SHOW}
+              style={{ opacity: tickerOn ? undefined : 0.35 }}
+            >
+              🕯
+            </ThemeBtn>
+          )}
         </LogoGroup>
 
         <Nav>
@@ -151,7 +179,10 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           <NavLink href="/today"     $active={isActive('/today')}>🗓️ {HE.NAV_TODAY}</NavLink>
           <NavLink href="/contact"   $active={isActive('/contact')}>📞 {HE.NAV_CONTACT}</NavLink>
           <NavLink href="/about"     $active={isActive('/about')}>ℹ️ {HE.NAV_ABOUT}</NavLink>
-          <LogoutButton onClick={handleLogout}>🚪 {HE.NAV_LOGOUT}</LogoutButton>
+          {role === 'admin'
+            ? <LogoutButton onClick={handleLogout}>🚪 {HE.NAV_LOGOUT}</LogoutButton>
+            : <NavLink href="/login" $active={isActive('/login')}>🔑 {HE.NAV_ADMIN_LOGIN}</NavLink>
+          }
         </Nav>
 
         <HamBtn onClick={() => setMenuOpen(o => !o)} aria-label="תפריט">
@@ -159,11 +190,14 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
         </HamBtn>
       </Header>
 
+      {isHome && tickerOn && <DedicationsTicker />}
+
       <NavDrawer
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
         pathname={pathname}
         onLogout={handleLogout}
+        isAdmin={role === 'admin'}
       />
 
       <Main>{children}</Main>

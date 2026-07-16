@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import styled, { keyframes } from 'styled-components';
+import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import OraytaLogo from '@/components/common/OraytaLogo';
@@ -159,6 +160,12 @@ const ErrMsg = styled.p`
   animation: ${slideUp} 0.2s ease;
 `;
 
+const BackLink = styled(Link)`
+  display: inline-block; margin-top: ${theme.spacing.md};
+  font-size: 0.85rem; color: ${theme.colors.textMuted};
+  &:hover { color: ${theme.colors.primary}; text-decoration: underline; }
+`;
+
 export default function LoginScreen() {
   const [passcode, setPasscode] = useState('');
   const [error, setError] = useState(false);
@@ -203,6 +210,7 @@ export default function LoginScreen() {
             {loading ? HE.LOADING : HE.LOGIN_BUTTON}
           </Btn>
         </form>
+        <BackLink href="/">{HE.LOGIN_BACK_TO_SITE}</BackLink>
       </Card>
     </Page>
   );
