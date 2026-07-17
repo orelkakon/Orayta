@@ -9,7 +9,7 @@ import { toHebrewNumeral } from '@/lib/hebrewNumerals';
 import SpeakButton from '@/components/common/SpeakButton';
 import StaticGroupsView from './StaticGroupsView';
 import SefariaPrayerView from './SefariaPrayerView';
-import MenorahPsalmView from './MenorahPsalmView';
+import SiddurSectionsView from './SiddurSectionsView';
 
 interface SefariaResp { he: string[]; heRef?: string; }
 
@@ -95,7 +95,6 @@ interface Props { section: ContentSection; }
 export default function ContentReader({ section }: Props) {
   const [book, setBook] = useState<SefariaBook | null>(section.books?.[0] ?? null);
   const [chapter, setChapter] = useState(1);
-  const [sectionIdx, setSectionIdx] = useState(0);
   const [verses, setVerses] = useState<string[]>([]);
   const [refLabel, setRefLabel] = useState('');
   const [loading, setLoading] = useState(false);
@@ -127,24 +126,7 @@ export default function ContentReader({ section }: Props) {
   }
 
   if (section.type === 'static-sections' && section.staticSections) {
-    const current = section.staticSections[sectionIdx];
-    return (
-      <Wrap>
-        <Controls>
-          <Select value={sectionIdx} onChange={e => setSectionIdx(Number(e.target.value))}>
-            {section.staticSections.map((s, i) => (
-              <option key={i} value={i}>{s.name}</option>
-            ))}
-          </Select>
-        </Controls>
-        {current.isMenorah
-          ? <MenorahPsalmView />
-          : current.sefariaRef
-            ? <SefariaPrayerView sefariaRef={current.sefariaRef} />
-            : <StaticGroupsView groups={current.groups ?? []} />
-        }
-      </Wrap>
-    );
+    return <SiddurSectionsView sections={section.staticSections} />;
   }
 
   if (section.type === 'static') {

@@ -1,10 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
+import type { SiddurJump } from '@/lib/prayers/types';
 
 interface SefariaResp { he: string[]; }
+
+const Wrap = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.sm};`;
+
+const JumpRow = styled.div`display: flex; justify-content: flex-start;`;
+
+const JumpBtn = styled.button`
+  padding: 6px 14px; border-radius: ${theme.radii.sm};
+  border: 1.5px solid ${theme.colors.secondary};
+  font-size: 0.82rem; font-weight: 600; color: ${theme.colors.secondary};
+  transition: all 0.15s;
+  &:hover { background: ${theme.colors.secondary}14; }
+`;
 
 const Card = styled.div`
   background: ${theme.colors.surface};
@@ -59,10 +72,18 @@ function toUrl(ref: string): string {
   return ref.replace(/, /g, '%2C_');
 }
 
-export default function SefariaPrayerView({ sefariaRef }: { sefariaRef: string }) {
+// Strip HTML tags + nikud/cantillation marks so jump matching works on plain letters
+function toPlainLetters(html: string): string {
+  return html.replace(/<[^>]+>/g, '').replace(/[֑-ׇ]/g, '');
+}
+
+interface Props { sefariaRef: string; jump?: SiddurJump; }
+
+export default function SefariaPrayerView({ sefariaRef, jump }: Props) {
   const [paragraphs, setParagraphs] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const paraRefs = useRef<(HTMLParagraphElement | null)[]>([]);
 
   useEffect(() => {
     setLoading(true);
@@ -83,14 +104,30 @@ export default function SefariaPrayerView({ sefariaRef }: { sefariaRef: string }
   if (loading) return <Loading>טוען...</Loading>;
   if (error) return <ErrorMsg>לא ניתן לטעון את הטקסט. נסה שוב מאוחר יותר.</ErrorMsg>;
 
+  const jumpIdx = jump ? paragraphs.findIndex(p => toPlainLetters(p).includes(jump.match)) : -1;
+
   return (
-    <Card>
-      {paragraphs.map((p, i) => {
-        const isHeading = p.trim().startsWith('<big>');
-        return isHeading
-          ? <HeadingPara key={i} dangerouslySetInnerHTML={{ __html: p }} />
-          : <Para key={i} dangerouslySetInnerHTML={{ __html: p }} />;
-      })}
-    </Card>
+    <Wrap>
+      {jump && jumpIdx >= 0 && (
+        <JumpRow>
+          <JumpBtn onClick={() => paraRefs.current[jumpIdx]?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+            {jump.label} ⬇
+          </JumpBtn>
+        </JumpRow>
+      )}
+      <Card>
+        {paragraphs.map((p, i) => {
+          const isHeading = p.trim().startsWith('<big>');
+          const Comp = isHeading ? HeadingPara : Para;
+          return (
+            <Comp
+              key={i}
+              ref={(el: HTMLParagraphElement | null) => { paraRefs.current[i] = el; }}
+              dangerouslySetInnerHTML={{ __html: p }}
+            />
+          );
+        })}
+      </Card>
+    </Wrap>
   );
 }
