@@ -98,6 +98,7 @@ export interface Dedication {
   id: string;
   type: string;
   name: string;
+  status: 'pending' | 'approved';
   createdAt: string;
 }
 

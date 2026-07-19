@@ -108,6 +108,7 @@ export default function NavDrawer({ open, onClose, pathname, onLogout, isAdmin }
     { href: '/chidushim',  label: HE.NAV_CHIDUSHIM,        icon: '💡' },
     { href: '/quiz',       label: HE.NAV_LEARN,            icon: '🎯' },
     { href: '/today',      label: HE.NAV_TODAY,            icon: '📅' },
+    { href: '/dedications', label: HE.NAV_DEDICATIONS,     icon: '🕯️' },
     { href: '/contact',    label: HE.NAV_CONTACT,          icon: '📞' },
     { href: '/about',      label: HE.NAV_ABOUT,            icon: 'ℹ️' },
   ];

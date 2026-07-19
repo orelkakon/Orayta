@@ -106,7 +106,12 @@
       "Bash(mdfind \"kMDItemCFBundleIdentifier == 'com.microsoft.VSCode'\")",
       "Bash(osascript -e 'tell application \"Finder\" to delete POSIX file \"/Users/user/Downloads/Visual Studio Code.app\"')",
       "Bash(diskutil eject *)",
-      "Bash(/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user)"
+      "Bash(/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user)",
+      "Bash(lsof -ti:3000)",
+      "Bash(xargs kill)",
+      "Bash(echo \"exit: $?\")",
+      "Read(//Users/user/.local/share/**)",
+      "Read(//Users/user/Library/Application Support/**)"
     ]
   }
 }

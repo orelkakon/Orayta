@@ -89,6 +89,7 @@ model Dedication {
   id        String   @id @default(cuid())
   type      String
   name      String
+  status    String   @default("approved")
   createdAt DateTime @default(now())
 
   @@index([createdAt])

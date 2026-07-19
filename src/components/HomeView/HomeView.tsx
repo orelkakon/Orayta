@@ -4,7 +4,6 @@ import styled, { keyframes } from 'styled-components';
 import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
-import DedicationsBar from './DedicationsBar';
 import FeedBannerBlock from './FeedBannerBlock';
 
 const fadeUp = keyframes`
@@ -146,8 +145,16 @@ export default function HomeView() {
         <ContactArrow>←</ContactArrow>
       </ContactBanner>
 
-      {/* Admin-only: add/manage dedications — at the bottom of the page */}
-      <DedicationsBar part="admin" />
+      <ContactBanner href="/dedications">
+        <ContactLeft>
+          <ContactEmoji>🕯️</ContactEmoji>
+          <ContactBody>
+            <ContactTitle>{HE.DEDICATION_BANNER_TITLE}</ContactTitle>
+            <ContactSub>{HE.DEDICATION_BANNER_SUB}</ContactSub>
+          </ContactBody>
+        </ContactLeft>
+        <ContactArrow>←</ContactArrow>
+      </ContactBanner>
     </Page>
   );
 }

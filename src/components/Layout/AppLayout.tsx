@@ -177,6 +177,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           <NavLink href="/chidushim" $active={isActive('/chidushim')}>💡 {HE.NAV_CHIDUSHIM}</NavLink>
           <NavLink href="/quiz"      $active={isActive('/quiz')}>🎯 {HE.NAV_LEARN}</NavLink>
           <NavLink href="/today"     $active={isActive('/today')}>🗓️ {HE.NAV_TODAY}</NavLink>
+          <NavLink href="/dedications" $active={isActive('/dedications')}>🕯️ {HE.NAV_DEDICATIONS}</NavLink>
           <NavLink href="/contact"   $active={isActive('/contact')}>📞 {HE.NAV_CONTACT}</NavLink>
           <NavLink href="/about"     $active={isActive('/about')}>ℹ️ {HE.NAV_ABOUT}</NavLink>
           {role === 'admin'
