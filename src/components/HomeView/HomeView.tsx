@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import FeedBannerBlock from './FeedBannerBlock';
+import HomeActionCards from './HomeActionCards';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(18px); }
@@ -87,28 +88,6 @@ const CardDesc = styled.span`
   @media (max-width: 400px) { display: none; }
 `;
 
-const ContactBanner = styled(Link)`
-  width: 100%;
-  display: flex; align-items: center; justify-content: space-between;
-  gap: ${theme.spacing.lg};
-  background: linear-gradient(135deg, ${theme.colors.primary} 0%, #8B5E3C 100%);
-  border-radius: ${theme.radii.xl};
-  padding: ${theme.spacing.lg} ${theme.spacing.xl};
-  color: white; cursor: pointer;
-  box-shadow: 0 6px 24px rgba(92, 61, 30, 0.35);
-  transition: transform 0.2s, box-shadow 0.2s;
-  &:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(92, 61, 30, 0.45); }
-`;
-
-const ContactLeft = styled.div`display: flex; align-items: center; gap: ${theme.spacing.md};`;
-const ContactEmoji = styled.div`font-size: 2.6rem; line-height: 1; flex-shrink: 0;`;
-const ContactBody = styled.div`display: flex; flex-direction: column; gap: 3px;`;
-const ContactTitle = styled.div`
-  font-family: ${theme.fonts.body}; font-size: 1.25rem; font-weight: 800;
-`;
-const ContactSub = styled.div`font-size: 0.88rem; opacity: 0.8;`;
-const ContactArrow = styled.div`font-size: 1.8rem; opacity: 0.7; flex-shrink: 0;`;
-
 export default function HomeView() {
   return (
     <Page>
@@ -134,27 +113,7 @@ export default function HomeView() {
         ))}
       </Grid>
 
-      <ContactBanner href="/contact">
-        <ContactLeft>
-          <ContactEmoji>📞</ContactEmoji>
-          <ContactBody>
-            <ContactTitle>יש לך שאלה, הערה או רעיון?</ContactTitle>
-            <ContactSub>צור קשר — נשמח לשמוע ממך</ContactSub>
-          </ContactBody>
-        </ContactLeft>
-        <ContactArrow>←</ContactArrow>
-      </ContactBanner>
-
-      <ContactBanner href="/dedications">
-        <ContactLeft>
-          <ContactEmoji>🕯️</ContactEmoji>
-          <ContactBody>
-            <ContactTitle>{HE.DEDICATION_BANNER_TITLE}</ContactTitle>
-            <ContactSub>{HE.DEDICATION_BANNER_SUB}</ContactSub>
-          </ContactBody>
-        </ContactLeft>
-        <ContactArrow>←</ContactArrow>
-      </ContactBanner>
+      <HomeActionCards />
     </Page>
   );
 }
