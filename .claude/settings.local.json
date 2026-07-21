@@ -111,7 +111,9 @@
       "Bash(xargs kill)",
       "Bash(echo \"exit: $?\")",
       "Read(//Users/user/.local/share/**)",
-      "Read(//Users/user/Library/Application Support/**)"
+      "Read(//Users/user/Library/Application Support/**)",
+      "Bash(gh repo *)",
+      "Bash(vercel whoami *)"
     ]
   }
 }

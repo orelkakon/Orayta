@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { sendAdminEmail, formatHebrewDate } from '@/lib/mailer';
 import { HE } from '@/lib/hebrewTexts';
@@ -11,10 +12,6 @@ const TYPE_LABELS: Record<string, string> = {
   hatzlaha: HE.DEDICATION_TYPE_HATZLAHA,
   zivug: HE.DEDICATION_TYPE_ZIVUG,
 };
-
-function isAdmin(req: NextRequest) {
-  return req.cookies.get('auth')?.value === 'admin';
-}
 
 /* ── Simple in-process rate limit: max 3 requests per IP per 10 minutes ── */
 const ipLog = new Map<string, number[]>();

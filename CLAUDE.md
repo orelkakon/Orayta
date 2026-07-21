@@ -33,7 +33,7 @@ Chronological directory of Jewish leaders and decision-makers across all generat
 - Search by name, bio, or full name
 - Filter by category
 
-**Admin controls (passcode 1998)**
+**Admin controls (admin login required)**
 - Add, edit, delete any rabbi entry
 - RabbiForm modal with all fields
 
@@ -62,17 +62,20 @@ Each mode has a hint system. After answering, completion mode shows the full cit
 
 ## Auth System
 
-Two passcodes:
-- `1998` → role `admin` — full access (add/edit/delete citations and rabbis)
-- `1111` → role `reader` — read-only + quiz access
+The site is **public** (read-only for everyone). Login exists only for the admin.
+
+- The admin passcode comes from the `PASSCODE` env var (never hardcode it — this repo is public).
+- Login is rate-limited (5 attempts per IP per 15 minutes).
 
 On login, the API sets **two cookies**:
-1. `auth=admin|reader` — httpOnly, used by middleware and API route guards
-2. `role=admin|reader` — NOT httpOnly, readable by client-side JS
+1. `auth=<signed HMAC token>` — httpOnly, verified by API route guards via `isAdmin()` / `isValidAuthToken()` from `src/lib/auth.ts`. The token is signed with `AUTH_SECRET` (falls back to `PASSCODE`) so it cannot be forged.
+2. `role=admin` — NOT httpOnly, readable by client-side JS for UI only (never trusted by the server)
 
-`RoleProvider` (in root layout) reads the `role` cookie in `useEffect` — it defaults to `'admin'` on SSR to avoid hydration mismatch, then corrects on client. **Critical:** Login uses `window.location.href` (not `router.push`) so `RoleProvider` re-mounts and picks up the new cookie. On logout, `clearStats()` is called before redirecting.
+`RoleProvider` (in root layout) reads the `role` cookie in `useEffect`. **Critical:** Login uses `window.location.href` (not `router.push`) so `RoleProvider` re-mounts and picks up the new cookie. On logout, `clearStats()` is called before redirecting.
 
-Middleware in `src/middleware.ts` protects all routes except `/login` and `/api/auth/*`. Unauthenticated users are redirected to `/login`.
+All mutation API routes must call `isAdmin(req)` from `src/lib/auth.ts` — never compare the cookie to a plain string. Public write endpoints (contact, dedication requests) must be rate-limited and validated.
+
+Required production env vars (set in Vercel): `PASSCODE` (admin passcode), `AUTH_SECRET` (long random string for cookie signing). Login returns 503 in production if `PASSCODE` is missing.
 
 ---
 

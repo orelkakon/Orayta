@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { getMasechetSeder } from '@/lib/hebrewData';
 
 export const dynamic = 'force-dynamic';
-
-function isAdmin(request: NextRequest) {
-  return request.cookies.get('auth')?.value === 'admin';
-}
 
 export async function PUT(
   request: NextRequest,

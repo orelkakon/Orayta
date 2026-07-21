@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-
-function isAdmin(req: NextRequest) {
-  return req.cookies.get('auth')?.value === 'admin';
-}
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   if (!isAdmin(req)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-
-function isAdmin(req: NextRequest) {
-  return req.cookies.get('auth')?.value === 'admin';
-}
 
 export async function GET() {
   const books = await prisma.sikumBook.findMany({

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdmin } from '@/lib/auth';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getMasechetSeder, sederIndex, masechetIndex, dafToNumber } from '@/lib/hebrewData';
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (request.cookies.get('auth')?.value !== 'admin') {
+  if (!isAdmin(request)) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
 

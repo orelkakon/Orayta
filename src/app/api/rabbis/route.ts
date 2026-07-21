@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -13,10 +14,6 @@ export async function GET(request: NextRequest) {
   });
 
   return NextResponse.json(rabbis);
-}
-
-function isAdmin(req: NextRequest) {
-  return req.cookies.get('auth')?.value === 'admin';
 }
 
 function extractBooksFromBio(bio: string, author: string, rabbiId: string) {

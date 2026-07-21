@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
-
-function isAdmin(req: NextRequest) {
-  return req.cookies.get('auth')?.value === 'admin';
-}
 
 async function resolveRabbiId(author: string): Promise<string | null> {
   const rabbi = await prisma.rabbi.findFirst({
