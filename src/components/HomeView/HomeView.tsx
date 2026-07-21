@@ -6,6 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import FeedBannerBlock from './FeedBannerBlock';
 import HomeActionCards from './HomeActionCards';
+import HomeBackground from './HomeBackground';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(18px); }
@@ -13,6 +14,7 @@ const fadeUp = keyframes`
 `;
 
 const Page = styled.div`
+  position: relative; z-index: 1;
   display: flex; flex-direction: column; align-items: center;
   gap: ${theme.spacing.md};
   padding: ${theme.spacing.md} 0 ${theme.spacing.xl};
@@ -90,7 +92,9 @@ const CardDesc = styled.span`
 
 export default function HomeView() {
   return (
-    <Page>
+    <>
+      <HomeBackground />
+      <Page>
       <Hero>
         <AppTitle>{HE.APP_NAME}</AppTitle>
         <QuoteBlock>
@@ -114,6 +118,7 @@ export default function HomeView() {
       </Grid>
 
       <HomeActionCards />
-    </Page>
+      </Page>
+    </>
   );
 }
