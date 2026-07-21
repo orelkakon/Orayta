@@ -7,6 +7,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { MASECHTOT, SEDARIM } from '@/lib/hebrewData';
 import { Citation, Amud } from '@/types';
 import { addStat } from '@/lib/statsStorage';
+import { LineIcon } from '@/components/common/LineIcons';
 
 import MultipleChoiceQuiz from './MultipleChoiceQuiz';
 import CompletionQuiz from './CompletionQuiz';
@@ -371,7 +372,7 @@ const ModeButton = styled.button<{ $active?: boolean }>`
 `;
 
 const ModeIcon = styled.span`
-  font-size: 1.3rem;
+  display: inline-flex;
   line-height: 1;
 `;
 
@@ -517,43 +518,43 @@ export default function QuizView() {
 
       <ModeGrid>
         <ModeButton $active={quizMode === 'classic'} onClick={() => handleModeSwitch('classic')}>
-          <ModeIcon>🎯</ModeIcon>
+          <ModeIcon><LineIcon name="target" size={21} /></ModeIcon>
           <ModeLabel>{HE.QUIZ_MODE_CLASSIC}</ModeLabel>
         </ModeButton>
         <ModeButton $active={quizMode === 'multiple'} onClick={() => handleModeSwitch('multiple')}>
-          <ModeIcon>🔤</ModeIcon>
+          <ModeIcon><LineIcon name="list" size={21} /></ModeIcon>
           <ModeLabel>{HE.QUIZ_MODE_MULTIPLE}</ModeLabel>
         </ModeButton>
         <ModeButton $active={quizMode === 'completion'} onClick={() => handleModeSwitch('completion')}>
-          <ModeIcon>✏️</ModeIcon>
+          <ModeIcon><LineIcon name="pencil" size={21} /></ModeIcon>
           <ModeLabel>{HE.QUIZ_MODE_COMPLETION}</ModeLabel>
         </ModeButton>
         <ModeButton $active={quizMode === 'rabbi'} onClick={() => handleModeSwitch('rabbi')}>
-          <ModeIcon>🧔</ModeIcon>
+          <ModeIcon><LineIcon name="user" size={21} /></ModeIcon>
           <ModeLabel>{HE.QUIZ_MODE_RABBI}</ModeLabel>
         </ModeButton>
         <ModeButton $active={quizMode === 'gematria'} onClick={() => handleModeSwitch('gematria')}>
-          <ModeIcon>🔢</ModeIcon>
+          <ModeIcon><LineIcon name="aleph" size={21} /></ModeIcon>
           <ModeLabel>{HE.QUIZ_MODE_GEMATRIA}</ModeLabel>
         </ModeButton>
         <ModeButton $active={quizMode === 'books'} onClick={() => handleModeSwitch('books')}>
-          <ModeIcon>📚</ModeIcon>
+          <ModeIcon><LineIcon name="book" size={21} /></ModeIcon>
           <ModeLabel>{HE.QUIZ_MODE_BOOKS}</ModeLabel>
         </ModeButton>
         <ModeButton $active={quizMode === 'whoFirst'} onClick={() => handleModeSwitch('whoFirst')}>
-          <ModeIcon>⏳</ModeIcon>
+          <ModeIcon><LineIcon name="hourglass" size={21} /></ModeIcon>
           <ModeLabel>{HE.QUIZ_MODE_WHO_FIRST}</ModeLabel>
         </ModeButton>
         <ModeButton $active={quizMode === 'seder'} onClick={() => handleModeSwitch('seder')}>
-          <ModeIcon>📖</ModeIcon>
+          <ModeIcon><LineIcon name="openbook" size={21} /></ModeIcon>
           <ModeLabel>{HE.QUIZ_MODE_SEDER}</ModeLabel>
         </ModeButton>
         <ModeButton $active={quizMode === 'bio'} onClick={() => handleModeSwitch('bio')}>
-          <ModeIcon>🔍</ModeIcon>
+          <ModeIcon><LineIcon name="search" size={21} /></ModeIcon>
           <ModeLabel>{HE.QUIZ_MODE_BIO}</ModeLabel>
         </ModeButton>
         <ModeButton $active={quizMode === 'image'} onClick={() => handleModeSwitch('image')}>
-          <ModeIcon>📸</ModeIcon>
+          <ModeIcon><LineIcon name="camera" size={21} /></ModeIcon>
           <ModeLabel>{HE.QUIZ_MODE_IMAGE}</ModeLabel>
         </ModeButton>
       </ModeGrid>

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { FeedItem, Citation, Rabbi, Book, Chidush, FeedGematriaData, FeedSikumData, RabbiCategory } from '@/types';
 import { CATEGORY_LABELS } from '@/lib/rabbisData';
 import ClampText from './FeedClampText';
+import { LineIcon } from '@/components/common/LineIcons';
 
 export const BigWord = styled.div`
   color: white; font-family: var(--font-frank,serif);
@@ -20,6 +21,7 @@ const SubText = styled.div`color: rgba(255,255,255,0.62); font-size: 0.88rem; li
 const YahrzeitTag = styled.div`
   color: rgba(255,230,180,0.8); font-size: 0.78rem;
   background: rgba(255,200,100,0.1); border-radius: 10px; padding: 3px 10px;
+  display: inline-flex; align-items: center; gap: 5px;
 `;
 
 export const RabbiImg = styled.img`
@@ -67,10 +69,10 @@ export function renderContent(
         {d.imageUrl && <RabbiImg src={d.imageUrl} alt={d.name}
           onClick={e => { e.stopPropagation(); onImgClick(d.imageUrl!); }}
           onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
-        {item.isYahrzeit && <YahrzeitTag>🕯️ יארצייט היום</YahrzeitTag>}
+        {item.isYahrzeit && <YahrzeitTag><LineIcon name="candle" size={13} /> יארצייט היום</YahrzeitTag>}
         <BigWord>{d.name}</BigWord>
         {d.fullName && d.fullName !== d.name && <SubText style={{ fontSize: '0.96rem', opacity: 0.75 }}>{d.fullName}</SubText>}
-        {d.deathDate && !item.isYahrzeit && <YahrzeitTag>🕯️ יארצייט: {d.deathDate}</YahrzeitTag>}
+        {d.deathDate && !item.isYahrzeit && <YahrzeitTag><LineIcon name="candle" size={13} /> יארצייט: {d.deathDate}</YahrzeitTag>}
         <SubText>{d.datePeriod}</SubText>
         <ClampText text={d.bio} onExpand={() => onExpand({ title: d.name, text: d.bio, href })} />
       </>,
@@ -101,7 +103,7 @@ export function renderContent(
   if (item.type === 'sikum') {
     const d = item.data as FeedSikumData;
     const href = `/sikumim?q=${encodeURIComponent(d.bookName)}`;
-    const meta: MetaItem[] = [{ label: `${d.bookIcon ?? '📝'} ${d.bookName}`, href }];
+    const meta: MetaItem[] = [{ label: d.bookName, href }];
     if (d.location) meta.push({ label: d.location });
     return {
       body: <>

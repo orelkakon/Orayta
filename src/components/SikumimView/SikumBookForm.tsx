@@ -6,6 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import Modal from '@/components/common/Modal';
 import { SikumBook } from '@/types';
+import { BookGlyph } from '@/components/common/LineIcons';
 
 export const BOOK_ICONS = ['📒', '📕', '📗', '📘', '📙'];
 
@@ -92,7 +93,7 @@ export default function SikumBookForm({ book, onClose, onSaved }: Props) {
           <PickerLabel>{HE.SIKUMIM_BOOK_FORM_ICON}</PickerLabel>
           <IconGrid>
             {BOOK_ICONS.map(ic => (
-              <IconBtn key={ic} type="button" $active={icon === ic} onClick={() => setIcon(ic)} title={ic}>{ic}</IconBtn>
+              <IconBtn key={ic} type="button" $active={icon === ic} onClick={() => setIcon(ic)}><BookGlyph icon={ic} size={22} /></IconBtn>
             ))}
           </IconGrid>
         </div>

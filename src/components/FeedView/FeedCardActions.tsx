@@ -6,6 +6,7 @@ import type { FeedItem, FeedReaction } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
 import { trackShare } from '@/lib/shareCounter';
 import { shareStory, feedStory } from '@/lib/storyShare';
+import { LineIcon } from '@/components/common/LineIcons';
 
 const btnReset = `
   -webkit-tap-highlight-color: transparent; outline: none;
@@ -52,11 +53,12 @@ const bookmarkPop = keyframes`
 const BookmarkBtn = styled.button<{ $saved: boolean }>`
   ${btnReset}
   background: none; border: none; cursor: pointer; padding: 4px;
-  font-size: 1.65rem; line-height: 1;
+  display: inline-flex; line-height: 1;
+  color: ${p => p.$saved ? '#FFD24D' : 'white'};
   filter: ${p => p.$saved
     ? 'drop-shadow(0 0 9px rgba(255,220,80,0.85))'
     : 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))'};
-  transition: filter 0.2s;
+  transition: filter 0.2s, color 0.2s;
   &.pop { animation: ${bookmarkPop} 0.3s ease; }
 `;
 
@@ -156,12 +158,14 @@ export default function FeedCardActions({ item, isSaved, slideRef, onBookmark, c
     <Actions>
       <ActionGroup>
         <BookmarkBtn $saved={isSaved} className={bmkPop ? 'pop' : ''} onClick={handleBookmark}>
-          {isSaved ? '🔖' : '🏷️'}
+          <LineIcon name="bookmark" size={24} strokeWidth={2.2} filled={isSaved} />
         </BookmarkBtn>
       </ActionGroup>
       {copyText && (
         <ActionGroup>
-          <CopyPill onClick={doCopy} $copied={copied}>{copied ? '✓' : '📋'}</CopyPill>
+          <CopyPill onClick={doCopy} $copied={copied}>
+            <LineIcon name={copied ? 'check' : 'copy'} size={18} strokeWidth={2.2} />
+          </CopyPill>
         </ActionGroup>
       )}
       <SvgBtn onClick={e => { e.stopPropagation(); doShare(); }}><ShareIcon /></SvgBtn>

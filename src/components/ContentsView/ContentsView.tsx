@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { SECTIONS, CONTENT_GROUPS, ContentSection } from '@/lib/contentsSections';
+import { LineIcon } from '@/components/common/LineIcons';
 import ContentReader from './ContentReader';
 
 const Page = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
@@ -20,7 +21,10 @@ const BackBtn = styled.button`
   &:hover { color: ${theme.colors.primary}; border-color: ${theme.colors.primary}; }
 `;
 
-const Title = styled.h1`font-size: 1.8rem; color: ${theme.colors.primary};`;
+const Title = styled.h1`
+  font-size: 1.8rem; color: ${theme.colors.primary};
+  display: flex; align-items: center; gap: ${theme.spacing.sm};
+`;
 const Subtitle = styled.p`font-size: 0.95rem; color: ${theme.colors.textMuted};`;
 
 const GroupBlock = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.sm};`;
@@ -33,7 +37,9 @@ const GroupTitle = styled.h2`
   border-bottom: 2px solid ${theme.colors.borderLight};
 `;
 
-const GroupIcon = styled.span`font-size: 1rem; line-height: 1;`;
+const GroupIcon = styled.span`
+  display: inline-flex; line-height: 1; color: ${theme.colors.secondary};
+`;
 
 const Grid = styled.div`
   display: grid;
@@ -58,7 +64,11 @@ const SectionCard = styled.button`
   }
 `;
 
-const CardIcon = styled.div`font-size: 1.9rem; line-height: 1;`;
+const CardIcon = styled.div`
+  display: flex; line-height: 1; color: ${theme.colors.secondary};
+  transition: color 0.15s;
+  ${SectionCard}:hover & { color: ${theme.colors.primary}; }
+`;
 
 const CardTitle = styled.div`
   font-family: ${theme.fonts.body}; font-size: 0.95rem; font-weight: 700;
@@ -88,7 +98,7 @@ export default function ContentsView() {
         <ReaderHeader>
           <BackBtn onClick={() => setActive(null)}>← {HE.CLOSE}</BackBtn>
           <SectionTitle>
-            <span>{active.icon}</span>
+            <LineIcon name={active.icon} size={22} />
             <span>{active.title}</span>
           </SectionTitle>
         </ReaderHeader>
@@ -101,17 +111,17 @@ export default function ContentsView() {
     <Page>
       <Header>
         <div>
-          <Title>📚 {HE.CONTENTS_TITLE}</Title>
+          <Title><LineIcon name="book" size={26} /> {HE.CONTENTS_TITLE}</Title>
           <Subtitle>{HE.CONTENTS_SUBTITLE}</Subtitle>
         </div>
       </Header>
       {CONTENT_GROUPS.map(g => (
         <GroupBlock key={g.key}>
-          <GroupTitle><GroupIcon>{g.icon}</GroupIcon>{g.title}</GroupTitle>
+          <GroupTitle><GroupIcon><LineIcon name={g.icon} size={18} /></GroupIcon>{g.title}</GroupTitle>
           <Grid>
             {SECTIONS.filter(s => s.group === g.key).map(s => (
               <SectionCard key={s.id} onClick={() => setActive(s)}>
-                <CardIcon>{s.icon}</CardIcon>
+                <CardIcon><LineIcon name={s.icon} size={28} /></CardIcon>
                 <CardTitle>{s.title}</CardTitle>
                 <CardDesc>{s.desc}</CardDesc>
               </SectionCard>

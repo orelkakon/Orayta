@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { SikumBook } from '@/types';
+import { BookGlyph } from '@/components/common/LineIcons';
 
 const Card = styled.button`
   background: ${theme.colors.surface};
@@ -29,7 +30,7 @@ const Card = styled.button`
   }
 `;
 
-const BookIcon = styled.div`font-size: 1.7rem; line-height: 1; align-self: center;`;
+const BookIcon = styled.div`display: flex; line-height: 1; align-self: center;`;
 
 const BookName = styled.div`
   font-family: ${theme.fonts.body};
@@ -87,7 +88,7 @@ interface Props {
 export default function SikumBookCard({ book, onClick, onEdit, onDelete }: Props) {
   return (
     <Card onClick={onClick}>
-      <BookIcon>{book.icon ?? '📒'}</BookIcon>
+      <BookIcon><BookGlyph icon={book.icon} size={30} /></BookIcon>
       <BookName>{book.name}</BookName>
       {book.author && <BookAuthor>{book.author}</BookAuthor>}
       <CountBadge>{book.entryCount}</CountBadge>

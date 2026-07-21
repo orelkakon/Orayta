@@ -14,9 +14,9 @@ export type SectionType = 'sefaria-chapters' | 'sefaria-books' | 'static' | 'sta
 export type ContentGroupKey = 'tefillot' | 'brachot' | 'tanakh';
 
 export const CONTENT_GROUPS: { key: ContentGroupKey; icon: string; title: string }[] = [
-  { key: 'tefillot', icon: '🕯️', title: 'תפילות' },
-  { key: 'brachot',  icon: '🙏', title: 'ברכות' },
-  { key: 'tanakh',   icon: '📖', title: 'תנ״ך' },
+  { key: 'tefillot', icon: 'candle', title: 'תפילות' },
+  { key: 'brachot',  icon: 'sparkle', title: 'ברכות' },
+  { key: 'tanakh',   icon: 'openbook', title: 'תנ״ך' },
 ];
 
 export interface ContentSection {
@@ -81,7 +81,7 @@ export const SECTIONS: ContentSection[] = [
   /* ── תפילות ── */
   {
     id: 'siddur',
-    icon: '🕯️',
+    icon: 'book',
     title: 'סידור',
     desc: 'ברכות השחר, קריאת שמע, עמידה',
     group: 'tefillot',
@@ -90,7 +90,7 @@ export const SECTIONS: ContentSection[] = [
   },
   {
     id: 'tehillim',
-    icon: '📿',
+    icon: 'note',
     title: 'תהילים',
     desc: '150 פרקים',
     group: 'tefillot',
@@ -100,7 +100,7 @@ export const SECTIONS: ContentSection[] = [
   },
   {
     id: 'kaddish',
-    icon: '🕯️',
+    icon: 'candle',
     title: 'קדיש',
     desc: 'קדיש יתום, שלם ודרבנן',
     group: 'tefillot',
@@ -110,7 +110,7 @@ export const SECTIONS: ContentSection[] = [
   /* ── ברכות ── */
   {
     id: 'birkhat-hamazon',
-    icon: '🍞',
+    icon: 'bread',
     title: 'ברכות אחרונות',
     desc: 'ברכת המזון, מעין שלוש ובורא נפשות',
     group: 'brachot',
@@ -122,7 +122,7 @@ export const SECTIONS: ContentSection[] = [
   },
   {
     id: 'brachot-nehenin',
-    icon: '🙏',
+    icon: 'cup',
     title: 'ברכות הנהנין',
     desc: 'ברכות על אוכל, שתייה וריח',
     group: 'brachot',
@@ -131,7 +131,7 @@ export const SECTIONS: ContentSection[] = [
   },
   {
     id: 'asher-yatzar',
-    icon: '🤲',
+    icon: 'droplet',
     title: 'אשר יצר',
     desc: 'ברכת אשר יצר',
     group: 'brachot',
@@ -140,7 +140,7 @@ export const SECTIONS: ContentSection[] = [
   },
   {
     id: 'brachot-reiya',
-    icon: '👁️',
+    icon: 'eye',
     title: 'ברכות הראייה',
     desc: 'ברכות על תופעות טבע ואנשים',
     group: 'brachot',
@@ -150,7 +150,7 @@ export const SECTIONS: ContentSection[] = [
   /* ── תנ״ך ── */
   {
     id: 'torah',
-    icon: '📜',
+    icon: 'scroll',
     title: 'תורה',
     desc: 'חמשה חומשי תורה',
     group: 'tanakh',
@@ -159,7 +159,7 @@ export const SECTIONS: ContentSection[] = [
   },
   {
     id: 'neviim',
-    icon: '🕊️',
+    icon: 'flame',
     title: 'נביאים',
     desc: 'נביאים ראשונים ואחרונים',
     group: 'tanakh',
@@ -168,7 +168,7 @@ export const SECTIONS: ContentSection[] = [
   },
   {
     id: 'ketuvim',
-    icon: '📚',
+    icon: 'books',
     title: 'כתובים',
     desc: 'כתבי הקודש',
     group: 'tanakh',

@@ -5,6 +5,7 @@ import { theme } from '@/lib/theme';
 import OraytaLogo from '@/components/common/OraytaLogo';
 import { HE } from '@/lib/hebrewTexts';
 import ShareSection from './ShareSection';
+import { LineIcon } from '@/components/common/LineIcons';
 import CreatorSection from './CreatorSection';
 import VisitsCounter from './VisitsCounter';
 
@@ -79,7 +80,10 @@ const FeatureCell = styled.div`
   padding: ${theme.spacing.sm} ${theme.spacing.md};
 `;
 
-const FeatureIcon = styled.span`font-size: 1.3rem; flex-shrink: 0; margin-top: 1px;`;
+const FeatureIcon = styled.span`
+  display: inline-flex; flex-shrink: 0; margin-top: 1px;
+  color: ${theme.colors.secondary};
+`;
 
 const FeatureBody = styled.div`display: flex; flex-direction: column; gap: 2px;`;
 
@@ -112,7 +116,7 @@ export default function AboutView() {
         <FeaturesGrid>
           {HE.ABOUT_FEATURES.map((f, i) => (
             <FeatureCell key={i}>
-              <FeatureIcon>{f.icon}</FeatureIcon>
+              <FeatureIcon><LineIcon name={f.icon} size={20} /></FeatureIcon>
               <FeatureBody>
                 <FeatureTitle>{f.title}</FeatureTitle>
                 <FeatureDesc>{f.text}</FeatureDesc>
