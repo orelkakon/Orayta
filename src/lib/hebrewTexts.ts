@@ -498,6 +498,7 @@ export const HE = {
   FEED_TYPE_GEMATRIA: 'גימטריה',
   FEED_TYPE_SIKUM: 'סיכום לימוד',
   FEED_SHARE_WA: 'שתף ב-WhatsApp',
+  STORY_SHARE_IG: 'שתף בסטורי',
   FEED_GEMATRIA_UNIT: 'בגימטריה',
   FEED_BOOK_BY: 'מאת',
   FEED_LIKE: 'אהבתי',

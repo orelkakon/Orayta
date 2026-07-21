@@ -5,6 +5,7 @@ import styled, { keyframes } from 'styled-components';
 import type { FeedItem, FeedReaction } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
 import { trackShare } from '@/lib/shareCounter';
+import { shareStory, feedStory } from '@/lib/storyShare';
 
 const btnReset = `
   -webkit-tap-highlight-color: transparent; outline: none;
@@ -64,6 +65,16 @@ function ShareIcon() {
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
       <polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+    </svg>
+  );
+}
+
+function InstagramIcon() {
+  return (
+    <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
     </svg>
   );
 }
@@ -154,6 +165,7 @@ export default function FeedCardActions({ item, isSaved, slideRef, onBookmark, c
         </ActionGroup>
       )}
       <SvgBtn onClick={e => { e.stopPropagation(); doShare(); }}><ShareIcon /></SvgBtn>
+      <SvgBtn title={HE.STORY_SHARE_IG} onClick={e => { e.stopPropagation(); shareStory(feedStory(item)); }}><InstagramIcon /></SvgBtn>
       <SvgBtn onClick={doSave}><CameraIcon /></SvgBtn>
     </Actions>
   );

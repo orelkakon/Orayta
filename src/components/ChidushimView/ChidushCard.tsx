@@ -6,6 +6,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { Chidush } from '@/types';
 import SpeakButton from '@/components/common/SpeakButton';
 import { trackShare } from '@/lib/shareCounter';
+import { shareStory, chidushStory } from '@/lib/storyShare';
 
 const Card = styled.div`
   background: ${theme.colors.surface};
@@ -66,6 +67,17 @@ const ShareBtn = styled.a`
   &:hover { background: #25D36630; }
 `;
 
+const StoryBtn = styled.button`
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 0.75rem; font-weight: 600;
+  padding: 2px ${theme.spacing.sm};
+  background: #E1306C14; color: #C13584;
+  border: 1px solid #E1306C30;
+  border-radius: ${theme.radii.sm};
+  cursor: pointer;
+  &:hover { background: #E1306C28; }
+`;
+
 const AdminRow = styled.div`
   display: flex;
   gap: ${theme.spacing.xs};
@@ -119,6 +131,9 @@ export default function ChidushCard({ chidush, onEdit, onDelete }: Props) {
         <ShareBtn href={buildWaUrl(chidush)} target="_blank" rel="noopener noreferrer" onClick={trackShare}>
           💬 {HE.CHIDUSH_SHARE_WA}
         </ShareBtn>
+        <StoryBtn onClick={() => shareStory(chidushStory(chidush))}>
+          📸 {HE.STORY_SHARE_IG}
+        </StoryBtn>
       </MetaRow>
       {(onEdit || onDelete) && (
         <AdminRow>
