@@ -1,5 +1,6 @@
 import type { Rabbi, Citation, Chidush } from '@/types';
 import { HE } from './hebrewTexts';
+import { trackShare } from './shareCounter';
 
 export interface DailySikum {
   id: string; title: string | null; text: string; date: string;
@@ -68,10 +69,14 @@ export function shareDailyToWhatsApp(d: DailyShareData): void {
   const text = buildDailyShareMessage(d);
   const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
   if (typeof navigator !== 'undefined' && navigator.share) {
-    navigator.share({ text, title: HE.DAILY_SHARE_TITLE }).catch(err => {
-      if ((err as Error)?.name !== 'AbortError') window.open(waUrl, '_blank');
+    navigator.share({ text, title: HE.DAILY_SHARE_TITLE }).then(trackShare).catch(err => {
+      if ((err as Error)?.name !== 'AbortError') {
+        trackShare();
+        window.open(waUrl, '_blank');
+      }
     });
   } else {
+    trackShare();
     window.open(waUrl, '_blank');
   }
 }

@@ -5,6 +5,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Chidush } from '@/types';
 import SpeakButton from '@/components/common/SpeakButton';
+import { trackShare } from '@/lib/shareCounter';
 
 const Card = styled.div`
   background: ${theme.colors.surface};
@@ -115,7 +116,7 @@ export default function ChidushCard({ chidush, onEdit, onDelete }: Props) {
         {hasAuthor && <Chip>👤 {chidush.author}</Chip>}
         {hasSource && <Chip>📖 {chidush.source}</Chip>}
         {!hasMeta && <UnknownSource>{HE.CHIDUSH_UNKNOWN_SOURCE}</UnknownSource>}
-        <ShareBtn href={buildWaUrl(chidush)} target="_blank" rel="noopener noreferrer">
+        <ShareBtn href={buildWaUrl(chidush)} target="_blank" rel="noopener noreferrer" onClick={trackShare}>
           💬 {HE.CHIDUSH_SHARE_WA}
         </ShareBtn>
       </MetaRow>

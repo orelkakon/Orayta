@@ -525,4 +525,5 @@ export const HE = {
   ABOUT_REACTIONS_FIRE: 'מדהים',
   ABOUT_REACTIONS_SPARK: 'השראה',
   ABOUT_FEED_SAVES: 'שמירות',
+  ABOUT_FEED_SHARES: 'שיתופים',
 };
