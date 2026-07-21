@@ -111,7 +111,7 @@ export default function FeedCardActions({ item, isSaved, slideRef, onBookmark, c
     else if (item.type === 'gematria'){ const g = d as import('@/types').FeedGematriaData; text = `${g.word} = ${g.value} בגימטריה${sig}`; }
     else if (item.type === 'sikum')   { const s = d as import('@/types').FeedSikumData;   text = `${s.bookName}${s.title ? ` — ${s.title}` : ''}\n${s.text.slice(0, 250)}${sig}`; }
     if (typeof navigator !== 'undefined' && navigator.share) {
-      navigator.share({ text, title: HE.FEED_TITLE }).then(trackShare).catch(() => {
+      navigator.share({ text, title: HE.FEED_TITLE }).then(() => trackShare()).catch(() => {
         trackShare();
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
       });

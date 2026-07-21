@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import FeedBannerBlock from './FeedBannerBlock';
+import SectionIcon from './HomeIcons';
 import HomeActionCards from './HomeActionCards';
 import HomeBackground from './HomeBackground';
 
@@ -78,7 +79,13 @@ const SectionCard = styled(Link)`
   @media (max-width: 480px) { padding: ${theme.spacing.md} ${theme.spacing.xs}; }
 `;
 
-const CardIcon = styled.span`font-size: 1.9rem; line-height: 1;`;
+const CardIcon = styled.span`
+  display: inline-flex; line-height: 1;
+  color: ${theme.colors.secondary};
+  filter: drop-shadow(0 1px 2px rgba(92,61,30,0.18));
+  transition: color 0.18s, transform 0.18s;
+  ${SectionCard}:hover & { color: ${theme.colors.primary}; transform: translateY(-2px); }
+`;
 const CardLabel = styled.span`
   font-family: ${theme.fonts.body};
   font-size: 1.18rem; font-weight: 800; color: ${theme.colors.primary};
@@ -110,7 +117,7 @@ export default function HomeView() {
       <Grid>
         {HE.HOME_SECTIONS.map(s => (
           <SectionCard key={s.href} href={s.href}>
-            <CardIcon>{s.icon}</CardIcon>
+            <CardIcon><SectionIcon href={s.href} /></CardIcon>
             <CardLabel>{s.label}</CardLabel>
             <CardDesc>{s.desc}</CardDesc>
           </SectionCard>

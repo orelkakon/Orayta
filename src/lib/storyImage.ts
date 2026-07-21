@@ -87,14 +87,9 @@ function drawBackground(ctx: CanvasRenderingContext2D): void {
   ctx.stroke();
 }
 
-function pickFontSize(len: number): number {
-  if (len < 90) return 62;
-  if (len < 180) return 52;
-  if (len < 320) return 44;
-  if (len < 520) return 38;
-  if (len < 760) return 33;
-  return 29;
-}
+// Body area: below the badge, above the link chip.
+const BODY_TOP = 380;
+const BODY_HEIGHT = 1240;
 
 /**
  * Instagram-style link chip drawn ON the image (not tappable — Instagram
@@ -144,21 +139,29 @@ export async function renderStoryImage(content: StoryContent): Promise<Blob> {
   ctx.font = `600 34px ${sans}`;
   ctx.fillText(`✦   ${content.badge}   ✦`, W / 2, 308);
 
-  const size = pickFontSize(content.text.length);
-  const lineHeight = Math.round(size * 1.5);
-  ctx.font = `500 ${size}px ${serif}`;
-  let lines = wrapText(ctx, content.text, W - 200);
-  const titleGap = content.title ? lineHeight + 26 : 0;
+  // Largest font whose wrapped block fits the body area — long text keeps
+  // shrinking (down to 28px) instead of leaving empty space top and bottom.
   const sourceGap = content.source ? 88 : 0;
-  // Body area spans from under the badge (~420) to above the chip (~1640).
-  const maxLines = Math.max(1, Math.floor((1210 - titleGap - sourceGap) / lineHeight));
+  let size = 68;
+  let lineHeight = 0;
+  let titleGap = 0;
+  let lines: string[] = [];
+  for (;; size -= 2) {
+    lineHeight = Math.round(size * 1.5);
+    titleGap = content.title ? lineHeight + 26 : 0;
+    ctx.font = `500 ${size}px ${serif}`;
+    lines = wrapText(ctx, content.text, W - 200);
+    const fits = titleGap + lines.length * lineHeight + sourceGap <= BODY_HEIGHT;
+    if (fits || size <= 28) break;
+  }
+  const maxLines = Math.max(1, Math.floor((BODY_HEIGHT - titleGap - sourceGap) / lineHeight));
   if (lines.length > maxLines) {
     lines = lines.slice(0, maxLines);
     lines[maxLines - 1] = `${lines[maxLines - 1]}…`;
   }
 
   const blockH = titleGap + lines.length * lineHeight + sourceGap;
-  let y = Math.max(Math.round((H - blockH) / 2 + 40), 430);
+  let y = BODY_TOP + Math.max(0, Math.round((BODY_HEIGHT - blockH) / 2)) + Math.round(lineHeight * 0.75);
 
   if (content.title) {
     ctx.fillStyle = GOLD;

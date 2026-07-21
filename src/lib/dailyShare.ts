@@ -76,9 +76,9 @@ export function shareDailyToStory(d: DailyShareData): Promise<void> {
   if (d.sikum) items.push(`${HE.DAILY_SIKUM}: ${d.sikum.book.name}\n${d.sikum.text}`);
   if (d.rabbi) items.push(`${HE.DAILY_RABBI_AND_BOOK}: ${d.rabbi.name}\n${d.rabbi.bio}`);
 
-  // ~1000 chars is what the story card holds at its smallest font without
-  // the renderer having to ellipsize (see storyImage.ts sizing).
-  const BUDGET = 1000;
+  // ~1300 chars is what the story card holds at its smallest font without
+  // the renderer having to ellipsize (see storyImage.ts font-fitting).
+  const BUDGET = 1300;
   const parts: string[] = [];
   let used = 0;
   for (const item of items) {
@@ -104,7 +104,7 @@ export function shareDailyToWhatsApp(d: DailyShareData): void {
   const text = buildDailyShareMessage(d);
   const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
   if (typeof navigator !== 'undefined' && navigator.share) {
-    navigator.share({ text, title: HE.DAILY_SHARE_TITLE }).then(trackShare).catch(err => {
+    navigator.share({ text, title: HE.DAILY_SHARE_TITLE }).then(() => trackShare()).catch(err => {
       if ((err as Error)?.name !== 'AbortError') {
         trackShare();
         window.open(waUrl, '_blank');

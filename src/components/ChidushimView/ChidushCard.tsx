@@ -128,7 +128,7 @@ export default function ChidushCard({ chidush, onEdit, onDelete }: Props) {
         {hasAuthor && <Chip>👤 {chidush.author}</Chip>}
         {hasSource && <Chip>📖 {chidush.source}</Chip>}
         {!hasMeta && <UnknownSource>{HE.CHIDUSH_UNKNOWN_SOURCE}</UnknownSource>}
-        <ShareBtn href={buildWaUrl(chidush)} target="_blank" rel="noopener noreferrer" onClick={trackShare}>
+        <ShareBtn href={buildWaUrl(chidush)} target="_blank" rel="noopener noreferrer" onClick={() => trackShare()}>
           💬 {HE.CHIDUSH_SHARE_WA}
         </ShareBtn>
         <StoryBtn onClick={() => shareStory(chidushStory(chidush))}>

@@ -95,7 +95,7 @@ export default function VisitsCounter() {
   const [content, setContent]       = useState<ContentStats | null>(null);
   const [reactions, setReactions]   = useState<ReactionsData | null>(null);
   const [saves, setSaves]           = useState<number | null>(null);
-  const [shares, setShares]         = useState<number | null>(null);
+  const [shares, setShares]         = useState<{ wa: number; story: number } | null>(null);
 
   useEffect(() => {
     void fetch('/api/visits').then(r => r.json()).then((d: { count: number }) => setVisits(d.count));
@@ -103,7 +103,7 @@ export default function VisitsCounter() {
     void fetch('/api/stats').then(r => r.json()).then(setContent as (v: unknown) => void);
     void fetch('/api/feed/like').then(r => r.json()).then((d: ReactionsData) => setReactions(d));
     void fetch('/api/feed/save').then(r => r.json()).then((d: { count: number }) => setSaves(d.count));
-    void fetch('/api/shares').then(r => r.json()).then((d: { count: number }) => setShares(d.count));
+    void fetch('/api/shares').then(r => r.json()).then((d: { wa: number; story: number }) => setShares(d));
   }, []);
 
   const displayedVisits    = useAnimatedCount(visits);
@@ -113,7 +113,8 @@ export default function VisitsCounter() {
   const displayedFire      = useAnimatedCount(reactions?.fire ?? null);
   const displayedSpark     = useAnimatedCount(reactions?.spark ?? null);
   const displayedSaves     = useAnimatedCount(saves);
-  const displayedShares    = useAnimatedCount(shares);
+  const displayedShares    = useAnimatedCount(shares?.wa ?? null);
+  const displayedStories   = useAnimatedCount(shares?.story ?? null);
 
   const chips = content ? [
     { emoji: '📜', num: content.citations,  label: 'ציטוטים' },
@@ -158,6 +159,7 @@ export default function VisitsCounter() {
             { emoji: '✨', num: displayedSpark,  label: HE.ABOUT_REACTIONS_SPARK },
             { emoji: '🔖', num: displayedSaves,  label: HE.ABOUT_FEED_SAVES },
             { emoji: '💬', num: displayedShares, label: HE.ABOUT_FEED_SHARES },
+            { emoji: '📸', num: displayedStories, label: HE.ABOUT_STORY_SHARES },
           ].map(c => (
             <ContentChip key={c.label}>
               <ChipEmoji>{c.emoji}</ChipEmoji>

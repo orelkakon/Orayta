@@ -22,12 +22,12 @@ export async function shareStory(content: StoryContent): Promise<void> {
   if (typeof navigator !== 'undefined' && navigator.canShare?.({ files: [file] })) {
     try {
       await navigator.share({ files: [file], title: content.badge });
-      trackShare();
+      trackShare('story');
     } catch (err) {
       if ((err as Error)?.name !== 'AbortError') downloadBlob(blob);
     }
   } else {
-    trackShare();
+    trackShare('story');
     downloadBlob(blob);
   }
 }

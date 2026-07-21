@@ -533,4 +533,5 @@ export const HE = {
   ABOUT_REACTIONS_SPARK: 'השראה',
   ABOUT_FEED_SAVES: 'שמירות',
   ABOUT_FEED_SHARES: 'שיתופים',
+  ABOUT_STORY_SHARES: 'סטורים',
 };

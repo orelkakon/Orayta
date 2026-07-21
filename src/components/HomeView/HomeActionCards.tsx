@@ -1,9 +1,11 @@
 'use client';
 
+import React from 'react';
 import styled, { keyframes } from 'styled-components';
 import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
+import { CandleIcon, QuillIcon } from './HomeIcons';
 
 const shine = keyframes`
   from { transform: translateX(160%) skewX(-20deg); }
@@ -59,7 +61,7 @@ const CornerOrnament = styled.span<{ $side: 'right' | 'left' }>`
 const Medallion = styled.div`
   width: 54px; height: 54px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.5rem; line-height: 1;
+  line-height: 1; color: ${theme.colors.secondary};
   background: radial-gradient(circle at 32% 28%, rgba(196,149,106,0.32), rgba(196,149,106,0.08));
   border: 1px solid rgba(196,149,106,0.55);
   box-shadow: 0 2px 10px rgba(92,61,30,0.15), inset 0 1px 0 rgba(255,255,255,0.35);
@@ -97,7 +99,7 @@ const Cta = styled.span`
 
 interface CardDef {
   href: string;
-  icon: string;
+  icon: React.ReactNode;
   eyebrow: string;
   title: string;
   sub: string;
@@ -106,14 +108,14 @@ interface CardDef {
 const CARDS: CardDef[] = [
   {
     href: '/dedications',
-    icon: '🕯️',
+    icon: <CandleIcon />,
     eyebrow: HE.DEDICATIONS_TITLE,
     title: HE.DEDICATION_BANNER_TITLE,
     sub: HE.DEDICATION_BANNER_SUB,
   },
   {
     href: '/contact',
-    icon: '📜',
+    icon: <QuillIcon />,
     eyebrow: HE.NAV_CONTACT,
     title: HE.HOME_CONTACT_TITLE,
     sub: HE.HOME_CONTACT_SUB,
