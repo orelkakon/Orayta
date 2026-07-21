@@ -76,9 +76,9 @@ export function shareDailyToStory(d: DailyShareData): Promise<void> {
   if (d.sikum) items.push(`${HE.DAILY_SIKUM}: ${d.sikum.book.name}\n${d.sikum.text}`);
   if (d.rabbi) items.push(`${HE.DAILY_RABBI_AND_BOOK}: ${d.rabbi.name}\n${d.rabbi.bio}`);
 
-  // ~600 chars is what the story card holds at its smallest font without
+  // ~1000 chars is what the story card holds at its smallest font without
   // the renderer having to ellipsize (see storyImage.ts sizing).
-  const BUDGET = 600;
+  const BUDGET = 1000;
   const parts: string[] = [];
   let used = 0;
   for (const item of items) {
