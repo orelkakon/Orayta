@@ -15,7 +15,6 @@ const H = 1920;
 const GOLD = '#d9b56c';
 const GOLD_DIM = 'rgba(217,181,108,0.55)';
 const CREAM = '#f6eed9';
-const MUTED = 'rgba(246,238,217,0.5)';
 const SITE = 'orayta-eight.vercel.app';
 
 function cssVar(name: string, fallback: string): string {
@@ -96,6 +95,32 @@ function pickFontSize(len: number): number {
   return 33;
 }
 
+/**
+ * Instagram-style link chip drawn ON the image (not tappable — Instagram
+ * forbids programmatic link stickers). The user places the real Link
+ * sticker over it; the URL is pre-copied to the clipboard in storyShare.
+ */
+function drawLinkChip(ctx: CanvasRenderingContext2D, sans: string): void {
+  ctx.font = `600 34px ${sans}`;
+  const label = `🔗 ${SITE}`;
+  const textW = ctx.measureText(label).width;
+  const padX = 38;
+  const chipW = textW + padX * 2;
+  const chipH = 84;
+  const x = (W - chipW) / 2;
+  const y = H - 200;
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.35)';
+  ctx.shadowBlur = 18;
+  ctx.shadowOffsetY = 4;
+  ctx.fillStyle = 'rgba(255,255,255,0.96)';
+  roundedRect(ctx, x, y, chipW, chipH, chipH / 2);
+  ctx.fill();
+  ctx.restore();
+  ctx.fillStyle = '#1a5fb4';
+  ctx.fillText(label, W / 2, y + 55);
+}
+
 export async function renderStoryImage(content: StoryContent): Promise<Blob> {
   const serif = cssVar('--font-frank', "'Frank Ruhl Libre', Georgia, serif");
   const sans = cssVar('--font-heebo', "'Heebo', system-ui, sans-serif");
@@ -157,15 +182,13 @@ export async function renderStoryImage(content: StoryContent): Promise<Blob> {
   ctx.strokeStyle = 'rgba(217,181,108,0.35)';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.moveTo(W / 2 - 140, H - 214);
-  ctx.lineTo(W / 2 + 140, H - 214);
+  ctx.moveTo(W / 2 - 140, H - 254);
+  ctx.lineTo(W / 2 + 140, H - 254);
   ctx.stroke();
   ctx.fillStyle = GOLD_DIM;
   ctx.font = `600 30px ${sans}`;
-  ctx.fillText('✦', W / 2, H - 204);
-  ctx.fillStyle = MUTED;
-  ctx.font = `500 28px ${sans}`;
-  ctx.fillText(SITE, W / 2, H - 140);
+  ctx.fillText('✦', W / 2, H - 244);
+  drawLinkChip(ctx, sans);
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(b => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png');
