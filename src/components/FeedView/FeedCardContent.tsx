@@ -77,11 +77,12 @@ export function renderContent(
         <ClampText text={d.bio} onExpand={() => onExpand({ title: d.name, text: d.bio, href })} />
       </>,
       meta: [{ label: CATEGORY_LABELS[d.category as RabbiCategory] ?? d.category, href }],
+      copyText: `${d.name} (${d.datePeriod})\n${d.bio}`,
     };
   }
   if (item.type === 'book') {
     const d = item.data as Book;
-    return { body: <><BigWord>{d.title}</BigWord><SubText>מאת {d.author}</SubText></>, meta: [{ label: d.author, href: `/rabbis?q=${encodeURIComponent(d.author)}` }] };
+    return { body: <><BigWord>{d.title}</BigWord><SubText>מאת {d.author}</SubText></>, meta: [{ label: d.author, href: `/rabbis?q=${encodeURIComponent(d.author)}` }], copyText: `${d.title} — ${d.author}` };
   }
   if (item.type === 'chidush') {
     const d = item.data as Chidush;
@@ -98,7 +99,7 @@ export function renderContent(
   if (item.type === 'gematria') {
     const d = item.data as FeedGematriaData;
     const meta: MetaItem[] = d.matches.length > 0 ? [{ label: `ערך שווה: ${d.matches.join(' · ')}`, href: `/gematria?q=${encodeURIComponent(d.word)}` }] : [];
-    return { body: <><BigWord>{d.word}</BigWord><BigNum>{d.value}</BigNum><SubText>בגימטריה</SubText></>, meta };
+    return { body: <><BigWord>{d.word}</BigWord><BigNum>{d.value}</BigNum><SubText>בגימטריה</SubText></>, meta, copyText: `${d.word} = ${d.value} בגימטריה` };
   }
   if (item.type === 'sikum') {
     const d = item.data as FeedSikumData;
@@ -111,6 +112,7 @@ export function renderContent(
         <ClampText text={d.text} onExpand={() => onExpand({ title: d.title || d.bookName, text: d.text, href })} />
       </>,
       meta,
+      copyText: d.text,
     };
   }
   return { body: null, meta: [] };
