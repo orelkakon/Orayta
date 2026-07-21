@@ -156,6 +156,7 @@ export default function FeedCardActions({ item, isSaved, slideRef, onBookmark, c
 
   return (
     <Actions>
+      <SvgBtn title={HE.STORY_SHARE_IG} onClick={e => { e.stopPropagation(); shareStory(feedStory(item)); }}><InstagramIcon /></SvgBtn>
       <ActionGroup>
         <BookmarkBtn $saved={isSaved} className={bmkPop ? 'pop' : ''} onClick={handleBookmark}>
           <LineIcon name="bookmark" size={24} strokeWidth={2.2} filled={isSaved} />
@@ -169,7 +170,6 @@ export default function FeedCardActions({ item, isSaved, slideRef, onBookmark, c
         </ActionGroup>
       )}
       <SvgBtn onClick={e => { e.stopPropagation(); doShare(); }}><ShareIcon /></SvgBtn>
-      <SvgBtn title={HE.STORY_SHARE_IG} onClick={e => { e.stopPropagation(); shareStory(feedStory(item)); }}><InstagramIcon /></SvgBtn>
       <SvgBtn onClick={doSave}><CameraIcon /></SvgBtn>
     </Actions>
   );
