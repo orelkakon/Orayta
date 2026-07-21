@@ -113,7 +113,9 @@
       "Read(//Users/user/.local/share/**)",
       "Read(//Users/user/Library/Application Support/**)",
       "Bash(gh repo *)",
-      "Bash(vercel whoami *)"
+      "Bash(vercel whoami *)",
+      "Bash(openssl rand *)",
+      "Bash(echo \"build exit: $?\")"
     ]
   }
 }

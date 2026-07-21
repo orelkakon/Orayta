@@ -60,7 +60,7 @@ const Ring2 = styled.div`
 `;
 
 const Bsd = styled.div`
-  position: absolute; top: ${theme.spacing.md}; left: ${theme.spacing.lg};
+  position: absolute; top: ${theme.spacing.md}; right: ${theme.spacing.lg};
   color: rgba(255,255,255,0.4); font-family: ${theme.fonts.body};
   font-size: 0.72rem; letter-spacing: 0.07em;
 `;
