@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { trackShare } from '@/lib/shareCounter';
+import { shareStory, inviteStory } from '@/lib/storyShare';
 
 const Card = styled.div`
   background: ${theme.colors.surface};
@@ -40,9 +41,10 @@ const Desc = styled.p`
 
 const BtnGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: ${theme.spacing.sm};
   width: 100%;
+  @media (max-width: 520px) { grid-template-columns: repeat(2, 1fr); }
   @media (max-width: 360px) { grid-template-columns: 1fr; }
 `;
 
@@ -140,6 +142,15 @@ export default function ShareSection() {
         >
           <BtnIcon>✈️</BtnIcon>
           {HE.ABOUT_SHARE_TELEGRAM}
+        </ShareBtn>
+
+        <ShareBtn
+          $border="#E1306C"
+          $hoverBg="rgba(225,48,108,0.07)"
+          onClick={() => { void shareStory(inviteStory()); }}
+        >
+          <BtnIcon>📸</BtnIcon>
+          {HE.ABOUT_SHARE_INSTAGRAM}
         </ShareBtn>
 
         <ShareBtn

@@ -3,6 +3,8 @@ import { HE } from './hebrewTexts';
 import { trackShare } from './shareCounter';
 import { renderStoryImage, StoryContent } from './storyImage';
 
+const SITE_URL = 'https://orayta-eight.vercel.app';
+
 /**
  * Generates the story image and opens the NATIVE share sheet with the file
  * attached — on mobile the user taps Instagram → "הוספה לסטורי" and the
@@ -11,6 +13,9 @@ import { renderStoryImage, StoryContent } from './storyImage';
  * user can upload it manually.
  */
 export async function shareStory(content: StoryContent): Promise<void> {
+  // Instagram can't receive a clickable link with a shared image — the user
+  // adds it via the Link sticker. Pre-copy the URL so it's one paste away.
+  try { await navigator.clipboard?.writeText(SITE_URL); } catch { /* non-blocking */ }
   const blob = await renderStoryImage(content);
   const file = new File([blob], 'orayta-story.png', { type: 'image/png' });
 
@@ -33,6 +38,11 @@ function downloadBlob(blob: Blob): void {
   a.download = 'orayta-story.png';
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
+/** Promotional story inviting people to the site (שתף את אורייתא). */
+export function inviteStory(): StoryContent {
+  return { badge: HE.STORY_INVITE_BADGE, title: HE.STORY_INVITE_TITLE, text: HE.STORY_INVITE_TEXT };
 }
 
 export function chidushStory(c: Chidush): StoryContent {

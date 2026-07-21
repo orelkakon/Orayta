@@ -1,6 +1,7 @@
 import type { Rabbi, Citation, Chidush } from '@/types';
 import { HE } from './hebrewTexts';
 import { trackShare } from './shareCounter';
+import { shareStory } from './storyShare';
 
 export interface DailySikum {
   id: string; title: string | null; text: string; date: string;
@@ -57,6 +58,29 @@ export function buildDailyShareMessage(d: DailyShareData): string {
   parts.push(`${HE.DAILY_SHARE_LINK_LABEL}: ${SITE_URL}`);
 
   return parts.join('\n\n');
+}
+
+const cut = (s: string, n: number) => (s.length > n ? `${s.slice(0, n).trimEnd()}…` : s);
+
+/**
+ * Instagram-story version of the daily digest — each item trimmed so the
+ * whole digest fits a single 9:16 story card (see storyImage.ts).
+ */
+export function shareDailyToStory(d: DailyShareData): Promise<void> {
+  const parts: string[] = [];
+  if (d.rabbi) parts.push(`${HE.DAILY_RABBI_AND_BOOK}: ${d.rabbi.name}\n${cut(d.rabbi.bio, 130)}`);
+  const loc = d.citation?.locations[0];
+  if (d.citation) {
+    const src = loc ? ` (${loc.masechet} ${loc.daf}${loc.amud ? ` ${loc.amud}` : ''})` : '';
+    parts.push(`${HE.DAILY_CITATION}${src}:\n"${cut(d.citation.content, 170)}"`);
+  }
+  if (d.sikum) parts.push(`${HE.DAILY_SIKUM}: ${d.sikum.book.name}\n${cut(d.sikum.text, 130)}`);
+  if (d.chidush) parts.push(`${HE.DAILY_CHIDUSH}:\n${cut(d.chidush.text, 130)}`);
+  return shareStory({
+    badge: HE.DAILY_SHARE_TITLE,
+    title: d.hebrewDate || undefined,
+    text: parts.join('\n\n'),
+  });
 }
 
 /**

@@ -8,7 +8,7 @@ import { Rabbi, Citation, Chidush } from '@/types';
 import { CATEGORY_LABELS, CATEGORY_COLORS } from '@/lib/rabbisData';
 import type { RabbiCategory } from '@/types';
 import { matchYahrzeitRabbis, HebDateParts } from '@/lib/yahrzeit';
-import { shareDailyToWhatsApp, DailySikum } from '@/lib/dailyShare';
+import { shareDailyToWhatsApp, shareDailyToStory, DailySikum } from '@/lib/dailyShare';
 
 const DAY = Math.floor(Date.now() / 86400000);
 const pick = <T,>(arr: T[]): T | null => arr.length ? arr[DAY % arr.length] : null;
@@ -34,6 +34,11 @@ const ShareBtn = styled.button`
   transition: transform 0.15s, box-shadow 0.15s;
   &:hover { transform: translateY(-1px); box-shadow: ${theme.shadows.md}; }
   &:active { transform: scale(0.96); }
+`;
+
+const StoryBtn = styled(ShareBtn)`
+  margin-inline-start: ${theme.spacing.sm};
+  background: linear-gradient(45deg, #f09433, #dc2743, #bc1888);
 `;
 
 const Cards = styled.div`
@@ -115,6 +120,9 @@ export default function DailySection() {
         <span>📅</span>
         <Title>{HE.DAILY_TITLE}</Title>
         <ShareBtn onClick={handleShare}>💬 {HE.DAILY_SHARE_WA}</ShareBtn>
+        <StoryBtn onClick={() => void shareDailyToStory({ hebrewDate, rabbi, citation, sikum, chidush, yahrzeitNames })}>
+          📸 {HE.STORY_SHARE_IG}
+        </StoryBtn>
       </Header>
       <Cards>
         {/* Combined rabbi + book card */}
