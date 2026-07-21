@@ -486,7 +486,6 @@ export const HE = {
   FEED_TITLE: 'רגע של תורה',
   FEED_SUBTITLE: 'ציטוטים, רבנים, גימטריות וחידושים בפיד מרתק — מתחילים לגלול ומתחברים ללימוד',
   FEED_NEW_BADGE: 'חדש',
-  FEED_BANNER_KICKER: 'החוויה המרכזית של אורייתא',
   FEED_BANNER_TAGLINE: 'דקה אחת. גלילה אחת. עולם שלם.',
   FEED_BANNER_CTA: 'התחילו לגלול',
   FEED_BACK: '← חזרה',
