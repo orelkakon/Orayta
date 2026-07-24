@@ -35,4 +35,5 @@ export const SIDDUR_SECTIONS: SiddurSection[] = [
   { name: 'וידוי ותחנון', sefariaRef: 'Siddur_Edot_HaMizrach, Weekday_Shacharit, Vidui' },
   { name: 'שיר למעלות אשא עיני', sefariaRef: 'Psalms.121' },
   { name: 'עלינו לשבח', sefariaRef: 'Siddur_Edot_HaMizrach, Weekday_Shacharit, Alenu' },
+  { name: 'תפילת הדרך', sefariaRef: "Siddur_Edot_HaMizrach, Assorted_Blessings_and_Prayers, Traveler's_Prayer" },
 ];
