@@ -107,6 +107,15 @@ export const SECTIONS: ContentSection[] = [
     type: 'static',
     staticGroups: KADDISH_GROUPS,
   },
+  {
+    id: 'tefilat-haderech',
+    icon: 'bookmark',
+    title: 'תפילת הדרך',
+    desc: 'תפילה ליוצא לדרך — נוסח עדות המזרח',
+    group: 'tefillot',
+    type: 'sefaria-prayer',
+    sefariaRef: "Siddur_Edot_HaMizrach, Assorted_Blessings_and_Prayers, Traveler's_Prayer",
+  },
   /* ── ברכות ── */
   {
     id: 'birkhat-hamazon',
