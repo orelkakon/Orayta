@@ -5,6 +5,7 @@ import styled, { css } from 'styled-components';
 import type { FeedReelSlide } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
 import { trackShare } from '@/lib/shareCounter';
+import { reelCodeToMediaId } from '@/lib/instagram';
 
 /*
  * The IG embed lays out: 54px header, then the video in a 4:5 box (width x 1.25)
@@ -115,6 +116,20 @@ export default function FeedReel({ slide, onVisible }: Props) {
     };
   }, [onVisible]);
 
+  function openInInstagram() {
+    const webUrl = `https://www.instagram.com/p/${slide.code}/`;
+    const mediaId = reelCodeToMediaId(slide.code);
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (!isMobile || !mediaId) { window.open(webUrl, '_blank', 'noopener'); return; }
+    // Launch the app straight to this video; fall back to the web page only
+    // if the app didn't take over (i.e. the tab stayed visible).
+    const timer = setTimeout(() => {
+      if (document.visibilityState === 'visible') window.open(webUrl, '_blank', 'noopener');
+    }, 1600);
+    document.addEventListener('visibilitychange', () => clearTimeout(timer), { once: true });
+    window.location.href = `instagram://media?id=${mediaId}`;
+  }
+
   function doShare() {
     const text = `${HE.FEED_REEL_SHARE_TEXT}\n${slide.url}`;
     if (typeof navigator !== 'undefined' && navigator.share) {
@@ -148,8 +163,7 @@ export default function FeedReel({ slide, onVisible }: Props) {
       </FrameWrap>
       <Bar>
         <BarBtn onClick={doShare}>↗ {HE.FEED_REEL_SHARE}</BarBtn>
-        {/* /p/<code>/ deep-links to the exact post; /reel/ can land on the generic reels feed in-app */}
-        <BarBtn onClick={() => window.open(`https://www.instagram.com/p/${slide.code}/`, '_blank', 'noopener')}>
+        <BarBtn onClick={openInInstagram}>
           <InstagramIcon /> {HE.FEED_REEL_OPEN_IG}
         </BarBtn>
         {slide.username && <User>@{slide.username}</User>}

@@ -27,3 +27,16 @@ export function canonicalReelUrl(code: string): string {
 export function canonicalProfileUrl(username: string): string {
   return `https://www.instagram.com/${username}/`;
 }
+
+const IG_B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+
+/** Instagram shortcodes are base64-encoded numeric media IDs (for instagram:// deep links). */
+export function reelCodeToMediaId(code: string): string {
+  let id = BigInt(0);
+  for (const ch of code) {
+    const v = IG_B64.indexOf(ch);
+    if (v === -1) return '';
+    id = id * BigInt(64) + BigInt(v);
+  }
+  return id.toString();
+}
