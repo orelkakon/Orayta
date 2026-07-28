@@ -9,10 +9,12 @@ import FeedBackground from './FeedBackground';
 import FeedDedication from './FeedDedication';
 import FeedSettings from './FeedSettings';
 import FeedReader, { ReaderData } from './FeedReader';
+import FeedReel from './FeedReel';
 import SavedPanel from './SavedPanel';
-import type { FeedItem, FeedItemType, FeedReaction, FeedDedicationSlide, Dedication } from '@/types';
+import type { FeedItem, FeedReaction, FeedSlide, Dedication, InstagramReel } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
-import { ALL_FEED_TYPES, getFeedPrefs, saveFeedPrefs } from '@/lib/feedPrefs';
+import { ALL_FEED_TYPES, FeedPrefs, DEFAULT_FEED_PREFS, getFeedPrefs, saveFeedPrefs, isCustomPrefs } from '@/lib/feedPrefs';
+import { buildFeedSlides, ensureReelGaps } from '@/lib/feedSlides';
 
 const Wrapper = styled.div`position: fixed; inset: 0; background: #050505; z-index: 900; overflow: hidden;`;
 
@@ -100,14 +102,17 @@ export default function FeedView() {
   const [savedMode, setSavedMode]       = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [reader, setReader]             = useState<ReaderData | null>(null);
-  const [prefs, setPrefs]               = useState<FeedItemType[]>(ALL_FEED_TYPES);
+  const [prefs, setPrefs]               = useState<FeedPrefs>(DEFAULT_FEED_PREFS);
   const [dedications, setDedications]   = useState<Dedication[]>([]);
+  const [reels, setReels]               = useState<InstagramReel[]>([]);
+  const [reelsOnScreen, setReelsOnScreen] = useState(0);
   const scrollRef   = useRef<HTMLDivElement>(null);
   const fetchingRef = useRef(false);
-  const prefsRef    = useRef<FeedItemType[]>(ALL_FEED_TYPES);
+  const prefsRef    = useRef<FeedPrefs>(DEFAULT_FEED_PREFS);
   const genRef      = useRef(0);
   const slidesLenRef = useRef(0);
   const swipeStartX = useRef<number | null>(null);
+  const reelGapsRef = useRef<number[]>([]);
 
   const fetchMore = useCallback(async () => {
     if (fetchingRef.current) return;
@@ -115,7 +120,7 @@ export default function FeedView() {
     setFetching(true);
     const gen = genRef.current;
     try {
-      const types = prefsRef.current;
+      const types = prefsRef.current.types;
       const query = types.length < ALL_FEED_TYPES.length ? `?types=${types.join(',')}` : '';
       const res = await fetch(`/api/feed${query}`);
       const items: FeedItem[] = await res.json();
@@ -164,21 +169,16 @@ export default function FeedView() {
     void fetch('/api/dedications').then(r => r.json()).then((d: Dedication[]) => {
       setDedications([...d].sort(() => Math.random() - 0.5));
     });
+    void fetch('/api/instagram/reels').then(r => r.json()).then((r: InstagramReel[]) => {
+      setReels([...r].sort(() => Math.random() - 0.5));
+    }).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const displaySlides = useMemo((): Array<FeedItem | FeedDedicationSlide> => {
-    if (dedications.length === 0) return cards;
-    const result: Array<FeedItem | FeedDedicationSlide> = [];
-    cards.forEach((card, i) => {
-      result.push(card);
-      if ((i + 1) % 8 === 0) {
-        const ded = dedications[Math.floor((i + 1) / 8 - 1) % dedications.length];
-        result.push({ slideType: 'dedication', id: ded.id, dedType: ded.type, name: ded.name });
-      }
-    });
-    return result;
-  }, [cards, dedications]);
+  const displaySlides = useMemo((): FeedSlide[] => {
+    ensureReelGaps(reelGapsRef.current, cards.length);
+    return buildFeedSlides(cards, dedications, reels, reelGapsRef.current, prefs.dedications, prefs.reels);
+  }, [cards, dedications, reels, prefs]);
 
   slidesLenRef.current = displaySlides.length;
 
@@ -189,10 +189,10 @@ export default function FeedView() {
     if (idx >= slidesLenRef.current - PRELOAD_THRESHOLD) void fetchMore();
   }, [fetchMore]);
 
-  const handleSaveSettings = useCallback((types: FeedItemType[]) => {
-    saveFeedPrefs(types);
-    prefsRef.current = types;
-    setPrefs(types);
+  const handleSaveSettings = useCallback((next: FeedPrefs) => {
+    saveFeedPrefs(next);
+    prefsRef.current = next;
+    setPrefs(next);
     setSettingsOpen(false);
     genRef.current += 1;       // discard any in-flight page of the old mix
     fetchingRef.current = false;
@@ -258,6 +258,10 @@ export default function FeedView() {
     if (dx > 65) setSavedMode(true);
   }, []);
 
+  const handleReelVisible = useCallback((visible: boolean) => {
+    setReelsOnScreen(c => Math.max(0, c + (visible ? 1 : -1)));
+  }, []);
+
   if (!initialLoaded) {
     return (
       <Wrapper>
@@ -274,7 +278,7 @@ export default function FeedView() {
         <Title>{HE.FEED_TITLE}</Title>
         <HeaderSide>
           <SettingsBtn
-            $custom={prefs.length < ALL_FEED_TYPES.length}
+            $custom={isCustomPrefs(prefs)}
             onClick={() => setSettingsOpen(true)}
             aria-label={HE.FEED_SETTINGS_OPEN}
           >
@@ -287,10 +291,13 @@ export default function FeedView() {
       </Header>
       {fetching && <Spinner />}
       <FeedBackground />
-      <FeedAmbient />
+      <FeedAmbient suppressed={reelsOnScreen > 0} />
       <Scroll ref={scrollRef} onScroll={handleScroll} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
         {displaySlides.map((slide, i) => {
           if ('slideType' in slide) {
+            if (slide.slideType === 'reel') {
+              return <FeedReel key={`reel-${slide.id}`} slide={slide} onVisible={handleReelVisible} />;
+            }
             return <FeedDedication key={`ded-${slide.id}-${i}`} slide={slide} />;
           }
           const item = slide as FeedItem;
@@ -318,7 +325,7 @@ export default function FeedView() {
       />
       <FeedSettings
         open={settingsOpen}
-        selected={prefs}
+        prefs={prefs}
         onClose={() => setSettingsOpen(false)}
         onSave={handleSaveSettings}
       />

@@ -84,7 +84,7 @@ const Pill = styled.div<{ $visible: boolean }>`
 const PillName = styled.div`color: rgba(255,220,140,0.92); font-size: 0.75rem; font-weight: 700;`;
 const PillArtist = styled.div`color: rgba(255,255,255,0.5); font-size: 0.66rem;`;
 
-export default function FeedAmbient() {
+export default function FeedAmbient({ suppressed = false }: { suppressed?: boolean }) {
   const playlistRef  = useRef<typeof SONGS>(shuffle(SONGS));
   const idxRef       = useRef(0);
   const [currentSong, setCurrentSong] = useState(() => playlistRef.current[0]);
@@ -93,9 +93,19 @@ export default function FeedAmbient() {
   const iframeRef    = useRef<HTMLIFrameElement>(null);
   const unlockedRef  = useRef(false);
   const onRef        = useRef(false);
+  const suppressedRef = useRef(false);
   const pillTimer    = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { onRef.current = on; }, [on]);
+
+  // A visible Instagram reel takes over the audio: mute while suppressed,
+  // restore the user's music state when the reel leaves the screen.
+  useEffect(() => {
+    suppressedRef.current = suppressed;
+    if (!iframeRef.current) return;
+    if (suppressed) ytCmd(iframeRef.current, 'mute');
+    else if (onRef.current) ytCmd(iframeRef.current, 'unMute');
+  }, [suppressed]);
 
   const showPill = useCallback(() => {
     setPill(true);
@@ -112,7 +122,7 @@ export default function FeedAmbient() {
     ytCmd(iframeRef.current, 'loadVideoById', [{ videoId: next.id, startSeconds: 30 }]);
     setTimeout(() => {
       if (!iframeRef.current) return;
-      if (onRef.current) ytCmd(iframeRef.current, 'unMute');
+      if (onRef.current && !suppressedRef.current) ytCmd(iframeRef.current, 'unMute');
       else ytCmd(iframeRef.current, 'mute');
     }, 350);
     if (onRef.current) showPill();
@@ -135,7 +145,7 @@ export default function FeedAmbient() {
       if (unlockedRef.current) return;
       unlockedRef.current = true;
       [300, 1000].forEach(d => setTimeout(() => {
-        if (iframeRef.current) ytCmd(iframeRef.current, 'unMute');
+        if (iframeRef.current && !suppressedRef.current) ytCmd(iframeRef.current, 'unMute');
       }, d));
       setOn(true);
       showPill();
@@ -154,7 +164,7 @@ export default function FeedAmbient() {
       ytCmd(iframeRef.current, 'mute');
       setOn(false); setPill(false);
     } else {
-      ytCmd(iframeRef.current, 'unMute');
+      if (!suppressedRef.current) ytCmd(iframeRef.current, 'unMute');
       setOn(true); showPill();
     }
   };

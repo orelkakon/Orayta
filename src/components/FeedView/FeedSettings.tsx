@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import Link from 'next/link';
 import type { FeedItemType } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
-import { ALL_FEED_TYPES } from '@/lib/feedPrefs';
+import { ALL_FEED_TYPES, FeedPrefs } from '@/lib/feedPrefs';
+import { useRole } from '@/components/common/RoleContext';
 
 const Overlay = styled.div<{ $open: boolean }>`
   position: fixed; inset: 0; z-index: 600;
@@ -74,6 +76,18 @@ const Check = styled.span<{ $on: boolean }>`
   transition: background 0.2s, border-color 0.2s;
 `;
 
+const SectionTitle = styled.div`
+  color: rgba(255,255,255,0.45); font-size: 0.78rem; font-weight: 700;
+  margin: 14px 2px 8px; letter-spacing: 0.02em;
+`;
+
+const AdminLink = styled(Link)`
+  display: block; text-align: center; margin-top: 12px;
+  color: rgba(160,130,255,0.85); font-size: 0.82rem; font-weight: 700;
+  padding: 8px; border: 1px dashed rgba(160,130,255,0.35); border-radius: 12px;
+  &:hover { background: rgba(160,130,255,0.08); }
+`;
+
 const Footer = styled.div`display: flex; gap: 10px; margin-top: 18px;`;
 
 const AllBtn = styled.button`
@@ -106,17 +120,20 @@ const TYPE_META: TypeMeta[] = [
 
 interface Props {
   open: boolean;
-  selected: FeedItemType[];
+  prefs: FeedPrefs;
   onClose: () => void;
-  onSave: (types: FeedItemType[]) => void;
+  onSave: (prefs: FeedPrefs) => void;
 }
 
-export default function FeedSettings({ open, selected, onClose, onSave }: Props) {
-  const [sel, setSel] = useState<Set<FeedItemType>>(new Set(selected));
+export default function FeedSettings({ open, prefs, onClose, onSave }: Props) {
+  const role = useRole();
+  const [sel, setSel]         = useState<Set<FeedItemType>>(new Set(prefs.types));
+  const [reels, setReels]     = useState(prefs.reels);
+  const [deds, setDeds]       = useState(prefs.dedications);
 
   useEffect(() => {
-    if (open) setSel(new Set(selected));
-  }, [open, selected]);
+    if (open) { setSel(new Set(prefs.types)); setReels(prefs.reels); setDeds(prefs.dedications); }
+  }, [open, prefs]);
 
   const toggle = (type: FeedItemType) => {
     setSel(prev => {
@@ -131,7 +148,11 @@ export default function FeedSettings({ open, selected, onClose, onSave }: Props)
     });
   };
 
-  const handleSave = () => onSave(ALL_FEED_TYPES.filter(t => sel.has(t)));
+  const handleSave = () => onSave({
+    types: ALL_FEED_TYPES.filter(t => sel.has(t)),
+    reels,
+    dedications: deds,
+  });
 
   return (
     <>
@@ -152,10 +173,24 @@ export default function FeedSettings({ open, selected, onClose, onSave }: Props)
             );
           })}
         </Grid>
+        <SectionTitle>{HE.FEED_SETTINGS_EXTRAS}</SectionTitle>
+        <Grid>
+          <TypeCard $on={reels} $grad="linear-gradient(135deg,#2a0a20,#5c1440)" onClick={() => setReels(v => !v)}>
+            <TypeIcon $on={reels}>🎬</TypeIcon>
+            <TypeLabel $on={reels}>{HE.FEED_SETTINGS_REELS}</TypeLabel>
+            <Check $on={reels}>✓</Check>
+          </TypeCard>
+          <TypeCard $on={deds} $grad="linear-gradient(135deg,#221604,#4a3410)" onClick={() => setDeds(v => !v)}>
+            <TypeIcon $on={deds}>🕯️</TypeIcon>
+            <TypeLabel $on={deds}>{HE.FEED_SETTINGS_DEDICATIONS}</TypeLabel>
+            <Check $on={deds}>✓</Check>
+          </TypeCard>
+        </Grid>
         <Footer>
-          <AllBtn onClick={() => setSel(new Set(ALL_FEED_TYPES))}>{HE.FEED_SETTINGS_ALL}</AllBtn>
+          <AllBtn onClick={() => { setSel(new Set(ALL_FEED_TYPES)); setReels(true); setDeds(true); }}>{HE.FEED_SETTINGS_ALL}</AllBtn>
           <SaveBtn onClick={handleSave}>{HE.FEED_SETTINGS_SAVE}</SaveBtn>
         </Footer>
+        {role === 'admin' && <AdminLink href="/feed-videos">{HE.FEED_SETTINGS_MANAGE_REELS}</AdminLink>}
       </Sheet>
     </>
   );

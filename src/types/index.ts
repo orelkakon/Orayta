@@ -161,4 +161,31 @@ export interface FeedDedicationSlide {
   name: string;
 }
 
-export type FeedSlide = FeedItem | FeedDedicationSlide;
+export interface InstagramPage {
+  id: string;
+  username: string;
+  url: string;
+  active: boolean;
+  createdAt: string;
+  reelCount?: number;
+}
+
+export interface InstagramReel {
+  id: string;
+  pageId: string | null;
+  code: string;
+  url: string;
+  active: boolean;
+  createdAt: string;
+  username?: string | null;
+}
+
+export interface FeedReelSlide {
+  slideType: 'reel';
+  id: string;
+  code: string;
+  url: string;
+  username: string | null;
+}
+
+export type FeedSlide = FeedItem | FeedDedicationSlide | FeedReelSlide;

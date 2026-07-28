@@ -120,6 +120,32 @@ model FeedLike {
   @@index([reaction])
 }
 
+model InstagramPage {
+  id        String          @id @default(cuid())
+  username  String          @unique
+  url       String
+  active    Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  reels     InstagramReel[]
+}
+
+model InstagramReel {
+  id        String         @id @default(cuid())
+  pageId    String?
+  page      InstagramPage? @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  code      String         @unique
+  url       String
+  active    Boolean        @default(true)
+  createdAt DateTime       @default(now())
+
+  @@index([pageId])
+}
+
+model AppConfig {
+  key   String @id
+  value String
+}
+
 model QuizResult {
   id         String   @id @default(cuid())
   citationId String

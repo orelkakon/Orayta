@@ -115,7 +115,8 @@
       "Bash(gh repo *)",
       "Bash(vercel whoami *)",
       "Bash(openssl rand *)",
-      "Bash(echo \"build exit: $?\")"
+      "Bash(echo \"build exit: $?\")",
+      "Bash(npx tsx *)"
     ]
   }
 }
