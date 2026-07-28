@@ -28,11 +28,9 @@ const BackLink = styled(Link)`
 export default function InstagramAdmin() {
   const role = useRole();
   const [pages, setPages]           = useState<InstagramPage[]>([]);
-  const [pageUrl, setPageUrl]       = useState('');
   const [maxSeconds, setMaxSeconds] = useState('60');
   const [savingCfg, setSavingCfg]   = useState(false);
   const [cfgSaved, setCfgSaved]     = useState(false);
-  const [saving, setSaving]         = useState(false);
 
   const loadPages = useCallback(() => {
     void fetch('/api/instagram/pages')
@@ -53,19 +51,6 @@ export default function InstagramAdmin() {
   if (role !== 'admin') {
     return <Wrap><PageTitle>{HE.IG_ADMIN_FORBIDDEN}</PageTitle></Wrap>;
   }
-
-  const handleAddPage = async () => {
-    if (!pageUrl.trim() || saving) return;
-    setSaving(true);
-    const res = await fetch('/api/instagram/pages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: pageUrl.trim() }),
-    });
-    setSaving(false);
-    if (!res.ok) { window.alert(HE.IG_ADMIN_INVALID_LINK); return; }
-    setPageUrl(''); loadPages();
-  };
 
   const handleTogglePage = async (id: string) => {
     await fetch(`/api/instagram/pages/${id}`, { method: 'PATCH' });
@@ -107,17 +92,7 @@ export default function InstagramAdmin() {
 
       <Card>
         <CardTitle>📷 {HE.IG_ADMIN_PAGES_TITLE}</CardTitle>
-        <FormRow>
-          <Input
-            value={pageUrl}
-            onChange={e => setPageUrl(e.target.value)}
-            placeholder={HE.IG_ADMIN_PAGE_PLACEHOLDER}
-            onKeyDown={e => e.key === 'Enter' && void handleAddPage()}
-          />
-          <SaveBtn onClick={handleAddPage} disabled={saving || !pageUrl.trim()}>
-            {saving ? '...' : HE.IG_ADMIN_ADD}
-          </SaveBtn>
-        </FormRow>
+        <Muted>{HE.IG_ADMIN_PAGES_NOTE}</Muted>
         {pages.length === 0
           ? <Empty>{HE.IG_ADMIN_EMPTY_PAGES}</Empty>
           : (

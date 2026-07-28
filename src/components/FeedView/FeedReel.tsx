@@ -6,27 +6,33 @@ import type { FeedReelSlide } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
 import { trackShare } from '@/lib/shareCounter';
 
-const IG_EMBED_HEADER = 54;  // px cropped from the top of the embed (avatar row)
-const IG_EMBED_FOOTER = 340; // px of embed chrome pushed below the visible frame
+/*
+ * The IG embed lays out: 54px header, then the video in a 4:5 box (width x 1.25)
+ * with the 9:16 video letterboxed inside it (object-fit: contain), then footer
+ * chrome. The visible 9:16 video is therefore the middle 70.3% of the iframe
+ * width. Oversizing the iframe to 142.3% and shifting it right/up crops the
+ * header, footer and side bars, so only actual video pixels fill the frame.
+ */
+const ACTION_BAR = 52; // px reserved below the video for our own actions
 
 const Slide = styled.div`
   height: 100dvh; scroll-snap-align: start; flex-shrink: 0;
   background: linear-gradient(160deg, #0a0612 0%, #1a0b24 50%, #0a0612 100%);
-  display: flex; align-items: center; justify-content: center;
-  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; position: relative; z-index: 2;
 `;
 
 const FrameWrap = styled.div`
   position: relative; overflow: hidden; background: #000;
-  width: min(100vw, 430px, calc((100dvh - 24px) * 9 / 16));
+  width: min(100vw, 430px, calc((100dvh - ${ACTION_BAR + 24}px) * 9 / 16));
   aspect-ratio: 9 / 16;
   border-radius: 16px;
   box-shadow: 0 12px 44px rgba(0,0,0,0.55);
 `;
 
 const Frame = styled.iframe`
-  position: absolute; top: -${IG_EMBED_HEADER}px; left: 0;
-  width: 100%; height: calc(100% + ${IG_EMBED_HEADER + IG_EMBED_FOOTER}px);
+  position: absolute; top: -54px; left: -21.15%;
+  width: 142.3%; height: calc(100% + 60px);
   border: none; display: block; background: #000;
 `;
 
@@ -35,36 +41,42 @@ const Placeholder = styled.div`
   color: rgba(255,255,255,0.35); font-size: 2rem;
 `;
 
-const Badge = styled.div`
-  position: absolute; top: 10px; right: 10px; z-index: 3;
-  display: flex; align-items: center; gap: 6px;
-  color: rgba(255,255,255,0.9); font-size: 0.72rem; font-weight: 700;
-  background: rgba(0,0,0,0.45); backdrop-filter: blur(8px);
-  border-radius: 14px; padding: 4px 10px; pointer-events: none;
-`;
-
 /* Transparent strips owned by the page (not the iframe) — touch here scrolls the feed */
 const SwipeRail = styled.div<{ $side: 'left' | 'right' }>`
   position: absolute; top: 0; bottom: 0; ${p => p.$side}: 0;
-  width: 15%; z-index: 2;
+  width: 13%; z-index: 2;
 `;
 
-const FloatingActions = styled.div`
-  position: absolute; left: 8px; bottom: 14px; z-index: 3;
-  display: flex; flex-direction: column; gap: 10px;
+const Bar = styled.div`
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: min(100vw, 430px);
 `;
 
-const RoundBtn = styled.button`
+const BarBtn = styled.button`
   -webkit-tap-highlight-color: transparent; appearance: none; cursor: pointer;
-  width: 42px; height: 42px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.25);
-  color: white; font-size: 1.05rem;
+  display: flex; align-items: center; gap: 7px;
+  background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2); border-radius: 20px;
+  color: white; font-size: 0.85rem; font-weight: 700; padding: 8px 16px;
   transition: background 0.15s, transform 0.12s;
-  &:active { transform: scale(0.92); }
-  &:hover { background: rgba(255,255,255,0.2); }
+  &:active { transform: scale(0.95); }
+  &:hover { background: rgba(255,255,255,0.18); }
 `;
+
+const User = styled.span`
+  color: rgba(255,255,255,0.45); font-size: 0.75rem; direction: ltr;
+  max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+`;
+
+function InstagramIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" />
+      <circle cx="12" cy="12" r="4.3" />
+      <circle cx="17.4" cy="6.6" r="1.3" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
 
 interface Props {
   slide: FeedReelSlide;
@@ -79,8 +91,10 @@ export default function FeedReel({ slide, onVisible }: Props) {
   useEffect(() => {
     const el = slideRef.current;
     if (!el) return;
-    const obs = new IntersectionObserver(([entry]) => {
-      const visible = entry.isIntersecting;
+    // Read the LAST entry — on fast swipes enter+leave arrive in one batch,
+    // and dropping the leave would keep the ambient music muted forever.
+    const obs = new IntersectionObserver(entries => {
+      const visible = entries[entries.length - 1].isIntersecting;
       if (visible === activeRef.current) return;
       activeRef.current = visible;
       setActive(visible);
@@ -118,20 +132,16 @@ export default function FeedReel({ slide, onVisible }: Props) {
         ) : (
           <Placeholder>🎬</Placeholder>
         )}
-        <Badge>🎬{slide.username && <span dir="ltr">@{slide.username}</span>}</Badge>
         <SwipeRail $side="left" />
         <SwipeRail $side="right" />
-        <FloatingActions>
-          <RoundBtn onClick={doShare} aria-label={HE.FEED_REEL_SHARE} title={HE.FEED_REEL_SHARE}>↗</RoundBtn>
-          <RoundBtn
-            onClick={() => window.open(slide.url, '_blank', 'noopener')}
-            aria-label={HE.FEED_REEL_OPEN_IG}
-            title={HE.FEED_REEL_OPEN_IG}
-          >
-            📷
-          </RoundBtn>
-        </FloatingActions>
       </FrameWrap>
+      <Bar>
+        <BarBtn onClick={doShare}>↗ {HE.FEED_REEL_SHARE}</BarBtn>
+        <BarBtn onClick={() => window.open(slide.url, '_blank', 'noopener')}>
+          <InstagramIcon /> {HE.FEED_REEL_OPEN_IG}
+        </BarBtn>
+        {slide.username && <User>@{slide.username}</User>}
+      </Bar>
     </Slide>
   );
 }

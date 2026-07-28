@@ -2,38 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import styled, { keyframes, css } from 'styled-components';
-
-const SONGS = [
-  { id: 'xilcxmW7xYo', name: 'אישתי',         artist: 'בן צור' },
-  { id: 'Z7OD4VEeOu8', name: 'טאטע תטהר',     artist: 'בן צור' },
-  { id: 'qHdf4FOtqdo', name: 'אמונה',          artist: 'בן צור' },
-  { id: 'QBrY-J9Vm-s', name: 'סולי',           artist: 'בן צור' },
-  { id: 'Jhx8kKQOUDQ', name: 'נשמות צמאות',   artist: 'בן צור' },
-  { id: 'C590zIn1znM', name: 'כל עכבה לטובה', artist: 'בן צור' },
-  { id: '-1L6W2Z2KwI', name: 'אהבת השם',      artist: 'בן צור' },
-  { id: '_HTyC9emB74', name: 'השבעתי אתכם',   artist: 'ישי ריבו' },
-  { id: 'a470tNqmYJg', name: 'אחת ולתמיד',    artist: 'ישי ריבו' },
-  { id: 'iG_XzBrfcl8', name: 'רבי שמעון',     artist: 'ישי ריבו' },
-  { id: 'GVqt0MRI1q8', name: 'אין לי מלבדך',  artist: 'ישי ריבו' },
-  { id: 'tGilTBGfP1E', name: 'הלב שלי',       artist: 'ישי ריבו' },
-  { id: 'kq67kMNGgpg', name: 'כתר מלוכה',     artist: 'ישי ריבו' },
-  { id: 'j9cPwwhah0c', name: 'סדר העבודה',    artist: 'ישי ריבו' },
-  { id: 'E5mCRmuaSXU', name: 'לילה טוב שון',  artist: 'חנן בן ארי' },
-  { id: 'gQaCWeAIrHI', name: 'שבורי לב',      artist: 'חנן בן ארי' },
-  { id: '-gACoOrsQZM', name: 'מולדת',          artist: 'חנן בן ארי' },
-  { id: 'tm-0AW0MoSs', name: 'שמש',            artist: 'חנן בן ארי' },
-  { id: 'WUSzwJFXh2o', name: 'בסוף זה הלחן',  artist: 'חנן בן ארי' },
-  { id: 'WPpuU-8cvb0', name: 'חנניה',          artist: 'חנן בן ארי' },
-];
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
+import { AMBIENT_SONGS, shuffleSongs } from '@/lib/ambientSongs';
 
 function ytCmd(iframe: HTMLIFrameElement, func: string, args: unknown[] = []) {
   iframe.contentWindow?.postMessage(JSON.stringify({ event: 'command', func, args }), 'https://www.youtube.com');
@@ -85,13 +54,14 @@ const PillName = styled.div`color: rgba(255,220,140,0.92); font-size: 0.75rem; f
 const PillArtist = styled.div`color: rgba(255,255,255,0.5); font-size: 0.66rem;`;
 
 export default function FeedAmbient({ suppressed = false }: { suppressed?: boolean }) {
-  const playlistRef  = useRef<typeof SONGS>(shuffle(SONGS));
+  const playlistRef  = useRef(shuffleSongs(AMBIENT_SONGS));
   const idxRef       = useRef(0);
   const [currentSong, setCurrentSong] = useState(() => playlistRef.current[0]);
   const [on, setOn]                   = useState(false);
   const [pillVisible, setPill]        = useState(false);
   const iframeRef    = useRef<HTMLIFrameElement>(null);
   const unlockedRef  = useRef(false);
+  const handshakeRef = useRef(false);
   const onRef        = useRef(false);
   const suppressedRef = useRef(false);
   const pillTimer    = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -104,8 +74,37 @@ export default function FeedAmbient({ suppressed = false }: { suppressed?: boole
     suppressedRef.current = suppressed;
     if (!iframeRef.current) return;
     if (suppressed) ytCmd(iframeRef.current, 'mute');
-    else if (onRef.current) ytCmd(iframeRef.current, 'unMute');
+    else if (onRef.current) {
+      // playVideo too — the browser may have paused the muted player meanwhile
+      ytCmd(iframeRef.current, 'playVideo');
+      ytCmd(iframeRef.current, 'unMute');
+    }
   }, [suppressed]);
+
+  // The YT iframe only emits onStateChange after a 'listening' handshake;
+  // without it songs never auto-advance and the feed goes silent at song end.
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (handshakeRef.current) { clearInterval(timer); return; }
+      iframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }),
+        'https://www.youtube.com'
+      );
+    }, 1200);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Browsers pause background playback: resume when the tab becomes visible again
+  useEffect(() => {
+    function onVisibility() {
+      if (document.visibilityState !== 'visible' || !iframeRef.current) return;
+      ytCmd(iframeRef.current, 'playVideo');
+      if (onRef.current && !suppressedRef.current) ytCmd(iframeRef.current, 'unMute');
+      else ytCmd(iframeRef.current, 'mute');
+    }
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
 
   const showPill = useCallback(() => {
     setPill(true);
@@ -131,6 +130,7 @@ export default function FeedAmbient({ suppressed = false }: { suppressed?: boole
   useEffect(() => {
     function handleMessage(e: MessageEvent) {
       if (e.origin !== 'https://www.youtube.com') return;
+      handshakeRef.current = true;
       try {
         const data = JSON.parse(e.data as string) as { event?: string; info?: number };
         if (data.event === 'onStateChange' && data.info === 0) advanceSong();
@@ -145,7 +145,10 @@ export default function FeedAmbient({ suppressed = false }: { suppressed?: boole
       if (unlockedRef.current) return;
       unlockedRef.current = true;
       [300, 1000].forEach(d => setTimeout(() => {
-        if (iframeRef.current && !suppressedRef.current) ytCmd(iframeRef.current, 'unMute');
+        if (iframeRef.current && !suppressedRef.current) {
+          ytCmd(iframeRef.current, 'playVideo');
+          ytCmd(iframeRef.current, 'unMute');
+        }
       }, d));
       setOn(true);
       showPill();
@@ -164,6 +167,7 @@ export default function FeedAmbient({ suppressed = false }: { suppressed?: boole
       ytCmd(iframeRef.current, 'mute');
       setOn(false); setPill(false);
     } else {
+      ytCmd(iframeRef.current, 'playVideo');
       if (!suppressedRef.current) ytCmd(iframeRef.current, 'unMute');
       setOn(true); showPill();
     }
