@@ -50,5 +50,9 @@ export async function POST(req: NextRequest) {
     skipDuplicates: true,
   });
 
+  if (result.count === 0) {
+    return NextResponse.json({ error: 'duplicate', added: 0, skipped: codes.length }, { status: 409 });
+  }
+
   return NextResponse.json({ added: result.count, skipped: codes.length - result.count }, { status: 201 });
 }

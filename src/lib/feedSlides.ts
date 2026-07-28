@@ -1,7 +1,7 @@
 import type { FeedItem, FeedSlide, Dedication, InstagramReel } from '@/types';
 
-export const REEL_GAP_MIN  = 6;
-export const REEL_GAP_SPAN = 3; // gap is 6, 7 or 8 regular cards
+export const REEL_GAP_MIN  = 5;
+export const REEL_GAP_SPAN = 1; // fixed gap of 5 regular cards
 const DEDICATION_GAP = 8;
 
 /**
@@ -17,7 +17,7 @@ export function ensureReelGaps(gaps: number[], cardCount: number): void {
   }
 }
 
-/** Interleave dedication slides (every 8 cards) and reel slides (every 6-8 cards). */
+/** Interleave dedication slides (every 8 cards) and reel slides (every 5 cards). */
 export function buildFeedSlides(
   cards: FeedItem[],
   dedications: Dedication[],

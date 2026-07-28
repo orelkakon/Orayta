@@ -555,6 +555,8 @@ export const HE = {
   IG_ADMIN_EMPTY_PAGES: 'עדיין אין עמודים — הוסיפו קישור לעמוד',
   IG_ADMIN_EMPTY_REELS: 'עדיין אין סרטונים — הדביקו קישור לסרטון',
   IG_ADMIN_INVALID_LINK: 'קישור לא תקין',
+  IG_ADMIN_DUPLICATE_REEL: 'הסרטון כבר קיים במערכת',
+  IG_ADMIN_SHOW_MORE: 'הצג עוד',
   IG_ADMIN_ACTIVE: 'פעיל',
   IG_ADMIN_INACTIVE: 'מושבת',
   ABOUT_REACTIONS_HEART: 'אהבתי',

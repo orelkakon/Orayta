@@ -10,11 +10,14 @@ interface Props {
   onChanged: () => void;
 }
 
+const PAGE_SIZE = 20;
+
 export default function ReelsAdminCard({ pages, onChanged }: Props) {
   const [reels, setReels]     = useState<InstagramReel[]>([]);
   const [url, setUrl]         = useState('');
   const [pageId, setPageId]   = useState('');
   const [saving, setSaving]   = useState(false);
+  const [shown, setShown]     = useState(PAGE_SIZE);
 
   const load = useCallback(() => {
     void fetch('/api/instagram/reels?all=1')
@@ -34,6 +37,7 @@ export default function ReelsAdminCard({ pages, onChanged }: Props) {
       body: JSON.stringify({ urls: [url.trim()], pageId: pageId || undefined }),
     });
     setSaving(false);
+    if (res.status === 409) { window.alert(HE.IG_ADMIN_DUPLICATE_REEL); return; }
     if (!res.ok) { window.alert(HE.IG_ADMIN_INVALID_LINK); return; }
     setUrl(''); load(); onChanged();
   };
@@ -70,22 +74,29 @@ export default function ReelsAdminCard({ pages, onChanged }: Props) {
       {reels.length === 0
         ? <Empty>{HE.IG_ADMIN_EMPTY_REELS}</Empty>
         : (
-          <List>
-            {reels.map(r => (
-              <Row key={r.id} $off={!r.active}>
-                <RowText>
-                  <a href={r.url} target="_blank" rel="noopener noreferrer">{r.code}</a>
-                  {' '}<Muted>{r.username ? `@${r.username}` : HE.IG_ADMIN_NO_PAGE}</Muted>
-                </RowText>
-                <Actions>
-                  <SmallBtn onClick={() => void handleToggle(r.id)}>
-                    {r.active ? HE.IG_ADMIN_ACTIVE : HE.IG_ADMIN_INACTIVE}
-                  </SmallBtn>
-                  <DelBtn onClick={() => void handleDelete(r.id)}>✕</DelBtn>
-                </Actions>
-              </Row>
-            ))}
-          </List>
+          <>
+            <List>
+              {reels.slice(0, shown).map(r => (
+                <Row key={r.id} $off={!r.active}>
+                  <RowText>
+                    <a href={r.url} target="_blank" rel="noopener noreferrer">{r.code}</a>
+                    {' '}<Muted>{r.username ? `@${r.username}` : HE.IG_ADMIN_NO_PAGE}</Muted>
+                  </RowText>
+                  <Actions>
+                    <SmallBtn onClick={() => void handleToggle(r.id)}>
+                      {r.active ? HE.IG_ADMIN_ACTIVE : HE.IG_ADMIN_INACTIVE}
+                    </SmallBtn>
+                    <DelBtn onClick={() => void handleDelete(r.id)}>✕</DelBtn>
+                  </Actions>
+                </Row>
+              ))}
+            </List>
+            {reels.length > shown && (
+              <SmallBtn onClick={() => setShown(s => s + PAGE_SIZE)}>
+                {HE.IG_ADMIN_SHOW_MORE} ({reels.length - shown})
+              </SmallBtn>
+            )}
+          </>
         )}
     </Card>
   );
