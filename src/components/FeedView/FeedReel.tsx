@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import type { FeedReelSlide } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
 import { trackShare } from '@/lib/shareCounter';
@@ -41,10 +41,18 @@ const Placeholder = styled.div`
   color: rgba(255,255,255,0.35); font-size: 2rem;
 `;
 
-/* Transparent strips owned by the page (not the iframe) — touch here scrolls the feed */
-const SwipeRail = styled.div<{ $side: 'left' | 'right' }>`
-  position: absolute; top: 0; bottom: 0; ${p => p.$side}: 0;
-  width: 13%; z-index: 2;
+/*
+ * Transparent shield strips owned by the page (not the iframe): touches on
+ * them scroll OUR feed, never the embed's internal content. A small hole is
+ * left in the center so tapping the embed's play/pause button still works.
+ */
+const HOLE = 110; // px — size of the center tap-through hole
+const Shield = styled.div<{ $pos: 'top' | 'bottom' | 'left' | 'right' }>`
+  position: absolute; z-index: 2;
+  ${p => p.$pos === 'top'    && css`inset: 0 0 auto 0; height: calc(50% - ${HOLE / 2}px);`}
+  ${p => p.$pos === 'bottom' && css`inset: auto 0 0 0; height: calc(50% - ${HOLE / 2}px);`}
+  ${p => p.$pos === 'left'   && css`top: calc(50% - ${HOLE / 2}px); left: 0;  width: calc(50% - ${HOLE / 2}px); height: ${HOLE}px;`}
+  ${p => p.$pos === 'right'  && css`top: calc(50% - ${HOLE / 2}px); right: 0; width: calc(50% - ${HOLE / 2}px); height: ${HOLE}px;`}
 `;
 
 const Bar = styled.div`
@@ -128,16 +136,20 @@ export default function FeedReel({ slide, onVisible }: Props) {
             allow="autoplay; encrypted-media; picture-in-picture"
             allowFullScreen
             loading="lazy"
+            scrolling="no"
           />
         ) : (
           <Placeholder>🎬</Placeholder>
         )}
-        <SwipeRail $side="left" />
-        <SwipeRail $side="right" />
+        <Shield $pos="top" />
+        <Shield $pos="bottom" />
+        <Shield $pos="left" />
+        <Shield $pos="right" />
       </FrameWrap>
       <Bar>
         <BarBtn onClick={doShare}>↗ {HE.FEED_REEL_SHARE}</BarBtn>
-        <BarBtn onClick={() => window.open(slide.url, '_blank', 'noopener')}>
+        {/* /p/<code>/ deep-links to the exact post; /reel/ can land on the generic reels feed in-app */}
+        <BarBtn onClick={() => window.open(`https://www.instagram.com/p/${slide.code}/`, '_blank', 'noopener')}>
           <InstagramIcon /> {HE.FEED_REEL_OPEN_IG}
         </BarBtn>
         {slide.username && <User>@{slide.username}</User>}
