@@ -116,7 +116,8 @@
       "Bash(vercel whoami *)",
       "Bash(openssl rand *)",
       "Bash(echo \"build exit: $?\")",
-      "Bash(npx tsx *)"
+      "Bash(npx tsx *)",
+      "Bash(grep -rn \"fetch\\(\\\\`/api/feed\" /Users/user/Desktop/Claude/orayta/src)"
     ]
   }
 }

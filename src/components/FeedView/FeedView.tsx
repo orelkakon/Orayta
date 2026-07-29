@@ -115,7 +115,6 @@ export default function FeedView() {
   const seedRef     = useRef(Math.floor(Math.random() * 4294967296));
   const pageRef     = useRef(0);
   const slidesLenRef = useRef(0);
-  const swipeStartX = useRef<number | null>(null);
   const reelGapsRef = useRef<number[]>([]);
 
   const fetchMore = useCallback(async () => {
@@ -256,17 +255,6 @@ export default function FeedView() {
     });
   }, []);
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    swipeStartX.current = e.touches[0].clientX;
-  }, []);
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (swipeStartX.current === null) return;
-    const dx = e.changedTouches[0].clientX - swipeStartX.current;
-    swipeStartX.current = null;
-    if (dx > 65) setSavedMode(true);
-  }, []);
-
   const handleReelVisible = useCallback((visible: boolean) => {
     setReelsOnScreen(c => Math.max(0, c + (visible ? 1 : -1)));
   }, []);
@@ -301,7 +289,7 @@ export default function FeedView() {
       {fetching && <Spinner />}
       <FeedBackground />
       <FeedAmbient suppressed={reelsOnScreen > 0} />
-      <Scroll ref={scrollRef} onScroll={handleScroll} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+      <Scroll ref={scrollRef} onScroll={handleScroll}>
         {displaySlides.map((slide, i) => {
           if ('slideType' in slide) {
             if (slide.slideType === 'reel') {

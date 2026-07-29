@@ -23,16 +23,3 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ ok: true });
 }
-
-export async function GET() {
-  const rows = await prisma.feedLike.groupBy({
-    by: ['reaction'],
-    _sum: { likes: true },
-  });
-  const map: Record<string, number> = {};
-  rows.forEach(r => { map[r.reaction] = r._sum.likes ?? 0; });
-  const heart = map['heart'] ?? 0;
-  const fire  = map['fire']  ?? 0;
-  const spark = map['spark'] ?? 0;
-  return NextResponse.json({ total: heart + fire + spark, heart, fire, spark });
-}

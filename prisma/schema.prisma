@@ -141,6 +141,16 @@ model InstagramReel {
   @@index([pageId])
 }
 
+// One row per (day, metric) — the whole analytics footprint is a handful of
+// tiny rows per day, regardless of traffic volume.
+model DailyStat {
+  day    String // 'YYYY-MM-DD' in Asia/Jerusalem
+  metric String // 'users' | 'feed' | 'content' | 'today' | 'pwa'
+  count  Int    @default(0)
+
+  @@id([day, metric])
+}
+
 model AppConfig {
   key   String @id
   value String

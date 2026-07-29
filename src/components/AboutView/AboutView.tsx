@@ -7,7 +7,7 @@ import { HE } from '@/lib/hebrewTexts';
 import ShareSection from './ShareSection';
 import { LineIcon } from '@/components/common/LineIcons';
 import CreatorSection from './CreatorSection';
-import VisitsCounter from './VisitsCounter';
+import ContentStatsCard from './ContentStatsCard';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(18px); }
@@ -126,7 +126,7 @@ export default function AboutView() {
         </FeaturesGrid>
       </Card>
 
-      <VisitsCounter />
+      <ContentStatsCard />
       <CreatorSection />
       <ShareSection />
 

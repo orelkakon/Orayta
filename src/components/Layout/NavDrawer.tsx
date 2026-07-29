@@ -131,6 +131,11 @@ export default function NavDrawer({ open, onClose, pathname, onLogout, isAdmin }
             {l.icon} {l.label}
           </DrawerLink>
         ))}
+        {isAdmin && (
+          <DrawerLink href="/admin" $active={isActive('/admin')} onClick={onClose}>
+            📊 {HE.NAV_ADMIN_STATS}
+          </DrawerLink>
+        )}
         <Divider />
         {isAdmin
           ? <DrawerLogout onClick={onLogout}>{HE.NAV_LOGOUT} →</DrawerLogout>

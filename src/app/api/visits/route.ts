@@ -2,11 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import { prisma } from '@/lib/db';
 
-export async function GET() {
-  const count = await prisma.pageVisit.count();
-  return NextResponse.json({ count });
-}
-
+// Read side lives in the admin-only /api/admin/stats aggregate.
 export async function POST(req: NextRequest) {
   const raw = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
     ?? req.headers.get('x-real-ip')
@@ -19,6 +15,5 @@ export async function POST(req: NextRequest) {
     await prisma.pageVisit.create({ data: { ipHash } });
   }
 
-  const count = await prisma.pageVisit.count();
-  return NextResponse.json({ count });
+  return NextResponse.json({ ok: true });
 }

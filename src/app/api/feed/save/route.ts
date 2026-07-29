@@ -3,16 +3,12 @@ import { prisma } from '@/lib/db';
 
 const KEY = 'feedSaves';
 
-export async function GET() {
-  const row = await prisma.globalCounter.findUnique({ where: { key: KEY } });
-  return NextResponse.json({ count: row?.value ?? 0 });
-}
-
+// Read side lives in the admin-only /api/admin/stats aggregate.
 export async function POST() {
-  const row = await prisma.globalCounter.upsert({
+  await prisma.globalCounter.upsert({
     where: { key: KEY },
     update: { value: { increment: 1 } },
     create: { key: KEY, value: 1 },
   });
-  return NextResponse.json({ count: row.value });
+  return NextResponse.json({ ok: true });
 }

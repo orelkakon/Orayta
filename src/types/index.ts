@@ -189,3 +189,22 @@ export interface FeedReelSlide {
 }
 
 export type FeedSlide = FeedItem | FeedDedicationSlide | FeedReelSlide;
+
+export interface AdminDailyRow {
+  day: string;
+  users: number;
+  feed: number;
+  content: number;
+  today: number;
+  pwa: number;
+}
+
+export interface AdminStats {
+  visits: number;
+  questions: number;
+  saves: number;
+  shares: { wa: number; story: number };
+  reactions: { total: number; heart: number; fire: number; spark: number };
+  totals: { users: number; feed: number; content: number; today: number; pwa: number };
+  daily: AdminDailyRow[];
+}

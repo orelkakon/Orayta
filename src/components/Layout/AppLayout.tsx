@@ -180,6 +180,9 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           <NavLink href="/dedications" $active={isActive('/dedications')}>🕯️ {HE.NAV_DEDICATIONS}</NavLink>
           <NavLink href="/contact"   $active={isActive('/contact')}>📞 {HE.NAV_CONTACT}</NavLink>
           <NavLink href="/about"     $active={isActive('/about')}>ℹ️ {HE.NAV_ABOUT}</NavLink>
+          {role === 'admin' && (
+            <NavLink href="/admin" $active={isActive('/admin')}>📊 {HE.NAV_ADMIN_STATS}</NavLink>
+          )}
           {role === 'admin'
             ? <LogoutButton onClick={handleLogout}>🚪 {HE.NAV_LOGOUT}</LogoutButton>
             : <NavLink href="/login" $active={isActive('/login')}>🔑 {HE.NAV_ADMIN_LOGIN}</NavLink>
