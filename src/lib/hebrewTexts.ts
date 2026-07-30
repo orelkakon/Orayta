@@ -485,9 +485,9 @@ export const HE = {
   CLOSE: 'סגור',
 
   FEED_TITLE: 'רגע של תורה',
-  FEED_SUBTITLE: 'הפיד שישאיר אתכם קדושים יותר מכל גלילה אחרת.',
+  FEED_SUBTITLE: 'הפיד שישאיר אתכם מאמינים יותר מכל גלילה אחרת.',
   FEED_NEW_BADGE: 'חדש',
-  FEED_BANNER_TAGLINE: 'הפיד שישאיר אתכם קדושים יותר מכל גלילה אחרת.',
+  FEED_BANNER_TAGLINE: 'הפיד שישאיר אתכם מאמינים יותר מכל גלילה אחרת.',
   FEED_BANNER_CTA: 'גלו רגע חדש',
   FEED_BACK: '← חזרה',
   FEED_LOADING: 'טוען...',
