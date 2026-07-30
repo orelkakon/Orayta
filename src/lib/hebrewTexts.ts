@@ -579,6 +579,7 @@ export const HE = {
   CONTENT_STATS_DEDICATIONS: 'הקדשות',
   CONTENT_STATS_PRAYERS: 'תפילות וברכות',
   CONTENT_STATS_QUESTIONS: 'שאלות תרגול',
+  CONTENT_STATS_QUESTIONS_SUB: 'מחכות לך במסך התרגול',
 
   // Admin statistics dashboard
   NAV_ADMIN_STATS: 'סטטיסטיקות',
