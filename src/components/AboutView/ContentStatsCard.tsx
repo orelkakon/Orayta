@@ -26,7 +26,13 @@ const SectionSub = styled.p`font-size: 0.78rem; color: ${theme.colors.textMuted}
 const StatGrid = styled.div`
   display: grid; grid-template-columns: repeat(3, 1fr);
   gap: ${theme.spacing.sm}; width: 100%;
-  @media (max-width: 440px) { grid-template-columns: repeat(2, 1fr); }
+  /* a lone cell on the last row stretches across it instead of sitting orphaned */
+  & > *:last-child:nth-child(3n + 1) { grid-column: 1 / -1; }
+  @media (max-width: 440px) {
+    grid-template-columns: repeat(2, 1fr);
+    & > *:last-child:nth-child(3n + 1) { grid-column: auto; }
+    & > *:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  }
 `;
 
 const Cell = styled.div<{ $tint: string }>`
@@ -74,15 +80,20 @@ function useAnimatedCount(target: number | null): number {
 interface ContentStats {
   citations: number; rabbis: number; books: number;
   summaries: number; gematrias: number; chidushim: number;
+  videos: number; dedications: number; prayers: number; questions: number;
 }
 
 const ITEMS: { key: keyof ContentStats; icon: string; label: string; tint: string }[] = [
-  { key: 'citations', icon: 'scroll', label: HE.CONTENT_STATS_CITATIONS, tint: theme.colors.primary },
-  { key: 'rabbis',    icon: 'users',  label: HE.CONTENT_STATS_RABBIS,    tint: theme.colors.secondary },
-  { key: 'books',     icon: 'book',   label: HE.CONTENT_STATS_BOOKS,     tint: theme.colors.accent },
-  { key: 'summaries', icon: 'quill',  label: HE.CONTENT_STATS_SUMMARIES, tint: theme.colors.secondary },
-  { key: 'gematrias', icon: 'aleph',  label: HE.CONTENT_STATS_GEMATRIAS, tint: theme.colors.accent },
-  { key: 'chidushim', icon: 'bulb',   label: HE.CONTENT_STATS_CHIDUSHIM, tint: theme.colors.primary },
+  { key: 'citations',   icon: 'scroll',   label: HE.CONTENT_STATS_CITATIONS,   tint: theme.colors.primary },
+  { key: 'rabbis',      icon: 'users',    label: HE.CONTENT_STATS_RABBIS,      tint: theme.colors.secondary },
+  { key: 'books',       icon: 'book',     label: HE.CONTENT_STATS_BOOKS,       tint: theme.colors.accent },
+  { key: 'summaries',   icon: 'quill',    label: HE.CONTENT_STATS_SUMMARIES,   tint: theme.colors.secondary },
+  { key: 'gematrias',   icon: 'aleph',    label: HE.CONTENT_STATS_GEMATRIAS,   tint: theme.colors.accent },
+  { key: 'chidushim',   icon: 'bulb',     label: HE.CONTENT_STATS_CHIDUSHIM,   tint: theme.colors.primary },
+  { key: 'videos',      icon: 'camera',   label: HE.CONTENT_STATS_VIDEOS,      tint: theme.colors.accent },
+  { key: 'dedications', icon: 'candle',   label: HE.CONTENT_STATS_DEDICATIONS, tint: theme.colors.primary },
+  { key: 'prayers',     icon: 'sparkle',  label: HE.CONTENT_STATS_PRAYERS,     tint: theme.colors.secondary },
+  { key: 'questions',   icon: 'target',   label: HE.CONTENT_STATS_QUESTIONS,   tint: theme.colors.primary },
 ];
 
 function StatCell({ value, icon, label, tint }: { value: number | null; icon: string; label: string; tint: string }) {

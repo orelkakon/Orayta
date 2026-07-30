@@ -575,6 +575,10 @@ export const HE = {
   CONTENT_STATS_SUMMARIES: 'סיכומים',
   CONTENT_STATS_GEMATRIAS: 'גימטריות',
   CONTENT_STATS_CHIDUSHIM: 'חידושים',
+  CONTENT_STATS_VIDEOS: 'סרטונים',
+  CONTENT_STATS_DEDICATIONS: 'הקדשות',
+  CONTENT_STATS_PRAYERS: 'תפילות וברכות',
+  CONTENT_STATS_QUESTIONS: 'שאלות תרגול',
 
   // Admin statistics dashboard
   NAV_ADMIN_STATS: 'סטטיסטיקות',
