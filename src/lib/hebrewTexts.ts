@@ -309,7 +309,6 @@ export const HE = {
     { icon: '📅', href: '/today',     label: 'יומי',           desc: 'זמנים ולוח שנה עברי' },
     { icon: '💡', href: '/chidushim', label: 'חידושים',        desc: 'חידושי תורה ומחשבה' },
     { icon: '🔢', href: '/gematria',  label: 'גימטריות',       desc: 'ערכי אותיות ומילים' },
-    { icon: 'ℹ️', href: '/about',     label: 'אודות',          desc: 'אודות המערכת ויוצרה' },
   ] as { icon: string; href: string; label: string; desc: string }[],
 
   SIKUMIM_TITLE: 'סיכומים',
