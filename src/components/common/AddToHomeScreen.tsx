@@ -11,11 +11,13 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const SNOOZED_KEY = 'orayta_a2hs_snoozed';
-const SNOOZE_MS = 5 * 60 * 1000;
+// Dismissing the install prompt should hold for days, not minutes — re-asking
+// in the same session reads as nagging and trains people to ignore it.
+const SNOOZE_MS = 14 * 24 * 60 * 60 * 1000;
 
 const Banner = styled.div`
   position: fixed; bottom: 0; left: 0; right: 0;
-  background: ${theme.colors.primary}; color: white;
+  background: ${theme.colors.primary}; color: ${theme.colors.onPrimary};
   padding: ${theme.spacing.md} ${theme.spacing.lg};
   display: flex; align-items: center; gap: ${theme.spacing.md};
   z-index: 200; box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
@@ -29,13 +31,13 @@ const BannerTitle = styled.div`font-size:.9rem;font-weight:600`;
 const BannerDesc = styled.div`font-size:.78rem;opacity:.8`;
 const BannerActions = styled.div`display:flex;gap:${theme.spacing.sm};align-items:center;flex-shrink:0`;
 const InstallBtn = styled.button`
-  background:white;color:${theme.colors.primary};border-radius:${theme.radii.sm};
+  background:${theme.colors.onPrimary};color:${theme.colors.primary};border-radius:${theme.radii.sm};
   padding:6px 16px;font-size:.85rem;font-weight:600;
   transition:opacity .15s;&:hover{opacity:.85}
 `;
 const DismissBtn = styled.button`
-  color:rgba(255,255,255,.7);font-size:.82rem;padding:6px 8px;
-  transition:color .15s;&:hover{color:white}
+  color:${theme.colors.onPrimary};opacity:0.7;font-size:.82rem;padding:6px 8px;
+  transition:opacity .15s;&:hover{opacity:1}
 `;
 const Overlay = styled.div`
   position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;
@@ -51,7 +53,7 @@ const ModalTitle = styled.h3`font-size:1.1rem;color:${theme.colors.text};text-al
 const Step = styled.div`display:flex;align-items:flex-start;gap:${theme.spacing.sm}`;
 const StepNum = styled.div`
   width:26px;height:26px;border-radius:50%;background:${theme.colors.primary};
-  color:white;font-size:.8rem;font-weight:700;
+  color: ${theme.colors.onPrimary};font-size:.8rem;font-weight:700;
   display:flex;align-items:center;justify-content:center;flex-shrink:0
 `;
 const StepText = styled.span`font-size:.9rem;color:${theme.colors.text};padding-top:3px;line-height:1.5`;

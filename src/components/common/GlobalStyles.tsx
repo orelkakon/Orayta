@@ -10,14 +10,22 @@ const GlobalStylesheet = createGlobalStyle`
     --color-surface-alt:  #F5F0E8;
     --color-primary:      #5C3D1E;
     --color-primary-light:#8B6240;
+    /* Text/icon colour to pair with --color-primary backgrounds. Must be
+       re-declared per theme: primary inverts light to dark, so a literal
+       white text colour silently drops to ~2.2:1 in dark mode. */
+    --color-on-primary:   #FFFFFF;
     --color-secondary:    #C4956A;
+    /* Darkened secondary for TEXT use — #C4956A is only 2.67:1 on white. */
+    --color-secondary-text: #7A5530;
     --color-accent:       #9B2335;
     --color-accent-light: #C94B5F;
     --color-text:         #2C1810;
     --color-text-muted:   #6B5744;
-    --color-text-light:   #9B8575;
+    --color-text-light:   #7A6858;
     --color-border:       #E0D5C5;
     --color-border-light: #EDE8DE;
+    /* Interactive control boundaries need 3:1 (WCAG 1.4.11); --color-border is 1.45:1. */
+    --color-border-strong:#8A7B68;
     --color-success:      #2D6A4F;
     --color-error:        #9B2335;
     --color-bg-success:   #E8F5E9;
@@ -34,14 +42,19 @@ const GlobalStylesheet = createGlobalStyle`
     --color-surface-alt:  #2A2218;
     --color-primary:      #D4A574;
     --color-primary-light:#E0BA88;
+    /* Dark theme primary is a light tan — white on it is 2.23:1, so pair it
+       with near-black instead (≈11:1). */
+    --color-on-primary:   #1B1408;
     --color-secondary:    #8B6240;
+    --color-secondary-text: #D9AE80;
     --color-accent:       #C94B5F;
     --color-accent-light: #E07A8F;
     --color-text:         #F0E8DC;
     --color-text-muted:   #A09080;
-    --color-text-light:   #6B5744;
+    --color-text-light:   #8A7866;
     --color-border:       #3A3028;
     --color-border-light: #2E261E;
+    --color-border-strong:#6E6152;
     --color-success:      #52B788;
     --color-error:        #D4606E;
     --color-bg-success:   #1A2E20;
@@ -67,13 +80,52 @@ const GlobalStylesheet = createGlobalStyle`
   html[data-acc-font="1"] { font-size: 18px; }
   html[data-acc-font="2"] { font-size: 20px; }
 
+  /* Keyboard focus. Applies to anything focusable unless a component opts out
+     with :focus-visible of its own. :focus-visible means pointer users never
+     see it, so no component needs an outline reset to stay clean. */
+  :where(a, button, [role="button"], input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 3px solid ${theme.colors.primaryLight};
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Honour the OS motion preference. Mirrors the manual data-acc-motion switch
+     below, which only helps users who find the accessibility widget. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Skip link — first focusable element on the page, visible only when focused. */
+  .skip-link {
+    position: absolute;
+    right: ${theme.spacing.md};
+    top: -100px;
+    z-index: ${theme.z.toast};
+    background: ${theme.colors.primary};
+    color: ${theme.colors.onPrimary};
+    padding: ${theme.spacing.sm} ${theme.spacing.md};
+    border-radius: ${theme.radii.sm};
+    font-size: ${theme.fontSizes.sm};
+    font-weight: 600;
+    transition: top 0.15s;
+    &:focus { top: ${theme.spacing.md}; }
+  }
+
   html[data-acc-contrast="on"] {
     --color-background:   #FFFFFF;
     --color-surface:      #FFFFFF;
     --color-surface-alt:  #F2F2F2;
     --color-primary:      #2A1500;
     --color-primary-light:#3D2A10;
+    --color-on-primary:   #FFFFFF;
     --color-secondary:    #6B3E12;
+    --color-secondary-text: #5A3410;
+    --color-border-strong:#333333;
     --color-text:         #000000;
     --color-text-muted:   #1A1A1A;
     --color-text-light:   #333333;

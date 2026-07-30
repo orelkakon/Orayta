@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { cachedJson } from '@/lib/apiCache';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
     orderBy: { sortYear: 'asc' },
   });
 
-  return NextResponse.json(rabbis);
+  return cachedJson(rabbis);
 }
 
 function extractBooksFromBio(bio: string, author: string, rabbiId: string) {

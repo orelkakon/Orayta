@@ -3,6 +3,9 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 import { AMBIENT_SONGS, shuffleSongs } from '@/lib/ambientSongs';
+import { HE } from '@/lib/hebrewTexts';
+
+const AMBIENT_KEY = 'orayta_feed_ambient';
 
 function ytCmd(iframe: HTMLIFrameElement, func: string, args: unknown[] = []) {
   iframe.contentWindow?.postMessage(JSON.stringify({ event: 'command', func, args }), 'https://www.youtube.com');
@@ -140,7 +143,15 @@ export default function FeedAmbient({ suppressed = false }: { suppressed?: boole
     return () => window.removeEventListener('message', handleMessage);
   }, [advanceSong]);
 
+  // Ambient music is opt-in and remembered. It used to unmute on the first tap
+  // anywhere — including the tap that starts a scroll — which meant audio began
+  // without consent. Only a returning listener who previously turned it on gets
+  // it resumed, and even then only after a real gesture (browser autoplay rules).
   useEffect(() => {
+    let prefersOn = false;
+    try { prefersOn = localStorage.getItem(AMBIENT_KEY) === 'on'; } catch {}
+    if (!prefersOn) return;
+
     function unlock() {
       if (unlockedRef.current) return;
       unlockedRef.current = true;
@@ -163,10 +174,13 @@ export default function FeedAmbient({ suppressed = false }: { suppressed?: boole
 
   const toggle = () => {
     if (!iframeRef.current) return;
+    const next = !on;
+    try { localStorage.setItem(AMBIENT_KEY, next ? 'on' : 'off'); } catch {}
     if (on) {
       ytCmd(iframeRef.current, 'mute');
       setOn(false); setPill(false);
     } else {
+      unlockedRef.current = true;
       ytCmd(iframeRef.current, 'playVideo');
       if (!suppressedRef.current) ytCmd(iframeRef.current, 'unMute');
       setOn(true); showPill();
@@ -181,7 +195,13 @@ export default function FeedAmbient({ suppressed = false }: { suppressed?: boole
   return (
     <>
       <HiddenFrame ref={iframeRef} src={initialSrc.current} title={currentSong.name} allow="autoplay; encrypted-media" />
-      <Btn $on={on} onClick={on ? () => { showPill(); toggle(); } : toggle} title={on ? 'כבה מוזיקה' : 'הפעל מוזיקה'}>♪</Btn>
+      <Btn
+        $on={on}
+        onClick={on ? () => { showPill(); toggle(); } : toggle}
+        aria-label={on ? HE.ARIA_MUSIC_OFF : HE.ARIA_MUSIC_ON}
+        aria-pressed={on}
+        title={on ? HE.ARIA_MUSIC_OFF : HE.ARIA_MUSIC_ON}
+      >♪</Btn>
       <EqWrap $on={on}><Bar $i={0} /><Bar $i={1} /><Bar $i={2} /></EqWrap>
       <Pill $visible={pillVisible}>
         <PillName>♪ {currentSong.name}</PillName>

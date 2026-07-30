@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { cachedJson } from '@/lib/apiCache';
 
 export async function GET() {
   const books = await prisma.sikumBook.findMany({
     orderBy: { createdAt: 'asc' },
     include: { _count: { select: { entries: true } } },
   });
-  return NextResponse.json(
+  return cachedJson(
     books.map(b => ({ ...b, entryCount: b._count.entries, _count: undefined }))
   );
 }

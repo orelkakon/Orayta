@@ -39,7 +39,7 @@ const Input = styled.input`
 
 const SubmitBtn = styled.button`
   padding: ${theme.spacing.md}; background: ${theme.colors.primary};
-  color: white; border-radius: ${theme.radii.md}; font-weight: 700; font-size: 0.95rem;
+  color: ${theme.colors.onPrimary}; border-radius: ${theme.radii.md}; font-weight: 700; font-size: 0.95rem;
   transition: opacity 0.15s;
   &:hover { opacity: 0.9; }
   &:disabled { opacity: 0.55; }
@@ -63,7 +63,7 @@ const AgainBtn = styled.button`
   border: 2px solid ${theme.colors.primary}; color: ${theme.colors.primary};
   border-radius: ${theme.radii.md}; font-weight: 600; font-size: 0.9rem;
   transition: all 0.15s;
-  &:hover { background: ${theme.colors.primary}; color: white; }
+  &:hover { background: ${theme.colors.primary}; color: ${theme.colors.onPrimary}; }
 `;
 
 export default function DedicationRequestForm() {
@@ -118,7 +118,7 @@ export default function DedicationRequestForm() {
         maxLength={100}
         onKeyDown={e => e.key === 'Enter' && void handleSubmit()}
       />
-      {error && <ErrorMsg>{error}</ErrorMsg>}
+      {error && <ErrorMsg role="alert">{error}</ErrorMsg>}
       <SubmitBtn onClick={handleSubmit} disabled={sending || !name.trim()}>
         {sending ? '...' : HE.DEDICATION_REQUEST_SUBMIT}
       </SubmitBtn>

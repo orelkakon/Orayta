@@ -9,8 +9,8 @@ import { HE } from '@/lib/hebrewTexts';
 import OraytaLogo from '@/components/common/OraytaLogo';
 import { useDarkMode } from '@/components/common/ThemeContext';
 import { useRole } from '@/components/common/RoleContext';
-import { clearStats } from '@/lib/statsStorage';
 import NavDrawer from './NavDrawer';
+import { navItems } from './navItems';
 import DedicationsTicker from './DedicationsTicker';
 import AddToHomeScreen from '@/components/common/AddToHomeScreen';
 import VisitTracker from '@/components/common/VisitTracker';
@@ -21,7 +21,7 @@ const Wrapper = styled.div`min-height: 100vh; display: flex; flex-direction: col
 
 const Header = styled.header`
   background: ${theme.colors.primary};
-  color: white;
+  color: ${theme.colors.onPrimary};
   padding: 0 ${theme.spacing.lg};
   display: flex;
   align-items: center;
@@ -59,21 +59,26 @@ const Tagline = styled.span`
 `;
 
 const ThemeBtn = styled.button`
+  position: relative;
   width: 1.75rem; height: 1.75rem;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; border-radius: ${theme.radii.sm};
-  font-size: 0.95rem; color: white; opacity: 0.7;
+  font-size: 0.95rem; color: ${theme.colors.onPrimary}; opacity: 0.7;
   transition: opacity 0.15s;
   &:hover { opacity: 1; background: rgba(255,255,255,0.15); }
+  /* Keep the glyph small but give it a 44px touch target (WCAG 2.5.5). */
+  &::before { content: ''; position: absolute; inset: -8px; }
 `;
 
-/* Desktop nav */
+/* Desktop nav. Collapses to the drawer at 1100px: the full item set needs
+   ~1240px, so below that it used to overflow into a scroll strip with a
+   hidden scrollbar — items were silently unreachable. */
 const Nav = styled.nav`
   display: flex; align-items: center; gap: 1px;
   flex: 1; justify-content: flex-end;
   overflow-x: auto; scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
-  @media (max-width: 768px) { display: none; }
+  @media (max-width: 1100px) { display: none; }
 `;
 
 const NavLink = styled(Link)<{ $active?: boolean }>`
@@ -90,7 +95,7 @@ const NavLink = styled(Link)<{ $active?: boolean }>`
 const LogoutButton = styled.button`
   display: flex; align-items: center; gap: 4px;
   padding: 0 8px; height: 60px;
-  font-size: 0.8rem; font-weight: 500; color: white; opacity: 0.65;
+  font-size: 0.8rem; font-weight: 500; color: ${theme.colors.onPrimary}; opacity: 0.65;
   white-space: nowrap; flex-shrink: 0; border-bottom: 3px solid transparent;
   transition: all 0.15s;
   &:hover { opacity: 1; background: rgba(255,255,255,0.12); }
@@ -99,13 +104,13 @@ const LogoutButton = styled.button`
 
 const HamBtn = styled.button`
   display: none;
-  color: white; font-size: 1.35rem;
-  width: 36px; height: 36px; flex-shrink: 0;
+  color: ${theme.colors.onPrimary}; font-size: 1.35rem;
+  width: 44px; height: 44px; flex-shrink: 0;
   align-items: center; justify-content: center;
   border-radius: ${theme.radii.sm};
   transition: background 0.15s;
   &:hover { background: rgba(255,255,255,0.15); }
-  @media (max-width: 768px) { display: flex; }
+  @media (max-width: 1100px) { display: flex; }
 `;
 
 const Main = styled.main`
@@ -113,6 +118,9 @@ const Main = styled.main`
   margin: 0 auto; padding: ${theme.spacing.xl};
   @media (max-width: 600px) { padding: ${theme.spacing.md}; }
 `;
+
+const SkipLink = styled.a.attrs({ className: 'skip-link' })``;
+
 
 function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname   = usePathname();
@@ -133,7 +141,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   };
 
   const handleLogout = async () => {
-    clearStats();
+    // Quiz stats are the visitor's own per-device study record, not admin
+    // session data — logging out of the admin role must not destroy them.
     await fetch('/api/auth/logout', { method: 'POST' });
     window.location.href = '/';
   };
@@ -145,21 +154,29 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
 
   return (
     <Wrapper>
+      <SkipLink href="#main">{HE.ARIA_SKIP_TO_CONTENT}</SkipLink>
       <Header>
         <LogoGroup>
           <LogoArea href="/">
             <OraytaLogo size={34} />
             <LogoText>
               <AppName>{HE.APP_NAME}</AppName>
-              <Tagline>בס״ד · מקורות יהודיים</Tagline>
+              <Tagline>{HE.HEADER_TAGLINE}</Tagline>
             </LogoText>
           </LogoArea>
-          <ThemeBtn onClick={toggle} title={isDark ? HE.THEME_LIGHT : HE.THEME_DARK}>
+          <ThemeBtn
+            onClick={toggle}
+            aria-label={isDark ? HE.ARIA_THEME_TO_LIGHT : HE.ARIA_THEME_TO_DARK}
+            aria-pressed={isDark}
+            title={isDark ? HE.THEME_LIGHT : HE.THEME_DARK}
+          >
             {isDark ? '☀' : '☾'}
           </ThemeBtn>
           {isHome && (
             <ThemeBtn
               onClick={toggleTicker}
+              aria-label={tickerOn ? HE.ARIA_TICKER_HIDE : HE.ARIA_TICKER_SHOW}
+              aria-pressed={tickerOn}
               title={tickerOn ? HE.DEDICATIONS_STRIP_HIDE : HE.DEDICATIONS_STRIP_SHOW}
               style={{ opacity: tickerOn ? undefined : 0.35 }}
             >
@@ -169,27 +186,48 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
         </LogoGroup>
 
         <Nav>
-          <NavLink href="/rabbis"    $active={isActive('/rabbis') || isActive('/books')}>👥 {HE.NAV_RABBIS_AND_BOOKS}</NavLink>
-          <NavLink href="/sikumim"   $active={isActive('/sikumim')}>📝 {HE.NAV_SIKUMIM}</NavLink>
-          <NavLink href="/study"     $active={isActive('/study') || pathname === '/add'}>📜 {HE.NAV_TALMUD}</NavLink>
-          <NavLink href="/gematria"  $active={isActive('/gematria')}>🔢 {HE.NAV_GEMATRIA}</NavLink>
-          <NavLink href="/content"   $active={isActive('/content')}>📚 {HE.NAV_CONTENTS}</NavLink>
-          <NavLink href="/chidushim" $active={isActive('/chidushim')}>💡 {HE.NAV_CHIDUSHIM}</NavLink>
-          <NavLink href="/quiz"      $active={isActive('/quiz')}>🎯 {HE.NAV_LEARN}</NavLink>
-          <NavLink href="/today"     $active={isActive('/today')}>🗓️ {HE.NAV_TODAY}</NavLink>
-          <NavLink href="/dedications" $active={isActive('/dedications')}>🕯️ {HE.NAV_DEDICATIONS}</NavLink>
-          <NavLink href="/contact"   $active={isActive('/contact')}>📞 {HE.NAV_CONTACT}</NavLink>
-          <NavLink href="/about"     $active={isActive('/about')}>ℹ️ {HE.NAV_ABOUT}</NavLink>
+          {navItems.map(item => {
+            const active = item.match ? item.match(pathname) : isActive(item.href);
+            return (
+              <NavLink
+                key={item.href}
+                href={item.href}
+                $active={active}
+                aria-current={active ? 'page' : undefined}
+              >
+                {item.icon} {item.label}
+              </NavLink>
+            );
+          })}
           {role === 'admin' && (
-            <NavLink href="/admin" $active={isActive('/admin')}>📊 {HE.NAV_ADMIN_STATS}</NavLink>
+            <NavLink
+              href="/admin"
+              $active={isActive('/admin')}
+              aria-current={isActive('/admin') ? 'page' : undefined}
+            >
+              📊 {HE.NAV_ADMIN_STATS}
+            </NavLink>
           )}
           {role === 'admin'
             ? <LogoutButton onClick={handleLogout}>🚪 {HE.NAV_LOGOUT}</LogoutButton>
-            : <NavLink href="/login" $active={isActive('/login')}>🔑 {HE.NAV_ADMIN_LOGIN}</NavLink>
+            : (
+              <NavLink
+                href="/login"
+                $active={isActive('/login')}
+                aria-current={isActive('/login') ? 'page' : undefined}
+              >
+                🔑 {HE.NAV_ADMIN_LOGIN}
+              </NavLink>
+            )
           }
         </Nav>
 
-        <HamBtn onClick={() => setMenuOpen(o => !o)} aria-label="תפריט">
+        <HamBtn
+          onClick={() => setMenuOpen(o => !o)}
+          aria-label={menuOpen ? HE.ARIA_MENU_CLOSE : HE.ARIA_MENU_OPEN}
+          aria-expanded={menuOpen}
+          aria-controls="nav-drawer"
+        >
           {menuOpen ? '✕' : '☰'}
         </HamBtn>
       </Header>
@@ -204,7 +242,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
         isAdmin={role === 'admin'}
       />
 
-      <Main>{children}</Main>
+      <Main id="main" tabIndex={-1}>{children}</Main>
       <AddToHomeScreen />
       <VisitTracker />
     </Wrapper>

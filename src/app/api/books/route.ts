@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { cachedJson } from '@/lib/apiCache';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const books = await prisma.book.findMany({ orderBy: { title: 'asc' } });
-  return NextResponse.json(books);
+  return cachedJson(books);
 }
 
 async function resolveRabbiId(author: string): Promise<string | null> {

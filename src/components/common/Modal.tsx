@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -37,6 +37,8 @@ const Content = styled.div`
   overflow-y: auto;
   animation: ${slideIn} 0.25s ease;
   box-shadow: ${theme.shadows.lg};
+  /* 32px of padding either side of a 296px form is most of the screen. */
+  @media (max-width: 600px) { padding: ${theme.spacing.md}; }
 `;
 
 const Header = styled.div`
@@ -53,8 +55,10 @@ const Title = styled.h2`
 
 const CloseButton = styled.button`
   font-size: 1.4rem;
-  color: ${theme.colors.textLight};
+  color: ${theme.colors.textMuted};
   line-height: 1;
+  min-width: 44px;
+  min-height: 44px;
   padding: ${theme.spacing.xs};
   transition: color 0.15s;
 
@@ -70,17 +74,51 @@ interface Props {
 }
 
 export default function Modal({ title, onClose, children }: Props) {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const opener = document.activeElement as HTMLElement | null;
+    contentRef.current?.focus();
+
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key !== 'Tab') return;
+      // Keep Tab inside the dialog — otherwise focus walks the page behind it.
+      const focusables = contentRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusables || focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault(); last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault(); first.focus();
+      }
+    };
+
     window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', handler);
+      document.body.style.overflow = prevOverflow;
+      opener?.focus?.();
+    };
   }, [onClose]);
 
   return (
     <Overlay onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <Content>
+      <Content
+        ref={contentRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+      >
         <Header>
-          <Title>{title}</Title>
+          <Title id={titleId}>{title}</Title>
           <CloseButton onClick={onClose} aria-label={HE.CLOSE}>×</CloseButton>
         </Header>
         {children}

@@ -117,7 +117,24 @@
       "Bash(openssl rand *)",
       "Bash(echo \"build exit: $?\")",
       "Bash(npx tsx *)",
-      "Bash(grep -rn \"fetch\\(\\\\`/api/feed\" /Users/user/Desktop/Claude/orayta/src)"
+      "Bash(grep -rn \"fetch\\(\\\\`/api/feed\" /Users/user/Desktop/Claude/orayta/src)",
+      "Bash(sort -t: -k2 -rn)",
+      "Bash(grep -rn 'queryRaw\\\\|executeRaw\\\\|$queryRawUnsafe\\\\|$executeRawUnsafe' src/)",
+      "Bash(grep -rcE '#[0-9a-fA-F]{3,8}\\\\b|rgba?\\\\\\(' src/components src/app --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(grep -rhoE '#[0-9a-fA-F]{3,8}\\\\b|rgba?\\\\\\([^\\)]*\\\\\\)' src/components src/app --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(grep -rlE '#[0-9a-fA-F]{3,8}\\\\b|rgba?\\\\\\(' src/components src/app --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(grep -nE '#[0-9a-fA-F]{3,8}\\\\b|rgba?\\\\\\(' src/components/FeedView/FeedSettings.tsx)",
+      "Bash(grep -nE '#[0-9a-fA-F]{3,8}\\\\b|rgba?\\\\\\(' src/components/FeedView/SavedPanel.tsx)",
+      "Bash(grep -nE '#[0-9a-fA-F]{3,8}\\\\b|rgba?\\\\\\(' src/components/FeedView/FeedDedication.tsx)",
+      "Bash(awk '{printf \"%d\\\\t%s\\\\n\", NR+119, substr\\($0, index\\($0,$2\\)\\)}')",
+      "Bash(grep -rn \"credentials\\\\|fetch\\('/api\\\\|fetch\\(\\\\`/api\" src/components src/app --include=\"*.tsx\")",
+      "Bash(grep -rn \"background: \\\\${theme.colors.primary}\" src --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(grep -rlE \"rgba\\\\\\(255,\\\\s*255,\\\\s*255|#[0-9a-fA-F]{6}\" src/components --include=\"*.tsx\")",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless --disable-gpu --no-pdf-header-footer --print-to-pdf=/Users/user/Desktop/Claude/orayta/Orayta-Audit-Report.pdf file://__TRACKED_VAR__/report.html)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(npx eslint *)",
+      "Bash(awk '$1>200 && $2!=\"total\"')"
     ]
   }
 }

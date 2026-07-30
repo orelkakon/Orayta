@@ -11,7 +11,7 @@ import { A11ySettings, DEFAULT_A11Y, loadA11y, saveA11y, applyA11y } from '@/lib
 const Fab = styled.button`
   position: fixed; bottom: 18px; right: 18px; z-index: 140;
   width: 46px; height: 46px; border-radius: 50%;
-  background: ${theme.colors.primary}; color: white;
+  background: ${theme.colors.primary}; color: ${theme.colors.onPrimary};
   display: flex; align-items: center; justify-content: center;
   box-shadow: ${theme.shadows.lg};
   border: 2px solid rgba(255, 255, 255, 0.35);

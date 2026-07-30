@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { cachedJson } from '@/lib/apiCache';
 
 export async function GET() {
   const items = await prisma.chidush.findMany({
     orderBy: { createdAt: 'desc' },
   });
-  return NextResponse.json(items);
+  return cachedJson(items);
 }
 
 export async function POST(req: NextRequest) {

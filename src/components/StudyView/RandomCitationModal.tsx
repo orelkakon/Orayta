@@ -53,7 +53,7 @@ const ButtonRow = styled.div`
 const NextBtn = styled.button`
   padding: ${theme.spacing.sm} ${theme.spacing.xl};
   background: ${theme.colors.primary};
-  color: white;
+  color: ${theme.colors.onPrimary};
   border-radius: ${theme.radii.md};
   font-size: 0.95rem;
   font-weight: 600;
@@ -69,8 +69,10 @@ const Spinner = styled.span`
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255,255,255,0.4);
-  border-top-color: white;
+  /* Inherit the button's text colour so the spinner stays visible in both
+     themes; the transparent segment is what reads as rotation. */
+  border: 2px solid currentColor;
+  border-top-color: transparent;
   border-radius: 50%;
   animation: ${spin} 0.6s linear infinite;
 `;

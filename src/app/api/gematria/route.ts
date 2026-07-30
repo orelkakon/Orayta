@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { cachedJson } from '@/lib/apiCache';
 import { calculateGematria, normalizeHebrewWord } from '@/lib/gematria';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const items = await prisma.gematria.findMany({ orderBy: { value: 'asc' } });
-  return NextResponse.json(items);
+  return cachedJson(items);
 }
 
 export async function POST(request: NextRequest) {

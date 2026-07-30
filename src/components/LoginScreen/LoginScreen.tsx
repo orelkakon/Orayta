@@ -109,7 +109,8 @@ const Verse = styled.p`
   margin-bottom: ${theme.spacing.xl};
 `;
 
-const FieldLabel = styled.div`
+const FieldLabel = styled.label`
+  display: block;
   font-size: 0.78rem; font-weight: 600; letter-spacing: 0.07em;
   text-transform: uppercase; color: ${theme.colors.textMuted};
   margin-bottom: ${theme.spacing.sm};
@@ -136,7 +137,7 @@ const Btn = styled.button`
   width: 100%; margin-top: ${theme.spacing.sm};
   padding: ${theme.spacing.md};
   background: linear-gradient(135deg, ${theme.colors.primary} 0%, ${theme.colors.primaryLight} 100%);
-  color: white; border-radius: ${theme.radii.md};
+  color: ${theme.colors.onPrimary}; border-radius: ${theme.radii.md};
   font-size: 1rem; font-weight: 600; letter-spacing: 0.04em;
   position: relative; overflow: hidden;
   transition: transform 0.18s, box-shadow 0.18s;
@@ -195,17 +196,20 @@ export default function LoginScreen() {
         <Sub>{HE.APP_SUBTITLE}</Sub>
         <Verse>&ldquo;{HE.ABOUT_VERSE}&rdquo;</Verse>
         <form onSubmit={handleSubmit}>
-          <FieldLabel>{HE.LOGIN_SUBTITLE}</FieldLabel>
+          <FieldLabel htmlFor="passcode">{HE.LOGIN_SUBTITLE}</FieldLabel>
           <Input
+            id="passcode"
+            name="passcode"
             type="password"
             value={passcode}
             onChange={e => setPasscode(e.target.value)}
             placeholder={HE.LOGIN_PLACEHOLDER}
+            autoComplete="current-password"
             $err={error}
             autoFocus
-            maxLength={10}
+            maxLength={64}
           />
-          {error && <ErrMsg>{HE.LOGIN_ERROR}</ErrMsg>}
+          {error && <ErrMsg role="alert">{HE.LOGIN_ERROR}</ErrMsg>}
           <Btn type="submit" disabled={loading || !passcode}>
             {loading ? HE.LOADING : HE.LOGIN_BUTTON}
           </Btn>

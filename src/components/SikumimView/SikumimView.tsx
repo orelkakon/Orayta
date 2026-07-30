@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { SikumBook } from '@/types';
+import { getJson, isAbort } from '@/lib/apiClient';
 import { useRole } from '@/components/common/RoleContext';
 import SearchField from '@/components/common/SearchField';
+import ListState, { InlineError } from '@/components/common/ListState';
 import SikumBookCard from './SikumBookCard';
 import SikumBookForm from './SikumBookForm';
 import SikumEntriesView from './SikumEntriesView';
@@ -68,16 +70,13 @@ const Grid = styled.div`
   @media (max-width: 360px) { grid-template-columns: 1fr; }
 `;
 
-const Empty = styled.div`
-  grid-column: 1 / -1; text-align: center;
-  color: ${theme.colors.textMuted}; padding: ${theme.spacing.xxl};
-  font-size: 0.95rem;
-`;
-
 type BookSort = 'default' | 'count' | 'alpha' | 'icon';
 
 export default function SikumimView({ initialSearch = '' }: { initialSearch?: string }) {
   const [books, setBooks] = useState<SikumBook[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [deleteError, setDeleteError] = useState(false);
   const [search, setSearch] = useState(initialSearch);
   const [bookSort, setBookSort] = useState<BookSort>('default');
   const [addOpen, setAddOpen] = useState(false);
@@ -85,11 +84,27 @@ export default function SikumimView({ initialSearch = '' }: { initialSearch?: st
   const [selectedBook, setSelectedBook] = useState<SikumBook | null>(null);
   const role = useRole();
 
-  const load = useCallback(() => {
-    void fetch('/api/sikum-books').then(r => r.json()).then(setBooks as (v: unknown) => void);
+  // Only the first load blanks the list for a spinner; refreshes after a
+  // save or delete keep the current rows on screen.
+  const hasLoaded = useRef(false);
+
+  const load = useCallback((signal?: AbortSignal) => {
+    if (!hasLoaded.current) setLoading(true);
+    setLoadError(false);
+    getJson<SikumBook[]>('/api/sikum-books', signal)
+      .then(data => { setBooks(data); hasLoaded.current = true; setLoading(false); })
+      .catch((e: unknown) => {
+        if (isAbort(e)) return;
+        setLoadError(true);
+        setLoading(false);
+      });
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const ac = new AbortController();
+    load(ac.signal);
+    return () => ac.abort();
+  }, [load]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -105,8 +120,10 @@ export default function SikumimView({ initialSearch = '' }: { initialSearch?: st
 
   const handleDelete = async (book: SikumBook) => {
     if (!window.confirm(HE.SIKUMIM_BOOK_DELETE_CONFIRM)) return;
-    await fetch(`/api/sikum-books/${book.id}`, { method: 'DELETE' });
-    load();
+    setDeleteError(false);
+    const res = await fetch(`/api/sikum-books/${book.id}`, { method: 'DELETE' });
+    if (res.ok) load();
+    else setDeleteError(true);
   };
 
   if (selectedBook) {
@@ -151,8 +168,16 @@ export default function SikumimView({ initialSearch = '' }: { initialSearch?: st
       </StickyBar>
 
       <Grid>
-        {filtered.length === 0
-          ? <Empty>{HE.SIKUMIM_BOOKS_EMPTY}</Empty>
+        {deleteError && <InlineError role="alert">{HE.DELETE_ERROR}</InlineError>}
+        {loading || loadError || filtered.length === 0
+          ? (
+            <ListState
+              loading={loading}
+              error={loadError}
+              emptyText={books.length > 0 && search.trim() ? HE.SEARCH_NO_RESULTS : HE.SIKUMIM_EMPTY_STATE}
+              onRetry={() => load()}
+            />
+          )
           : filtered.map(b => (
               <SikumBookCard
                 key={b.id}

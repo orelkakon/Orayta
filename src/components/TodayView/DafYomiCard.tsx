@@ -30,7 +30,7 @@ const Card = styled.div`
 `;
 const CardHeader = styled.div`
   background: ${theme.colors.primary};
-  color: white;
+  color: ${theme.colors.onPrimary};
   padding: ${theme.spacing.md} ${theme.spacing.lg};
   font-weight: 700;
   font-size: 1rem;

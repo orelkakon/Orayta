@@ -32,7 +32,7 @@ export const Select = styled.select`
 
 export const SaveBtn = styled.button`
   padding: ${theme.spacing.sm} ${theme.spacing.md}; background: ${theme.colors.primary};
-  color: white; border-radius: ${theme.radii.md}; font-weight: 600; font-size: 0.88rem;
+  color: ${theme.colors.onPrimary}; border-radius: ${theme.radii.md}; font-weight: 600; font-size: 0.88rem;
   white-space: nowrap; flex-shrink: 0;
   &:disabled { opacity: 0.55; }
 `;

@@ -27,7 +27,7 @@ const Label = styled.div`
 `;
 const Streak = styled.div`
   background: linear-gradient(135deg, #FF6B35, #FF9F1C);
-  color: white; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
+  color: #3A1A00; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
 `;
 const FilterSection = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.sm};`;
 const FilterTitle = styled.div`
@@ -96,7 +96,7 @@ const RevealName = styled.div`
 const RevealMeta = styled.div`font-size: 0.8rem; color: ${theme.colors.textMuted};`;
 const NextBtn = styled.button`
   padding: ${theme.spacing.md} ${theme.spacing.xl}; background: ${theme.colors.primary};
-  color: white; border-radius: ${theme.radii.md}; font-size: 1rem; font-weight: 600; width: 100%;
+  color: ${theme.colors.onPrimary}; border-radius: ${theme.radii.md}; font-size: 1rem; font-weight: 600; width: 100%;
   transition: background 0.15s; &:hover { background: ${theme.colors.primaryLight}; }
 `;
 const SkipBtn = styled.button`

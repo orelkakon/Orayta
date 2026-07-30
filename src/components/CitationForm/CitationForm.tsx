@@ -146,7 +146,7 @@ const AddLocationButton = styled.button`
 const SubmitButton = styled.button`
   padding: ${theme.spacing.md} ${theme.spacing.xl};
   background: ${theme.colors.primary};
-  color: white;
+  color: ${theme.colors.onPrimary};
   border-radius: ${theme.radii.md};
   font-size: 1rem;
   font-weight: 600;

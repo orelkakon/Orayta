@@ -30,7 +30,7 @@ const ValuePreview = styled.div`
 const BtnRow = styled.div`display: flex; gap: ${theme.spacing.md}; justify-content: flex-end; margin-top: ${theme.spacing.sm};`;
 const SaveBtn = styled.button`
   padding: ${theme.spacing.sm} ${theme.spacing.xl};
-  background: ${theme.colors.primary}; color: white;
+  background: ${theme.colors.primary}; color: ${theme.colors.onPrimary};
   border-radius: ${theme.radii.md}; font-size: 0.95rem; font-weight: 600;
   &:hover { background: ${theme.colors.primaryLight}; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }`;
@@ -136,7 +136,7 @@ export default function GematriaForm({ gematria, allItems, onClose, onSaved }: P
             </MatchChips>
           </MatchesBox>
         )}
-        {saveError && <ErrorMsg>{saveError}</ErrorMsg>}
+        {saveError && <ErrorMsg role="alert">{saveError}</ErrorMsg>}
         <BtnRow>
           <CancelBtn type="button" onClick={onClose}>{HE.CANCEL}</CancelBtn>
           <SaveBtn type="submit" disabled={saving || !word.trim() || value === 0}>

@@ -57,7 +57,7 @@ const ResultBanner = styled.div<{ $correct: boolean }>`
 `;
 const NextBtn = styled.button`
   padding: ${theme.spacing.md} ${theme.spacing.xl}; background: ${theme.colors.primary};
-  color: white; border-radius: ${theme.radii.md}; font-size: 1rem; font-weight: 600;
+  color: ${theme.colors.onPrimary}; border-radius: ${theme.radii.md}; font-size: 1rem; font-weight: 600;
   &:hover { background: ${theme.colors.primaryLight}; }
 `;
 const SkipBtn = styled.button`
@@ -71,7 +71,7 @@ const Empty = styled.div`color: ${theme.colors.textMuted};`;
 const Top = styled.div`display: flex; align-items: center; justify-content: space-between;`;
 const Streak = styled.div`
   background: linear-gradient(135deg, #FF6B35, #FF9F1C);
-  color: white; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
+  color: #3A1A00; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
 `;
 
 interface Props { onAnswered: () => void; }

@@ -1,17 +1,19 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Rabbi, RabbiCategory, Book } from '@/types';
 import { CATEGORY_LABELS, CATEGORY_ORDER, CATEGORY_COLORS } from '@/lib/rabbisData';
+import { getJson, isAbort } from '@/lib/apiClient';
 import { useRole } from '@/components/common/RoleContext';
 import RabbiCard from './RabbiCard';
 import RabbiForm from './RabbiForm';
 import RabbisTimeline from './RabbisTimeline';
 import SearchField from '@/components/common/SearchField';
+import ListState, { InlineError } from '@/components/common/ListState';
 
 const RabbisMap = dynamic(() => import('./RabbisMapInner'), {
   ssr: false,
@@ -57,7 +59,7 @@ const TitleGroup = styled.div`display: flex; flex-direction: column; gap: ${them
 
 const AddBtn = styled.button`
   padding: ${theme.spacing.sm} ${theme.spacing.lg};
-  background: ${theme.colors.primary}; color: white;
+  background: ${theme.colors.primary}; color: ${theme.colors.onPrimary};
   border-radius: ${theme.radii.md}; font-size: 0.9rem; font-weight: 600;
   flex-shrink: 0; align-self: flex-start;
   &:hover { background: ${theme.colors.primaryLight}; }
@@ -116,13 +118,6 @@ const Grid = styled.div`
   }
 `;
 
-const Empty = styled.div`
-  grid-column: 1 / -1;
-  text-align: center;
-  color: ${theme.colors.textMuted};
-  padding: ${theme.spacing.xxl};
-`;
-
 /* Segment toggle — pill style, visually distinct from action buttons */
 const SegmentRow = styled.div`
   display: flex;
@@ -146,6 +141,9 @@ interface Props { initialSearch?: string; }
 export default function RabbisView({ initialSearch = '' }: Props) {
   const [rabbis, setRabbis] = useState<Rabbi[]>([]);
   const [books, setBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [deleteError, setDeleteError] = useState(false);
   const [category, setCategory] = useState<string>('all');
   const [search, setSearch] = useState(initialSearch);
   const [editRabbi, setEditRabbi] = useState<Rabbi | null>(null);
@@ -153,12 +151,31 @@ export default function RabbisView({ initialSearch = '' }: Props) {
   const [view, setView] = useState<'list' | 'timeline' | 'map'>('list');
   const role = useRole();
 
-  const load = useCallback(() => {
-    void fetch('/api/rabbis').then(r => r.json()).then(setRabbis as (v: unknown) => void);
-    void fetch('/api/books').then(r => r.json()).then(setBooks as (v: unknown) => void);
+  // Only the first load blanks the list for a spinner; refreshes after a
+  // save or delete keep the current rows on screen.
+  const hasLoaded = useRef(false);
+
+  const load = useCallback((signal?: AbortSignal) => {
+    if (!hasLoaded.current) setLoading(true);
+    setLoadError(false);
+    getJson<Rabbi[]>('/api/rabbis', signal)
+      .then(data => { setRabbis(data); hasLoaded.current = true; setLoading(false); })
+      .catch((e: unknown) => {
+        if (isAbort(e)) return;
+        setLoadError(true);
+        setLoading(false);
+      });
+    // Books only decorate the cards — a failure here must not blank the page.
+    getJson<Book[]>('/api/books', signal)
+      .then(setBooks)
+      .catch(() => { /* ignore */ });
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const ac = new AbortController();
+    load(ac.signal);
+    return () => ac.abort();
+  }, [load]);
 
   const filtered = useMemo(() => {
     let list = rabbis;
@@ -179,8 +196,10 @@ export default function RabbisView({ initialSearch = '' }: Props) {
 
   const handleDelete = async (rabbi: Rabbi) => {
     if (!window.confirm(HE.RABBI_DELETE_CONFIRM)) return;
+    setDeleteError(false);
     const res = await fetch(`/api/rabbis/${rabbi.id}`, { method: 'DELETE' });
     if (res.ok) load();
+    else setDeleteError(true);
   };
 
   return (
@@ -237,23 +256,43 @@ export default function RabbisView({ initialSearch = '' }: Props) {
         </TabsScroll>
       </StickyBar>
 
-      {view === 'timeline' && <RabbisTimeline rabbis={filtered} />}
-      {view === 'map'      && <RabbisMap rabbis={filtered} />}
-      {view === 'list'     && (
-        <Grid>
-          {filtered.length === 0
-            ? <Empty>{HE.STUDY_EMPTY}</Empty>
-            : filtered.map(r => (
-                <RabbiCard
-                  key={r.id}
-                  rabbi={r}
-                  books={books.filter(b => b.rabbiId === r.id).map(b => ({ id: b.id, title: b.title }))}
-                  onEdit={role === 'admin' ? () => setEditRabbi(r) : undefined}
-                  onDelete={role === 'admin' ? () => handleDelete(r) : undefined}
-                />
-              ))
-          }
-        </Grid>
+      {deleteError && <InlineError role="alert">{HE.DELETE_ERROR}</InlineError>}
+
+      {loading || loadError ? (
+        <ListState
+          loading={loading}
+          error={loadError}
+          emptyText={HE.RABBIS_EMPTY}
+          onRetry={() => load()}
+        />
+      ) : (
+        <>
+          {view === 'timeline' && <RabbisTimeline rabbis={filtered} />}
+          {view === 'map'      && <RabbisMap rabbis={filtered} />}
+          {view === 'list'     && (
+            <Grid>
+              {filtered.length === 0
+                ? (
+                  <ListState
+                    loading={false}
+                    error={false}
+                    emptyText={rabbis.length > 0 && search.trim() ? HE.SEARCH_NO_RESULTS : HE.RABBIS_EMPTY}
+                    onRetry={() => load()}
+                  />
+                )
+                : filtered.map(r => (
+                    <RabbiCard
+                      key={r.id}
+                      rabbi={r}
+                      books={books.filter(b => b.rabbiId === r.id).map(b => ({ id: b.id, title: b.title }))}
+                      onEdit={role === 'admin' ? () => setEditRabbi(r) : undefined}
+                      onDelete={role === 'admin' ? () => handleDelete(r) : undefined}
+                    />
+                  ))
+              }
+            </Grid>
+          )}
+        </>
       )}
     </Container>
   );

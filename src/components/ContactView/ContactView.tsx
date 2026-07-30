@@ -66,7 +66,7 @@ const ChannelRow = styled.div`
 
 const WaBtn = styled.button`
   flex: 1; padding: ${theme.spacing.md};
-  background: #25D366; color: white; border-radius: ${theme.radii.md};
+  background: ${theme.brand.whatsapp}; color: ${theme.brand.whatsappText}; border-radius: ${theme.radii.md};
   font-size: 1rem; font-weight: 700; display: flex; align-items: center;
   justify-content: center; gap: ${theme.spacing.sm};
   transition: transform 0.15s, box-shadow 0.15s;
@@ -77,7 +77,7 @@ const WaBtn = styled.button`
 const EmailBtn = styled.button`
   flex: 1; padding: ${theme.spacing.md};
   background: linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.primaryLight});
-  color: white; border-radius: ${theme.radii.md}; font-size: 1rem; font-weight: 700;
+  color: ${theme.colors.onPrimary}; border-radius: ${theme.radii.md}; font-size: 1rem; font-weight: 700;
   display: flex; align-items: center; justify-content: center; gap: ${theme.spacing.sm};
   transition: transform 0.15s, box-shadow 0.15s;
   &:hover:not(:disabled) { transform: translateY(-2px); box-shadow: ${theme.shadows.md}; }
@@ -179,7 +179,7 @@ export default function ContactView() {
                 ))}
               </StarsRow>
             </div>
-            {error && <ErrMsg>{HE.CONTACT_SAVE_ERROR}</ErrMsg>}
+            {error && <ErrMsg role="alert">{HE.CONTACT_SAVE_ERROR}</ErrMsg>}
             <ChannelRow>
               <WaBtn onClick={handleWA} disabled={loading || !canSend}>
                 💬 {HE.CONTACT_SEND_WA}

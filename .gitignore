@@ -44,3 +44,7 @@ next-env.d.ts
 
 # claude code runtime lock files
 .claude/scheduled_tasks.lock
+
+# Audit reports — describe security weaknesses; keep out of the public repo
+Orayta-Audit-Report.pdf
+*-Audit-Report.pdf

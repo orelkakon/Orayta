@@ -62,7 +62,7 @@ const DeniedHelp = styled.p`font-size: 0.78rem; color: ${theme.colors.textLight}
 const RetryBtn = styled.button`
   padding: ${theme.spacing.xs} ${theme.spacing.lg};
   background: ${theme.colors.primary};
-  color: white;
+  color: ${theme.colors.onPrimary};
   border-radius: ${theme.radii.sm};
   font-size: 0.82rem;
   &:hover { background: ${theme.colors.primaryLight}; }

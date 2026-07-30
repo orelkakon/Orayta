@@ -1,36 +1,31 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { SikumBook, SikumEntry } from '@/types';
+import { getJson, isAbort } from '@/lib/apiClient';
 import { useRole } from '@/components/common/RoleContext';
 import SikumEntryCard from './SikumEntryCard';
 import SikumEntryForm from './SikumEntryForm';
 import SikumEntryModal from './SikumEntryModal';
 import SikumCubesGrid from './SikumCubesGrid';
 import SearchField from '@/components/common/SearchField';
+import ListState, { InlineError } from '@/components/common/ListState';
 
 const Container = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
 
 const StickyBar = styled.div`
-  position: sticky;
-  top: 60px;
-  z-index: 50;
+  position: sticky; top: 60px; z-index: 50;
   background: ${theme.colors.background};
-  margin-top: -${theme.spacing.xl};
-  padding-top: ${theme.spacing.xl};
-  padding-bottom: 2px;
+  margin-top: -${theme.spacing.xl}; padding-top: ${theme.spacing.xl}; padding-bottom: 2px;
   display: flex; flex-direction: column; gap: ${theme.spacing.sm};
   @media (max-width: 600px) { margin-top: -${theme.spacing.md}; padding-top: ${theme.spacing.md}; }
   @media (max-width: 480px) { top: 52px; }
 `;
 
-const HeaderRow = styled.div`
-  display: flex; align-items: center; flex-wrap: wrap;
-  justify-content: space-between; gap: ${theme.spacing.md};
-`;
+const HeaderRow = styled.div`display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: ${theme.spacing.md};`;
 
 const BackBtn = styled.button`
   font-size: 0.88rem; color: ${theme.colors.primary}; font-weight: 600;
@@ -43,18 +38,12 @@ const BookTitle = styled.h1`
   font-weight: 700; color: ${theme.colors.primary};
 `;
 
-const BookAuthor = styled.span`
-  font-size: 0.95rem; color: ${theme.colors.textMuted}; margin-right: ${theme.spacing.sm};
-`;
+const BookAuthor = styled.span`font-size: 0.95rem; color: ${theme.colors.textMuted}; margin-right: ${theme.spacing.sm};`;
 
-const ControlRow = styled.div`
-  display: flex; align-items: center; flex-wrap: wrap;
-  justify-content: space-between; gap: ${theme.spacing.sm};
-`;
+const ControlRow = styled.div`display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: ${theme.spacing.sm};`;
 
 const SortBtn = styled.button<{ $active?: boolean }>`
-  font-size: 0.82rem; padding: 5px 14px;
-  border-radius: ${'9999px'};
+  font-size: 0.82rem; padding: 5px 14px; border-radius: ${'9999px'};
   border: 1px solid ${({ $active }) => ($active ? theme.colors.primary : theme.colors.border)};
   background: ${({ $active }) => ($active ? theme.colors.primary + '12' : 'transparent')};
   color: ${({ $active }) => ($active ? theme.colors.primary : theme.colors.textMuted)};
@@ -72,11 +61,6 @@ const AddBtn = styled.button`
 
 const List = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
 
-const Empty = styled.div`
-  text-align: center; color: ${theme.colors.textMuted};
-  padding: ${theme.spacing.xxl}; font-size: 0.95rem;
-`;
-
 type SortDir = 'desc' | 'asc';
 type ViewMode = 'list' | 'grid';
 
@@ -87,6 +71,9 @@ interface Props {
 
 export default function SikumEntriesView({ book, onBack }: Props) {
   const [entries, setEntries] = useState<SikumEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [deleteError, setDeleteError] = useState(false);
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [search, setSearch] = useState('');
@@ -95,13 +82,22 @@ export default function SikumEntriesView({ book, onBack }: Props) {
   const [viewEntry, setViewEntry] = useState<SikumEntry | null>(null);
   const role = useRole();
 
-  const load = useCallback(() => {
-    void fetch(`/api/sikum-entries?bookId=${book.id}`)
-      .then(r => r.json())
-      .then(setEntries as (v: unknown) => void);
+  // Only the first load blanks the list for a spinner; refreshes after a
+  // save or delete keep the current rows on screen.
+  const hasLoaded = useRef(false);
+
+  const load = useCallback((signal?: AbortSignal) => {
+    if (!hasLoaded.current) setLoading(true); setLoadError(false);
+    getJson<SikumEntry[]>(`/api/sikum-entries?bookId=${book.id}`, signal)
+      .then(data => { setEntries(data); hasLoaded.current = true; setLoading(false); })
+      .catch((e: unknown) => { if (!isAbort(e)) { setLoadError(true); setLoading(false); } });
   }, [book.id]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const ac = new AbortController();
+    load(ac.signal);
+    return () => ac.abort();
+  }, [load]);
 
   const sorted = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -115,9 +111,11 @@ export default function SikumEntriesView({ book, onBack }: Props) {
 
   const handleDelete = async (entry: SikumEntry) => {
     if (!window.confirm(HE.SIKUMIM_ENTRY_DELETE_CONFIRM)) return;
-    await fetch(`/api/sikum-entries/${entry.id}`, { method: 'DELETE' });
+    setDeleteError(false);
+    const res = await fetch(`/api/sikum-entries/${entry.id}`, { method: 'DELETE' });
     setViewEntry(null);
-    load();
+    if (res.ok) load();
+    else setDeleteError(true);
   };
 
   return (
@@ -177,8 +175,12 @@ export default function SikumEntriesView({ book, onBack }: Props) {
         </ControlRow>
       </StickyBar>
 
-      {sorted.length === 0
-        ? <Empty>{HE.SIKUMIM_ENTRIES_EMPTY}</Empty>
+      {deleteError && <InlineError role="alert">{HE.DELETE_ERROR}</InlineError>}
+      {loading || loadError || sorted.length === 0
+        ? <ListState
+            loading={loading} error={loadError} onRetry={() => load()}
+            emptyText={entries.length > 0 && search.trim() ? HE.SEARCH_NO_RESULTS : HE.SIKUMIM_ENTRIES_EMPTY}
+          />
         : viewMode === 'grid'
           ? <SikumCubesGrid entries={sorted} onOpen={setViewEntry} />
           : (

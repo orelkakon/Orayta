@@ -1,15 +1,17 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Gematria } from '@/types';
+import { getJson, isAbort } from '@/lib/apiClient';
 import { useRole } from '@/components/common/RoleContext';
 import GematriaCard from './GematriaCard';
 import GematriaForm from './GematriaForm';
 import GematriaConnectionGroup from './GematriaConnectionGroup';
 import SearchField from '@/components/common/SearchField';
+import ListState, { InlineError } from '@/components/common/ListState';
 
 const Container = styled.div`
   display: flex;
@@ -71,25 +73,37 @@ const Grid = styled.div`
   @media (max-width: 320px) { grid-template-columns: repeat(2, 1fr); }
 `;
 
-const Empty = styled.div`
-  grid-column: 1 / -1;
-  text-align: center;
-  color: ${theme.colors.textMuted};
-  padding: ${theme.spacing.xxl};
-`;
-
 export default function GematriaView({ initialSearch = '' }: { initialSearch?: string }) {
   const [items, setItems] = useState<Gematria[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [deleteError, setDeleteError] = useState(false);
   const [search, setSearch] = useState(initialSearch);
   const [editItem, setEditItem] = useState<Gematria | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const role = useRole();
 
-  const load = useCallback(() => {
-    void fetch('/api/gematria').then(r => r.json()).then(setItems as (v: unknown) => void);
+  // Only the first load blanks the list for a spinner; refreshes after a
+  // save or delete keep the current rows on screen.
+  const hasLoaded = useRef(false);
+
+  const load = useCallback((signal?: AbortSignal) => {
+    if (!hasLoaded.current) setLoading(true);
+    setLoadError(false);
+    getJson<Gematria[]>('/api/gematria', signal)
+      .then(data => { setItems(data); hasLoaded.current = true; setLoading(false); })
+      .catch((e: unknown) => {
+        if (isAbort(e)) return;
+        setLoadError(true);
+        setLoading(false);
+      });
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const ac = new AbortController();
+    load(ac.signal);
+    return () => ac.abort();
+  }, [load]);
 
   const filtered = useMemo(() => {
     const q = search.trim();
@@ -112,8 +126,10 @@ export default function GematriaView({ initialSearch = '' }: { initialSearch?: s
 
   const handleDelete = async (item: Gematria) => {
     if (!window.confirm(HE.GEMATRIA_DELETE_CONFIRM)) return;
+    setDeleteError(false);
     const res = await fetch(`/api/gematria/${item.id}`, { method: 'DELETE' });
     if (res.ok) load();
+    else setDeleteError(true);
   };
 
   return (
@@ -149,8 +165,14 @@ export default function GematriaView({ initialSearch = '' }: { initialSearch?: s
       </StickyBar>
 
       <Grid>
-        {filtered.length === 0 ? (
-          <Empty>{HE.GEMATRIA_EMPTY}</Empty>
+        {deleteError && <InlineError role="alert">{HE.DELETE_ERROR}</InlineError>}
+        {loading || loadError || filtered.length === 0 ? (
+          <ListState
+            loading={loading}
+            error={loadError}
+            emptyText={items.length > 0 && search.trim() ? HE.SEARCH_NO_RESULTS : HE.GEMATRIA_EMPTY_STATE}
+            onRetry={() => load()}
+          />
         ) : groups.map(({ value, group }) =>
           group.length >= 2 ? (
             <GematriaConnectionGroup

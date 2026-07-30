@@ -199,7 +199,7 @@ const AmudBtn = styled.button<{ $active?: boolean }>`
   border-radius: ${theme.radii.sm};
   border: 2px solid ${({ $active }) => ($active ? theme.colors.primary : theme.colors.border)};
   background: ${({ $active }) => ($active ? theme.colors.primary : theme.colors.surface)};
-  color: ${({ $active }) => ($active ? 'white' : theme.colors.text)};
+  color: ${({ $active }) => ($active ? theme.colors.onPrimary : theme.colors.text)};
   font-size: 0.9rem;
   transition: all 0.15s;
 `;
@@ -213,7 +213,7 @@ const ButtonRow = styled.div`
 const PrimaryBtn = styled.button`
   padding: ${theme.spacing.md} ${theme.spacing.xl};
   background: ${theme.colors.primary};
-  color: white;
+  color: ${theme.colors.onPrimary};
   border-radius: ${theme.radii.md};
   font-size: 1rem;
   font-weight: 600;
@@ -236,7 +236,7 @@ const ResultBanner = styled.div<{ $score: number }>`
   padding: ${theme.spacing.md};
   border-radius: ${theme.radii.md};
   background: ${({ $score }) =>
-    $score >= 1 ? '#E8F5E9' : $score > 0 ? '#FFF8E1' : '#FDECEA'};
+    $score >= 1 ? theme.colors.bgSuccess : $score > 0 ? theme.colors.bgWarning : theme.colors.bgError};
   border: 2px solid ${({ $score }) =>
     $score >= 1 ? theme.colors.success : $score > 0 ? '#F9A825' : theme.colors.error};
   color: ${({ $score }) =>
@@ -256,88 +256,6 @@ const ScoreBadge = styled.span`
 const CorrectAnswer = styled.div`
   font-size: 0.9rem;
   color: ${theme.colors.textMuted};
-`;
-
-const StatsCard = styled.div`
-  background: ${theme.colors.surface};
-  border-radius: ${theme.radii.lg};
-  padding: ${theme.spacing.lg};
-  box-shadow: ${theme.shadows.sm};
-  display: flex;
-  flex-direction: column;
-  gap: ${theme.spacing.md};
-  height: fit-content;
-  min-width: 0;
-`;
-
-const StatsTitle = styled.h3`
-  font-size: 1rem;
-  color: ${theme.colors.primary};
-`;
-
-const StatRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.9rem;
-  color: ${theme.colors.textMuted};
-  padding: ${theme.spacing.xs} 0;
-  border-bottom: 1px solid ${theme.colors.borderLight};
-  &:last-child { border-bottom: none; }
-`;
-
-const StatValue = styled.span`
-  font-weight: 700;
-  color: ${theme.colors.text};
-`;
-
-const AccuracyBar = styled.div<{ $pct: number }>`
-  height: 8px;
-  border-radius: 4px;
-  background: ${theme.colors.borderLight};
-  overflow: hidden;
-  &::after {
-    content: '';
-    display: block;
-    height: 100%;
-    width: ${({ $pct }) => $pct}%;
-    background: ${theme.colors.success};
-    border-radius: 4px;
-    transition: width 0.5s ease;
-  }
-`;
-
-const ResetButton = styled.button`
-  font-size: 0.78rem;
-  color: ${theme.colors.error};
-  border: 1px solid ${theme.colors.error};
-  border-radius: ${theme.radii.sm};
-  padding: 3px ${theme.spacing.sm};
-  margin-top: ${theme.spacing.xs};
-  opacity: 0.7;
-  transition: opacity 0.15s;
-  &:hover { opacity: 1; background: rgba(155,35,53,0.06); }
-`;
-
-const HistoryList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${theme.spacing.xs};
-  max-height: 240px;
-  overflow-y: auto;
-`;
-
-const HistoryItem = styled.div<{ $score: number }>`
-  font-size: 0.78rem;
-  padding: ${theme.spacing.xs} ${theme.spacing.sm};
-  border-radius: ${theme.radii.sm};
-  background: ${({ $score }) =>
-    $score >= 1 ? '#E8F5E9' : $score > 0 ? '#FFF8E1' : '#FDECEA'};
-  color: ${({ $score }) =>
-    $score >= 1 ? theme.colors.success : $score > 0 ? '#E65100' : theme.colors.error};
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
 `;
 
 const ModeGrid = styled.div`
@@ -391,7 +309,7 @@ const ModeLabel = styled.span`
 const QuizLabelRow = styled.div`display: flex; align-items: center; justify-content: space-between;`;
 const StreakBadge = styled.div`
   background: linear-gradient(135deg, #FF6B35, #FF9F1C);
-  color: white; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
+  color: #3A1A00; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
 `;
 
 interface AnswerResult {

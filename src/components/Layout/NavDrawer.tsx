@@ -1,9 +1,11 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
+import { navItems } from './navItems';
 
 const Backdrop = styled.div<{ $open: boolean }>`
   display: none;
@@ -46,13 +48,14 @@ const DrawerTitle = styled.span`
   font-family: ${theme.fonts.body};
   font-size: 1.1rem;
   font-weight: 700;
-  color: white;
+  color: ${theme.colors.onPrimary};
 `;
 
 const CloseBtn = styled.button`
-  width: 28px; height: 28px;
+  position: relative;
+  width: 44px; height: 44px;
   display: flex; align-items: center; justify-content: center;
-  color: white; opacity: 0.8; font-size: 1rem;
+  color: ${theme.colors.onPrimary}; opacity: 0.8; font-size: 1rem;
   border-radius: ${theme.radii.sm};
   transition: opacity 0.15s, background 0.15s;
   &:hover { opacity: 1; background: rgba(255,255,255,0.15); }
@@ -63,7 +66,7 @@ const DrawerLink = styled(Link)<{ $active?: boolean }>`
   border-radius: ${theme.radii.sm};
   font-size: 0.95rem;
   font-weight: 500;
-  color: white;
+  color: ${theme.colors.onPrimary};
   display: block;
   background: ${({ $active }) => ($active ? 'rgba(255,255,255,0.25)' : 'transparent')};
   transition: background 0.15s;
@@ -76,7 +79,7 @@ const DrawerLogout = styled.button`
   border-radius: ${theme.radii.sm};
   font-size: 0.95rem;
   font-weight: 500;
-  color: white;
+  color: ${theme.colors.onPrimary};
   opacity: 0.75;
   text-align: right;
   transition: all 0.15s;
@@ -97,50 +100,104 @@ interface Props {
   isAdmin: boolean;
 }
 
+const HOME_LINK = { href: '/', label: HE.NAV_HOME, icon: '🏠' };
+
 export default function NavDrawer({ open, onClose, pathname, onLogout, isAdmin }: Props) {
-  const links = [
-    { href: '/',           label: HE.HOME_SECTIONS.find(s => s.href === '/')?.label ?? 'בית',   icon: '🏠' },
-    { href: '/rabbis',     label: HE.NAV_RABBIS_AND_BOOKS, icon: '👥' },
-    { href: '/sikumim',    label: HE.NAV_SIKUMIM,          icon: '📝' },
-    { href: '/study',      label: HE.NAV_TALMUD,           icon: '📜' },
-    { href: '/gematria',   label: HE.NAV_GEMATRIA,         icon: '🔢' },
-    { href: '/content',    label: HE.NAV_CONTENTS,         icon: '📚' },
-    { href: '/chidushim',  label: HE.NAV_CHIDUSHIM,        icon: '💡' },
-    { href: '/quiz',       label: HE.NAV_LEARN,            icon: '🎯' },
-    { href: '/today',      label: HE.NAV_TODAY,            icon: '📅' },
-    { href: '/dedications', label: HE.NAV_DEDICATIONS,     icon: '🕯️' },
-    { href: '/contact',    label: HE.NAV_CONTACT,          icon: '📞' },
-    { href: '/about',      label: HE.NAV_ABOUT,            icon: 'ℹ️' },
-  ];
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const links = [HOME_LINK, ...navItems];
 
   const isActive = (href: string) =>
     href === '/'
       ? pathname === '/'
       : pathname.startsWith(href);
 
+  // Close on Escape and move focus into the drawer when it opens, restoring it
+  // to whatever opened it (the hamburger) on close.
+  useEffect(() => {
+    if (!open) return;
+    const opener = document.activeElement as HTMLElement | null;
+    drawerRef.current?.focus();
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key !== 'Tab') return;
+      // Trap Tab inside the drawer while it is open.
+      const focusables = drawerRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled])',
+      );
+      if (!focusables || focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault(); last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault(); first.focus();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = prevOverflow;
+      opener?.focus?.();
+    };
+  }, [open, onClose]);
+
   return (
     <>
       <Backdrop $open={open} onClick={onClose} />
-      <Drawer $open={open}>
+      {/* Off-screen when closed, so it must also leave the tab order and the
+          accessibility tree — a translate alone leaves it reachable. */}
+      <Drawer
+        id="nav-drawer"
+        ref={drawerRef}
+        $open={open}
+        role="dialog"
+        aria-modal="true"
+        aria-label={HE.NAV_MENU}
+        aria-hidden={!open}
+        tabIndex={-1}
+      >
         <DrawerHeader>
           <DrawerTitle>{HE.APP_NAME}</DrawerTitle>
-          <CloseBtn onClick={onClose} aria-label="סגור תפריט">✕</CloseBtn>
+          <CloseBtn onClick={onClose} aria-label={HE.ARIA_MENU_CLOSE}>✕</CloseBtn>
         </DrawerHeader>
         {links.map(l => (
-          <DrawerLink key={l.href} href={l.href} $active={isActive(l.href)} onClick={onClose}>
+          <DrawerLink
+            key={l.href}
+            href={l.href}
+            $active={isActive(l.href)}
+            aria-current={isActive(l.href) ? 'page' : undefined}
+            tabIndex={open ? undefined : -1}
+            onClick={onClose}
+          >
             {l.icon} {l.label}
           </DrawerLink>
         ))}
         {isAdmin && (
-          <DrawerLink href="/admin" $active={isActive('/admin')} onClick={onClose}>
+          <DrawerLink
+            href="/admin"
+            $active={isActive('/admin')}
+            aria-current={isActive('/admin') ? 'page' : undefined}
+            tabIndex={open ? undefined : -1}
+            onClick={onClose}
+          >
             📊 {HE.NAV_ADMIN_STATS}
           </DrawerLink>
         )}
         <Divider />
         {isAdmin
-          ? <DrawerLogout onClick={onLogout}>{HE.NAV_LOGOUT} →</DrawerLogout>
+          ? <DrawerLogout onClick={onLogout} tabIndex={open ? undefined : -1}>{HE.NAV_LOGOUT} →</DrawerLogout>
           : (
-            <DrawerLink href="/login" $active={isActive('/login')} onClick={onClose}>
+            <DrawerLink
+              href="/login"
+              $active={isActive('/login')}
+              aria-current={isActive('/login') ? 'page' : undefined}
+              tabIndex={open ? undefined : -1}
+              onClick={onClose}
+            >
               🔑 {HE.NAV_ADMIN_LOGIN}
             </DrawerLink>
           )

@@ -48,7 +48,7 @@ const Card = styled.div`
 `;
 const CardHeader = styled.div`
   background: ${theme.colors.primary};
-  color: white;
+  color: ${theme.colors.onPrimary};
   padding: ${theme.spacing.md} ${theme.spacing.lg};
   font-weight: 700;
   font-size: 1rem;
@@ -101,7 +101,7 @@ const DeniedHelp = styled.p`font-size: 0.8rem; color: ${theme.colors.textLight};
 const RetryBtn = styled.button`
   padding: ${theme.spacing.xs} ${theme.spacing.lg};
   background: ${theme.colors.primary};
-  color: white;
+  color: ${theme.colors.onPrimary};
   border-radius: ${theme.radii.sm};
   font-size: 0.85rem;
   &:hover { background: ${theme.colors.primaryLight}; }

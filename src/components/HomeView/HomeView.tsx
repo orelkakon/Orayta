@@ -32,6 +32,14 @@ const AppTitle = styled.h1`
   font-size: 1.9rem; font-weight: 700; color: ${theme.colors.primary};
 `;
 
+const Tagline = styled.p`
+  font-size: ${theme.fontSizes.sm};
+  color: ${theme.colors.textMuted};
+  line-height: 1.5;
+  max-width: 42ch;
+  margin: 0 auto;
+`;
+
 const QuoteBlock = styled.blockquote`
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   border-right: 3px solid ${theme.colors.secondary};
@@ -59,6 +67,9 @@ const Grid = styled.div`
   grid-template-columns: repeat(3, 1fr);
   gap: ${theme.spacing.sm};
   width: 100%;
+  /* Three columns on a 360px phone leaves ~104px per tile, which wraps the
+     Hebrew labels to three lines. Two columns keeps them readable. */
+  @media (max-width: 520px) { grid-template-columns: repeat(2, 1fr); }
 `;
 
 const SectionCard = styled(Link)`
@@ -92,9 +103,11 @@ const CardLabel = styled.span`
   line-height: 1.25;
   @media (max-width: 480px) { font-size: 1.02rem; }
 `;
+/* Kept visible at every width: the description is the only thing that
+   distinguishes the similarly-named sections at a glance. */
 const CardDesc = styled.span`
   font-size: 0.75rem; color: ${theme.colors.textMuted}; line-height: 1.4;
-  @media (max-width: 400px) { display: none; }
+  @media (max-width: 400px) { font-size: 0.68rem; }
 `;
 
 export default function HomeView() {
@@ -104,6 +117,7 @@ export default function HomeView() {
       <Page>
       <Hero>
         <AppTitle>{HE.APP_NAME}</AppTitle>
+        <Tagline>{HE.HOME_TAGLINE}</Tagline>
         <QuoteBlock>
           <QuoteText>{HE.HOME_QUOTE}</QuoteText>
           <QuoteSource>{HE.HOME_QUOTE_SOURCE}</QuoteSource>

@@ -91,7 +91,7 @@ const BackLink = styled(Link)`
   margin-top: ${theme.spacing.sm};
   padding: ${theme.spacing.sm} ${theme.spacing.xl};
   background: ${theme.colors.primary};
-  color: white;
+  color: ${theme.colors.onPrimary};
   border-radius: ${theme.radii.md};
   font-size: 0.95rem;
   font-weight: 600;

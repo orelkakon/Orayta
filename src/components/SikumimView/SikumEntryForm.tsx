@@ -67,7 +67,7 @@ const ErrorMsg = styled.p`font-size: 0.82rem; color: #dc2626;`;
 const BtnRow = styled.div`display: flex; gap: ${theme.spacing.sm}; justify-content: flex-end;`;
 const SaveBtn = styled.button`
   padding: ${theme.spacing.sm} ${theme.spacing.xl};
-  background: ${theme.colors.primary}; color: white;
+  background: ${theme.colors.primary}; color: ${theme.colors.onPrimary};
   border-radius: ${theme.radii.md}; font-size: 0.9rem; font-weight: 600;
   &:hover { background: ${theme.colors.primaryLight}; } &:disabled { opacity: 0.5; }
 `;
@@ -154,7 +154,7 @@ export default function SikumEntryForm({ entry, bookId, onClose, onSaved }: Prop
           {HE.SIKUMIM_ENTRY_FORM_TEXT} *
           <Textarea value={text} onChange={e => setText(e.target.value)} placeholder={HE.SIKUMIM_ENTRY_FORM_TEXT_PLACEHOLDER} autoFocus={!entry} />
         </Label>
-        {error && <ErrorMsg>{error}</ErrorMsg>}
+        {error && <ErrorMsg role="alert">{error}</ErrorMsg>}
         <BtnRow>
           <CancelBtn type="button" onClick={() => { clearDraft(bookId); onClose(); }}>{HE.CANCEL}</CancelBtn>
           <SaveBtn type="submit" disabled={saving}>{HE.SIKUMIM_ENTRY_FORM_SAVE}</SaveBtn>

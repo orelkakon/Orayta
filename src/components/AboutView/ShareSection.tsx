@@ -75,7 +75,7 @@ const BtnIcon = styled.span`font-size: 1.4rem;`;
 const NativeBtn = styled.button`
   padding: ${theme.spacing.sm} ${theme.spacing.xl};
   background: ${theme.colors.primary};
-  color: white;
+  color: ${theme.colors.onPrimary};
   border-radius: ${theme.radii.md};
   font-size: 0.9rem;
   font-weight: 600;

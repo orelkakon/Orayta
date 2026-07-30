@@ -603,4 +603,40 @@ export const HE = {
   ADMIN_COL_TODAY: 'היום',
   ADMIN_COL_WEEK: 'השבוע',
   ADMIN_COL_TOTAL: 'סה״כ',
+
+  /* ── Empty / error / loading states ── */
+  RABBIS_EMPTY: 'לא נמצאו רבנים',
+  BOOKS_EMPTY_STATE: 'לא נמצאו ספרים',
+  GEMATRIA_EMPTY_STATE: 'לא נמצאו גימטריות',
+  SIKUMIM_EMPTY_STATE: 'לא נמצאו ספרי סיכומים',
+  CHIDUSHIM_EMPTY_STATE: 'לא נמצאו חידושים',
+  SEARCH_NO_RESULTS: 'לא נמצאו תוצאות לחיפוש',
+  LOAD_ERROR: 'שגיאה בטעינת הנתונים',
+  LOAD_ERROR_RETRY: 'נסה שוב',
+  DELETE_ERROR: 'המחיקה נכשלה — נסה שוב',
+
+  /* ── Global error / not-found pages ── */
+  ERROR_PAGE_TITLE: 'משהו השתבש',
+  ERROR_PAGE_BODY: 'אירעה שגיאה בטעינת העמוד. אפשר לנסות שוב או לחזור לדף הבית.',
+  ERROR_PAGE_RETRY: 'נסה שוב',
+  ERROR_PAGE_HOME: 'חזרה לדף הבית',
+  NOT_FOUND_TITLE: 'הדף לא נמצא',
+  NOT_FOUND_BODY: 'הכתובת שביקשתם אינה קיימת. אולי הקישור שגוי או שהתוכן הוסר.',
+
+  /* ── Accessible names (aria-labels) ── */
+  ARIA_MENU_OPEN: 'פתח תפריט',
+  ARIA_MENU_CLOSE: 'סגור תפריט',
+  ARIA_SEARCH_CLEAR: 'נקה חיפוש',
+  ARIA_THEME_TO_DARK: 'עבור למצב כהה',
+  ARIA_THEME_TO_LIGHT: 'עבור למצב בהיר',
+  ARIA_TICKER_SHOW: 'הצג רצועת הקדשות',
+  ARIA_TICKER_HIDE: 'הסתר רצועת הקדשות',
+  ARIA_SKIP_TO_CONTENT: 'דלג לתוכן הראשי',
+
+  /* ── Home hero ── */
+  HOME_TAGLINE: 'ספרייה יהודית חיה — תלמוד, רבנים ותפילות, עם רגע לימוד יומי בכיס',
+  HEADER_TAGLINE: 'בס״ד · מקורות יהודיים',
+  NAV_MENU: 'תפריט ניווט',
+  ARIA_MUSIC_ON: 'הפעל מוזיקת רקע',
+  ARIA_MUSIC_OFF: 'כבה מוזיקת רקע',
 };

@@ -32,7 +32,7 @@ const BtnRow = styled.div`display: flex; gap: ${theme.spacing.md}; justify-conte
 
 const SaveBtn = styled.button`
   padding: ${theme.spacing.sm} ${theme.spacing.xl};
-  background: ${theme.colors.primary}; color: white;
+  background: ${theme.colors.primary}; color: ${theme.colors.onPrimary};
   border-radius: ${theme.radii.md}; font-size: 0.95rem; font-weight: 600;
   &:hover { background: ${theme.colors.primaryLight}; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -94,7 +94,7 @@ export default function ChidushForm({ chidush, onClose, onSaved }: Props) {
           <Input value={author} onChange={e => setAuthor(e.target.value)}
             placeholder={HE.CHIDUSH_FORM_AUTHOR_PLACEHOLDER} />
         </Field>
-        {error && <ErrorMsg>{error}</ErrorMsg>}
+        {error && <ErrorMsg role="alert">{error}</ErrorMsg>}
         <BtnRow>
           <CancelBtn type="button" onClick={onClose}>{HE.CANCEL}</CancelBtn>
           <SaveBtn type="submit" disabled={saving || !text.trim()}>

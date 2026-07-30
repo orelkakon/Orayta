@@ -20,7 +20,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://orayta-eight.vercel.
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
-  title: 'אורייתא',
+  title: { default: 'אורייתא', template: '%s | אורייתא' },
   description: 'מערכת לניהול, לימוד ותרגול מקורות יהודיים — תלמוד, רבנים, ספרים, חידונים ועוד',
   openGraph: {
     title: 'אורייתא',
@@ -44,7 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="he" dir="rtl" className={`${frankRuhl.variable} ${heebo.variable}`}>
       <head>
         {/* Prevent dark-mode flash: read localStorage before first paint */}
-        <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem('orayta_theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}` }} />
+        <script dangerouslySetInnerHTML={{ __html: `try{var s=localStorage.getItem('orayta_theme');var d=s?s==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.setAttribute('data-theme','dark')}catch(e){}` }} />
       </head>
       <body>
         <ClientProviders>
