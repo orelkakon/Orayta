@@ -71,12 +71,6 @@ const Tagline = styled.div`
   text-shadow: 0 1px 8px rgba(0,0,0,0.3);
 `;
 
-const Sub = styled.div`
-  color: rgba(255,255,255,0.82); font-size: 0.8rem; line-height: 1.45;
-  max-width: 420px;
-  @media (max-width: 480px) { display: none; }
-`;
-
 const Cta = styled.div`
   margin-top: 3px;
   display: inline-flex; align-items: center; gap: 8px;
@@ -102,7 +96,6 @@ export default function FeedBannerBlock() {
       <Spark $top="70%" $side="90%" $delay="1.4s"  $size="0.9rem">✦</Spark>
       <Title>✨ {HE.FEED_TITLE}</Title>
       <Tagline>{HE.FEED_BANNER_TAGLINE}</Tagline>
-      <Sub>{HE.FEED_SUBTITLE}</Sub>
       <Cta>
         {HE.FEED_BANNER_CTA}
         <CtaArrow>←</CtaArrow>
