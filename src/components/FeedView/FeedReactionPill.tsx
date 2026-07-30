@@ -19,18 +19,20 @@ const pop = keyframes`
 
 const Pill = styled.div<{ $v: boolean }>`
   position: absolute;
-  bottom: 84px; left: 0; right: 0; margin: auto;
+  bottom: 88px; left: 0; right: 0; margin: auto;
   width: fit-content;
   display: flex; align-items: stretch;
-  background: rgba(8, 5, 20, 0.55);
-  backdrop-filter: blur(26px); -webkit-backdrop-filter: blur(26px);
-  border-radius: 32px;
+  background: rgba(10, 8, 18, 0.52);
+  backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 999px;
   overflow: hidden;
   z-index: 10;
-  box-shadow: 0 6px 28px rgba(0,0,0,0.45);
+  box-shadow: 0 10px 34px rgba(0,0,0,0.5);
   opacity: ${p => p.$v ? 1 : 0};
-  transform: ${p => p.$v ? 'translateY(0)' : 'translateY(10px)'};
-  transition: opacity 0.32s 0.22s, transform 0.32s 0.22s;
+  transform: ${p => p.$v ? 'translateY(0)' : 'translateY(12px)'};
+  transition: opacity 0.4s 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.4s 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 const Sep = styled.div`
@@ -42,9 +44,9 @@ const Btn = styled.button<{ $active: boolean; $bg: string }>`
   -webkit-appearance: none; appearance: none;
   background: ${p => p.$active ? p.$bg : 'transparent'};
   border: none; cursor: pointer;
-  padding: 12px 22px;
+  padding: 11px 21px;
   display: flex; flex-direction: column; align-items: center; gap: 5px;
-  min-width: 70px;
+  min-width: 66px;
   transition: background 0.2s;
   &:active { opacity: 0.65; }
 `;

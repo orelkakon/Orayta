@@ -34,6 +34,21 @@ const Container = styled.div`
   position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden;
 `;
 
+// Darkened edges pull the eye toward the centered text and give the flat
+// gradients a sense of depth — like reading by lamplight.
+const Vignette = styled.div`
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background: radial-gradient(130% 100% at 50% 45%, transparent 55%, rgba(0,0,0,0.42) 100%);
+`;
+
+// Fine film grain keeps the large dark surfaces from looking like flat vector
+// fills; barely perceptible but removes the "web page" feeling.
+const Grain = styled.div`
+  position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  background-size: 140px 140px;
+`;
+
 function seeded(seed: number, max: number) {
   return ((seed * 1664525 + 1013904223) >>> 0) % max;
 }
@@ -53,14 +68,18 @@ export default function FeedBackground() {
   }, []);
 
   return (
-    <Container>
-      {letters.map((l, i) => (
-        <Letter key={i} $x={l.x} $y={l.y} $size={l.size} $opacity={l.opacity}
-          $dur={l.dur} $delay={l.delay} $drift={l.drift}
-        >
-          {l.char}
-        </Letter>
-      ))}
-    </Container>
+    <>
+      <Container>
+        {letters.map((l, i) => (
+          <Letter key={i} $x={l.x} $y={l.y} $size={l.size} $opacity={l.opacity}
+            $dur={l.dur} $delay={l.delay} $drift={l.drift}
+          >
+            {l.char}
+          </Letter>
+        ))}
+      </Container>
+      <Vignette />
+      <Grain />
+    </>
   );
 }

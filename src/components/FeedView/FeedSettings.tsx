@@ -7,6 +7,8 @@ import type { FeedItemType } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
 import { ALL_FEED_TYPES, FeedPrefs } from '@/lib/feedPrefs';
 import { useRole } from '@/components/common/RoleContext';
+import { FEED_TYPE_STYLES } from './feedTypes';
+import { LineIcon } from '@/components/common/LineIcons';
 
 const Overlay = styled.div<{ $open: boolean }>`
   position: fixed; inset: 0; z-index: 600;
@@ -45,19 +47,20 @@ const Subtitle = styled.div`
 
 const Grid = styled.div`display: grid; grid-template-columns: 1fr 1fr; gap: 10px;`;
 
-const TypeCard = styled.button<{ $on: boolean; $grad: string }>`
+const TypeCard = styled.button<{ $on: boolean; $grad: string; $accent: string }>`
+  -webkit-tap-highlight-color: transparent; appearance: none;
   display: flex; align-items: center; gap: 10px;
   padding: 12px 14px; border-radius: 14px; cursor: pointer;
   background: ${p => p.$on ? p.$grad : 'rgba(255,255,255,0.04)'};
-  border: 1px solid ${p => p.$on ? 'rgba(255,220,80,0.45)' : 'rgba(255,255,255,0.09)'};
+  border: 1px solid ${p => p.$on ? `rgba(${p.$accent},0.5)` : 'rgba(255,255,255,0.09)'};
   opacity: ${p => p.$on ? 1 : 0.55};
   transition: background 0.2s, border-color 0.2s, opacity 0.2s, transform 0.12s;
   &:active { transform: scale(0.96); }
 `;
 
-const TypeIcon = styled.span<{ $on: boolean }>`
-  font-size: 1.35rem; filter: ${p => p.$on ? 'none' : 'grayscale(1)'};
-  transition: filter 0.2s;
+const TypeIcon = styled.span<{ $on: boolean; $accent: string }>`
+  display: flex; color: ${p => p.$on ? `rgb(${p.$accent})` : 'rgba(255,255,255,0.35)'};
+  transition: color 0.2s;
 `;
 
 const TypeLabel = styled.span<{ $on: boolean }>`
@@ -107,16 +110,10 @@ const SaveBtn = styled.button`
   &:active { transform: scale(0.98); }
 `;
 
-interface TypeMeta { type: FeedItemType; icon: string; label: string; grad: string; }
+const TYPE_META = ALL_FEED_TYPES.map((type: FeedItemType) => ({ type, ...FEED_TYPE_STYLES[type] }));
 
-const TYPE_META: TypeMeta[] = [
-  { type: 'citation', icon: '📜', label: HE.FEED_TYPE_CITATION, grad: 'linear-gradient(135deg,#0a1436,#14286e)' },
-  { type: 'rabbi',    icon: '👥', label: HE.FEED_TYPE_RABBI,    grad: 'linear-gradient(135deg,#241000,#57300a)' },
-  { type: 'book',     icon: '📚', label: HE.FEED_TYPE_BOOK,     grad: 'linear-gradient(135deg,#08200f,#12401f)' },
-  { type: 'chidush',  icon: '💡', label: HE.FEED_TYPE_CHIDUSH,  grad: 'linear-gradient(135deg,#201000,#502505)' },
-  { type: 'gematria', icon: '🔢', label: HE.FEED_TYPE_GEMATRIA, grad: 'linear-gradient(135deg,#0c0630,#1e1068)' },
-  { type: 'sikum',    icon: '📝', label: HE.FEED_TYPE_SIKUM,    grad: 'linear-gradient(135deg,#1c0828,#421256)' },
-];
+const REELS_ACCENT = '244,114,182';
+const DEDS_ACCENT  = '226,190,120';
 
 interface Props {
   open: boolean;
@@ -165,8 +162,8 @@ export default function FeedSettings({ open, prefs, onClose, onSave }: Props) {
           {TYPE_META.map(m => {
             const on = sel.has(m.type);
             return (
-              <TypeCard key={m.type} $on={on} $grad={m.grad} onClick={() => toggle(m.type)}>
-                <TypeIcon $on={on}>{m.icon}</TypeIcon>
+              <TypeCard key={m.type} $on={on} $grad={m.chip} $accent={m.accent} onClick={() => toggle(m.type)}>
+                <TypeIcon $on={on} $accent={m.accent}><LineIcon name={m.icon} size={19} strokeWidth={1.8} /></TypeIcon>
                 <TypeLabel $on={on}>{m.label}</TypeLabel>
                 <Check $on={on}>✓</Check>
               </TypeCard>
@@ -175,13 +172,13 @@ export default function FeedSettings({ open, prefs, onClose, onSave }: Props) {
         </Grid>
         <SectionTitle>{HE.FEED_SETTINGS_EXTRAS}</SectionTitle>
         <Grid>
-          <TypeCard $on={reels} $grad="linear-gradient(135deg,#2a0a20,#5c1440)" onClick={() => setReels(v => !v)}>
-            <TypeIcon $on={reels}>🎬</TypeIcon>
+          <TypeCard $on={reels} $grad="linear-gradient(135deg,#2a0a20,#5c1440)" $accent={REELS_ACCENT} onClick={() => setReels(v => !v)}>
+            <TypeIcon $on={reels} $accent={REELS_ACCENT}><LineIcon name="camera" size={19} strokeWidth={1.8} /></TypeIcon>
             <TypeLabel $on={reels}>{HE.FEED_SETTINGS_REELS}</TypeLabel>
             <Check $on={reels}>✓</Check>
           </TypeCard>
-          <TypeCard $on={deds} $grad="linear-gradient(135deg,#221604,#4a3410)" onClick={() => setDeds(v => !v)}>
-            <TypeIcon $on={deds}>🕯️</TypeIcon>
+          <TypeCard $on={deds} $grad="linear-gradient(135deg,#221604,#4a3410)" $accent={DEDS_ACCENT} onClick={() => setDeds(v => !v)}>
+            <TypeIcon $on={deds} $accent={DEDS_ACCENT}><LineIcon name="candle" size={19} strokeWidth={1.8} /></TypeIcon>
             <TypeLabel $on={deds}>{HE.FEED_SETTINGS_DEDICATIONS}</TypeLabel>
             <Check $on={deds}>✓</Check>
           </TypeCard>

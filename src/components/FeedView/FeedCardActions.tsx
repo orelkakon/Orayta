@@ -2,69 +2,48 @@
 
 import React, { useState } from 'react';
 import styled, { keyframes } from 'styled-components';
-import type { FeedItem, FeedReaction } from '@/types';
+import type { FeedItem } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
 import { trackShare } from '@/lib/shareCounter';
 import { shareStory, feedStory } from '@/lib/storyShare';
 import { LineIcon } from '@/components/common/LineIcons';
+import { FEED_GOLD } from './feedTypes';
 
-const btnReset = `
+const COPY_TINT = '120,220,150';
+
+const Rail = styled.div`
+  position: absolute; right: 12px; bottom: 96px; z-index: 6;
+  display: flex; flex-direction: column; gap: 12px; align-items: center;
+`;
+
+const RailBtn = styled.button<{ $active?: boolean; $tint?: string }>`
   -webkit-tap-highlight-color: transparent; outline: none;
   -webkit-appearance: none; appearance: none;
-`;
-
-const Actions = styled.div`
-  position: absolute; right: 14px; bottom: 32px;
-  display: flex; flex-direction: column; gap: 22px; align-items: center;
-`;
-
-const ActionGroup = styled.div`display: flex; flex-direction: column; align-items: center; gap: 3px;`;
-
-const SvgBtn = styled.button`
-  ${btnReset}
-  background: none; border: none; color: white; cursor: pointer; padding: 4px;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
-  transition: transform 0.15s, filter 0.15s;
-  &:active { transform: scale(0.82); }
-`;
-
-const CopyPill = styled.button<{ $copied: boolean }>`
-  ${btnReset}
-  background: ${p => p.$copied ? 'rgba(100,220,130,0.18)' : 'rgba(255,255,255,0.1)'};
-  border: 1px solid ${p => p.$copied ? 'rgba(100,220,130,0.45)' : 'rgba(255,255,255,0.2)'};
-  border-radius: 14px; cursor: pointer;
-  color: ${p => p.$copied ? 'rgba(140,255,160,0.95)' : 'rgba(255,255,255,0.75)'};
-  font-size: 1.05rem; line-height: 1;
-  /* Fixed size so icon swap (📋↔✓) never shifts sibling buttons */
-  width: 42px; height: 42px; flex-shrink: 0;
+  width: 46px; height: 46px; border-radius: 50%; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  transition: background 0.2s, border-color 0.2s, color 0.2s;
-  backdrop-filter: blur(6px);
-  &:active { transform: scale(0.88); }
+  background: ${p => p.$active && p.$tint ? `rgba(${p.$tint}, 0.16)` : 'rgba(12,9,22,0.4)'};
+  border: 1px solid ${p => p.$active && p.$tint ? `rgba(${p.$tint}, 0.55)` : 'rgba(255,255,255,0.14)'};
+  color: ${p => p.$active && p.$tint ? `rgb(${p.$tint})` : 'rgba(255,255,255,0.92)'};
+  backdrop-filter: blur(14px);
+  box-shadow: ${p => p.$active && p.$tint ? `0 0 18px rgba(${p.$tint}, 0.3)` : '0 4px 16px rgba(0,0,0,0.3)'};
+  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s, transform 0.14s;
+  &:active { transform: scale(0.85); }
 `;
 
 const bookmarkPop = keyframes`
   0%   { transform: scale(1); }
-  40%  { transform: scale(1.35); }
+  40%  { transform: scale(1.3); }
   70%  { transform: scale(0.9); }
   100% { transform: scale(1); }
 `;
 
-const BookmarkBtn = styled.button<{ $saved: boolean }>`
-  ${btnReset}
-  background: none; border: none; cursor: pointer; padding: 4px;
-  display: inline-flex; line-height: 1;
-  color: ${p => p.$saved ? '#FFD24D' : 'white'};
-  filter: ${p => p.$saved
-    ? 'drop-shadow(0 0 9px rgba(255,220,80,0.85))'
-    : 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))'};
-  transition: filter 0.2s, color 0.2s;
+const BookmarkRailBtn = styled(RailBtn)`
   &.pop { animation: ${bookmarkPop} 0.3s ease; }
 `;
 
 function ShareIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
       <polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
     </svg>
@@ -73,19 +52,10 @@ function ShareIcon() {
 
 function InstagramIcon() {
   return (
-    <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
       <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
       <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-    </svg>
-  );
-}
-
-function CameraIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-      <circle cx="12" cy="13" r="4"/>
     </svg>
   );
 }
@@ -155,22 +125,30 @@ export default function FeedCardActions({ item, isSaved, slideRef, onBookmark, c
   }
 
   return (
-    <Actions>
-      <SvgBtn title={HE.STORY_SHARE_IG} onClick={e => { e.stopPropagation(); shareStory(feedStory(item)); }}><InstagramIcon /></SvgBtn>
-      <ActionGroup>
-        <BookmarkBtn $saved={isSaved} className={bmkPop ? 'pop' : ''} onClick={handleBookmark}>
-          <LineIcon name="bookmark" size={24} strokeWidth={2.2} filled={isSaved} />
-        </BookmarkBtn>
-      </ActionGroup>
+    <Rail>
+      <BookmarkRailBtn
+        $active={isSaved} $tint={FEED_GOLD}
+        className={bmkPop ? 'pop' : ''}
+        onClick={handleBookmark}
+        aria-label={isSaved ? HE.FEED_BOOKMARK_REMOVE : HE.FEED_BOOKMARK_ADD}
+        title={isSaved ? HE.FEED_BOOKMARK_REMOVE : HE.FEED_BOOKMARK_ADD}
+      >
+        <LineIcon name="bookmark" size={21} strokeWidth={2} filled={isSaved} />
+      </BookmarkRailBtn>
       {copyText && (
-        <ActionGroup>
-          <CopyPill onClick={doCopy} $copied={copied}>
-            <LineIcon name={copied ? 'check' : 'copy'} size={18} strokeWidth={2.2} />
-          </CopyPill>
-        </ActionGroup>
+        <RailBtn $active={copied} $tint={COPY_TINT} onClick={doCopy} aria-label={HE.FEED_COPY} title={HE.FEED_COPY}>
+          <LineIcon name={copied ? 'check' : 'copy'} size={19} strokeWidth={2} />
+        </RailBtn>
       )}
-      <SvgBtn onClick={e => { e.stopPropagation(); doShare(); }}><ShareIcon /></SvgBtn>
-      <SvgBtn onClick={doSave}><CameraIcon /></SvgBtn>
-    </Actions>
+      <RailBtn onClick={e => { e.stopPropagation(); doShare(); }} aria-label={HE.FEED_REEL_SHARE} title={HE.FEED_REEL_SHARE}>
+        <ShareIcon />
+      </RailBtn>
+      <RailBtn onClick={e => { e.stopPropagation(); shareStory(feedStory(item)); }} aria-label={HE.STORY_SHARE_IG} title={HE.STORY_SHARE_IG}>
+        <InstagramIcon />
+      </RailBtn>
+      <RailBtn onClick={doSave} aria-label={HE.FEED_ACTION_IMAGE} title={HE.FEED_ACTION_IMAGE}>
+        <LineIcon name="camera" size={20} strokeWidth={2} />
+      </RailBtn>
+    </Rail>
   );
 }

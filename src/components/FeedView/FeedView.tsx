@@ -2,74 +2,28 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import styled, { keyframes } from 'styled-components';
-import Link from 'next/link';
 import FeedCard from './FeedCard';
 import FeedAmbient from './FeedAmbient';
 import FeedBackground from './FeedBackground';
 import FeedDedication from './FeedDedication';
+import FeedHeader from './FeedHeader';
 import FeedSettings from './FeedSettings';
+import FeedSplash from './FeedSplash';
 import FeedReader, { ReaderData } from './FeedReader';
 import FeedReel from './FeedReel';
 import SavedPanel from './SavedPanel';
-import type { FeedItem, FeedReaction, FeedSlide, Dedication, InstagramReel } from '@/types';
-import { HE } from '@/lib/hebrewTexts';
+import { useFeedEngagement } from './useFeedEngagement';
+import type { FeedItem, FeedSlide, Dedication, InstagramReel } from '@/types';
 import { ALL_FEED_TYPES, FeedPrefs, DEFAULT_FEED_PREFS, getFeedPrefs, saveFeedPrefs, isCustomPrefs } from '@/lib/feedPrefs';
 import { buildFeedSlides, ensureReelGaps } from '@/lib/feedSlides';
+import { bumpStreak } from '@/lib/feedStreak';
 
 const Wrapper = styled.div`position: fixed; inset: 0; background: #050505; z-index: 900; overflow: hidden;`;
-
-const Header = styled.div`
-  position: absolute; top: 0; left: 0; right: 0; height: 60px; z-index: 200;
-  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-  gap: 8px; padding: 0 12px;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
-`;
-
-const BackBtn = styled(Link)`
-  justify-self: start; white-space: nowrap;
-  color: white; font-size: 0.85rem; font-weight: 700;
-  background: rgba(255,255,255,0.12); backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; padding: 7px 14px;
-  transition: background 0.15s;
-  &:hover { background: rgba(255,255,255,0.22); }
-`;
-
-const Title = styled.div`
-  color: white; font-family: var(--font-frank,serif); font-size: 1.05rem; font-weight: 700;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center;
-`;
-
-const HeaderSide = styled.div`justify-self: end; display: flex; align-items: center; gap: 6px;`;
-
-const BookmarkBtn = styled.button<{ $count: number }>`
-  background: ${p => p.$count > 0 ? 'rgba(255,220,80,0.15)' : 'rgba(255,255,255,0.1)'};
-  border: 1px solid ${p => p.$count > 0 ? 'rgba(255,220,80,0.4)' : 'rgba(255,255,255,0.18)'};
-  backdrop-filter: blur(10px); border-radius: 20px; padding: 7px 13px;
-  color: ${p => p.$count > 0 ? 'rgba(255,220,80,0.95)' : 'rgba(255,255,255,0.7)'};
-  font-size: 0.85rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;
-  transition: background 0.2s, border-color 0.2s, color 0.2s;
-`;
-
-const SettingsBtn = styled.button<{ $custom: boolean }>`
-  background: ${p => p.$custom ? 'rgba(160,130,255,0.18)' : 'rgba(255,255,255,0.1)'};
-  border: 1px solid ${p => p.$custom ? 'rgba(160,130,255,0.45)' : 'rgba(255,255,255,0.18)'};
-  backdrop-filter: blur(10px); border-radius: 50%;
-  width: 34px; height: 34px; font-size: 0.95rem; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.2s, border-color 0.2s;
-  &:hover { background: rgba(255,255,255,0.2); }
-`;
 
 const Scroll = styled.div`
   height: 100dvh; overflow-y: scroll; scroll-snap-type: y mandatory;
   -webkit-overflow-scrolling: touch; scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
-`;
-
-const LoadingSlide = styled.div`
-  height: 100dvh; scroll-snap-align: start;
-  display: flex; align-items: center; justify-content: center;
-  color: rgba(255,255,255,0.4); font-size: 0.95rem;
 `;
 
 const spin = keyframes`to { transform: rotate(360deg); }`;
@@ -80,25 +34,12 @@ const Spinner = styled.div`
   animation: ${spin} 0.7s linear infinite; z-index: 300;
 `;
 
-const REACTED_PREFIX = 'orayta_feed_reacted_';
-const SAVED_PREFIX   = 'orayta_feed_saved_';
 const PRELOAD_THRESHOLD = 6;
-
-function loadSavedItems(): FeedItem[] {
-  try {
-    return Object.keys(localStorage)
-      .filter(k => k.startsWith(SAVED_PREFIX))
-      .flatMap(k => { try { return [JSON.parse(localStorage.getItem(k)!) as FeedItem]; } catch { return []; } });
-  } catch { return []; }
-}
 
 export default function FeedView() {
   const [cards, setCards]               = useState<FeedItem[]>([]);
   const [fetching, setFetching]         = useState(false);
   const [initialLoaded, setInitial]     = useState(false);
-  const [reacted, setReacted]           = useState<Record<string, Partial<Record<FeedReaction, true>>>>({});
-  const [savedIds, setSavedIds]         = useState<Set<string>>(new Set());
-  const [savedItems, setSavedItems]     = useState<FeedItem[]>([]);
   const [savedMode, setSavedMode]       = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [reader, setReader]             = useState<ReaderData | null>(null);
@@ -106,6 +47,7 @@ export default function FeedView() {
   const [dedications, setDedications]   = useState<Dedication[]>([]);
   const [reels, setReels]               = useState<InstagramReel[]>([]);
   const [reelsOnScreen, setReelsOnScreen] = useState(0);
+  const [streak, setStreak]             = useState(0);
   const scrollRef   = useRef<HTMLDivElement>(null);
   const fetchingRef = useRef(false);
   const prefsRef    = useRef<FeedPrefs>(DEFAULT_FEED_PREFS);
@@ -116,6 +58,8 @@ export default function FeedView() {
   const pageRef     = useRef(0);
   const slidesLenRef = useRef(0);
   const reelGapsRef = useRef<number[]>([]);
+
+  const { reacted, savedIds, savedItems, handleReact, handleBookmark } = useFeedEngagement(setCards);
 
   const fetchMore = useCallback(async () => {
     if (fetchingRef.current) return;
@@ -139,32 +83,7 @@ export default function FeedView() {
   }, []);
 
   useEffect(() => {
-    // Migrate old liked keys to new reaction keys
-    try {
-      Object.keys(localStorage).filter(k => k.startsWith('orayta_feed_liked_')).forEach(k => {
-        const nk = k.replace('orayta_feed_liked_', `${REACTED_PREFIX}heart_`);
-        localStorage.setItem(nk, '1');
-        localStorage.removeItem(k);
-      });
-    } catch {}
-
-    // Load reactions
-    try {
-      const initial: Record<string, Partial<Record<FeedReaction, true>>> = {};
-      Object.keys(localStorage).filter(k => k.startsWith(REACTED_PREFIX)).forEach(k => {
-        const rest = k.slice(REACTED_PREFIX.length);
-        const [reaction, ...itemParts] = rest.split('_');
-        const itemKey = itemParts.join('_');
-        if (!initial[itemKey]) initial[itemKey] = {};
-        initial[itemKey][reaction as FeedReaction] = true;
-      });
-      setReacted(initial);
-    } catch {}
-
-    // Load saved
-    const saved = loadSavedItems();
-    setSavedItems(saved);
-    setSavedIds(new Set(saved.map(i => `${i.type}:${i.id}`)));
+    setStreak(bumpStreak());
 
     // Load feed preferences before the first fetch
     const loadedPrefs = getFeedPrefs();
@@ -209,83 +128,19 @@ export default function FeedView() {
     void fetchMore();
   }, [fetchMore]);
 
-  const handleReact = useCallback(async (item: FeedItem, reaction: FeedReaction) => {
-    const key = `${item.type}:${item.id}`;
-    const isOn = Boolean(reacted[key]?.[reaction]);
-    if (isOn) {
-      // un-react: remove locally only
-      try { localStorage.removeItem(`${REACTED_PREFIX}${reaction}_${key}`); } catch {}
-      setReacted(prev => {
-        const copy = { ...prev[key] };
-        delete copy[reaction];
-        return { ...prev, [key]: copy };
-      });
-      setCards(prev => prev.map(c => c.type === item.type && c.id === item.id
-        ? { ...c, reactions: { ...c.reactions, [reaction]: Math.max(0, c.reactions[reaction] - 1) } }
-        : c
-      ));
-    } else {
-      try { localStorage.setItem(`${REACTED_PREFIX}${reaction}_${key}`, '1'); } catch {}
-      setReacted(prev => ({ ...prev, [key]: { ...prev[key], [reaction]: true } }));
-      setCards(prev => prev.map(c => c.type === item.type && c.id === item.id
-        ? { ...c, reactions: { ...c.reactions, [reaction]: c.reactions[reaction] + 1 } }
-        : c
-      ));
-      try {
-        await fetch('/api/feed/like', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: item.type, id: item.id, reaction }) });
-      } catch {}
-    }
-  }, [reacted]);
-
-  const handleBookmark = useCallback((item: FeedItem) => {
-    const key = `${item.type}:${item.id}`;
-    setSavedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-        try { localStorage.removeItem(`${SAVED_PREFIX}${key}`); } catch {}
-        setSavedItems(prev2 => prev2.filter(i => `${i.type}:${i.id}` !== key));
-      } else {
-        next.add(key);
-        try { localStorage.setItem(`${SAVED_PREFIX}${key}`, JSON.stringify(item)); } catch {}
-        setSavedItems(prev2 => [...prev2, item]);
-        void fetch('/api/feed/save', { method: 'POST' }).catch(() => {});
-      }
-      return next;
-    });
-  }, []);
-
   const handleReelVisible = useCallback((visible: boolean) => {
     setReelsOnScreen(c => Math.max(0, c + (visible ? 1 : -1)));
   }, []);
 
-  if (!initialLoaded) {
-    return (
-      <Wrapper>
-        <Header><BackBtn href="/">{HE.FEED_BACK}</BackBtn><Title>{HE.FEED_TITLE}</Title></Header>
-        <LoadingSlide>{HE.FEED_LOADING}</LoadingSlide>
-      </Wrapper>
-    );
-  }
-
   return (
     <Wrapper>
-      <Header>
-        <BackBtn href="/">{HE.FEED_BACK}</BackBtn>
-        <Title>{HE.FEED_TITLE}</Title>
-        <HeaderSide>
-          <SettingsBtn
-            $custom={isCustomPrefs(prefs)}
-            onClick={() => setSettingsOpen(true)}
-            aria-label={HE.FEED_SETTINGS_OPEN}
-          >
-            ⚙️
-          </SettingsBtn>
-          <BookmarkBtn $count={savedItems.length} onClick={() => setSavedMode(true)}>
-            🔖{savedItems.length > 0 && ` ${savedItems.length}`}
-          </BookmarkBtn>
-        </HeaderSide>
-      </Header>
+      <FeedHeader
+        streak={streak}
+        savedCount={savedItems.length}
+        custom={isCustomPrefs(prefs)}
+        onSettings={() => setSettingsOpen(true)}
+        onSaved={() => setSavedMode(true)}
+      />
       {fetching && <Spinner />}
       <FeedBackground />
       <FeedAmbient suppressed={reelsOnScreen > 0} />
@@ -326,6 +181,7 @@ export default function FeedView() {
         onClose={() => setSettingsOpen(false)}
         onSave={handleSaveSettings}
       />
+      <FeedSplash ready={initialLoaded} streak={streak} />
     </Wrapper>
   );
 }

@@ -4,44 +4,56 @@ import Link from 'next/link';
 import type { FeedItem, Citation, Rabbi, Book, Chidush, FeedGematriaData, FeedSikumData, RabbiCategory } from '@/types';
 import { CATEGORY_LABELS } from '@/lib/rabbisData';
 import ClampText from './FeedClampText';
+import { FEED_TYPE_STYLES, FEED_GOLD } from './feedTypes';
 import { LineIcon } from '@/components/common/LineIcons';
 
 export const BigWord = styled.div`
-  color: white; font-family: var(--font-frank,serif);
-  font-size: clamp(1.7rem,5.5vw,2.6rem); font-weight: 800;
+  color: #FFFDF6; font-family: var(--font-frank, serif);
+  font-size: clamp(1.7rem, 5.5vw, 2.6rem); font-weight: 800;
+  text-shadow: 0 2px 30px rgba(0,0,0,0.45);
 `;
 
 const BigNum = styled.div`
-  color: rgba(255,255,255,0.88); font-family: var(--font-frank,serif);
-  font-size: clamp(3rem,11vw,4.5rem); font-weight: 900; line-height: 1;
+  font-family: var(--font-frank, serif);
+  font-size: clamp(3rem, 11vw, 4.5rem); font-weight: 900; line-height: 1;
+  background: linear-gradient(180deg, #FFFFFF 10%, rgba(${FEED_TYPE_STYLES.gematria.accent}, 0.8) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
 `;
 
-const SubText = styled.div`color: rgba(255,255,255,0.62); font-size: 0.88rem; line-height: 1.5;`;
+const QuoteMark = styled.div`
+  color: rgba(${FEED_GOLD}, 0.5); font-family: var(--font-frank, serif);
+  font-size: 2.7rem; font-weight: 800; line-height: 0.5; margin-bottom: -2px;
+  text-shadow: 0 0 26px rgba(${FEED_GOLD}, 0.35);
+`;
+
+const SubText = styled.div`color: rgba(255,248,235,0.6); font-size: 0.9rem; line-height: 1.6;`;
 
 const YahrzeitTag = styled.div`
-  color: rgba(255,230,180,0.8); font-size: 0.78rem;
-  background: rgba(255,200,100,0.1); border-radius: 10px; padding: 3px 10px;
+  color: rgba(255,230,180,0.85); font-size: 0.78rem;
+  background: rgba(255,200,100,0.1); border: 1px solid rgba(255,200,100,0.22);
+  border-radius: 999px; padding: 4px 12px;
   display: inline-flex; align-items: center; gap: 5px;
 `;
 
 export const RabbiImg = styled.img`
-  width: 82px; height: 82px; border-radius: 50%; object-fit: cover;
-  border: 2px solid rgba(255,255,255,0.22); margin-bottom: 4px; cursor: pointer;
+  width: 94px; height: 94px; border-radius: 50%; object-fit: cover;
+  border: 2px solid rgba(${FEED_GOLD}, 0.55); margin-bottom: 4px; cursor: pointer;
+  box-shadow: 0 0 0 5px rgba(${FEED_GOLD}, 0.1), 0 10px 34px rgba(0,0,0,0.45);
   transition: transform 0.15s;
   &:active { transform: scale(0.93); }
 `;
 
 const chipBase = `
-  background: rgba(255,255,255,0.1); backdrop-filter: blur(6px);
-  border: 1px solid rgba(255,255,255,0.18); border-radius: 14px;
-  color: rgba(255,255,255,0.8); font-size: 0.76rem; padding: 4px 11px; white-space: nowrap;
+  background: rgba(255,255,255,0.07); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.14); border-radius: 999px;
+  color: rgba(255,252,242,0.82); font-size: 0.78rem; padding: 5px 13px; white-space: nowrap;
 `;
 
 export const MetaChip = styled.div`${chipBase}`;
 export const MetaChipLink = styled(Link)`
-  ${chipBase} border-color: rgba(255,255,255,0.35); color: rgba(255,255,255,0.95);
+  ${chipBase} border-color: rgba(${FEED_GOLD}, 0.38); color: rgba(255,250,238,0.95);
   transition: background 0.15s, border-color 0.15s;
-  &:hover { background: rgba(255,255,255,0.2); }
+  &:hover { background: rgba(${FEED_GOLD}, 0.12); }
   &::after { content: ' ↗'; font-size: 0.68rem; opacity: 0.7; }
 `;
 
@@ -57,7 +69,10 @@ export function renderContent(
     const d = item.data as Citation;
     const meta: MetaItem[] = d.locations.map(l => ({ label: `${l.masechet} · דף ${l.daf}${l.amud ? ` ${l.amud}` : ''}`, href: `/study?masechet=${encodeURIComponent(l.masechet)}` }));
     return {
-      body: <ClampText text={d.content} onExpand={() => onExpand({ title: meta[0]?.label, text: d.content, href: meta[0]?.href })} />,
+      body: <>
+        <QuoteMark aria-hidden>״</QuoteMark>
+        <ClampText text={d.content} onExpand={() => onExpand({ title: meta[0]?.label, text: d.content, href: meta[0]?.href })} />
+      </>,
       meta, copyText: d.content,
     };
   }

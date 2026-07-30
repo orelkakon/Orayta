@@ -5,10 +5,20 @@ import type { FeedDedicationSlide } from '@/types';
 
 const DedSlide = styled.div`
   height: 100dvh; scroll-snap-align: start; flex-shrink: 0;
-  background: linear-gradient(160deg, #080610 0%, #10081a 50%, #080610 100%);
+  background: linear-gradient(168deg, #0A0710 0%, #140B1E 50%, #0A0710 100%);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 14px; padding: 40px 32px; text-align: center;
   border-top: 1px solid rgba(200,170,100,0.08);
+`;
+
+const Orn = styled.div`
+  display: flex; align-items: center; gap: 10px;
+  color: rgba(226,190,120,0.55); font-size: 0.5rem; line-height: 1;
+  &::before, &::after {
+    content: ''; width: 40px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(226,190,120,0.45));
+  }
+  &::after { background: linear-gradient(270deg, transparent, rgba(226,190,120,0.45)); }
 `;
 
 const flicker = keyframes`
@@ -86,10 +96,11 @@ const Ring2 = styled.div`
   box-shadow: 0 0 12px rgba(255,215,0,0.28);
 `;
 
-const DedType = styled.div`color: rgba(200,170,100,0.65); font-size: 0.85rem; letter-spacing: 0.06em;`;
+const DedType = styled.div`color: rgba(226,190,120,0.75); font-size: 0.85rem; letter-spacing: 0.14em; font-weight: 700;`;
 const DedName = styled.div`
-  color: rgba(255,255,255,0.92); font-family: var(--font-frank,serif);
-  font-size: 1.6rem; font-weight: 700; line-height: 1.4;
+  color: #FFFDF6; font-family: var(--font-frank,serif);
+  font-size: 1.7rem; font-weight: 700; line-height: 1.4;
+  text-shadow: 0 2px 30px rgba(0,0,0,0.45);
 `;
 
 const DED_LABELS: Record<string, string> = {
@@ -117,6 +128,7 @@ export default function FeedDedication({ slide }: { slide: FeedDedicationSlide }
       )}
       <DedType>{DED_LABELS[slide.dedType] ?? slide.dedType}</DedType>
       <DedName>{slide.name}</DedName>
+      <Orn>✦</Orn>
     </DedSlide>
   );
 }
