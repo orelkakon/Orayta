@@ -485,10 +485,10 @@ export const HE = {
   CLOSE: 'סגור',
 
   FEED_TITLE: 'רגע של תורה',
-  FEED_SUBTITLE: 'ציטוטים, רבנים, גימטריות וחידושים בפיד מרתק — מתחילים לגלול ומתחברים ללימוד',
+  FEED_SUBTITLE: 'הפיד שישאיר אתכם טובים יותר מכל גלילה אחרת.',
   FEED_NEW_BADGE: 'חדש',
   FEED_BANNER_TAGLINE: 'דקה אחת. גלילה אחת. עולם שלם.',
-  FEED_BANNER_CTA: 'התחילו לגלול',
+  FEED_BANNER_CTA: 'גלו רגע חדש',
   FEED_BACK: '← חזרה',
   FEED_LOADING: 'טוען...',
   FEED_LOADING_MORE: 'טוען עוד...',
