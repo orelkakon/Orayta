@@ -6,6 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { SikumBook, SikumEntry } from '@/types';
 import { getJson, isAbort } from '@/lib/apiClient';
+import { deleteWithPasscode } from '@/lib/sikumDelete';
 import { useRole } from '@/components/common/RoleContext';
 import SikumEntryCard from './SikumEntryCard';
 import SikumEntryForm from './SikumEntryForm';
@@ -73,7 +74,7 @@ export default function SikumEntriesView({ book, onBack }: Props) {
   const [entries, setEntries] = useState<SikumEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [deleteError, setDeleteError] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [search, setSearch] = useState('');
@@ -111,11 +112,13 @@ export default function SikumEntriesView({ book, onBack }: Props) {
 
   const handleDelete = async (entry: SikumEntry) => {
     if (!window.confirm(HE.SIKUMIM_ENTRY_DELETE_CONFIRM)) return;
-    setDeleteError(false);
-    const res = await fetch(`/api/sikum-entries/${entry.id}`, { method: 'DELETE' });
+    setDeleteError(null);
+    const result = await deleteWithPasscode(`/api/sikum-entries/${entry.id}`);
+    if (result === 'cancelled') return;
     setViewEntry(null);
-    if (res.ok) load();
-    else setDeleteError(true);
+    if (result === 'ok') load();
+    else if (result === 'wrong-pass') setDeleteError(HE.SIKUMIM_DELETE_PASSWORD_WRONG);
+    else setDeleteError(HE.DELETE_ERROR);
   };
 
   return (
@@ -175,7 +178,7 @@ export default function SikumEntriesView({ book, onBack }: Props) {
         </ControlRow>
       </StickyBar>
 
-      {deleteError && <InlineError role="alert">{HE.DELETE_ERROR}</InlineError>}
+      {deleteError && <InlineError role="alert">{deleteError}</InlineError>}
       {loading || loadError || sorted.length === 0
         ? <ListState
             loading={loading} error={loadError} onRetry={() => load()}

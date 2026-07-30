@@ -99,9 +99,9 @@ const CardIcon = styled.span`
 `;
 const CardLabel = styled.span`
   font-family: ${theme.fonts.body};
-  font-size: 1.18rem; font-weight: 800; color: ${theme.colors.primary};
+  font-size: 1.3rem; font-weight: 800; color: ${theme.colors.primary};
   line-height: 1.25;
-  @media (max-width: 480px) { font-size: 1.02rem; }
+  @media (max-width: 480px) { font-size: 1.1rem; }
 `;
 /* Kept visible at every width: the description is the only thing that
    distinguishes the similarly-named sections at a glance. */
@@ -131,7 +131,7 @@ export default function HomeView() {
       <Grid>
         {HE.HOME_SECTIONS.map(s => (
           <SectionCard key={s.href} href={s.href}>
-            <CardIcon><SectionIcon href={s.href} /></CardIcon>
+            <CardIcon><SectionIcon href={s.href} size={26} /></CardIcon>
             <CardLabel>{s.label}</CardLabel>
             <CardDesc>{s.desc}</CardDesc>
           </SectionCard>

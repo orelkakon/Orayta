@@ -28,3 +28,15 @@ export function isValidAuthToken(value: string | undefined): boolean {
 export function isAdmin(req: NextRequest): boolean {
   return isValidAuthToken(req.cookies.get('auth')?.value);
 }
+
+// Destructive actions (e.g. deleting a sikum book) re-confirm the admin
+// passcode itself, sent per-request in the x-admin-pass header — a stolen
+// auth cookie alone is not enough. Same dev fallback as the login route.
+export function verifyPasscode(value: string | null): boolean {
+  const adminCode = process.env.PASSCODE
+    ?? (process.env.NODE_ENV === 'production' ? null : '1998');
+  if (!adminCode || !value) return false;
+  const a = Buffer.from(value);
+  const b = Buffer.from(adminCode);
+  return a.length === b.length && timingSafeEqual(a, b);
+}

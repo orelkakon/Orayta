@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { navItems } from './navItems';
+import { LineIcon } from '@/components/common/LineIcons';
 
 const Backdrop = styled.div<{ $open: boolean }>`
   display: none;
@@ -67,7 +68,7 @@ const DrawerLink = styled(Link)<{ $active?: boolean }>`
   font-size: 0.95rem;
   font-weight: 500;
   color: ${theme.colors.onPrimary};
-  display: block;
+  display: flex; align-items: center; gap: 8px;
   background: ${({ $active }) => ($active ? 'rgba(255,255,255,0.25)' : 'transparent')};
   transition: background 0.15s;
   &:hover { background: rgba(255,255,255,0.15); }
@@ -100,7 +101,7 @@ interface Props {
   isAdmin: boolean;
 }
 
-const HOME_LINK = { href: '/', label: HE.NAV_HOME, icon: '🏠' };
+const HOME_LINK = { href: '/', label: HE.NAV_HOME, icon: 'home' };
 
 export default function NavDrawer({ open, onClose, pathname, onLogout, isAdmin }: Props) {
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -173,7 +174,7 @@ export default function NavDrawer({ open, onClose, pathname, onLogout, isAdmin }
             tabIndex={open ? undefined : -1}
             onClick={onClose}
           >
-            {l.icon} {l.label}
+            <LineIcon name={l.icon} size={17} /> {l.label}
           </DrawerLink>
         ))}
         {isAdmin && (
@@ -184,7 +185,7 @@ export default function NavDrawer({ open, onClose, pathname, onLogout, isAdmin }
             tabIndex={open ? undefined : -1}
             onClick={onClose}
           >
-            📊 {HE.NAV_ADMIN_STATS}
+            <LineIcon name="chart" size={17} /> {HE.NAV_ADMIN_STATS}
           </DrawerLink>
         )}
         <Divider />
@@ -198,7 +199,7 @@ export default function NavDrawer({ open, onClose, pathname, onLogout, isAdmin }
               tabIndex={open ? undefined : -1}
               onClick={onClose}
             >
-              🔑 {HE.NAV_ADMIN_LOGIN}
+              <LineIcon name="key" size={17} /> {HE.NAV_ADMIN_LOGIN}
             </DrawerLink>
           )
         }

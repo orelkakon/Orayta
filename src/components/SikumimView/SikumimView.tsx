@@ -6,6 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { SikumBook } from '@/types';
 import { getJson, isAbort } from '@/lib/apiClient';
+import { deleteWithPasscode } from '@/lib/sikumDelete';
 import { useRole } from '@/components/common/RoleContext';
 import SearchField from '@/components/common/SearchField';
 import ListState, { InlineError } from '@/components/common/ListState';
@@ -76,7 +77,7 @@ export default function SikumimView({ initialSearch = '' }: { initialSearch?: st
   const [books, setBooks] = useState<SikumBook[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [deleteError, setDeleteError] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [search, setSearch] = useState(initialSearch);
   const [bookSort, setBookSort] = useState<BookSort>('default');
   const [addOpen, setAddOpen] = useState(false);
@@ -120,10 +121,11 @@ export default function SikumimView({ initialSearch = '' }: { initialSearch?: st
 
   const handleDelete = async (book: SikumBook) => {
     if (!window.confirm(HE.SIKUMIM_BOOK_DELETE_CONFIRM)) return;
-    setDeleteError(false);
-    const res = await fetch(`/api/sikum-books/${book.id}`, { method: 'DELETE' });
-    if (res.ok) load();
-    else setDeleteError(true);
+    setDeleteError(null);
+    const result = await deleteWithPasscode(`/api/sikum-books/${book.id}`);
+    if (result === 'ok') load();
+    else if (result === 'wrong-pass') setDeleteError(HE.SIKUMIM_DELETE_PASSWORD_WRONG);
+    else if (result === 'error') setDeleteError(HE.DELETE_ERROR);
   };
 
   if (selectedBook) {
@@ -168,7 +170,7 @@ export default function SikumimView({ initialSearch = '' }: { initialSearch?: st
       </StickyBar>
 
       <Grid>
-        {deleteError && <InlineError role="alert">{HE.DELETE_ERROR}</InlineError>}
+        {deleteError && <InlineError role="alert">{deleteError}</InlineError>}
         {loading || loadError || filtered.length === 0
           ? (
             <ListState

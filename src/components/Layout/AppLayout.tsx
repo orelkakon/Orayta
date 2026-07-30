@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import OraytaLogo from '@/components/common/OraytaLogo';
+import { LineIcon } from '@/components/common/LineIcons';
 import { useDarkMode } from '@/components/common/ThemeContext';
 import { useRole } from '@/components/common/RoleContext';
 import NavDrawer from './NavDrawer';
@@ -195,7 +196,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
                 $active={active}
                 aria-current={active ? 'page' : undefined}
               >
-                {item.icon} {item.label}
+                <LineIcon name={item.icon} size={15} /> {item.label}
               </NavLink>
             );
           })}
@@ -205,18 +206,18 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
               $active={isActive('/admin')}
               aria-current={isActive('/admin') ? 'page' : undefined}
             >
-              📊 {HE.NAV_ADMIN_STATS}
+              <LineIcon name="chart" size={15} /> {HE.NAV_ADMIN_STATS}
             </NavLink>
           )}
           {role === 'admin'
-            ? <LogoutButton onClick={handleLogout}>🚪 {HE.NAV_LOGOUT}</LogoutButton>
+            ? <LogoutButton onClick={handleLogout}><LineIcon name="logout" size={15} /> {HE.NAV_LOGOUT}</LogoutButton>
             : (
               <NavLink
                 href="/login"
                 $active={isActive('/login')}
                 aria-current={isActive('/login') ? 'page' : undefined}
               >
-                🔑 {HE.NAV_ADMIN_LOGIN}
+                <LineIcon name="key" size={15} /> {HE.NAV_ADMIN_LOGIN}
               </NavLink>
             )
           }

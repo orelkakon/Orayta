@@ -12,10 +12,35 @@ const SITE_URL = 'https://orayta-eight.vercel.app';
  * Fallback (desktop / no file-share support): the PNG is downloaded so the
  * user can upload it manually.
  */
+/**
+ * Instagram can't receive a clickable link with a shared image, so the site
+ * URL is pre-copied for pasting inside Instagram. Must run synchronously in
+ * the click gesture — mobile browsers reject clipboard writes after an await.
+ */
+function copySiteUrl(): void {
+  try {
+    if (navigator.clipboard?.writeText) {
+      void navigator.clipboard.writeText(SITE_URL).catch(() => copySiteUrlLegacy());
+    } else {
+      copySiteUrlLegacy();
+    }
+  } catch { /* non-blocking */ }
+}
+
+function copySiteUrlLegacy(): void {
+  const ta = document.createElement('textarea');
+  ta.value = SITE_URL;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try { document.execCommand('copy'); } catch { /* non-blocking */ }
+  ta.remove();
+}
+
 export async function shareStory(content: StoryContent): Promise<void> {
-  // Instagram can't receive a clickable link with a shared image — the user
-  // adds it via the Link sticker. Pre-copy the URL so it's one paste away.
-  try { await navigator.clipboard?.writeText(SITE_URL); } catch { /* non-blocking */ }
+  copySiteUrl();
   const blob = await renderStoryImage(content);
   const file = new File([blob], 'orayta-story.png', { type: 'image/png' });
 

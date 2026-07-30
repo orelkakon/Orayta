@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAdmin } from '@/lib/auth';
+import { isAdmin, verifyPasscode } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
@@ -16,6 +16,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   if (!isAdmin(req)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (!verifyPasscode(req.headers.get('x-admin-pass'))) {
+    return NextResponse.json({ error: 'invalid passcode' }, { status: 401 });
+  }
   await prisma.sikumBook.delete({ where: { id: params.id } });
   return NextResponse.json({ ok: true });
 }
