@@ -51,12 +51,12 @@ const Sub = styled.p`
 const Board = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 96px;
+  grid-auto-rows: 132px;
   grid-auto-flow: dense;
   gap: ${theme.spacing.ms};
   ${theme.media.sm} {
     grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: 92px;
+    grid-auto-rows: 128px;
   }
 `;
 

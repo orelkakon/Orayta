@@ -72,9 +72,10 @@ const Tile = styled.article<{ $tint: string; $size: TileSize; $variant: TileVari
 
 const Chip = styled.span<{ $hero: boolean }>`
   position: relative; z-index: 1;
-  width: ${p => p.$hero ? '50px' : '42px'};
-  height: ${p => p.$hero ? '50px' : '42px'};
-  border-radius: ${p => p.$hero ? '16px' : '14px'};
+  flex-shrink: 0;
+  width: ${p => p.$hero ? '60px' : '50px'};
+  height: ${p => p.$hero ? '60px' : '50px'};
+  border-radius: ${p => p.$hero ? '19px' : '16px'};
   display: inline-flex; align-items: center; justify-content: center;
   ${p => p.$hero ? css`
     color: var(--tile-ink);
@@ -94,6 +95,7 @@ const Chip = styled.span<{ $hero: boolean }>`
 const Body = styled.div`
   position: relative; z-index: 1;
   display: flex; flex-direction: column; gap: 3px;
+  margin-top: ${theme.spacing.sm};
 `;
 
 const Num = styled.div<{ $size: TileSize }>`
@@ -121,7 +123,7 @@ export default function StatTile({ config, value, index }: Props) {
   return (
     <Tile $tint={config.tint} $size={config.size} $variant={config.variant} $index={index}>
       <Chip $hero={config.size === 'hero'} aria-hidden="true">
-        <LineIcon name={config.icon} size={config.size === 'hero' ? 25 : 20} strokeWidth={1.7} />
+        <LineIcon name={config.icon} size={config.size === 'hero' ? 32 : 26} strokeWidth={1.7} />
       </Chip>
       <Body>
         <Num $size={config.size}>{value === null ? '…' : displayed.toLocaleString('he-IL')}</Num>
