@@ -143,30 +143,34 @@ export default function FeedAmbient({ suppressed = false }: { suppressed?: boole
     return () => window.removeEventListener('message', handleMessage);
   }, [advanceSong]);
 
-  // Ambient music is opt-in and remembered. It used to unmute on the first tap
-  // anywhere — including the tap that starts a scroll — which meant audio began
-  // without consent. Only a returning listener who previously turned it on gets
-  // it resumed, and even then only after a real gesture (browser autoplay rules).
+  // Music is on by default: try to start the moment the feed opens (the nav tap
+  // that brought the user here usually still counts as a browser gesture), and
+  // fall back to the first touch/click — which includes the tap that starts a
+  // scroll — if the unmute was blocked. Only an explicit off is remembered.
   useEffect(() => {
-    let prefersOn = false;
-    try { prefersOn = localStorage.getItem(AMBIENT_KEY) === 'on'; } catch {}
-    if (!prefersOn) return;
+    let pref: string | null = null;
+    try { pref = localStorage.getItem(AMBIENT_KEY); } catch {}
+    if (pref === 'off') return;
+
+    setOn(true);
+    showPill();
+    const tryStart = () => {
+      if (iframeRef.current && onRef.current && !suppressedRef.current) {
+        ytCmd(iframeRef.current, 'playVideo');
+        ytCmd(iframeRef.current, 'unMute');
+      }
+    };
+    const timers = [300, 1000, 2000].map(d => setTimeout(tryStart, d));
 
     function unlock() {
       if (unlockedRef.current) return;
       unlockedRef.current = true;
-      [300, 1000].forEach(d => setTimeout(() => {
-        if (iframeRef.current && !suppressedRef.current) {
-          ytCmd(iframeRef.current, 'playVideo');
-          ytCmd(iframeRef.current, 'unMute');
-        }
-      }, d));
-      setOn(true);
-      showPill();
+      [0, 300, 1000].forEach(d => setTimeout(tryStart, d));
     }
     document.addEventListener('touchstart', unlock, { passive: true, once: true });
     document.addEventListener('pointerdown', unlock, { once: true });
     return () => {
+      timers.forEach(clearTimeout);
       document.removeEventListener('touchstart', unlock);
       document.removeEventListener('pointerdown', unlock);
     };
