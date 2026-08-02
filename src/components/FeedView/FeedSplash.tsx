@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import Link from 'next/link';
 import { HE } from '@/lib/hebrewTexts';
+import { formatHebrewDate } from '@/lib/hebrewDate';
 import { FEED_GOLD } from './feedTypes';
 
 const Overlay = styled.div<{ $leaving: boolean }>`
@@ -78,15 +79,6 @@ function greeting(): string {
   return HE.FEED_GREETING_NIGHT;
 }
 
-function hebrewDate(): string {
-  try {
-    return new Intl.DateTimeFormat('he-IL-u-ca-hebrew', { day: 'numeric', month: 'long' })
-      .format(new Date());
-  } catch {
-    return '';
-  }
-}
-
 interface Props {
   ready: boolean;
   streak: number;
@@ -105,7 +97,7 @@ export default function FeedSplash({ ready, streak, firstVisit, sealed }: Props)
   const [heb, setHeb] = useState('');
 
   // Client-only: the Hebrew calendar date is a hydration hazard on SSR.
-  useEffect(() => { setHeb(hebrewDate()); }, []);
+  useEffect(() => { setHeb(formatHebrewDate(new Date())); }, []);
 
   useEffect(() => {
     // First-ever visitors get an extra beat to read what this place is.

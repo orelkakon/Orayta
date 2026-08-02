@@ -8,12 +8,13 @@ import { Rabbi, Citation, Chidush } from '@/types';
 import { CATEGORY_LABELS, CATEGORY_COLORS } from '@/lib/rabbisData';
 import type { RabbiCategory } from '@/types';
 import { matchYahrzeitRabbis, HebDateParts } from '@/lib/yahrzeit';
+import { formatHebrewDate } from '@/lib/hebrewDate';
 import { shareDailyToWhatsApp, shareDailyToStory, DailySikum } from '@/lib/dailyShare';
 
 const DAY = Math.floor(Date.now() / 86400000);
 const pick = <T,>(arr: T[]): T | null => arr.length ? arr[DAY % arr.length] : null;
 
-interface HebConverterResp extends HebDateParts { hebrew: string; }
+type HebConverterResp = HebDateParts;
 
 const Wrapper = styled.div`width: 100%; display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
 
@@ -116,8 +117,8 @@ export default function DailySection() {
       setCitation(pick(cs));
       setSikum(sk);
       setChidush(pick(chs));
+      setHebrewDate(formatHebrewDate(today, true));
       if (hd) {
-        setHebrewDate(hd.hebrew ?? '');
         setYahrzeitNames(matchYahrzeitRabbis(rs, hd).map(r => r.name));
       }
       setReady(true);

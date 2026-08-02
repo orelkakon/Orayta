@@ -7,6 +7,7 @@ import { haptics } from '@/lib/haptics';
 import { markSealed } from '@/lib/feedDaily';
 import { shareTextSmart, SITE_URL, RLM } from '@/lib/siteUrl';
 import { shareStory, sealStory } from '@/lib/storyShare';
+import { formatHebrewDate } from '@/lib/hebrewDate';
 
 const GOLD = '217,181,108';
 
@@ -165,16 +166,6 @@ function sealLine(): string {
   return HE.FEED_SEAL_LINES[dayOfYear % HE.FEED_SEAL_LINES.length];
 }
 
-function hebrewDate(): string {
-  try {
-    return new Intl.DateTimeFormat('he-IL-u-ca-hebrew', {
-      day: 'numeric', month: 'long', year: 'numeric',
-    }).format(new Date());
-  } catch {
-    return '';
-  }
-}
-
 interface Props {
   days: number;
   best: number;
@@ -202,7 +193,7 @@ export default function FeedSeal({ days, best, viewed }: Props) {
   }, []);
 
   const milestone = MILESTONES[days];
-  const heb = hebrewDate();
+  const heb = formatHebrewDate(new Date(), true);
 
   const share = () => {
     void shareTextSmart(`${RLM}${HE.FEED_SEAL_SHARE_TEXT(days)}\n${SITE_URL}`, HE.FEED_TITLE);

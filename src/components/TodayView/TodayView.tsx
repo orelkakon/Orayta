@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
+import { formatHebrewDate } from '@/lib/hebrewDate';
 import ZmanimCard from './ZmanimCard';
 import CompassCard from './CompassCard';
 import DafYomiCard from './DafYomiCard';
@@ -46,7 +47,6 @@ const Grid = styled.div`
 
 const Col = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
 
-interface HebDate { hebrew: string; }
 interface ShabbatItem { title: string; category: string; }
 interface ShabbatResp { items?: ShabbatItem[]; }
 
@@ -64,14 +64,13 @@ export default function TodayView() {
   useEffect(() => {
     const d = new Date(dateStr + 'T12:00:00');
     const y = d.getFullYear(), mo = d.getMonth() + 1, dd = d.getDate();
-    void Promise.all([
-      fetch(`https://www.hebcal.com/converter?cfg=json&date=${dateStr}&g2h=1&strict=1`).then(r => r.json() as Promise<HebDate>),
-      fetch(`https://www.hebcal.com/shabbat?cfg=json&gy=${y}&gm=${mo}&gd=${dd}&m=50&lg=he&i=on`).then(r => r.json() as Promise<ShabbatResp>),
-    ]).then(([hd, sh]) => {
-      setHebrewDate(hd.hebrew);
-      const p = sh.items?.find(i => i.category === 'parashat');
-      if (p) setParasha(p.title);
-    }).catch(() => {});
+    setHebrewDate(formatHebrewDate(d, true));
+    void fetch(`https://www.hebcal.com/shabbat?cfg=json&gy=${y}&gm=${mo}&gd=${dd}&m=50&lg=he&i=on`)
+      .then(r => r.json() as Promise<ShabbatResp>)
+      .then(sh => {
+        const p = sh.items?.find(i => i.category === 'parashat');
+        if (p) setParasha(p.title);
+      }).catch(() => {});
   }, [dateStr]);
 
   const dayIdx = today.getDay();
