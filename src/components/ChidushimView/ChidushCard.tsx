@@ -7,6 +7,7 @@ import { Chidush } from '@/types';
 import SpeakButton from '@/components/common/SpeakButton';
 import { trackShare } from '@/lib/shareCounter';
 import { shareStory, chidushStory } from '@/lib/storyShare';
+import { SITE_URL, RLM, shareTextSmart } from '@/lib/siteUrl';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(10px); }
@@ -66,7 +67,7 @@ const UnknownSource = styled.span`
   color: ${theme.colors.textLight};
 `;
 
-const ShareBtn = styled.a`
+const ShareBtn = styled.button`
   display: inline-flex; align-items: center; gap: 4px;
   font-size: 0.75rem; font-weight: 600;
   padding: 2px ${theme.spacing.sm};
@@ -115,7 +116,7 @@ interface Props {
   onDelete?: () => void;
 }
 
-function buildWaUrl(chidush: Chidush): string {
+function buildShareText(chidush: Chidush): string {
   const lines: string[] = [];
   if (chidush.author) lines.push(`👤 *${chidush.author}*`);
   if (chidush.source) lines.push(`📖 ${chidush.source}`);
@@ -123,7 +124,7 @@ function buildWaUrl(chidush: Chidush): string {
   lines.push(chidush.text);
   lines.push('');
   lines.push('_שיתוף מאורייתא 📖_');
-  return `https://api.whatsapp.com/send?text=${encodeURIComponent(lines.join('\n'))}`;
+  return `${RLM}${lines.join('\n')}\n${SITE_URL}`;
 }
 
 export default function ChidushCard({ chidush, index, onEdit, onDelete }: Props) {
@@ -139,7 +140,7 @@ export default function ChidushCard({ chidush, index, onEdit, onDelete }: Props)
         {hasAuthor && <Chip>👤 {chidush.author}</Chip>}
         {hasSource && <Chip>📖 {chidush.source}</Chip>}
         {!hasMeta && <UnknownSource>{HE.CHIDUSH_UNKNOWN_SOURCE}</UnknownSource>}
-        <ShareBtn href={buildWaUrl(chidush)} target="_blank" rel="noopener noreferrer" onClick={() => trackShare()}>
+        <ShareBtn onClick={() => { trackShare(); void shareTextSmart(buildShareText(chidush)); }}>
           💬 {HE.CHIDUSH_SHARE_WA}
         </ShareBtn>
         <StoryBtn onClick={() => shareStory(chidushStory(chidush))}>

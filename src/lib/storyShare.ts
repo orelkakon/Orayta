@@ -2,8 +2,7 @@ import type { Chidush, SikumEntry, FeedItem, Citation, Rabbi, Book, FeedGematria
 import { HE } from './hebrewTexts';
 import { trackShare } from './shareCounter';
 import { renderStoryImage, StoryContent } from './storyImage';
-
-const SITE_URL = 'https://orayta-eight.vercel.app';
+import { SITE_URL } from './siteUrl';
 
 /**
  * Generates the story image and opens the NATIVE share sheet with the file

@@ -17,7 +17,11 @@ export function ensureReelGaps(gaps: number[], cardCount: number): void {
   }
 }
 
-/** Interleave dedication slides (every 8 cards) and reel slides (every 5 cards). */
+/**
+ * Interleave dedication slides (every 8 cards) and reel slides (every 5 cards).
+ * `sealAfter` inserts the once-a-day חתימה celebration slide after that many
+ * slides (null = already sealed today, no seal in this session's deck).
+ */
 export function buildFeedSlides(
   cards: FeedItem[],
   dedications: Dedication[],
@@ -25,10 +29,19 @@ export function buildFeedSlides(
   gaps: number[],
   showDedications: boolean,
   showReels: boolean,
+  sealAfter: number | null = null,
 ): FeedSlide[] {
   const useDed   = showDedications && dedications.length > 0;
   const useReels = showReels && reels.length > 0 && gaps.length > 0;
-  if (!useDed && !useReels) return cards;
+
+  const withSeal = (slides: FeedSlide[]): FeedSlide[] => {
+    if (sealAfter === null || slides.length < sealAfter) return slides;
+    const out = [...slides];
+    out.splice(sealAfter, 0, { slideType: 'seal', id: 'daily-seal' });
+    return out;
+  };
+
+  if (!useDed && !useReels) return withSeal(cards);
 
   const result: FeedSlide[] = [];
   let gapIdx = 0;
@@ -53,5 +66,5 @@ export function buildFeedSlides(
       gapIdx += 1;
     }
   });
-  return result;
+  return withSeal(result);
 }

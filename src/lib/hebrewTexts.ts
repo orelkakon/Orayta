@@ -458,9 +458,9 @@ export const HE = {
   A2HS_BTN: 'הוסף',
   A2HS_DISMISS: 'לא עכשיו',
   A2HS_IOS_TITLE: 'הוספה לדף הבית',
-  A2HS_IOS_STEP1: 'לחץ על כפתור השיתוף 📤 בתחתית הדפדפן',
-  A2HS_IOS_STEP2: 'גלול ובחר "הוסף למסך הבית"',
-  A2HS_IOS_STEP3: 'לחץ "הוסף" לאישור',
+  A2HS_IOS_STEP1: 'הקישו על כפתור השיתוף בסרגל הדפדפן',
+  A2HS_IOS_STEP2: 'גללו ובחרו "הוסף למסך הבית"',
+  A2HS_IOS_STEP3: 'הקישו "הוסף" לאישור',
 
   QUIZ_STREAK_ALL_DONE: 'כל הכבוד! ענית נכון על הכל',
   QUIZ_STREAK_DONE_SUB: 'ענית נכון על כל השאלות בפילטר הנוכחי — החלף פילטר להמשך או התחל מחדש.',
@@ -546,6 +546,37 @@ export const HE = {
   FEED_GREETING_NIGHT: 'לילה טוב',
   FEED_SPLASH_TAGLINE: 'עוצרים הכל, לרגע אחד של תורה',
   FEED_STREAK_DAYS: 'ימים ברצף של תורה',
+  FEED_STREAK_DAY1: 'היום מתחיל רצף חדש',
+
+  /* ── Daily seal (חתימת היום) ── */
+  FEED_SEAL_KICKER: 'חתימת היום',
+  FEED_SEAL_TITLE: 'סיימת את רגע התורה היומי',
+  FEED_SEAL_SUB: 'עוד יום של תורה נחתם. קבעת עתים לתורה.',
+  FEED_SEAL_MOMENTS: (n: number) => `${n} רגעים של תורה היום`,
+  FEED_SEAL_STREAK: (n: number) => `${n} ימים ברצף`,
+  FEED_SEAL_BEST: (n: number) => `שיא אישי: ${n}`,
+  FEED_SEAL_MILESTONE_3: 'שלושה ימים ברצף! ✨',
+  FEED_SEAL_MILESTONE_7: 'שבוע שלם של תורה! 🔥',
+  FEED_SEAL_MILESTONE_14: 'שבועיים של התמדה!',
+  FEED_SEAL_MILESTONE_30: 'חודש שלם. קביעות אמיתית.',
+  FEED_SEAL_MILESTONE_100: 'מאה ימים של תורה!',
+  FEED_SEAL_SHARE: 'לשתף את הרגע',
+  FEED_SEAL_CONTINUE: 'אפשר להמשיך לגלול',
+  FEED_SEAL_SHARE_TEXT: (days: number) =>
+    days > 1
+      ? `סיימתי את רגע התורה היומי שלי באורייתא — ${days} ימים ברצף 🔥`
+      : 'סיימתי את רגע התורה היומי שלי באורייתא ✨',
+
+  /* ── Dedication amen gesture ── */
+  FEED_AMEN: 'אמן',
+  FEED_AMEN_ARIA: 'ענו אמן להקדשה',
+
+  /* ── Install sheet (premium copy) ── */
+  A2HS_HEADLINE: 'אורייתא, בכיס שלכם',
+  A2HS_BENEFIT_FAST: 'פתיחה בנגיעה אחת מהמסך הראשי',
+  A2HS_BENEFIT_FULL: 'מסך מלא, בלי דפדפן — כמו אפליקציה',
+  A2HS_BENEFIT_DAILY: 'רגע של תורה יומי, תמיד זמין',
+  A2HS_IOS_SAFARI_NOTE: 'ההוספה למסך הבית זמינה בספארי',
   FEED_ACTION_IMAGE: 'שמירה כתמונה',
   IG_ADMIN_TITLE: 'ניהול סרטוני תורה',
   IG_ADMIN_SUBTITLE: 'עמודי אינסטגרם וסרטונים שמוצגים בפיד',

@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import styled, { css } from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
 import type { FeedReelSlide } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
 import { trackShare } from '@/lib/shareCounter';
 import { reelCodeToMediaId } from '@/lib/instagram';
+import { shareTextSmart } from '@/lib/siteUrl';
 
 /*
  * The IG embed lays out: 54px header, then the video in a 4:5 box (width x 1.25)
@@ -37,9 +38,16 @@ const Frame = styled.iframe`
   border: none; display: block; background: #000;
 `;
 
+const placeholderPulse = keyframes`
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50%      { opacity: 0.9; transform: scale(1.12); }
+`;
+
 const Placeholder = styled.div`
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  color: rgba(255,255,255,0.35); font-size: 2rem;
+  color: rgba(217, 181, 108, 0.8); font-size: 1.6rem;
+  text-shadow: 0 0 20px rgba(217, 181, 108, 0.5);
+  span { animation: ${placeholderPulse} 1.8s ease-in-out infinite; }
 `;
 
 /*
@@ -132,12 +140,8 @@ export default function FeedReel({ slide, onVisible }: Props) {
 
   function doShare() {
     const text = `${HE.FEED_REEL_SHARE_TEXT}\n${slide.url}`;
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      navigator.share({ title: HE.FEED_TITLE, text, url: slide.url }).then(() => trackShare()).catch(() => {});
-    } else {
-      trackShare();
-      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-    }
+    trackShare();
+    void shareTextSmart(text, HE.FEED_TITLE);
   }
 
   return (
@@ -154,7 +158,7 @@ export default function FeedReel({ slide, onVisible }: Props) {
             scrolling="no"
           />
         ) : (
-          <Placeholder>🎬</Placeholder>
+          <Placeholder><span>✦</span></Placeholder>
         )}
         <Shield $pos="top" />
         <Shield $pos="bottom" />

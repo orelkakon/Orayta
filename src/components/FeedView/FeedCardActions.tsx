@@ -6,6 +6,7 @@ import type { FeedItem } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
 import { trackShare } from '@/lib/shareCounter';
 import { shareStory, feedStory } from '@/lib/storyShare';
+import { SITE_URL, RLM, clip } from '@/lib/siteUrl';
 import { LineIcon } from '@/components/common/LineIcons';
 import { FEED_GOLD } from './feedTypes';
 
@@ -73,15 +74,16 @@ export default function FeedCardActions({ item, isSaved, slideRef, onBookmark, c
   const [bmkPop, setBmkPop] = useState(false);
 
   function doShare() {
-    const sig = `\n— אורייתא`;
+    const sig = `\n— אורייתא\n${SITE_URL}`;
     const d = item.data;
     let text = sig;
-    if (item.type === 'citation') { const c = d as import('@/types').Citation; const l = c.locations[0]; text = `"${c.content.slice(0, 250)}"${l ? ` (${l.masechet} דף ${l.daf})` : ''}${sig}`; }
-    else if (item.type === 'rabbi')   { const r = d as import('@/types').Rabbi;   text = `${r.name} (${r.datePeriod})\n${r.bio.slice(0, 200)}${sig}`; }
-    else if (item.type === 'chidush') { const c = d as import('@/types').Chidush; text = `${c.text.slice(0, 250)}${c.source ? `\n(${c.source})` : ''}${sig}`; }
+    if (item.type === 'citation') { const c = d as import('@/types').Citation; const l = c.locations[0]; text = `"${clip(c.content, 250)}"${l ? ` (${l.masechet} דף ${l.daf})` : ''}${sig}`; }
+    else if (item.type === 'rabbi')   { const r = d as import('@/types').Rabbi;   text = `${r.name} (${r.datePeriod})\n${clip(r.bio, 200)}${sig}`; }
+    else if (item.type === 'chidush') { const c = d as import('@/types').Chidush; text = `${clip(c.text, 250)}${c.source ? `\n(${c.source})` : ''}${sig}`; }
     else if (item.type === 'book')    { const b = d as import('@/types').Book;    text = `${b.title} — ${b.author}${sig}`; }
     else if (item.type === 'gematria'){ const g = d as import('@/types').FeedGematriaData; text = `${g.word} = ${g.value} בגימטריה${sig}`; }
-    else if (item.type === 'sikum')   { const s = d as import('@/types').FeedSikumData;   text = `${s.bookName}${s.title ? ` — ${s.title}` : ''}\n${s.text.slice(0, 250)}${sig}`; }
+    else if (item.type === 'sikum')   { const s = d as import('@/types').FeedSikumData;   text = `${s.bookName}${s.title ? ` — ${s.title}` : ''}\n${clip(s.text, 250)}${sig}`; }
+    text = `${RLM}${text}`;
     if (typeof navigator !== 'undefined' && navigator.share) {
       navigator.share({ text, title: HE.FEED_TITLE }).then(() => trackShare()).catch(() => {
         trackShare();
@@ -101,10 +103,17 @@ export default function FeedCardActions({ item, isSaved, slideRef, onBookmark, c
     canvas.toBlob(async blob => {
       if (!blob) return;
       const file = new File([blob], 'orayta.png', { type: 'image/png' });
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file] }).catch(() => {});
-      } else {
+      const download = () => {
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'orayta.png'; a.click();
+      };
+      if (navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file] });
+        } catch (err) {
+          if ((err as Error)?.name !== 'AbortError') download();
+        }
+      } else {
+        download();
       }
     });
   }

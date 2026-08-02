@@ -9,6 +9,7 @@ import FeedReactionPill from './FeedReactionPill';
 import { FEED_TYPE_STYLES } from './feedTypes';
 import { LineIcon } from '@/components/common/LineIcons';
 import type { ReaderData } from './FeedReader';
+import { haptics } from '@/lib/haptics';
 
 const Slide = styled.div<{ $bg: string }>`
   height: 100dvh; scroll-snap-align: start; flex-shrink: 0;
@@ -116,8 +117,10 @@ export default function FeedCard({ item, reacted, isSaved, onReact, onBookmark, 
   useEffect(() => {
     const el = slideRef.current;
     if (!el) return;
+    // Stays observed so the entrance choreography replays when the user
+    // scrolls back to a slide — it re-lives instead of sitting inert.
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      ([e]) => setVisible(e.isIntersecting),
       { threshold: 0.55 }
     );
     obs.observe(el);
@@ -127,7 +130,9 @@ export default function FeedCard({ item, reacted, isSaved, onReact, onBookmark, 
   const handleDoubleTap = () => {
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
-      onReact(item, 'heart');
+      // Instagram rule: double-tap only ever adds the heart, never removes it.
+      if (!reacted.heart) onReact(item, 'heart');
+      haptics.success();
       setShowBurst(true);
       setTimeout(() => setShowBurst(false), 700);
     }

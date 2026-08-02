@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 import type { FeedItem, FeedReaction } from '@/types';
+import { haptics } from '@/lib/haptics';
 
 const REACTIONS: { key: FeedReaction; emoji: string; bg: string }[] = [
   { key: 'heart', emoji: '❤️', bg: 'rgba(255,55,70,0.25)'  },
@@ -77,6 +78,7 @@ export default function FeedReactionPill({ item, reacted, visible, onReact }: Pr
     e.stopPropagation();
     onReact(item, key);
     if (!reacted[key]) {
+      haptics.tap();
       setPopped(key);
       setTimeout(() => setPopped(null), 380);
     }

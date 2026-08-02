@@ -37,6 +37,16 @@ function seededShuffle<T>(arr: T[], seed: number): T[] {
  * permutation. Stateless: (seed, page) always yields the same ids, so the
  * client only needs to send its session seed and page counter.
  */
+/** Unseeded uniform shuffle for client-side lists (dedications, reels). */
+export function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export function deckPage(ids: string[], seed: number, salt: string, page: number, take: number): string[] {
   const n = ids.length;
   if (n === 0 || take <= 0) return [];

@@ -18,10 +18,17 @@ const Fab = styled.button`
   transition: transform 0.15s, box-shadow 0.15s;
   &:hover { transform: scale(1.08); }
   &:active { transform: scale(0.94); }
+  /* The mobile bottom tab bar owns the bottom edge — float above it. */
+  @media (max-width: 768px) {
+    bottom: calc(84px + env(safe-area-inset-bottom));
+  }
 `;
 
 const Panel = styled.div`
   position: fixed; bottom: 74px; right: 18px; z-index: 140;
+  @media (max-width: 768px) {
+    bottom: calc(140px + env(safe-area-inset-bottom));
+  }
   width: 250px; direction: rtl;
   background: ${theme.colors.surface};
   border: 1px solid ${theme.colors.border};

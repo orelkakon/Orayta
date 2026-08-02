@@ -36,6 +36,7 @@ export const metadata: Metadata = {
     title: 'אורייתא',
     description: 'מערכת לניהול, לימוד ותרגול מקורות יהודיים',
   },
+  // Next 13.5 API — the standalone `viewport` export only exists from Next 14.
   themeColor: '#5C3D1E',
 };
 
@@ -44,7 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="he" dir="rtl" className={`${frankRuhl.variable} ${heebo.variable}`}>
       <head>
         {/* Prevent dark-mode flash: read localStorage before first paint */}
-        <script dangerouslySetInnerHTML={{ __html: `try{var s=localStorage.getItem('orayta_theme');var d=s?s==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.setAttribute('data-theme','dark')}catch(e){}` }} />
+        <script dangerouslySetInnerHTML={{ __html: `try{var s=localStorage.getItem('orayta_theme');var d=s?s==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.setAttribute('data-theme','dark')}catch(e){};window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__bip=e});` }} />
       </head>
       <body>
         <ClientProviders>

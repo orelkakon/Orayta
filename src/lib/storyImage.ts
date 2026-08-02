@@ -3,6 +3,8 @@
  * Pure client-side — no upload, no API. The blob is handed to the native
  * share sheet (see storyShare.ts), where the user picks Instagram → Story.
  */
+import { SITE_URL } from './siteUrl';
+
 export interface StoryContent {
   badge: string;
   title?: string;
@@ -15,7 +17,7 @@ const H = 1920;
 const GOLD = '#d9b56c';
 const GOLD_DIM = 'rgba(217,181,108,0.55)';
 const CREAM = '#f6eed9';
-const SITE = 'orayta-eight.vercel.app';
+const SITE = SITE_URL.replace(/^https?:\/\//, '');
 
 function cssVar(name: string, fallback: string): string {
   const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -87,9 +89,10 @@ function drawBackground(ctx: CanvasRenderingContext2D): void {
   ctx.stroke();
 }
 
-// Body area: below the badge, above the footer divider.
-const BODY_TOP = 380;
-const BODY_HEIGHT = 1330;
+// Body area: below the badge, above the footer divider. Header and footer
+// sit inside Instagram's story safe zone (its UI covers ~250px top+bottom).
+const BODY_TOP = 470;
+const BODY_HEIGHT = 1130;
 
 export async function renderStoryImage(content: StoryContent): Promise<Blob> {
   const serif = cssVar('--font-frank', "'Frank Ruhl Libre', Georgia, serif");
@@ -108,10 +111,10 @@ export async function renderStoryImage(content: StoryContent): Promise<Blob> {
 
   ctx.fillStyle = GOLD;
   ctx.font = `700 84px ${serif}`;
-  ctx.fillText('אורייתא', W / 2, 238);
+  ctx.fillText('אורייתא', W / 2, 330);
   ctx.fillStyle = GOLD_DIM;
   ctx.font = `600 34px ${sans}`;
-  ctx.fillText(`✦   ${content.badge}   ✦`, W / 2, 308);
+  ctx.fillText(`✦   ${content.badge}   ✦`, W / 2, 400);
 
   // Largest font whose wrapped block fits the body area — long text keeps
   // shrinking (down to 28px) instead of leaving empty space top and bottom.
@@ -161,12 +164,12 @@ export async function renderStoryImage(content: StoryContent): Promise<Blob> {
   ctx.strokeStyle = 'rgba(217,181,108,0.35)';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.moveTo(W / 2 - 140, H - 190);
-  ctx.lineTo(W / 2 + 140, H - 190);
+  ctx.moveTo(W / 2 - 140, H - 300);
+  ctx.lineTo(W / 2 + 140, H - 300);
   ctx.stroke();
   ctx.fillStyle = GOLD_DIM;
   ctx.font = `600 32px ${sans}`;
-  ctx.fillText(SITE, W / 2, H - 130);
+  ctx.fillText(SITE, W / 2, H - 245);
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(b => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png');

@@ -20,10 +20,48 @@ const BigNum = styled.div`
   -webkit-background-clip: text; background-clip: text; color: transparent;
 `;
 
-const QuoteMark = styled.div`
-  color: rgba(${FEED_GOLD}, 0.5); font-family: var(--font-frank, serif);
+const QuoteMark = styled.div<{ $accent?: string }>`
+  color: rgba(${p => p.$accent ?? FEED_GOLD}, 0.5); font-family: var(--font-frank, serif);
   font-size: 2.7rem; font-weight: 800; line-height: 0.5; margin-bottom: -2px;
-  text-shadow: 0 0 26px rgba(${FEED_GOLD}, 0.35);
+  text-shadow: 0 0 26px rgba(${p => p.$accent ?? FEED_GOLD}, 0.35);
+`;
+
+const Attribution = styled.div`
+  font-family: var(--font-frank, serif); font-size: 0.95rem; font-weight: 600;
+  color: rgba(${FEED_GOLD}, 0.8);
+`;
+
+/* A drawn sefer — spine on the right (Hebrew books open right-to-left),
+   inner frame, title set on the cover itself. Replaces the bare title+author
+   that read as a database row. */
+const BookCover = styled.div`
+  position: relative; width: 132px; height: 180px; margin: 0 auto 8px;
+  border-radius: 10px 4px 4px 10px;
+  background: linear-gradient(115deg, #103421 0%, #17472F 55%, #0C2618 100%);
+  border: 1px solid rgba(${FEED_TYPE_STYLES.book.accent}, 0.45);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; padding: 16px 14px;
+  &::before {
+    content: ''; position: absolute; top: 0; bottom: 0; right: 9px; width: 1px;
+    background: rgba(${FEED_TYPE_STYLES.book.accent}, 0.4);
+    box-shadow: -3px 0 8px rgba(0, 0, 0, 0.4);
+  }
+  &::after {
+    content: ''; position: absolute; inset: 7px; border-radius: 5px;
+    border: 1px solid rgba(${FEED_TYPE_STYLES.book.accent}, 0.25);
+    pointer-events: none;
+  }
+`;
+
+const BookCoverOrn = styled.span`
+  color: rgba(${FEED_TYPE_STYLES.book.accent}, 0.75); font-size: 0.7rem; line-height: 1;
+`;
+
+const BookCoverTitle = styled.div<{ $long: boolean }>`
+  font-family: var(--font-frank, serif); font-weight: 800; text-align: center;
+  font-size: ${p => (p.$long ? '0.92rem' : '1.08rem')}; line-height: 1.4;
+  color: #F2FBF2; overflow: hidden; max-height: 100%;
 `;
 
 const SubText = styled.div`color: rgba(255,248,235,0.6); font-size: 0.9rem; line-height: 1.6;`;
@@ -97,17 +135,31 @@ export function renderContent(
   }
   if (item.type === 'book') {
     const d = item.data as Book;
-    return { body: <><BigWord>{d.title}</BigWord><SubText>מאת {d.author}</SubText></>, meta: [{ label: d.author, href: `/rabbis?q=${encodeURIComponent(d.author)}` }], copyText: `${d.title} — ${d.author}` };
+    return {
+      body: <>
+        <BookCover>
+          <BookCoverOrn aria-hidden>✦</BookCoverOrn>
+          <BookCoverTitle $long={d.title.length > 18}>{d.title}</BookCoverTitle>
+          <BookCoverOrn aria-hidden>✦</BookCoverOrn>
+        </BookCover>
+        <SubText>מאת {d.author}</SubText>
+      </>,
+      meta: [{ label: d.author, href: `/rabbis?q=${encodeURIComponent(d.author)}` }],
+      copyText: `${d.title} — ${d.author}`,
+    };
   }
   if (item.type === 'chidush') {
     const d = item.data as Chidush;
     const href = `/chidushim?q=${encodeURIComponent(d.text.slice(0, 25).trim())}`;
     const meta: MetaItem[] = [
       ...(d.source ? [{ label: d.source, href: `/chidushim?q=${encodeURIComponent(d.source)}` }] : []),
-      ...(d.author ? [{ label: d.author }] : []),
     ];
     return {
-      body: <ClampText text={d.text} onExpand={() => onExpand({ title: d.source ?? undefined, text: d.text, href })} />,
+      body: <>
+        <QuoteMark $accent={FEED_TYPE_STYLES.chidush.accent} aria-hidden>״</QuoteMark>
+        <ClampText text={d.text} onExpand={() => onExpand({ title: d.source ?? undefined, text: d.text, href })} />
+        {d.author && <Attribution>— {d.author}</Attribution>}
+      </>,
       meta, copyText: d.text,
     };
   }

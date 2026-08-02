@@ -15,8 +15,12 @@ import SavedPanel from './SavedPanel';
 import { useFeedEngagement } from './useFeedEngagement';
 import type { FeedItem, FeedSlide, Dedication, InstagramReel } from '@/types';
 import { ALL_FEED_TYPES, FeedPrefs, DEFAULT_FEED_PREFS, getFeedPrefs, saveFeedPrefs, isCustomPrefs } from '@/lib/feedPrefs';
+import { shuffleArray } from '@/lib/feedShuffle';
 import { buildFeedSlides, ensureReelGaps } from '@/lib/feedSlides';
-import { bumpStreak } from '@/lib/feedStreak';
+import { bumpStreak, StreakInfo } from '@/lib/feedStreak';
+import { getDailyProgress, bumpViewed, DAILY_GOAL } from '@/lib/feedDaily';
+import FeedSeal from './FeedSeal';
+import AddToHomeScreen from '@/components/common/AddToHomeScreen';
 
 const Wrapper = styled.div`position: fixed; inset: 0; background: #050505; z-index: 900; overflow: hidden;`;
 
@@ -47,8 +51,13 @@ export default function FeedView() {
   const [dedications, setDedications]   = useState<Dedication[]>([]);
   const [reels, setReels]               = useState<InstagramReel[]>([]);
   const [reelsOnScreen, setReelsOnScreen] = useState(0);
-  const [streak, setStreak]             = useState(0);
+  const [streak, setStreak]             = useState<StreakInfo>({ days: 0, best: 0 });
+  const [viewedToday, setViewedToday]   = useState(0);
   const scrollRef   = useRef<HTMLDivElement>(null);
+  // Where the daily seal slides in (null = already sealed today). Fixed at
+  // mount so the slide doesn't jump around as the user scrolls.
+  const sealAfterRef = useRef<number | null>(null);
+  const maxIdxRef    = useRef(0);
   const fetchingRef = useRef(false);
   const prefsRef    = useRef<FeedPrefs>(DEFAULT_FEED_PREFS);
   const genRef      = useRef(0);
@@ -85,6 +94,14 @@ export default function FeedView() {
   useEffect(() => {
     setStreak(bumpStreak());
 
+    // Today's arc: a few warm-up slides, then the seal — unless today is
+    // already sealed, in which case the feed scrolls free.
+    const daily = getDailyProgress();
+    setViewedToday(daily.viewed);
+    sealAfterRef.current = daily.sealed
+      ? null
+      : Math.max(2, DAILY_GOAL - daily.viewed);
+
     // Load feed preferences before the first fetch
     const loadedPrefs = getFeedPrefs();
     prefsRef.current = loadedPrefs;
@@ -92,17 +109,20 @@ export default function FeedView() {
 
     void fetchMore();
     void fetch('/api/dedications').then(r => r.json()).then((d: Dedication[]) => {
-      setDedications([...d].sort(() => Math.random() - 0.5));
+      setDedications(shuffleArray(d));
     });
     void fetch('/api/instagram/reels').then(r => r.json()).then((r: InstagramReel[]) => {
-      setReels([...r].sort(() => Math.random() - 0.5));
+      setReels(shuffleArray(r));
     }).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const displaySlides = useMemo((): FeedSlide[] => {
     ensureReelGaps(reelGapsRef.current, cards.length);
-    return buildFeedSlides(cards, dedications, reels, reelGapsRef.current, prefs.dedications, prefs.reels);
+    return buildFeedSlides(
+      cards, dedications, reels, reelGapsRef.current,
+      prefs.dedications, prefs.reels, sealAfterRef.current,
+    );
   }, [cards, dedications, reels, prefs]);
 
   slidesLenRef.current = displaySlides.length;
@@ -111,6 +131,11 @@ export default function FeedView() {
     const el = scrollRef.current;
     if (!el) return;
     const idx = Math.round(el.scrollTop / window.innerHeight);
+    // Each newly-reached slide counts toward today's learning.
+    if (idx > maxIdxRef.current) {
+      maxIdxRef.current = idx;
+      setViewedToday(bumpViewed().viewed);
+    }
     if (idx >= slidesLenRef.current - PRELOAD_THRESHOLD) void fetchMore();
   }, [fetchMore]);
 
@@ -135,7 +160,7 @@ export default function FeedView() {
   return (
     <Wrapper>
       <FeedHeader
-        streak={streak}
+        streak={streak.days}
         savedCount={savedItems.length}
         custom={isCustomPrefs(prefs)}
         onSettings={() => setSettingsOpen(true)}
@@ -149,6 +174,9 @@ export default function FeedView() {
           if ('slideType' in slide) {
             if (slide.slideType === 'reel') {
               return <FeedReel key={`reel-${slide.id}`} slide={slide} onVisible={handleReelVisible} />;
+            }
+            if (slide.slideType === 'seal') {
+              return <FeedSeal key="seal" days={streak.days} best={streak.best} viewed={viewedToday} />;
             }
             return <FeedDedication key={`ded-${slide.id}-${i}`} slide={slide} />;
           }
@@ -181,7 +209,8 @@ export default function FeedView() {
         onClose={() => setSettingsOpen(false)}
         onSave={handleSaveSettings}
       />
-      <FeedSplash ready={initialLoaded} streak={streak} />
+      <FeedSplash ready={initialLoaded} streak={streak.days} />
+      <AddToHomeScreen />
     </Wrapper>
   );
 }

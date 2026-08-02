@@ -188,7 +188,13 @@ export interface FeedReelSlide {
   username: string | null;
 }
 
-export type FeedSlide = FeedItem | FeedDedicationSlide | FeedReelSlide;
+/** The daily "חתימה" celebration slide — appears once per day at the goal. */
+export interface FeedSealSlide {
+  slideType: 'seal';
+  id: string;
+}
+
+export type FeedSlide = FeedItem | FeedDedicationSlide | FeedReelSlide | FeedSealSlide;
 
 export interface AdminDailyRow {
   day: string;

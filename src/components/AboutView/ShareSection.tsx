@@ -6,6 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { trackShare } from '@/lib/shareCounter';
 import { shareStory, inviteStory } from '@/lib/storyShare';
+import { SITE_URL, RLM } from '@/lib/siteUrl';
 
 const Card = styled.div`
   background: ${theme.colors.surface};
@@ -99,18 +100,33 @@ export default function ShareSection() {
     setCanNative(typeof navigator !== 'undefined' && !!navigator.share);
   }, []);
 
-  const url  = typeof window !== 'undefined' ? window.location.origin : 'https://orayta-eight.vercel.app';
-  // ‏ = RIGHT-TO-LEFT MARK — forces WhatsApp to render Hebrew lines RTL
-  const rtl  = '‏';
-  const text = `${rtl}${HE.APP_NAME}\n${rtl}${HE.APP_SUBTITLE}\n${url}`;
+  const url  = typeof window !== 'undefined' ? window.location.origin : SITE_URL;
+  const text = `${RLM}${HE.APP_NAME}\n${RLM}${HE.APP_SUBTITLE}\n${url}`;
 
-  const handleNative   = () => { void navigator.share({ title: HE.APP_NAME, text: `${rtl}${HE.APP_SUBTITLE}`, url }); };
+  const copyLegacy = () => {
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try { document.execCommand('copy'); } catch { /* non-blocking */ }
+    ta.remove();
+  };
+
+  const markCopied = () => {
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2200);
+  };
+
+  const handleNative   = () => { navigator.share({ title: HE.APP_NAME, text: `${RLM}${HE.APP_SUBTITLE}`, url }).catch(() => {}); };
   const handleWhatsApp = () => { trackShare(); window.open(`https://api.whatsapp.com/send/?text=${encodeURIComponent(text)}`, '_blank'); };
-  const handleTelegram = () => window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
+  const handleTelegram = () => { trackShare('tg'); window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank'); };
   const handleCopy     = () => {
-    void navigator.clipboard.writeText(url).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2200);
+    void navigator.clipboard.writeText(url).then(markCopied).catch(() => {
+      copyLegacy();
+      markCopied();
     });
   };
 

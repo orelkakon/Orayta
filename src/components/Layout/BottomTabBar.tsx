@@ -44,9 +44,9 @@ const TabItem = styled(Link)<{ $active: boolean }>`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 8px 0 6px;
-  min-height: 54px;
+  gap: 3px;
+  padding: 10px 0 9px;
+  min-height: 64px;
   color: ${({ $active }) => ($active ? theme.colors.primary : theme.colors.textMuted)};
   transition: color ${theme.motion.fast} ease;
   -webkit-tap-highlight-color: transparent;
@@ -60,9 +60,9 @@ const TabButton = styled.button<{ $active: boolean }>`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 8px 0 6px;
-  min-height: 54px;
+  gap: 3px;
+  padding: 10px 0 9px;
+  min-height: 64px;
   color: ${({ $active }) => ($active ? theme.colors.primary : theme.colors.textMuted)};
   transition: color ${theme.motion.fast} ease;
   -webkit-tap-highlight-color: transparent;

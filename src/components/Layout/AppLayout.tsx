@@ -132,7 +132,7 @@ const Main = styled.main`
   @media (max-width: 600px) { padding: ${theme.spacing.md}; }
   @media (max-width: 768px) {
     /* Clear the fixed bottom tab bar. */
-    padding-bottom: calc(64px + env(safe-area-inset-bottom) + ${theme.spacing.lg});
+    padding-bottom: calc(76px + env(safe-area-inset-bottom) + ${theme.spacing.lg});
   }
 `;
 

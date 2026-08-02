@@ -2,6 +2,7 @@ import type { Rabbi, Citation, Chidush } from '@/types';
 import { HE } from './hebrewTexts';
 import { trackShare } from './shareCounter';
 import { shareStory } from './storyShare';
+import { SITE_URL } from './siteUrl';
 
 export interface DailySikum {
   id: string; title: string | null; text: string; date: string;
@@ -16,8 +17,6 @@ export interface DailyShareData {
   chidush: Chidush | null;
   yahrzeitNames: string[];
 }
-
-const SITE_URL = 'https://orayta-eight.vercel.app';
 
 /**
  * WhatsApp-formatted daily digest — plain style (one emoji, *bold* markers

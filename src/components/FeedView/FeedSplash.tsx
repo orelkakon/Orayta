@@ -49,6 +49,11 @@ const Orn = styled.div`
 
 const Tagline = styled.div`color: rgba(255, 250, 240, 0.42); font-size: 0.85rem;`;
 
+const HebDate = styled.div`
+  font-family: var(--font-frank, serif);
+  color: rgba(${FEED_GOLD}, 0.75); font-size: 0.92rem;
+`;
+
 const Streak = styled.div`
   margin-top: 8px; color: rgba(${FEED_GOLD}, 0.92); font-size: 0.8rem; font-weight: 700;
   background: rgba(${FEED_GOLD}, 0.08); border: 1px solid rgba(${FEED_GOLD}, 0.3);
@@ -70,6 +75,15 @@ function greeting(): string {
   return HE.FEED_GREETING_NIGHT;
 }
 
+function hebrewDate(): string {
+  try {
+    return new Intl.DateTimeFormat('he-IL-u-ca-hebrew', { day: 'numeric', month: 'long' })
+      .format(new Date());
+  } catch {
+    return '';
+  }
+}
+
 interface Props {
   ready: boolean;
   streak: number;
@@ -81,6 +95,10 @@ export default function FeedSplash({ ready, streak }: Props) {
   const [minWait, setMinWait] = useState(false);
   const [gone, setGone] = useState(false);
   const [hello] = useState(() => greeting());
+  const [heb, setHeb] = useState('');
+
+  // Client-only: the Hebrew calendar date is a hydration hazard on SSR.
+  useEffect(() => { setHeb(hebrewDate()); }, []);
 
   useEffect(() => {
     const t = setTimeout(() => setMinWait(true), 950);
@@ -103,9 +121,12 @@ export default function FeedSplash({ ready, streak }: Props) {
       <Spark>✦</Spark>
       <Greeting>{hello}</Greeting>
       <Title>{HE.FEED_TITLE}</Title>
+      {heb && <HebDate>{heb}</HebDate>}
       <Orn>✦</Orn>
       <Tagline>{HE.FEED_SPLASH_TAGLINE}</Tagline>
-      {streak >= 2 && <Streak>{streak} {HE.FEED_STREAK_DAYS}</Streak>}
+      {streak >= 2
+        ? <Streak>🔥 {streak} {HE.FEED_STREAK_DAYS}</Streak>
+        : <Streak>{HE.FEED_STREAK_DAY1}</Streak>}
     </Overlay>
   );
 }
