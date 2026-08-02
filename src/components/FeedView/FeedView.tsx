@@ -28,6 +28,9 @@ const Wrapper = styled.div`position: fixed; inset: 0; background: #050505; z-ind
 const Scroll = styled.div`
   height: 100dvh; overflow-y: scroll; scroll-snap-type: y mandatory;
   -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  /* Never hand the gesture to the document — an edge rubber-band (or Android
+     pull-to-refresh) hijacks the flick chain and the feed feels stuck. */
+  overscroll-behavior-y: contain;
   &::-webkit-scrollbar { display: none; }
 `;
 

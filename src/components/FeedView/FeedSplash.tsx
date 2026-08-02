@@ -15,6 +15,11 @@ const Overlay = styled.div<{ $leaving: boolean }>`
   opacity: ${p => p.$leaving ? 0 : 1};
   transition: opacity 0.7s ease;
   pointer-events: ${p => p.$leaving ? 'none' : 'auto'};
+  /* A swipe that starts here must never become a scroll gesture — iOS keeps
+     targeting the splash/document for the whole flick chain, which locks the
+     feed's scroller for seconds after the splash is gone. */
+  touch-action: none;
+  overscroll-behavior: none;
 `;
 
 const breathe = keyframes`
@@ -105,6 +110,10 @@ export default function FeedSplash({ ready, streak, firstVisit, sealed }: Props)
     return () => clearTimeout(t);
   }, [firstVisit]);
 
+  // An eager swipe on the splash means "let me in" — skip the branding hold
+  // so the overlay releases the moment the feed is ready.
+  const skip = () => setMinWait(true);
+
   const leaving = ready && minWait;
 
   useEffect(() => {
@@ -116,7 +125,7 @@ export default function FeedSplash({ ready, streak, firstVisit, sealed }: Props)
   if (gone) return null;
 
   return (
-    <Overlay $leaving={leaving} aria-hidden={leaving}>
+    <Overlay $leaving={leaving} aria-hidden={leaving} onTouchMove={skip} onWheel={skip}>
       <Back href="/">{HE.FEED_BACK}</Back>
       <Spark>✦</Spark>
       <Greeting>{hello}</Greeting>
