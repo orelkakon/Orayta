@@ -38,7 +38,10 @@ const Drawer = styled.div<{ $open: boolean }>`
     z-index: ${theme.z.drawer};
     transform: translateX(${p => (p.$open ? '0' : '100%')});
     transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
-    box-shadow: ${p => (p.$open ? '-12px 0 32px rgba(0, 0, 0, 0.25)' : 'none')};
+    /* Crisp seam on the leading edge + one wide soft shadow. A mid-size
+       offset shadow rendered as a detached band next to the panel. */
+    border-left: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: ${p => (p.$open ? '-40px 0 80px rgba(0, 0, 0, 0.45)' : 'none')};
     padding: ${theme.spacing.md};
     padding-bottom: calc(${theme.spacing.md} + env(safe-area-inset-bottom));
     gap: 2px;

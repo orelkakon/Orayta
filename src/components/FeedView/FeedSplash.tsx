@@ -47,7 +47,10 @@ const Orn = styled.div`
   &::after { background: linear-gradient(270deg, transparent, rgba(${FEED_GOLD}, 0.5)); }
 `;
 
-const Tagline = styled.div`color: rgba(255, 250, 240, 0.42); font-size: 0.85rem;`;
+const Tagline = styled.div`
+  color: rgba(255, 250, 240, 0.42); font-size: 0.85rem;
+  max-width: 32ch; line-height: 1.7;
+`;
 
 const HebDate = styled.div`
   font-family: var(--font-frank, serif);
@@ -87,11 +90,15 @@ function hebrewDate(): string {
 interface Props {
   ready: boolean;
   streak: number;
+  /** First feed entry ever on this device — the splash introduces the ritual. */
+  firstVisit?: boolean;
+  /** Today's seal already reached — the splash acknowledges it. */
+  sealed?: boolean;
 }
 
 // Atmospheric entry moment: greets by time of day while the first page loads,
 // holds for a beat so the entrance feels intentional, then fades into the feed.
-export default function FeedSplash({ ready, streak }: Props) {
+export default function FeedSplash({ ready, streak, firstVisit, sealed }: Props) {
   const [minWait, setMinWait] = useState(false);
   const [gone, setGone] = useState(false);
   const [hello] = useState(() => greeting());
@@ -101,9 +108,10 @@ export default function FeedSplash({ ready, streak }: Props) {
   useEffect(() => { setHeb(hebrewDate()); }, []);
 
   useEffect(() => {
-    const t = setTimeout(() => setMinWait(true), 950);
+    // First-ever visitors get an extra beat to read what this place is.
+    const t = setTimeout(() => setMinWait(true), firstVisit ? 1700 : 950);
     return () => clearTimeout(t);
-  }, []);
+  }, [firstVisit]);
 
   const leaving = ready && minWait;
 
@@ -123,10 +131,12 @@ export default function FeedSplash({ ready, streak }: Props) {
       <Title>{HE.FEED_TITLE}</Title>
       {heb && <HebDate>{heb}</HebDate>}
       <Orn>✦</Orn>
-      <Tagline>{HE.FEED_SPLASH_TAGLINE}</Tagline>
-      {streak >= 2
-        ? <Streak>🔥 {streak} {HE.FEED_STREAK_DAYS}</Streak>
-        : <Streak>{HE.FEED_STREAK_DAY1}</Streak>}
+      <Tagline>{firstVisit ? HE.FEED_WELCOME_LINE : HE.FEED_SPLASH_TAGLINE}</Tagline>
+      {sealed
+        ? <Streak>{HE.FEED_SPLASH_SEALED}</Streak>
+        : streak >= 2
+          ? <Streak>🔥 {streak} {HE.FEED_STREAK_DAYS}</Streak>
+          : <Streak>{HE.FEED_STREAK_DAY1}</Streak>}
     </Overlay>
   );
 }

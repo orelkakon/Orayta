@@ -2,10 +2,15 @@ import type { Metadata } from 'next';
 import AppLayout from '@/components/Layout/AppLayout';
 import GematriaView from '@/components/GematriaView/GematriaView';
 
+const TITLE = 'גימטריות';
+const DESC = 'חישוב ערכי אותיות במילים, בשמות ובביטויים, לצד אוסף גימטריות וקשרים מספריים בין מושגים בתורה — עם חיפוש חופשי בכל הגימטריות שנאספו באתר.';
+const PATH = '/gematria';
+
 export const metadata: Metadata = {
-  title: 'גימטריות',
-  description: 'חישוב ערכי אותיות במילים, בשמות ובביטויים, לצד אוסף גימטריות וקשרים מספריים בין מושגים בתורה — עם חיפוש חופשי בכל הגימטריות שנאספו באתר.',
-  alternates: { canonical: '/gematria' },
+  title: TITLE,
+  description: DESC,
+  alternates: { canonical: PATH },
+  openGraph: { title: TITLE, description: DESC, url: PATH },
 };
 
 interface Props { searchParams: { q?: string } }

@@ -4,12 +4,16 @@
  * share sheet (see storyShare.ts), where the user picks Instagram → Story.
  */
 import { SITE_URL } from './siteUrl';
+import { HE } from './hebrewTexts';
 
 export interface StoryContent {
   badge: string;
   title?: string;
   text: string;
   source?: string;
+  /** Content-type accent as an "r,g,b" triplet (see FEED_TYPE_STYLES) —
+      tints the glow and badge so each type has its own signature card. */
+  accent?: string;
 }
 
 const W = 1080;
@@ -65,7 +69,7 @@ function roundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: num
   ctx.closePath();
 }
 
-function drawBackground(ctx: CanvasRenderingContext2D): void {
+function drawBackground(ctx: CanvasRenderingContext2D, accent: string): void {
   const bg = ctx.createLinearGradient(0, 0, 0, H);
   bg.addColorStop(0, '#171310');
   bg.addColorStop(0.5, '#221b12');
@@ -74,8 +78,8 @@ function drawBackground(ctx: CanvasRenderingContext2D): void {
   ctx.fillRect(0, 0, W, H);
 
   const glow = ctx.createRadialGradient(W / 2, 220, 60, W / 2, 220, 700);
-  glow.addColorStop(0, 'rgba(217,181,108,0.14)');
-  glow.addColorStop(1, 'rgba(217,181,108,0)');
+  glow.addColorStop(0, `rgba(${accent},0.16)`);
+  glow.addColorStop(1, `rgba(${accent},0)`);
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
 
@@ -92,7 +96,7 @@ function drawBackground(ctx: CanvasRenderingContext2D): void {
 // Body area: below the badge, above the footer divider. Header and footer
 // sit inside Instagram's story safe zone (its UI covers ~250px top+bottom).
 const BODY_TOP = 470;
-const BODY_HEIGHT = 1130;
+const BODY_HEIGHT = 1085;
 
 export async function renderStoryImage(content: StoryContent): Promise<Blob> {
   const serif = cssVar('--font-frank', "'Frank Ruhl Libre', Georgia, serif");
@@ -107,12 +111,13 @@ export async function renderStoryImage(content: StoryContent): Promise<Blob> {
   ctx.direction = 'rtl';
   ctx.textAlign = 'center';
 
-  drawBackground(ctx);
+  const accent = content.accent ?? '217,181,108';
+  drawBackground(ctx, accent);
 
   ctx.fillStyle = GOLD;
   ctx.font = `700 84px ${serif}`;
   ctx.fillText('אורייתא', W / 2, 330);
-  ctx.fillStyle = GOLD_DIM;
+  ctx.fillStyle = `rgba(${accent},0.85)`;
   ctx.font = `600 34px ${sans}`;
   ctx.fillText(`✦   ${content.badge}   ✦`, W / 2, 400);
 
@@ -161,15 +166,20 @@ export async function renderStoryImage(content: StoryContent): Promise<Blob> {
     ctx.fillText(`— ${content.source}`, W / 2, y, W - 280);
   }
 
+  // Footer: divider → invitation → address. The invitation line turns a
+  // pretty screenshot into an actual doorway for the viewer.
   ctx.strokeStyle = 'rgba(217,181,108,0.35)';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.moveTo(W / 2 - 140, H - 300);
-  ctx.lineTo(W / 2 + 140, H - 300);
+  ctx.moveTo(W / 2 - 140, H - 345);
+  ctx.lineTo(W / 2 + 140, H - 345);
   ctx.stroke();
+  ctx.fillStyle = 'rgba(246,238,217,0.75)';
+  ctx.font = `600 30px ${sans}`;
+  ctx.fillText(HE.STORY_JOIN_LINE, W / 2, H - 296);
   ctx.fillStyle = GOLD_DIM;
   ctx.font = `600 32px ${sans}`;
-  ctx.fillText(SITE, W / 2, H - 245);
+  ctx.fillText(SITE, W / 2, H - 250);
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(b => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png');

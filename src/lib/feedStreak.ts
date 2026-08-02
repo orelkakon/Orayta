@@ -16,6 +16,15 @@ function dateStr(d: Date): string {
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 }
 
+/** True before the very first bumpStreak() ever runs on this device. */
+export function isFirstVisit(): boolean {
+  try {
+    return localStorage.getItem(STREAK_KEY) === null;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Consecutive-day visit streak for the feed, stored per device.
  * Called once per feed entry: same day keeps the count, a visit on the

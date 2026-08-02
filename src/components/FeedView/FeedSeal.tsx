@@ -6,6 +6,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { haptics } from '@/lib/haptics';
 import { markSealed } from '@/lib/feedDaily';
 import { shareTextSmart, SITE_URL, RLM } from '@/lib/siteUrl';
+import { shareStory, sealStory } from '@/lib/storyShare';
 
 const GOLD = '217,181,108';
 
@@ -111,7 +112,6 @@ const Chip = styled.span`
 `;
 
 const ShareBtn = styled.button`
-  margin-top: 6px;
   padding: 12px 30px; border-radius: 26px;
   font-size: 0.95rem; font-weight: 700; color: #1E1504;
   background: linear-gradient(135deg, rgba(${GOLD}, 0.95), #EDCB85);
@@ -119,6 +119,22 @@ const ShareBtn = styled.button`
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   &:hover { box-shadow: 0 8px 30px rgba(${GOLD}, 0.5); }
   &:active { transform: scale(0.95); }
+`;
+
+const StoryBtn = styled.button`
+  padding: 10px 22px; border-radius: 24px;
+  font-size: 0.85rem; font-weight: 700;
+  color: rgba(${GOLD}, 0.92);
+  background: rgba(${GOLD}, 0.08);
+  border: 1px solid rgba(${GOLD}, 0.4);
+  transition: background 0.15s ease, transform 0.15s ease;
+  &:hover { background: rgba(${GOLD}, 0.16); }
+  &:active { transform: scale(0.95); }
+`;
+
+const BtnRow = styled.div`
+  display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap;
+  margin-top: 6px;
 `;
 
 const Continue = styled.div`
@@ -141,6 +157,13 @@ const MILESTONES: Record<number, string> = {
   30: HE.FEED_SEAL_MILESTONE_30,
   100: HE.FEED_SEAL_MILESTONE_100,
 };
+
+/** One blessing line per day — a year of seals never repeats the same week. */
+function sealLine(): string {
+  const start = new Date(new Date().getFullYear(), 0, 0).getTime();
+  const dayOfYear = Math.floor((Date.now() - start) / 86400000);
+  return HE.FEED_SEAL_LINES[dayOfYear % HE.FEED_SEAL_LINES.length];
+}
 
 function hebrewDate(): string {
   try {
@@ -201,7 +224,7 @@ export default function FeedSeal({ days, best, viewed }: Props) {
       <Reveal $v={v} $d="0.35s"><Title>{HE.FEED_SEAL_TITLE}</Title></Reveal>
       {heb && <Reveal $v={v} $d="0.45s"><HebDate>{heb}</HebDate></Reveal>}
       <Reveal $v={v} $d="0.55s">
-        {milestone ? <Milestone>{milestone}</Milestone> : <Sub>{HE.FEED_SEAL_SUB}</Sub>}
+        {milestone ? <Milestone>{milestone}</Milestone> : <Sub>{sealLine()}</Sub>}
       </Reveal>
       <Reveal $v={v} $d="0.7s">
         <Chips>
@@ -209,7 +232,12 @@ export default function FeedSeal({ days, best, viewed }: Props) {
           {best > days && <Chip>{HE.FEED_SEAL_BEST(best)}</Chip>}
         </Chips>
       </Reveal>
-      <Reveal $v={v} $d="0.85s"><ShareBtn onClick={share}>{HE.FEED_SEAL_SHARE}</ShareBtn></Reveal>
+      <Reveal $v={v} $d="0.85s">
+        <BtnRow>
+          <ShareBtn onClick={share}>{HE.FEED_SEAL_SHARE}</ShareBtn>
+          <StoryBtn onClick={() => void shareStory(sealStory(days))}>{HE.FEED_SEAL_STORY}</StoryBtn>
+        </BtnRow>
+      </Reveal>
       <Continue>{HE.FEED_SEAL_CONTINUE}<span>↓</span></Continue>
     </Slide>
   );

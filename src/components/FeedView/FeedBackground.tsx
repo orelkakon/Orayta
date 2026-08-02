@@ -60,7 +60,9 @@ export default function FeedBackground() {
       x: seeded(i * 13, 90) + 2,
       y: seeded(i * 17, 88) + 2,
       size: (seeded(i * 11, 40) + 14) / 10,
-      opacity: (seeded(i * 19, 20) + 12) / 1000,
+      // 0.035–0.07: faint enough to stay atmosphere, strong enough to exist —
+      // the previous 0.012–0.031 was below perception on most phone screens.
+      opacity: (seeded(i * 19, 35) + 35) / 1000,
       dur: seeded(i * 23, 35) + 40,
       delay: seeded(i * 29, 20),
       drift: seeded(i * 31, 5),

@@ -83,7 +83,33 @@ export function sikumStory(e: SikumEntry, bookName: string, bookAuthor?: string 
   };
 }
 
+/* Per-type accent triplets — kept in sync with FEED_TYPE_STYLES in
+   components/FeedView/feedTypes.ts so a shared card carries the same color
+   signature as the slide it came from. */
+const STORY_ACCENTS: Record<FeedItem['type'], string> = {
+  citation: '232,203,118',
+  rabbi: '226,168,98',
+  book: '124,212,156',
+  chidush: '255,158,84',
+  gematria: '148,158,255',
+  sikum: '214,150,244',
+};
+
+/** Streak celebration card — shared from the daily seal moment. */
+export function sealStory(days: number): StoryContent {
+  return {
+    badge: HE.FEED_SEAL_KICKER,
+    title: days > 1 ? HE.FEED_SEAL_STREAK(days) : undefined,
+    text: HE.FEED_SEAL_TITLE,
+  };
+}
+
 export function feedStory(item: FeedItem): StoryContent {
+  const base = feedStoryBase(item);
+  return { ...base, accent: STORY_ACCENTS[item.type] };
+}
+
+function feedStoryBase(item: FeedItem): StoryContent {
   const d = item.data;
   switch (item.type) {
     case 'citation': {

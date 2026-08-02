@@ -22,7 +22,10 @@ export const MainText = styled.p<{ $len?: number }>`
   font-size: ${p => sizeFor(p.$len)};
   line-height: ${p => lineFor(p.$len)};
   font-weight: ${p => (p.$len !== undefined && p.$len < 70 ? 600 : 500)};
-  max-width: min(92vw, 34rem); letter-spacing: 0.005em;
+  /* Clears the 46px action rail (right edge) symmetrically — text must never
+     run underneath the buttons. Long texts clamp into the fullscreen reader. */
+  max-width: min(calc(100vw - 132px), 34rem);
+  letter-spacing: 0.005em;
   text-shadow: 0 2px 30px rgba(0,0,0,0.55);
   text-wrap: pretty;
   overflow: hidden; display: -webkit-box;

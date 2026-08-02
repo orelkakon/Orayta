@@ -567,6 +567,24 @@ export const HE = {
       ? `סיימתי את רגע התורה היומי שלי באורייתא — ${days} ימים ברצף 🔥`
       : 'סיימתי את רגע התורה היומי שלי באורייתא ✨',
 
+  /* ── First-visit + ritual-aware splash ── */
+  FEED_WELCOME_LINE: 'בכל יום — כמה רגעים קצרים של תורה. גללו, למדו, וחתמו את היום.',
+  FEED_SPLASH_SEALED: 'היום כבר נחתם ✓ גלילה חופשית',
+  FEED_SWIPE_HINT: 'החליקו למעלה כדי להתחיל',
+
+  /* Rotating seal blessing lines — one per day, so the ritual never goes stale. */
+  FEED_SEAL_LINES: [
+    'עוד יום של תורה נחתם. קבעת עתים לתורה.',
+    'רגע אחד ביום — וקביעות נבנית.',
+    'התורה נקנית ברגעים הקטנים.',
+    'יום אחר יום, רגע אחר רגע.',
+    'הבא ליטהר — מסייעין אותו.',
+  ],
+  FEED_SEAL_STORY: 'שיתוף לסטורי',
+
+  /* ── Story image invitation ── */
+  STORY_JOIN_LINE: 'הצטרפו לרגע של תורה היומי',
+
   /* ── Dedication amen gesture ── */
   FEED_AMEN: 'אמן',
   FEED_AMEN_ARIA: 'ענו אמן להקדשה',

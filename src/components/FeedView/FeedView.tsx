@@ -17,7 +17,8 @@ import type { FeedItem, FeedSlide, Dedication, InstagramReel } from '@/types';
 import { ALL_FEED_TYPES, FeedPrefs, DEFAULT_FEED_PREFS, getFeedPrefs, saveFeedPrefs, isCustomPrefs } from '@/lib/feedPrefs';
 import { shuffleArray } from '@/lib/feedShuffle';
 import { buildFeedSlides, ensureReelGaps } from '@/lib/feedSlides';
-import { bumpStreak, StreakInfo } from '@/lib/feedStreak';
+import { bumpStreak, isFirstVisit, StreakInfo } from '@/lib/feedStreak';
+import { HE } from '@/lib/hebrewTexts';
 import { getDailyProgress, bumpViewed, DAILY_GOAL } from '@/lib/feedDaily';
 import FeedSeal from './FeedSeal';
 import AddToHomeScreen from '@/components/common/AddToHomeScreen';
@@ -28,6 +29,23 @@ const Scroll = styled.div`
   height: 100dvh; overflow-y: scroll; scroll-snap-type: y mandatory;
   -webkit-overflow-scrolling: touch; scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
+`;
+
+const hintBob = keyframes`
+  0%, 100% { transform: translate(-50%, 0); opacity: 0.85; }
+  50%      { transform: translate(-50%, -9px); opacity: 1; }
+`;
+
+/* First-visit only: one quiet gesture cue, gone forever after the first swipe. */
+const SwipeHint = styled.div`
+  position: fixed; bottom: calc(30px + env(safe-area-inset-bottom)); left: 50%;
+  transform: translateX(-50%);
+  z-index: 250; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  color: rgba(255, 250, 235, 0.85); font-size: 0.8rem; font-weight: 600;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+  animation: ${hintBob} 1.6s ease-in-out infinite;
+  span { font-size: 1.1rem; line-height: 1; }
 `;
 
 const spin = keyframes`to { transform: rotate(360deg); }`;
@@ -53,6 +71,9 @@ export default function FeedView() {
   const [reelsOnScreen, setReelsOnScreen] = useState(0);
   const [streak, setStreak]             = useState<StreakInfo>({ days: 0, best: 0 });
   const [viewedToday, setViewedToday]   = useState(0);
+  const [firstVisit, setFirstVisit]     = useState(false);
+  const [sealedToday, setSealedToday]   = useState(false);
+  const [hintDone, setHintDone]         = useState(false);
   const scrollRef   = useRef<HTMLDivElement>(null);
   // Where the daily seal slides in (null = already sealed today). Fixed at
   // mount so the slide doesn't jump around as the user scrolls.
@@ -92,12 +113,14 @@ export default function FeedView() {
   }, []);
 
   useEffect(() => {
+    setFirstVisit(isFirstVisit());
     setStreak(bumpStreak());
 
     // Today's arc: a few warm-up slides, then the seal — unless today is
     // already sealed, in which case the feed scrolls free.
     const daily = getDailyProgress();
     setViewedToday(daily.viewed);
+    setSealedToday(daily.sealed);
     sealAfterRef.current = daily.sealed
       ? null
       : Math.max(2, DAILY_GOAL - daily.viewed);
@@ -134,6 +157,7 @@ export default function FeedView() {
     // Each newly-reached slide counts toward today's learning.
     if (idx > maxIdxRef.current) {
       maxIdxRef.current = idx;
+      setHintDone(true);
       setViewedToday(bumpViewed().viewed);
     }
     if (idx >= slidesLenRef.current - PRELOAD_THRESHOLD) void fetchMore();
@@ -209,7 +233,10 @@ export default function FeedView() {
         onClose={() => setSettingsOpen(false)}
         onSave={handleSaveSettings}
       />
-      <FeedSplash ready={initialLoaded} streak={streak.days} />
+      {firstVisit && !hintDone && initialLoaded && (
+        <SwipeHint>{HE.FEED_SWIPE_HINT}<span>⌃</span></SwipeHint>
+      )}
+      <FeedSplash ready={initialLoaded} streak={streak.days} firstVisit={firstVisit} sealed={sealedToday} />
       <AddToHomeScreen />
     </Wrapper>
   );

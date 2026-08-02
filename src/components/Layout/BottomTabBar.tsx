@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Link from 'next/link';
 import { theme } from '@/lib/theme';
@@ -21,10 +22,10 @@ const TABS = [
   { href: '/today', label: HE.TAB_TODAY, icon: 'calendar' },
 ];
 
-const Bar = styled.nav`
+const Bar = styled.nav<{ $hidden: boolean }>`
   display: none;
   @media (max-width: 768px) {
-    display: flex;
+    display: ${p => (p.$hidden ? 'none' : 'flex')};
     position: fixed;
     bottom: 0; left: 0; right: 0;
     z-index: ${theme.z.header};
@@ -95,7 +96,40 @@ interface Props {
   moreOpen: boolean;
 }
 
+/**
+ * True while the software keyboard is up. With the keyboard open, mobile
+ * browsers pin fixed-bottom elements to the shrunken visual viewport — the
+ * bar lands mid-page and floats around while scrolling. Native apps hide
+ * their tab bar under the keyboard; so do we.
+ */
+function useKeyboardOpen(): boolean {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const vv = window.visualViewport;
+    const onResize = () => {
+      if (vv) setOpen(window.innerHeight - vv.height > 140);
+    };
+    const isField = (t: EventTarget | null) =>
+      t instanceof HTMLElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName);
+    // Focus events as fallback for browsers without visualViewport.
+    const onFocusIn = (e: FocusEvent) => { if (isField(e.target)) setOpen(true); };
+    const onFocusOut = () => { setTimeout(onResize, 100); setTimeout(() => {
+      if (!isField(document.activeElement)) setOpen(false);
+    }, 120); };
+    vv?.addEventListener('resize', onResize);
+    document.addEventListener('focusin', onFocusIn);
+    document.addEventListener('focusout', onFocusOut);
+    return () => {
+      vv?.removeEventListener('resize', onResize);
+      document.removeEventListener('focusin', onFocusIn);
+      document.removeEventListener('focusout', onFocusOut);
+    };
+  }, []);
+  return open;
+}
+
 export default function BottomTabBar({ pathname, onMore, moreOpen }: Props) {
+  const keyboardOpen = useKeyboardOpen();
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href);
 
@@ -105,7 +139,7 @@ export default function BottomTabBar({ pathname, onMore, moreOpen }: Props) {
   const moreActive = moreOpen || !anyTabActive;
 
   return (
-    <Bar aria-label={HE.NAV_MENU}>
+    <Bar aria-label={HE.NAV_MENU} $hidden={keyboardOpen}>
       {TABS.map(tab => {
         const active = isActive(tab.href);
         return (
