@@ -8,7 +8,12 @@ import { Rabbi, RabbiCategory } from '@/types';
 import { CATEGORY_COLORS, CATEGORY_LABELS } from '@/lib/rabbisData';
 import SpeakButton from '@/components/common/SpeakButton';
 
-const Card = styled.div<{ $color: string }>`
+const fadeUp = keyframes`
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
+
+const Card = styled.div<{ $color: string; $index: number }>`
   background: ${theme.colors.surface};
   border-radius: ${theme.radii.lg};
   border: 1px solid ${theme.colors.borderLight};
@@ -18,11 +23,16 @@ const Card = styled.div<{ $color: string }>`
   display: flex;
   flex-direction: column;
   gap: ${theme.spacing.sm};
-  transition: box-shadow 0.15s, transform 0.15s;
-  &:hover {
-    box-shadow: ${theme.shadows.md};
-    transform: translateY(-1px);
+  transition: transform 0.15s ease, box-shadow 0.15s;
+  animation: ${fadeUp} 0.45s ease both;
+  animation-delay: ${p => Math.min(p.$index, 12) * 40}ms;
+  @media (hover: hover) {
+    &:hover {
+      box-shadow: ${theme.shadows.md};
+      transform: translateY(-2px);
+    }
   }
+  &:active { transform: translateY(-1px) scale(0.98); }
 `;
 
 const Header = styled.div`
@@ -232,12 +242,13 @@ interface BookRef { id: string; title: string; }
 
 interface Props {
   rabbi: Rabbi;
+  index?: number;
   books?: BookRef[];
   onEdit?: () => void;
   onDelete?: () => void;
 }
 
-export default function RabbiCard({ rabbi, books, onEdit, onDelete }: Props) {
+export default function RabbiCard({ rabbi, index = 0, books, onEdit, onDelete }: Props) {
   const [booksOpen, setBooksOpen] = useState(false);
   const [lightbox, setLightbox] = useState(false);
   const color = CATEGORY_COLORS[rabbi.category as RabbiCategory] ?? theme.colors.primaryLight;
@@ -245,7 +256,7 @@ export default function RabbiCard({ rabbi, books, onEdit, onDelete }: Props) {
 
   return (
     <>
-    <Card $color={color}>
+    <Card $color={color} $index={index}>
       <Header>
         <NameBlock>
           <Name>{rabbi.name}</Name>

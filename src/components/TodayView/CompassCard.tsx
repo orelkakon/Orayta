@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { GeoLocation, LocState } from './TodayView';
@@ -65,7 +65,9 @@ const RetryBtn = styled.button`
   color: ${theme.colors.onPrimary};
   border-radius: ${theme.radii.sm};
   font-size: 0.82rem;
+  transition: all ${theme.motion.fast} ease;
   &:hover { background: ${theme.colors.primaryLight}; }
+  &:active { transform: scale(0.96); }
 `;
 const PermBtn = styled.button`
   font-size: 0.82rem;
@@ -73,8 +75,18 @@ const PermBtn = styled.button`
   border: 1px solid ${theme.colors.border};
   border-radius: ${theme.radii.sm};
   color: ${theme.colors.textMuted};
+  transition: all ${theme.motion.fast} ease;
   &:hover { border-color: ${theme.colors.primary}; color: ${theme.colors.primary}; }
+  &:active { transform: scale(0.96); }
 `;
+const spin = keyframes`to { transform: rotate(360deg); }`;
+const Spinner = styled.span`
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 2px solid ${theme.colors.borderLight}; border-top-color: ${theme.colors.primary};
+  animation: ${spin} 0.8s linear infinite;
+  @media (prefers-reduced-motion: reduce) { animation-duration: 2.4s; }
+`;
+const LoadingBox = styled.div`min-height: 120px; display: flex; align-items: center; justify-content: center;`;
 
 type IOSOrientationEvt = typeof DeviceOrientationEvent & { requestPermission?: () => Promise<'granted' | 'denied'> };
 
@@ -131,15 +143,15 @@ export default function CompassCard({ location, locState, onRetry }: Props) {
     <Card>
       <CardTitle>{HE.TODAY_COMPASS_TITLE}</CardTitle>
       {locState !== 'granted' || bearing === null ? (
-        <Placeholder>
-          <span>{locState === 'denied' ? HE.TODAY_LOCATION_DENIED : HE.LOADING}</span>
-          {locState === 'denied' && (
-            <>
-              <DeniedHelp>{HE.TODAY_LOCATION_DENIED_HELP}</DeniedHelp>
-              <RetryBtn onClick={onRetry}>{HE.TODAY_LOCATION_RETRY}</RetryBtn>
-            </>
-          )}
-        </Placeholder>
+        locState === 'denied' ? (
+          <Placeholder>
+            <span>{HE.TODAY_LOCATION_DENIED}</span>
+            <DeniedHelp>{HE.TODAY_LOCATION_DENIED_HELP}</DeniedHelp>
+            <RetryBtn onClick={onRetry}>{HE.TODAY_LOCATION_RETRY}</RetryBtn>
+          </Placeholder>
+        ) : (
+          <LoadingBox role="status" aria-label={HE.LOADING}><Spinner aria-hidden="true" /></LoadingBox>
+        )
       ) : (
         <>
           <CompassWrap>

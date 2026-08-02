@@ -33,16 +33,16 @@ const AdminBtns = styled.div`display: flex; gap: ${theme.spacing.sm};`;
 const ActionBtn = styled.button<{ $danger?: boolean }>`
   font-size: 0.82rem; padding: ${theme.spacing.xs} ${theme.spacing.md};
   border-radius: ${theme.radii.sm};
-  background: ${({ $danger }) => ($danger ? '#fef2f2' : theme.colors.borderLight)};
-  color: ${({ $danger }) => ($danger ? '#dc2626' : theme.colors.textMuted)};
-  border: 1px solid ${({ $danger }) => ($danger ? '#fca5a5' : theme.colors.borderLight)};
+  background: ${({ $danger }) => ($danger ? theme.colors.bgError : theme.colors.borderLight)};
+  color: ${({ $danger }) => ($danger ? theme.colors.error : theme.colors.textMuted)};
+  border: 1px solid ${({ $danger }) => ($danger ? theme.colors.error : theme.colors.borderLight)};
   &:hover { opacity: 0.8; }
 `;
 const ShareBtn = styled.a`
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 0.82rem; font-weight: 600;
   padding: ${theme.spacing.xs} ${theme.spacing.md};
-  background: #25D366; color: white;
+  background: ${theme.brand.whatsapp}; color: ${theme.brand.whatsappText};
   border-radius: ${theme.radii.sm};
   border: none; cursor: pointer; text-decoration: none;
   &:hover { opacity: 0.88; }

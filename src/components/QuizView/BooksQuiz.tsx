@@ -7,6 +7,10 @@ import { HE } from '@/lib/hebrewTexts';
 import { Book } from '@/types';
 import { addStat } from '@/lib/statsStorage';
 import AllDoneCard from './AllDoneCard';
+import {
+  Top, QuestionLabel, Streak, ResultBanner, BtnRow, NextBtn, SkipBtn, HintBtn,
+  QuestionBlock, pressable, answerMotion, answerFeedback, isMilestone, shuffle,
+} from './quizChrome';
 
 type State = 'default' | 'correct' | 'wrong' | 'faded' | 'eliminated';
 
@@ -15,10 +19,6 @@ const Wrapper = styled.div`
   padding: ${theme.spacing.xl}; box-shadow: ${theme.shadows.md};
   display: flex; flex-direction: column; gap: ${theme.spacing.lg}; min-width: 0;
 `;
-const Label = styled.div`
-  font-size: 0.8rem; font-weight: 600; color: ${theme.colors.textMuted};
-  text-transform: uppercase; letter-spacing: 0.05em;
-`;
 const BookTitle = styled.h2`
   font-family: ${theme.fonts.body}; font-size: 1.4rem; font-weight: 700;
   color: ${theme.colors.primary}; border-right: 4px solid ${theme.colors.secondary};
@@ -26,9 +26,11 @@ const BookTitle = styled.h2`
 `;
 const OptionsGrid = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.sm};`;
 const OptionBtn = styled.button<{ $state: State }>`
+  ${pressable};
+  ${answerMotion};
   padding: ${theme.spacing.md}; border-radius: ${theme.radii.md};
   font-size: 0.95rem; font-family: ${theme.fonts.body}; text-align: right;
-  width: 100%; transition: all 0.15s;
+  width: 100%;
   display: ${({ $state }) => ($state === 'eliminated' ? 'none' : 'block')};
   border: 2px solid ${({ $state }) =>
     $state === 'correct' ? theme.colors.success :
@@ -44,40 +46,7 @@ const OptionBtn = styled.button<{ $state: State }>`
   pointer-events: ${({ $state }) => $state !== 'default' ? 'none' : 'auto'};
   &:hover { border-color: ${theme.colors.primaryLight}; }
 `;
-const HintBtn = styled.button`
-  align-self: flex-start;
-  font-size: 0.85rem;
-  color: ${theme.colors.primaryLight};
-  border: 1px dashed ${theme.colors.border};
-  border-radius: ${theme.radii.sm};
-  padding: ${theme.spacing.xs} ${theme.spacing.md};
-  transition: all 0.15s;
-  &:hover { background: ${theme.colors.surfaceAlt}; }
-`;
-const ResultBanner = styled.div<{ $correct: boolean }>`
-  padding: ${theme.spacing.md}; border-radius: ${theme.radii.md};
-  background: ${({ $correct }) => ($correct ? theme.colors.bgSuccess : theme.colors.bgError)};
-  color: ${({ $correct }) => ($correct ? theme.colors.success : theme.colors.error)};
-  font-weight: 700;
-`;
-const NextBtn = styled.button`
-  padding: ${theme.spacing.md} ${theme.spacing.xl}; background: ${theme.colors.primary};
-  color: ${theme.colors.onPrimary}; border-radius: ${theme.radii.md}; font-size: 1rem; font-weight: 600;
-  &:hover { background: ${theme.colors.primaryLight}; }
-`;
-const SkipBtn = styled.button`
-  padding: ${theme.spacing.md} ${theme.spacing.xl};
-  border: 2px solid ${theme.colors.border}; border-radius: ${theme.radii.md};
-  font-size: 1rem; color: ${theme.colors.textMuted};
-  &:hover { border-color: ${theme.colors.primaryLight}; color: ${theme.colors.primary}; }
-`;
-const BtnRow = styled.div`display: flex; gap: ${theme.spacing.md};`;
 const Empty = styled.div`color: ${theme.colors.textMuted};`;
-const Top = styled.div`display: flex; align-items: center; justify-content: space-between;`;
-const Streak = styled.div`
-  background: linear-gradient(135deg, #FF6B35, #FF9F1C);
-  color: #3A1A00; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
-`;
 
 interface Props { onAnswered: () => void; }
 
@@ -110,11 +79,11 @@ export default function BooksQuiz({ onAnswered }: Props) {
     setAllDone(false);
     const q = available[Math.floor(Math.random() * available.length)];
     const correct = q.author;
-    const otherAuthors = Array.from(new Set(
+    const otherAuthors = shuffle(Array.from(new Set(
       list.filter(b => b.author !== correct).map(b => b.author)
-    )).sort(() => Math.random() - 0.5).slice(0, 3);
+    ))).slice(0, 3);
     setQuestion(q);
-    setOptions([correct, ...otherAuthors].sort(() => Math.random() - 0.5));
+    setOptions(shuffle([correct, ...otherAuthors]));
     setSelected(null);
     setEliminated(null);
   }, []);
@@ -134,9 +103,10 @@ export default function BooksQuiz({ onAnswered }: Props) {
   };
 
   const handleSelect = (author: string) => {
-    if (selected !== null || !question) return;
+    if (selected !== null || !question || !loaded) return;
     setSelected(author);
     const correct = author === question.author;
+    answerFeedback(correct);
     addStat({ score: correct ? 1 : 0, content: question.title, mode: 'books' });
     setStreak(s => correct ? s + 1 : 0);
     onAnswered();
@@ -178,31 +148,35 @@ export default function BooksQuiz({ onAnswered }: Props) {
   return (
     <Wrapper>
       <Top>
-        <Label>{HE.QUIZ_BOOKS_QUESTION}</Label>
-        {streak > 0 && <Streak>🔥 {HE.QUIZ_STREAK(streak)}</Streak>}
+        <QuestionLabel>{HE.QUIZ_BOOKS_QUESTION}</QuestionLabel>
+        {streak > 0 && (
+          <Streak key={streak} $milestone={isMilestone(streak)}>🔥 {HE.QUIZ_STREAK(streak)}</Streak>
+        )}
       </Top>
-      <BookTitle>{question.title}</BookTitle>
-      {selected === null && !eliminated && (
-        <HintBtn onClick={handleHint}>{HE.QUIZ_HINT_BUTTON}</HintBtn>
-      )}
-      <OptionsGrid>
-        {options.map(author => (
-          <OptionBtn
-            key={author}
-            $state={getState(author)}
-            onClick={() => handleSelect(author)}
-          >
-            {author}
-          </OptionBtn>
-        ))}
-      </OptionsGrid>
-      {selected !== null && (
-        <ResultBanner $correct={selected === question.author}>
-          {selected === question.author ? HE.QUIZ_CORRECT : HE.QUIZ_WRONG}
-        </ResultBanner>
-      )}
+      <QuestionBlock key={question.id}>
+        <BookTitle>{question.title}</BookTitle>
+        {selected === null && !eliminated && (
+          <HintBtn onClick={handleHint}>{HE.QUIZ_HINT_BUTTON}</HintBtn>
+        )}
+        <OptionsGrid>
+          {options.map(author => (
+            <OptionBtn
+              key={author}
+              $state={getState(author)}
+              onClick={() => handleSelect(author)}
+            >
+              {author}
+            </OptionBtn>
+          ))}
+        </OptionsGrid>
+        {selected !== null && (
+          <ResultBanner $correct={selected === question.author}>
+            {selected === question.author ? HE.QUIZ_CORRECT : HE.QUIZ_WRONG}
+          </ResultBanner>
+        )}
+      </QuestionBlock>
       {selected !== null
-        ? <NextBtn onClick={handleNext}>{HE.QUIZ_NEXT}</NextBtn>
+        ? <NextBtn onClick={handleNext} autoFocus>{HE.QUIZ_NEXT}</NextBtn>
         : <BtnRow><SkipBtn onClick={handleSkip}>{HE.QUIZ_SKIP}</SkipBtn></BtnRow>
       }
     </Wrapper>

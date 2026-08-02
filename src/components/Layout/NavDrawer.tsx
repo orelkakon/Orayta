@@ -8,31 +8,42 @@ import { HE } from '@/lib/hebrewTexts';
 import { navItems } from './navItems';
 import { LineIcon } from '@/components/common/LineIcons';
 
+/* Breakpoint must match the header's hamburger cutoff (1100px in AppLayout):
+   below that the drawer is the only navigation, so a narrower media query
+   here left tablets with a hamburger that opened nothing. */
 const Backdrop = styled.div<{ $open: boolean }>`
   display: none;
-  @media (max-width: 768px) {
-    display: ${p => (p.$open ? 'block' : 'none')};
+  @media (max-width: 1100px) {
+    display: block;
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.45);
-    z-index: 150;
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    z-index: ${theme.z.drawer - 10};
+    opacity: ${p => (p.$open ? 1 : 0)};
+    visibility: ${p => (p.$open ? 'visible' : 'hidden')};
+    transition: opacity ${theme.motion.base} ease, visibility ${theme.motion.base} ease;
   }
 `;
 
 const Drawer = styled.div<{ $open: boolean }>`
   display: none;
-  @media (max-width: 768px) {
+  @media (max-width: 1100px) {
     display: flex;
     flex-direction: column;
     position: fixed;
     top: 0; right: 0; bottom: 0;
-    width: 220px;
+    width: 240px;
     background: ${theme.colors.primary};
-    z-index: 160;
+    z-index: ${theme.z.drawer};
     transform: translateX(${p => (p.$open ? '0' : '100%')});
-    transition: transform 0.25s ease;
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    box-shadow: ${p => (p.$open ? '-12px 0 32px rgba(0, 0, 0, 0.25)' : 'none')};
     padding: ${theme.spacing.md};
+    padding-bottom: calc(${theme.spacing.md} + env(safe-area-inset-bottom));
     gap: 2px;
     overflow-y: auto;
+    overscroll-behavior: contain;
   }
 `;
 
@@ -70,8 +81,9 @@ const DrawerLink = styled(Link)<{ $active?: boolean }>`
   color: ${theme.colors.onPrimary};
   display: flex; align-items: center; gap: 8px;
   background: ${({ $active }) => ($active ? 'rgba(255,255,255,0.25)' : 'transparent')};
-  transition: background 0.15s;
+  transition: background ${theme.motion.fast} ease, transform ${theme.motion.fast} ease;
   &:hover { background: rgba(255,255,255,0.15); }
+  &:active { transform: scale(0.97); background: rgba(255,255,255,0.2); }
 `;
 
 const DrawerLogout = styled.button`

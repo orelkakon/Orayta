@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Rabbi, Citation, Chidush } from '@/types';
@@ -72,6 +72,21 @@ const Divider = styled.div`
   height: 1px; background: ${theme.colors.borderLight}; margin: 4px 0;
 `;
 
+const spin = keyframes`to { transform: rotate(360deg); }`;
+
+const Spinner = styled.span`
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 2px solid ${theme.colors.borderLight};
+  border-top-color: ${theme.colors.primary};
+  animation: ${spin} 0.8s linear infinite;
+  @media (prefers-reduced-motion: reduce) { animation-duration: 2.4s; }
+`;
+
+const LoadingBox = styled.div`
+  min-height: 140px; width: 100%;
+  display: flex; align-items: center; justify-content: center;
+`;
+
 export default function DailySection() {
   const [rabbi, setRabbi] = useState<Rabbi | null>(null);
   const [citation, setCitation] = useState<Citation | null>(null);
@@ -84,14 +99,19 @@ export default function DailySection() {
   useEffect(() => {
     const today = new Date();
     const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-    void Promise.all([
+    void Promise.allSettled([
       fetch('/api/rabbis').then(r => r.json()) as Promise<Rabbi[]>,
       fetch('/api/citations').then(r => r.json()) as Promise<Citation[]>,
       fetch('/api/sikum-entries/daily').then(r => r.json()) as Promise<DailySikum | null>,
       fetch('/api/chidushim').then(r => r.json()) as Promise<Chidush[]>,
       fetch(`https://www.hebcal.com/converter?cfg=json&date=${dateStr}&g2h=1&strict=1`)
-        .then(r => r.json() as Promise<HebConverterResp>).catch(() => null),
-    ]).then(([rs, cs, sk, chs, hd]) => {
+        .then(r => r.json() as Promise<HebConverterResp>),
+    ]).then(([rsR, csR, skR, chsR, hdR]) => {
+      const rs = rsR.status === 'fulfilled' ? rsR.value : [];
+      const cs = csR.status === 'fulfilled' ? csR.value : [];
+      const sk = skR.status === 'fulfilled' ? skR.value : null;
+      const chs = chsR.status === 'fulfilled' ? chsR.value : [];
+      const hd = hdR.status === 'fulfilled' ? hdR.value : null;
       setRabbi(pick(rs));
       setCitation(pick(cs));
       setSikum(sk);
@@ -104,7 +124,18 @@ export default function DailySection() {
     });
   }, []);
 
-  if (!ready) return null;
+  if (!ready) {
+    return (
+      <Wrapper>
+        <LoadingBox role="status" aria-label={HE.LOADING}>
+          <Spinner aria-hidden="true" />
+        </LoadingBox>
+      </Wrapper>
+    );
+  }
+
+  /* Every source failed — keep the pre-existing "no section" behavior. */
+  if (!rabbi && !citation && !sikum && !chidush) return null;
 
   const loc = citation?.locations[0];
   const catColor = rabbi ? CATEGORY_COLORS[rabbi.category as RabbiCategory] : '';

@@ -98,6 +98,12 @@ const GlobalStylesheet = createGlobalStyle`
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+    /* Infinite loops (marquees, drifting blobs) must rest at their natural
+       position — the duration clamp above teleports them to a mid-animation
+       frame and freezes there, which looks broken rather than calm. */
+    .anim-loop, .anim-loop::before, .anim-loop::after {
+      animation: none !important;
+    }
   }
 
   /* Skip link — first focusable element on the page, visible only when focused. */
@@ -156,6 +162,15 @@ const GlobalStylesheet = createGlobalStyle`
     line-height: 1.6;
     min-height: 100vh;
     transition: background-color 0.2s ease, color 0.2s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Mobile: no gray tap flash, no rubber-band past the page edges — the two
+     strongest "this is a website" tells inside a home-screen install. */
+  a, button, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   h1, h2, h3, h4, h5, h6 {

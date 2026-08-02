@@ -38,18 +38,18 @@ const Banner = styled(Link)`
   animation: ${glow} 3s ease-in-out infinite;
   transition: transform 0.2s;
   &:hover  { transform: translateY(-3px) scale(1.005); }
-  &:active { transform: scale(0.99); }
+  &:active { transform: scale(0.97); }
   @media (max-width: 480px) { padding: ${theme.spacing.md} ${theme.spacing.md}; }
 `;
 
 /* moving band of light sweeping across the banner */
-const Sheen = styled.div`
+const Sheen = styled.div.attrs({ className: 'anim-loop' })`
   position: absolute; top: 0; bottom: 0; width: 45%; pointer-events: none;
   background: linear-gradient(90deg, transparent, rgba(255,235,190,0.13), transparent);
   animation: ${shimmer} 3.6s ease-in-out infinite;
 `;
 
-const Spark = styled.span<{ $top: string; $side: string; $delay: string; $size: string }>`
+const Spark = styled.span.attrs({ className: 'anim-loop' })<{ $top: string; $side: string; $delay: string; $size: string }>`
   position: absolute; top: ${p => p.$top}; right: ${p => p.$side};
   font-size: ${p => p.$size}; color: rgba(255,225,170,0.8); pointer-events: none;
   animation: ${float} 2.8s ease-in-out ${p => p.$delay} infinite;
@@ -82,7 +82,7 @@ const Cta = styled.div`
   ${Banner}:hover & { transform: scale(1.05); box-shadow: 0 6px 22px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.8) inset; }
 `;
 
-const CtaArrow = styled.span`
+const CtaArrow = styled.span.attrs({ className: 'anim-loop' })`
   display: inline-block; animation: ${nudge} 1.4s ease-in-out infinite;
 `;
 

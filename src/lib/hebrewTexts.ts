@@ -153,6 +153,9 @@ export const HE = {
   QUIZ_RESET_STATS: 'איפוס סטטיסטיקות',
   QUIZ_RESET_CONFIRM: 'לאפס את כל הסטטיסטיקות?',
   QUIZ_STATS_EMPTY: 'עדיין אין נתונים',
+  QUIZ_TODAY: 'נענו היום',
+  QUIZ_DAY_STREAK: 'ימי תרגול ברצף',
+  QUIZ_RESET_YES: 'כן, אפס',
   QUIZ_MODE_CLASSIC: 'חידון קלאסי',
   QUIZ_MODE_MULTIPLE: 'חידון אמריקאי',
   QUIZ_MC_CHOOSE: 'בחר את המקור הנכון',
@@ -650,6 +653,12 @@ export const HE = {
   HOME_TAGLINE: 'ספרייה יהודית חיה — תלמוד, רבנים ותפילות, עם רגע לימוד יומי בכיס',
   HEADER_TAGLINE: 'בס״ד · מקורות יהודיים',
   NAV_MENU: 'תפריט ניווט',
+
+  /* ── Mobile bottom tab bar (short labels) ── */
+  TAB_FEED: 'פיד',
+  TAB_QUIZ: 'תרגול',
+  TAB_TODAY: 'היומי',
+  TAB_MORE: 'עוד',
   ARIA_MUSIC_ON: 'הפעל מוזיקת רקע',
   ARIA_MUSIC_OFF: 'כבה מוזיקת רקע',
 };

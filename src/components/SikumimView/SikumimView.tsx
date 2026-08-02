@@ -42,7 +42,7 @@ const Subtitle = styled.p`font-size: 0.95rem; color: ${theme.colors.textMuted};`
 
 const AddBtn = styled.button`
   padding: ${theme.spacing.sm} ${theme.spacing.lg};
-  background: ${theme.colors.primary}; color: white;
+  background: ${theme.colors.primary}; color: ${theme.colors.onPrimary};
   border-radius: ${theme.radii.md}; font-size: 0.9rem; font-weight: 600;
   flex-shrink: 0; align-self: flex-start;
   &:hover { background: ${theme.colors.primaryLight}; }
@@ -180,10 +180,11 @@ export default function SikumimView({ initialSearch = '' }: { initialSearch?: st
               onRetry={() => load()}
             />
           )
-          : filtered.map(b => (
+          : filtered.map((b, i) => (
               <SikumBookCard
                 key={b.id}
                 book={b}
+                index={i}
                 onClick={() => setSelectedBook(b)}
                 onEdit={role === 'admin' ? () => setEditBook(b) : undefined}
                 onDelete={role === 'admin' ? () => handleDelete(b) : undefined}

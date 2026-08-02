@@ -23,6 +23,9 @@ import { RabbiCategory } from '@/types';
 
 import StatsPanel from './StatsPanel';
 import AllDoneCard from './AllDoneCard';
+import {
+  Top, QuestionLabel, Streak, HintBtn, popIn, pressable, answerFeedback, isMilestone,
+} from './quizChrome';
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(8px); }
@@ -108,14 +111,6 @@ const QuestionCard = styled.div`
   min-width: 0;
 `;
 
-const QuestionLabel = styled.div`
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: ${theme.colors.textMuted};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-`;
-
 const CitationText = styled.blockquote`
   font-family: ${theme.fonts.body};
   font-size: 1.15rem;
@@ -135,17 +130,6 @@ const HintBox = styled.div`
   font-size: 0.9rem;
   color: ${theme.colors.textMuted};
   animation: ${fadeIn} 0.2s ease;
-`;
-
-const HintButton = styled.button`
-  align-self: flex-start;
-  font-size: 0.85rem;
-  color: ${theme.colors.primaryLight};
-  border: 1px dashed ${theme.colors.border};
-  border-radius: ${theme.radii.sm};
-  padding: ${theme.spacing.xs} ${theme.spacing.md};
-  transition: all 0.15s;
-  &:hover { background: ${theme.colors.surfaceAlt}; }
 `;
 
 const Row = styled.div`
@@ -195,13 +179,13 @@ const AmudRow = styled.div`
 `;
 
 const AmudBtn = styled.button<{ $active?: boolean }>`
+  ${pressable};
   padding: ${theme.spacing.xs} ${theme.spacing.md};
   border-radius: ${theme.radii.sm};
   border: 2px solid ${({ $active }) => ($active ? theme.colors.primary : theme.colors.border)};
   background: ${({ $active }) => ($active ? theme.colors.primary : theme.colors.surface)};
   color: ${({ $active }) => ($active ? theme.colors.onPrimary : theme.colors.text)};
   font-size: 0.9rem;
-  transition: all 0.15s;
 `;
 
 const ButtonRow = styled.div`
@@ -211,27 +195,29 @@ const ButtonRow = styled.div`
 `;
 
 const PrimaryBtn = styled.button`
+  ${pressable};
   padding: ${theme.spacing.md} ${theme.spacing.xl};
   background: ${theme.colors.primary};
   color: ${theme.colors.onPrimary};
   border-radius: ${theme.radii.md};
   font-size: 1rem;
   font-weight: 600;
-  transition: background 0.15s;
-  &:hover { background: ${theme.colors.primaryLight}; }
+  &:hover { background: ${theme.colors.primaryLight}; box-shadow: ${theme.shadows.md}; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
 
 const GhostBtn = styled.button`
+  ${pressable};
   padding: ${theme.spacing.md} ${theme.spacing.xl};
   border: 2px solid ${theme.colors.border};
   border-radius: ${theme.radii.md};
   font-size: 1rem;
   color: ${theme.colors.textMuted};
-  transition: all 0.15s;
   &:hover { border-color: ${theme.colors.primaryLight}; color: ${theme.colors.primary}; }
 `;
 
+/* Local because classic mode has a third, half-credit state the shared
+   two-state banner doesn't model. */
 const ResultBanner = styled.div<{ $score: number }>`
   padding: ${theme.spacing.md};
   border-radius: ${theme.radii.md};
@@ -246,6 +232,7 @@ const ResultBanner = styled.div<{ $score: number }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  animation: ${popIn} 0.35s ${theme.motion.spring};
 `;
 
 const ScoreBadge = styled.span`
@@ -268,6 +255,7 @@ const ModeGrid = styled.div`
 `;
 
 const ModeButton = styled.button<{ $active?: boolean }>`
+  ${pressable};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -280,12 +268,13 @@ const ModeButton = styled.button<{ $active?: boolean }>`
   background: ${({ $active }) => ($active ? theme.colors.surfaceAlt : theme.colors.surface)};
   box-shadow: ${({ $active }) => ($active ? theme.shadows.md : theme.shadows.sm)};
   color: ${({ $active }) => ($active ? theme.colors.primary : theme.colors.textMuted)};
-  transition: all 0.15s;
 
-  &:hover {
-    border-color: ${theme.colors.primaryLight};
-    color: ${theme.colors.primary};
-    transform: translateY(-1px);
+  @media (hover: hover) {
+    &:hover {
+      border-color: ${theme.colors.primaryLight};
+      color: ${theme.colors.primary};
+      transform: translateY(-1px);
+    }
   }
 `;
 
@@ -304,12 +293,6 @@ const ModeLabel = styled.span`
   @media (max-width: 380px) {
     font-size: 0.7rem;
   }
-`;
-
-const QuizLabelRow = styled.div`display: flex; align-items: center; justify-content: space-between;`;
-const StreakBadge = styled.div`
-  background: linear-gradient(135deg, #FF6B35, #FF9F1C);
-  color: #3A1A00; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
 `;
 
 interface AnswerResult {
@@ -393,19 +376,25 @@ export default function QuizView() {
   };
 
   const handleSubmit = async () => {
-    if (!question || !masechet || !daf.trim()) return;
+    if (!question || !masechet || !daf.trim() || loading) return;
     setLoading(true);
-    const res = await fetch('/api/quiz', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ citationId: question.id, masechet, daf, amud }),
-    });
-    const data = await res.json() as AnswerResult;
-    setResult(data);
-    addStat({ score: data.score, content: question.content.slice(0, 80), mode: 'classic' });
-    setStreak(s => data.score >= 1 ? s + 1 : 0);
-    setLoading(false);
-    bumpStats();
+    try {
+      const res = await fetch('/api/quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ citationId: question.id, masechet, daf, amud }),
+      });
+      const data = await res.json() as AnswerResult;
+      setResult(data);
+      answerFeedback(data.score >= 1);
+      addStat({ score: data.score, content: question.content.slice(0, 80), mode: 'classic' });
+      setStreak(s => data.score >= 1 ? s + 1 : 0);
+      bumpStats();
+    } finally {
+      // Without the finally, one failed POST left the submit button reading
+      // "טוען..." forever.
+      setLoading(false);
+    }
   };
 
   const formatLocation = (loc: Citation['locations'][0]) => {
@@ -534,17 +523,19 @@ export default function QuizView() {
             onAnswered={bumpStats}
           />
         ) : (
-        <QuestionCard>
-          <QuizLabelRow>
+        <QuestionCard key={question?.id ?? 'loading'}>
+          <Top>
             <QuestionLabel>{HE.QUIZ_QUESTION}</QuestionLabel>
-            {streak > 0 && <StreakBadge>🔥 {HE.QUIZ_STREAK(streak)}</StreakBadge>}
-          </QuizLabelRow>
+            {streak > 0 && (
+              <Streak key={streak} $milestone={isMilestone(streak)}>🔥 {HE.QUIZ_STREAK(streak)}</Streak>
+            )}
+          </Top>
           <CitationText>{question?.content ?? HE.LOADING}</CitationText>
 
           {!result && !hintShown && (
-            <HintButton type="button" onClick={() => setHintShown(true)}>
+            <HintBtn type="button" onClick={() => setHintShown(true)}>
               {HE.QUIZ_HINT_BUTTON}
-            </HintButton>
+            </HintBtn>
           )}
           {!result && hintShown && (
             <HintBox>{HE.QUIZ_HINT_LABEL} {hintSeder}</HintBox>
@@ -571,6 +562,7 @@ export default function QuizView() {
                   <Input
                     value={daf}
                     onChange={(e) => setDaf(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') void handleSubmit(); }}
                     placeholder={HE.ADD_DAF_PLACEHOLDER}
                   />
                 </Field>
@@ -612,7 +604,7 @@ export default function QuizView() {
                 {result.correctLocations.map(formatLocation).join(' / ')}
               </CorrectAnswer>
               <ButtonRow>
-                <PrimaryBtn onClick={() => {
+                <PrimaryBtn autoFocus onClick={() => {
                   if (result.score >= 1 && question) {
                     const next = [...seenIds, question.id];
                     setSeenIds(next);

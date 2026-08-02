@@ -7,6 +7,10 @@ import { HE } from '@/lib/hebrewTexts';
 import { Citation, CitationLocation } from '@/types';
 import { addStat } from '@/lib/statsStorage';
 import AllDoneCard from './AllDoneCard';
+import {
+  Top, QuestionLabel, Streak, ResultBanner, BtnRow, NextBtn, SkipBtn, HintBtn,
+  QuestionBlock, pressable, answerMotion, answerFeedback, isMilestone, shuffle,
+} from './quizChrome';
 
 type OptionState = 'default' | 'correct' | 'wrong' | 'faded' | 'eliminated';
 
@@ -21,14 +25,6 @@ const Wrapper = styled.div`
   min-width: 0;
 `;
 
-const QuestionLabel = styled.div`
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: ${theme.colors.textMuted};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-`;
-
 const CitationText = styled.blockquote`
   font-family: ${theme.fonts.body};
   font-size: 1.15rem;
@@ -41,13 +37,14 @@ const CitationText = styled.blockquote`
 `;
 
 const OptionBtn = styled.button<{ $state: OptionState }>`
+  ${pressable};
+  ${answerMotion};
   padding: ${theme.spacing.md};
   border-radius: ${theme.radii.md};
   font-size: 0.95rem;
   font-family: ${theme.fonts.body};
   text-align: right;
   width: 100%;
-  transition: all 0.15s;
   display: ${({ $state }) => ($state === 'eliminated' ? 'none' : 'block')};
   border: 2px solid ${({ $state }) =>
     $state === 'correct' ? theme.colors.success :
@@ -68,56 +65,6 @@ const OptionBtn = styled.button<{ $state: OptionState }>`
   &:hover { border-color: ${theme.colors.primaryLight}; }
 `;
 
-const HintBtn = styled.button`
-  align-self: flex-start;
-  font-size: 0.85rem;
-  color: ${theme.colors.primaryLight};
-  border: 1px dashed ${theme.colors.border};
-  border-radius: ${theme.radii.sm};
-  padding: ${theme.spacing.xs} ${theme.spacing.md};
-  transition: all 0.15s;
-  &:hover { background: ${theme.colors.surfaceAlt}; }
-`;
-
-const ResultBanner = styled.div<{ $correct: boolean }>`
-  padding: ${theme.spacing.md};
-  border-radius: ${theme.radii.md};
-  background: ${({ $correct }) => ($correct ? theme.colors.bgSuccess : theme.colors.bgError)};
-  color: ${({ $correct }) => ($correct ? theme.colors.success : theme.colors.error)};
-  font-weight: 700;
-`;
-
-const Top = styled.div`display: flex; align-items: center; justify-content: space-between;`;
-const Streak = styled.div`
-  background: linear-gradient(135deg, #FF6B35, #FF9F1C);
-  color: #3A1A00; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
-`;
-
-const BtnRow = styled.div`
-  display: flex;
-  gap: ${theme.spacing.md};
-`;
-
-const NextBtn = styled.button`
-  padding: ${theme.spacing.md} ${theme.spacing.xl};
-  background: ${theme.colors.primary};
-  color: ${theme.colors.onPrimary};
-  border-radius: ${theme.radii.md};
-  font-size: 1rem;
-  font-weight: 600;
-  &:hover { background: ${theme.colors.primaryLight}; }
-`;
-
-const SkipBtn = styled.button`
-  padding: ${theme.spacing.md} ${theme.spacing.xl};
-  border: 2px solid ${theme.colors.border};
-  border-radius: ${theme.radii.md};
-  font-size: 1rem;
-  color: ${theme.colors.textMuted};
-  transition: all 0.15s;
-  &:hover { border-color: ${theme.colors.primaryLight}; color: ${theme.colors.primary}; }
-`;
-
 interface Props {
   filterSeder: string;
   filterMasechet: string;
@@ -131,6 +78,7 @@ export default function MultipleChoiceQuiz({ filterSeder, filterMasechet, onAnsw
   const [eliminatedId, setEliminatedId] = useState<string | null>(null);
   const [score, setScore] = useState<number | null>(null);
   const [noResults, setNoResults] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [streak, setStreak] = useState(0);
   const [seenIds, setSeenIds] = useState<string[]>([]);
   const [allDone, setAllDone] = useState(false);
@@ -141,31 +89,35 @@ export default function MultipleChoiceQuiz({ filterSeder, filterMasechet, onAnsw
     setScore(null);
     setNoResults(false);
     setAllDone(false);
+    setLoading(true);
 
-    const params = new URLSearchParams();
-    if (filterMasechet) params.set('masechet', filterMasechet);
-    else if (filterSeder) params.set('seder', filterSeder);
-    excludeIds.forEach(id => params.append('exclude', id));
+    try {
+      const params = new URLSearchParams();
+      if (filterMasechet) params.set('masechet', filterMasechet);
+      else if (filterSeder) params.set('seder', filterSeder);
+      excludeIds.forEach(id => params.append('exclude', id));
 
-    const qRes = await fetch(`/api/quiz?${params}`);
-    if (qRes.status === 404) {
-      if (excludeIds.length > 0) setAllDone(true);
-      else setNoResults(true);
-      return;
+      const qRes = await fetch(`/api/quiz?${params}`);
+      if (qRes.status === 404) {
+        if (excludeIds.length > 0) setAllDone(true);
+        else setNoResults(true);
+        return;
+      }
+      const citation = await qRes.json() as Citation;
+
+      const oParams = new URLSearchParams({ exclude: citation.id });
+      if (filterMasechet) oParams.set('masechet', filterMasechet);
+      else if (filterSeder) oParams.set('seder', filterSeder);
+
+      const oRes = await fetch(`/api/quiz/options?${oParams}`);
+      if (!oRes.ok) { setNoResults(true); return; }
+      const distractors = await oRes.json() as CitationLocation[];
+
+      setQuestion(citation);
+      setOptions(shuffle([citation.locations[0], ...distractors]));
+    } finally {
+      setLoading(false);
     }
-    const citation = await qRes.json() as Citation;
-
-    const oParams = new URLSearchParams({ exclude: citation.id });
-    if (filterMasechet) oParams.set('masechet', filterMasechet);
-    else if (filterSeder) oParams.set('seder', filterSeder);
-
-    const oRes = await fetch(`/api/quiz/options?${oParams}`);
-    if (!oRes.ok) { setNoResults(true); return; }
-    const distractors = await oRes.json() as CitationLocation[];
-
-    const all = [citation.locations[0], ...distractors].sort(() => Math.random() - 0.5);
-    setQuestion(citation);
-    setOptions(all);
   }, [filterSeder, filterMasechet]);
 
   useEffect(() => {
@@ -181,18 +133,26 @@ export default function MultipleChoiceQuiz({ filterSeder, filterMasechet, onAnsw
   };
 
   const handleSelect = async (opt: CitationLocation) => {
-    if (selectedId !== null || !question) return;
+    // The loading guard closes the stale-question window: without it the
+    // previous question stays clickable during the fetch and scores twice.
+    if (selectedId !== null || !question || loading) return;
     setSelectedId(opt.id);
-    const res = await fetch('/api/quiz', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ citationId: question.id, masechet: opt.masechet, daf: opt.daf, amud: opt.amud }),
-    });
-    const result = await res.json() as { score: number };
-    setScore(result.score);
-    addStat({ score: result.score, content: question.content.slice(0, 80), mode: 'multiple' });
-    setStreak(s => result.score >= 1 ? s + 1 : 0);
-    onAnswered();
+    try {
+      const res = await fetch('/api/quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ citationId: question.id, masechet: opt.masechet, daf: opt.daf, amud: opt.amud }),
+      });
+      const result = await res.json() as { score: number };
+      const correct = result.score >= 1;
+      setScore(result.score);
+      answerFeedback(correct);
+      addStat({ score: result.score, content: question.content.slice(0, 80), mode: 'multiple' });
+      setStreak(s => correct ? s + 1 : 0);
+      onAnswered();
+    } catch {
+      setSelectedId(null);
+    }
   };
 
   const handleNext = () => {
@@ -235,24 +195,28 @@ export default function MultipleChoiceQuiz({ filterSeder, filterMasechet, onAnsw
     <Wrapper>
       <Top>
         <QuestionLabel>{HE.QUIZ_MC_CHOOSE}</QuestionLabel>
-        {streak > 0 && <Streak>🔥 {HE.QUIZ_STREAK(streak)}</Streak>}
+        {streak > 0 && (
+          <Streak key={streak} $milestone={isMilestone(streak)}>🔥 {HE.QUIZ_STREAK(streak)}</Streak>
+        )}
       </Top>
-      <CitationText>{question?.content ?? HE.LOADING}</CitationText>
-      {!selectedId && !eliminatedId && (
-        <HintBtn onClick={handleHint}>{HE.QUIZ_HINT_BUTTON}</HintBtn>
-      )}
-      {options.map((opt) => (
-        <OptionBtn key={opt.id} $state={getState(opt)} onClick={() => handleSelect(opt)}>
-          {formatOption(opt)}
-        </OptionBtn>
-      ))}
-      {score !== null && (
-        <ResultBanner $correct={score >= 1}>
-          {score >= 1 ? HE.QUIZ_CORRECT : HE.QUIZ_WRONG}
-        </ResultBanner>
-      )}
+      <QuestionBlock key={question?.id ?? 'loading'}>
+        <CitationText>{question?.content ?? HE.LOADING}</CitationText>
+        {!selectedId && !eliminatedId && !loading && (
+          <HintBtn onClick={handleHint}>{HE.QUIZ_HINT_BUTTON}</HintBtn>
+        )}
+        {options.map((opt) => (
+          <OptionBtn key={opt.id} $state={getState(opt)} onClick={() => handleSelect(opt)}>
+            {formatOption(opt)}
+          </OptionBtn>
+        ))}
+        {score !== null && (
+          <ResultBanner $correct={score >= 1}>
+            {score >= 1 ? HE.QUIZ_CORRECT : HE.QUIZ_WRONG}
+          </ResultBanner>
+        )}
+      </QuestionBlock>
       {selectedId !== null ? (
-        <NextBtn onClick={handleNext}>{HE.QUIZ_NEXT}</NextBtn>
+        <NextBtn onClick={handleNext} autoFocus>{HE.QUIZ_NEXT}</NextBtn>
       ) : (
         <BtnRow>
           <SkipBtn onClick={handleSkip}>{HE.QUIZ_SKIP}</SkipBtn>

@@ -11,15 +11,17 @@ const fadeIn = keyframes`
 `;
 
 const slideIn = keyframes`
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(16px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 `;
 
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 200;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  z-index: ${theme.z.modal};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -35,7 +37,8 @@ const Content = styled.div`
   max-width: 620px;
   max-height: 90vh;
   overflow-y: auto;
-  animation: ${slideIn} 0.25s ease;
+  overscroll-behavior: contain;
+  animation: ${slideIn} 0.3s ${theme.motion.out};
   box-shadow: ${theme.shadows.lg};
   /* 32px of padding either side of a 296px form is most of the screen. */
   @media (max-width: 600px) { padding: ${theme.spacing.md}; }
@@ -49,7 +52,7 @@ const Header = styled.div`
 `;
 
 const Title = styled.h2`
-  font-size: 1.3rem;
+  font-size: ${theme.fontSizes.xl};
   color: ${theme.colors.primary};
 `;
 
@@ -60,11 +63,15 @@ const CloseButton = styled.button`
   min-width: 44px;
   min-height: 44px;
   padding: ${theme.spacing.xs};
-  transition: color 0.15s;
+  border-radius: ${theme.radii.sm};
+  transition: color ${theme.motion.fast} ease, background ${theme.motion.fast} ease,
+    transform ${theme.motion.fast} ease;
 
   &:hover {
     color: ${theme.colors.text};
+    background: ${theme.colors.surfaceAlt};
   }
+  &:active { transform: scale(0.92); }
 `;
 
 interface Props {

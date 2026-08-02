@@ -130,7 +130,7 @@ const SegBtn = styled.button<{ $active: boolean }>`
   font-size: 0.82rem; font-weight: 600;
   border-left: 1.5px solid ${theme.colors.border};
   background: ${({ $active }) => $active ? theme.colors.primary : 'transparent'};
-  color: ${({ $active }) => $active ? 'white' : theme.colors.textMuted};
+  color: ${({ $active }) => $active ? theme.colors.onPrimary : theme.colors.textMuted};
   transition: all 0.15s;
   &:first-child { border-left: none; }
   &:hover { background: ${({ $active }) => $active ? theme.colors.primary : theme.colors.surfaceAlt}; }
@@ -218,7 +218,7 @@ export default function RabbisView({ initialSearch = '' }: Props) {
             <Title>{HE.RABBIS_TITLE}</Title>
             <Subtitle>
               {HE.RABBIS_SUBTITLE}
-              {rabbis.length > 0 && <CountBadge> {HE.RABBIS_COUNT(rabbis.length)}</CountBadge>}
+              {filtered.length > 0 && <CountBadge> {HE.RABBIS_COUNT(filtered.length)}</CountBadge>}
             </Subtitle>
           </TitleGroup>
           <div style={{ display: 'flex', flexDirection: 'row', gap: theme.spacing.sm, alignItems: 'center' }}>
@@ -280,10 +280,11 @@ export default function RabbisView({ initialSearch = '' }: Props) {
                     onRetry={() => load()}
                   />
                 )
-                : filtered.map(r => (
+                : filtered.map((r, i) => (
                     <RabbiCard
                       key={r.id}
                       rabbi={r}
+                      index={i}
                       books={books.filter(b => b.rabbiId === r.id).map(b => ({ id: b.id, title: b.title }))}
                       onEdit={role === 'admin' ? () => setEditRabbi(r) : undefined}
                       onDelete={role === 'admin' ? () => handleDelete(r) : undefined}

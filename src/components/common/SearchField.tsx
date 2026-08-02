@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
+import { LineIcon } from '@/components/common/LineIcons';
 
 const Wrap = styled.div`
   position: relative;
@@ -12,8 +13,20 @@ const Wrap = styled.div`
   width: 100%;
 `;
 
+/* Leading (right, in RTL) search glyph — tells the eye what the field is for
+   before the placeholder is read. */
+const SearchGlyph = styled.span`
+  position: absolute;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  color: ${theme.colors.textMuted};
+  pointer-events: none;
+`;
+
 const Input = styled.input`
   padding: ${theme.spacing.sm} ${theme.spacing.md};
+  padding-right: 38px;
   padding-left: 60px;
   border: 2px solid ${theme.colors.borderStrong};
   border-radius: ${theme.radii.md};
@@ -21,14 +34,17 @@ const Input = styled.input`
   background: ${theme.colors.surface};
   color: ${theme.colors.text};
   width: 100%;
-  transition: border-color 0.15s;
-  &:focus { border-color: ${theme.colors.primaryLight}; }
+  transition: border-color ${theme.motion.fast} ease, box-shadow ${theme.motion.fast} ease;
+  &:focus {
+    border-color: ${theme.colors.primaryLight};
+    box-shadow: 0 0 0 4px color-mix(in srgb, ${theme.colors.primaryLight} 18%, transparent);
+  }
 `;
 
 const ClearBtn = styled.button<{ $visible: boolean }>`
   position: absolute;
   left: ${theme.spacing.sm};
-  display: ${p => (p.$visible ? 'flex' : 'none')};
+  display: flex;
   align-items: center;
   justify-content: center;
   padding: 6px 10px;
@@ -40,13 +56,19 @@ const ClearBtn = styled.button<{ $visible: boolean }>`
   color: ${theme.colors.textMuted};
   border: 1px solid ${theme.colors.border};
   background: ${theme.colors.surfaceAlt};
-  transition: all 0.15s;
+  opacity: ${p => (p.$visible ? 1 : 0)};
+  visibility: ${p => (p.$visible ? 'visible' : 'hidden')};
+  transform: ${p => (p.$visible ? 'scale(1)' : 'scale(0.85)')};
+  transition: opacity ${theme.motion.fast} ease, transform ${theme.motion.fast} ease,
+    visibility ${theme.motion.fast} ease, color ${theme.motion.fast} ease,
+    background ${theme.motion.fast} ease;
   white-space: nowrap;
   &:hover {
     color: ${theme.colors.primary};
     border-color: ${theme.colors.border};
     background: ${theme.colors.surface};
   }
+  &:active { transform: scale(0.92); }
 `;
 
 interface Props {
@@ -86,8 +108,10 @@ export default function SearchField({
 
   return (
     <Wrap>
+      <SearchGlyph aria-hidden="true"><LineIcon name="search" size={16} /></SearchGlyph>
+      {/* type="text": WebKit's built-in ✕ on type="search" doubled our custom clear button. */}
       <Input
-        type="search"
+        type="text"
         value={draft}
         onChange={e => setDraft(e.target.value)}
         placeholder={placeholder ?? ''}

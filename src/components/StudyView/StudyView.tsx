@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -12,6 +12,7 @@ import CitationForm from '@/components/CitationForm/CitationForm';
 import RandomCitationModal from '@/components/StudyView/RandomCitationModal';
 import { useRole } from '@/components/common/RoleContext';
 import SearchField from '@/components/common/SearchField';
+import ListState from '@/components/common/ListState';
 
 const Container = styled.div`
   display: flex;
@@ -97,10 +98,16 @@ const CountBadge = styled.div`
   text-align: left;
 `;
 
-const CitationList = styled.div`
+/* Refetches (search keystrokes, filter changes) dim the existing results
+   instead of unmounting them — the page keeps its height and the user keeps
+   their place. Only the very first load shows a placeholder. */
+const CitationList = styled.div<{ $stale: boolean }>`
   display: flex;
   flex-direction: column;
   gap: ${theme.spacing.md};
+  opacity: ${({ $stale }) => ($stale ? 0.45 : 1)};
+  pointer-events: ${({ $stale }) => ($stale ? 'none' : 'auto')};
+  transition: opacity ${theme.motion.base} ease;
 `;
 
 const Empty = styled.div`
@@ -117,20 +124,35 @@ export default function StudyView({ initialMasechet = '' }: { initialMasechet?: 
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<Citation | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const hasLoaded = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
   const role = useRole();
   const isReadOnly = role !== 'admin';
 
   const load = useCallback(async () => {
+    // Abort the in-flight request so fast typing can't land out of order.
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
     setLoading(true);
-    const params = new URLSearchParams();
-    if (masechet) params.set('masechet', masechet);
-    else if (seder) params.set('seder', seder);
-    if (search) params.set('search', search);
+    setLoadError(false);
+    try {
+      const params = new URLSearchParams();
+      if (masechet) params.set('masechet', masechet);
+      else if (seder) params.set('seder', seder);
+      if (search) params.set('search', search);
 
-    const res = await fetch(`/api/citations?${params}`);
-    const data = await res.json() as Citation[];
-    setCitations(data);
-    setLoading(false);
+      const res = await fetch(`/api/citations?${params}`, { signal: ctrl.signal });
+      const data = await res.json() as Citation[];
+      setCitations(data);
+      hasLoaded.current = true;
+      setLoading(false);
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') return;
+      setLoadError(true);
+      setLoading(false);
+    }
   }, [masechet, seder, search]);
 
   useEffect(() => { void load(); }, [load]);
@@ -189,18 +211,18 @@ export default function StudyView({ initialMasechet = '' }: { initialMasechet?: 
               />
             </SearchWrap>
           </FilterRow>
-          {!loading && <CountBadge>{HE.STUDY_COUNT(citations.length)}</CountBadge>}
+          {hasLoaded.current && !loadError && <CountBadge>{HE.STUDY_COUNT(citations.length)}</CountBadge>}
         </FilterSection>
       </StickyBar>
 
-      <CitationList>
-        {loading ? (
-          <Empty>{HE.LOADING}</Empty>
-        ) : citations.length === 0 ? (
-          <Empty>{HE.STUDY_EMPTY}</Empty>
+      <CitationList $stale={loading && hasLoaded.current}>
+        {loadError || !hasLoaded.current ? (
+          <ListState loading={loading} error={loadError} emptyText={HE.STUDY_EMPTY} onRetry={() => void load()} />
+        ) : citations.length === 0 && !loading ? (
+          <Empty>{search ? HE.SEARCH_NO_RESULTS : HE.STUDY_EMPTY}</Empty>
         ) : (
-          citations.map((c) => (
-            <CitationCard key={c.id} citation={c} onEdit={setEditing} onDelete={handleDelete} isReadOnly={isReadOnly} />
+          citations.map((c, i) => (
+            <CitationCard key={c.id} citation={c} index={i} onEdit={setEditing} onDelete={handleDelete} isReadOnly={isReadOnly} />
           ))
         )}
       </CitationList>

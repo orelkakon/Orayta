@@ -10,21 +10,23 @@ import HomeActionCards from './HomeActionCards';
 import HomeBackground from './HomeBackground';
 
 const fadeUp = keyframes`
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
 `;
 
+/* The tiles run their own staggered fadeUp, so the page container stays
+   static — animating both would double the motion on the tiles. */
 const Page = styled.div`
   position: relative; z-index: 1;
   display: flex; flex-direction: column; align-items: center;
   gap: ${theme.spacing.md};
   padding: ${theme.spacing.md} 0 ${theme.spacing.xl};
-  animation: ${fadeUp} 0.45s ease;
 `;
 
 const Hero = styled.div`
   display: flex; flex-direction: column; align-items: center;
   gap: ${theme.spacing.sm}; text-align: center;
+  animation: ${fadeUp} 0.45s ease both;
 `;
 
 const AppTitle = styled.h1`
@@ -72,7 +74,7 @@ const Grid = styled.div`
   @media (max-width: 520px) { grid-template-columns: repeat(2, 1fr); }
 `;
 
-const SectionCard = styled(Link)`
+const SectionCard = styled(Link)<{ $index: number }>`
   background: ${theme.colors.surface};
   border: 1px solid ${theme.colors.borderLight};
   border-top: 3px solid ${theme.colors.secondary};
@@ -81,12 +83,15 @@ const SectionCard = styled(Link)`
   display: flex; flex-direction: column; align-items: center;
   gap: 5px; text-align: center;
   box-shadow: ${theme.shadows.sm};
-  transition: box-shadow 0.18s, transform 0.18s, border-top-color 0.18s;
+  transition: box-shadow 0.18s, transform ${theme.motion.fast} ease, border-top-color 0.18s;
+  animation: ${fadeUp} 0.45s ease both;
+  animation-delay: ${({ $index }) => $index * 50}ms;
   &:hover {
     box-shadow: ${theme.shadows.md};
     transform: translateY(-3px);
     border-top-color: ${theme.colors.primary};
   }
+  &:active { transform: scale(0.97); }
   @media (max-width: 480px) { padding: ${theme.spacing.md} ${theme.spacing.xs}; }
 `;
 
@@ -129,8 +134,8 @@ export default function HomeView() {
       <Divider />
 
       <Grid>
-        {HE.HOME_SECTIONS.map(s => (
-          <SectionCard key={s.href} href={s.href}>
+        {HE.HOME_SECTIONS.map((s, i) => (
+          <SectionCard key={s.href} href={s.href} $index={i}>
             <CardIcon><SectionIcon href={s.href} size={26} /></CardIcon>
             <CardLabel>{s.label}</CardLabel>
             <CardDesc>{s.desc}</CardDesc>

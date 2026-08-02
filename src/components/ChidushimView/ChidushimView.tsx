@@ -38,7 +38,7 @@ const CountBadge = styled.span`font-size: 0.82rem; color: ${theme.colors.textLig
 
 const AddBtn = styled.button`
   padding: ${theme.spacing.sm} ${theme.spacing.lg};
-  background: ${theme.colors.primary}; color: white;
+  background: ${theme.colors.primary}; color: ${theme.colors.onPrimary};
   border-radius: ${theme.radii.md}; font-size: 0.9rem; font-weight: 600;
   flex-shrink: 0; align-self: flex-start;
   &:hover { background: ${theme.colors.primaryLight}; }
@@ -113,7 +113,7 @@ export default function ChidushimView({ initialSearch = '' }: { initialSearch?: 
             <Title>{HE.CHIDUSHIM_TITLE}</Title>
             <Subtitle>
               {HE.CHIDUSHIM_SUBTITLE}
-              {items.length > 0 && <CountBadge> {HE.CHIDUSHIM_COUNT(items.length)}</CountBadge>}
+              {filtered.length > 0 && <CountBadge> {HE.CHIDUSHIM_COUNT(filtered.length)}</CountBadge>}
             </Subtitle>
           </TitleGroup>
           {role === 'admin' && (
@@ -139,10 +139,11 @@ export default function ChidushimView({ initialSearch = '' }: { initialSearch?: 
               onRetry={() => load()}
             />
           )
-          : filtered.map(c => (
+          : filtered.map((c, i) => (
               <ChidushCard
                 key={c.id}
                 chidush={c}
+                index={i}
                 onEdit={role === 'admin' ? () => setEditItem(c) : undefined}
                 onDelete={role === 'admin' ? () => handleDelete(c) : undefined}
               />

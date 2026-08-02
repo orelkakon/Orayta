@@ -1,33 +1,22 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Rabbi, RabbiCategory } from '@/types';
 import { CATEGORY_LABELS, CATEGORY_COLORS, CATEGORY_ORDER } from '@/lib/rabbisData';
 import { addStat } from '@/lib/statsStorage';
 import AllDoneCard from './AllDoneCard';
-
-const pop = keyframes`
-  0%   { transform: scale(0.92); opacity: 0; }
-  60%  { transform: scale(1.03); }
-  100% { transform: scale(1);    opacity: 1; }
-`;
+import {
+  Top, QuestionLabel, Streak, ResultBanner, BtnRow, NextBtn, SkipBtn,
+  QuestionBlock, pressable, answerMotion, answerFeedback, isMilestone, shuffle, popIn,
+} from './quizChrome';
 
 const Wrapper = styled.div`
   background: ${theme.colors.surface}; border-radius: ${theme.radii.lg};
   padding: ${theme.spacing.xl}; box-shadow: ${theme.shadows.md};
   display: flex; flex-direction: column; gap: ${theme.spacing.lg}; min-width: 0;
-`;
-const Top = styled.div`display: flex; align-items: center; justify-content: space-between;`;
-const Label = styled.div`
-  font-size: 0.8rem; font-weight: 600; color: ${theme.colors.textMuted};
-  text-transform: uppercase; letter-spacing: 0.05em;
-`;
-const Streak = styled.div`
-  background: linear-gradient(135deg, #FF6B35, #FF9F1C);
-  color: #3A1A00; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
 `;
 const FilterSection = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.sm};`;
 const FilterTitle = styled.div`
@@ -36,19 +25,19 @@ const FilterTitle = styled.div`
 `;
 const ChipsRow = styled.div`display: flex; flex-wrap: wrap; gap: ${theme.spacing.xs};`;
 const AllChip = styled.button<{ $active: boolean }>`
+  ${pressable};
   padding: 4px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 700;
   border: 2px solid ${({ $active }) => $active ? theme.colors.primary : theme.colors.borderLight};
   background: ${({ $active }) => $active ? theme.colors.primary : theme.colors.surface};
   color: ${({ $active }) => $active ? 'white' : theme.colors.textMuted};
-  transition: all 0.15s;
   &:hover { border-color: ${theme.colors.primary}; color: ${({ $active }) => $active ? 'white' : theme.colors.primary}; }
 `;
 const CategoryChip = styled.button<{ $active: boolean; $color: string }>`
+  ${pressable};
   padding: 4px 12px; border-radius: 20px; font-size: 0.76rem; font-weight: 600;
   border: 2px solid ${({ $active, $color }) => $active ? $color : $color + '44'};
   background: ${({ $active, $color }) => $active ? $color : $color + '10'};
   color: ${({ $active, $color }) => $active ? 'white' : $color};
-  transition: all 0.15s;
   &:hover { border-color: ${({ $color }) => $color}; background: ${({ $color, $active }) => $active ? $color : $color + '20'}; }
 `;
 const ImageFrame = styled.div`
@@ -62,49 +51,34 @@ const RabbiImg = styled.img`
 `;
 const Grid = styled.div`display: grid; grid-template-columns: 1fr 1fr; gap: ${theme.spacing.sm};`;
 type BtnState = 'idle' | 'correct' | 'wrong' | 'dim';
-const OptionBtn = styled.button<{ $st: BtnState; $color: string }>`
+const OptionBtn = styled.button<{ $state: BtnState; $color: string }>`
+  ${pressable};
+  ${answerMotion};
   padding: ${theme.spacing.md} ${theme.spacing.sm}; border-radius: ${theme.radii.md};
-  border: 2px solid ${({ $st, $color }) =>
-    $st === 'correct' ? theme.colors.success : $st === 'wrong' ? theme.colors.error : $color + '55'};
-  background: ${({ $st, $color }) =>
-    $st === 'correct' ? theme.colors.bgSuccess : $st === 'wrong' ? theme.colors.bgError : $color + '0A'};
-  color: ${({ $st }) =>
-    $st === 'correct' ? theme.colors.success : $st === 'wrong' ? theme.colors.error :
-    $st === 'dim' ? theme.colors.textMuted : theme.colors.text};
-  opacity: ${({ $st }) => $st === 'dim' ? 0.42 : 1};
+  border: 2px solid ${({ $state, $color }) =>
+    $state === 'correct' ? theme.colors.success : $state === 'wrong' ? theme.colors.error : $color + '55'};
+  background: ${({ $state, $color }) =>
+    $state === 'correct' ? theme.colors.bgSuccess : $state === 'wrong' ? theme.colors.bgError : $color + '0A'};
+  color: ${({ $state }) =>
+    $state === 'correct' ? theme.colors.success : $state === 'wrong' ? theme.colors.error :
+    $state === 'dim' ? theme.colors.textMuted : theme.colors.text};
+  opacity: ${({ $state }) => $state === 'dim' ? 0.42 : 1};
   font-size: 0.9rem; font-family: ${theme.fonts.body}; font-weight: 600;
-  cursor: ${({ $st }) => $st === 'idle' ? 'pointer' : 'default'};
-  pointer-events: ${({ $st }) => $st !== 'idle' ? 'none' : 'auto'};
-  transition: all 0.15s; text-align: center; min-height: 58px;
+  cursor: ${({ $state }) => $state === 'idle' ? 'pointer' : 'default'};
+  pointer-events: ${({ $state }) => $state !== 'idle' ? 'none' : 'auto'};
+  text-align: center; min-height: 58px;
   &:hover { transform: translateY(-2px); box-shadow: 0 5px 14px ${({ $color }) => $color}28; border-color: ${({ $color }) => $color}; }
-  &:active { transform: scale(0.97); }
 `;
-const Banner = styled.div<{ $ok: boolean }>`
-  padding: ${theme.spacing.md}; border-radius: ${theme.radii.md};
-  background: ${({ $ok }) => $ok ? theme.colors.bgSuccess : theme.colors.bgError};
-  color: ${({ $ok }) => $ok ? theme.colors.success : theme.colors.error};
-  font-weight: 700; text-align: center; animation: ${pop} 0.25s ease;
-`;
+const CenterBanner = styled(ResultBanner)`text-align: center;`;
 const RevealCard = styled.div<{ $color: string }>`
   padding: ${theme.spacing.md}; border-radius: ${theme.radii.md};
   background: ${({ $color }) => $color + '10'}; border: 2px solid ${({ $color }) => $color + '40'};
-  display: flex; flex-direction: column; gap: ${theme.spacing.xs}; animation: ${pop} 0.3s ease;
+  display: flex; flex-direction: column; gap: ${theme.spacing.xs}; animation: ${popIn} 0.3s ${theme.motion.spring};
 `;
 const RevealName = styled.div`
   font-size: 1.1rem; font-weight: 700; color: ${theme.colors.text}; font-family: ${theme.fonts.body};
 `;
 const RevealMeta = styled.div`font-size: 0.8rem; color: ${theme.colors.textMuted};`;
-const NextBtn = styled.button`
-  padding: ${theme.spacing.md} ${theme.spacing.xl}; background: ${theme.colors.primary};
-  color: ${theme.colors.onPrimary}; border-radius: ${theme.radii.md}; font-size: 1rem; font-weight: 600; width: 100%;
-  transition: background 0.15s; &:hover { background: ${theme.colors.primaryLight}; }
-`;
-const SkipBtn = styled.button`
-  padding: ${theme.spacing.sm} ${theme.spacing.md}; border: 1.5px solid ${theme.colors.borderLight};
-  border-radius: ${theme.radii.md}; font-size: 0.9rem; color: ${theme.colors.textMuted};
-  align-self: flex-start; transition: all 0.15s;
-  &:hover { border-color: ${theme.colors.primary}; color: ${theme.colors.primary}; }
-`;
 const Empty = styled.div`color: ${theme.colors.textMuted}; font-size: 0.95rem; line-height: 1.6;`;
 
 interface Props { onAnswered: () => void; }
@@ -138,9 +112,9 @@ export default function ImageQuiz({ onAnswered }: Props) {
     }
     setAllDone(false);
     const q = available[Math.floor(Math.random() * available.length)];
-    const others = pool.filter(r => r.id !== q.id).sort(() => Math.random() - 0.5).slice(0, 3);
+    const others = shuffle(pool.filter(r => r.id !== q.id)).slice(0, 3);
     setQuestion(q);
-    setOptions([q, ...others].sort(() => Math.random() - 0.5));
+    setOptions(shuffle([q, ...others]));
     setSelected(null);
   }, []);
 
@@ -161,9 +135,10 @@ export default function ImageQuiz({ onAnswered }: Props) {
   };
 
   const pick = (id: string) => {
-    if (selected !== null || !question) return;
+    if (selected !== null || !question || !loaded) return;
     setSelected(id);
     const ok = id === question.id;
+    answerFeedback(ok);
     addStat({ score: ok ? 1 : 0, content: question.name, mode: 'image' });
     setStreak(s => ok ? s + 1 : 0);
     onAnswered();
@@ -237,33 +212,38 @@ export default function ImageQuiz({ onAnswered }: Props) {
   return (
     <Wrapper>
       <Top>
-        <Label>{HE.QUIZ_IMAGE_QUESTION}</Label>
-        {streak > 0 && <Streak>🔥 {HE.QUIZ_STREAK(streak)}</Streak>}
+        <QuestionLabel>{HE.QUIZ_IMAGE_QUESTION}</QuestionLabel>
+        {streak > 0 && (
+          <Streak key={streak} $milestone={isMilestone(streak)}>🔥 {HE.QUIZ_STREAK(streak)}</Streak>
+        )}
       </Top>
       {filterChips}
-      <ImageFrame>
-        {question.imageUrl && (
-          <RabbiImg src={question.imageUrl} alt="?" onError={() => next(all, selectedCats, seenIds)} />
+      <QuestionBlock key={question.id}>
+        <ImageFrame>
+          {question.imageUrl && (
+            <RabbiImg src={question.imageUrl} alt="?" onError={() => next(all, selectedCats, seenIds)} />
+          )}
+        </ImageFrame>
+        <Grid>
+          {options.map(r => (
+            <OptionBtn key={r.id} $state={btnState(r)} $color={colorOf(r)} onClick={() => pick(r.id)}>
+              {r.name}
+            </OptionBtn>
+          ))}
+        </Grid>
+        {answered && (
+          <>
+            <CenterBanner $correct={isOk}>{isOk ? `✓ ${HE.QUIZ_CORRECT}` : `✗ ${HE.QUIZ_WRONG}`}</CenterBanner>
+            <RevealCard $color={colorOf(question)}>
+              <RevealName>{question.name}{question.fullName ? ` — ${question.fullName}` : ''}</RevealName>
+              <RevealMeta>{CATEGORY_LABELS[question.category as RabbiCategory]} · {question.datePeriod}</RevealMeta>
+            </RevealCard>
+          </>
         )}
-      </ImageFrame>
-      <Grid>
-        {options.map(r => (
-          <OptionBtn key={r.id} $st={btnState(r)} $color={colorOf(r)} onClick={() => pick(r.id)}>
-            {r.name}
-          </OptionBtn>
-        ))}
-      </Grid>
-      {answered && (
-        <>
-          <Banner $ok={isOk}>{isOk ? `✓ ${HE.QUIZ_CORRECT}` : `✗ ${HE.QUIZ_WRONG}`}</Banner>
-          <RevealCard $color={colorOf(question)}>
-            <RevealName>{question.name}{question.fullName ? ` — ${question.fullName}` : ''}</RevealName>
-            <RevealMeta>{CATEGORY_LABELS[question.category as RabbiCategory]} · {question.datePeriod}</RevealMeta>
-          </RevealCard>
-          <NextBtn onClick={handleNext}>{HE.QUIZ_NEXT}</NextBtn>
-        </>
-      )}
-      {!answered && <SkipBtn onClick={handleSkip}>{HE.QUIZ_SKIP}</SkipBtn>}
+      </QuestionBlock>
+      {answered
+        ? <NextBtn onClick={handleNext} autoFocus>{HE.QUIZ_NEXT}</NextBtn>
+        : <BtnRow><SkipBtn onClick={handleSkip}>{HE.QUIZ_SKIP}</SkipBtn></BtnRow>}
     </Wrapper>
   );
 }

@@ -1,30 +1,24 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Rabbi, RabbiCategory } from '@/types';
 import { CATEGORY_LABELS, CATEGORY_COLORS } from '@/lib/rabbisData';
 import { addStat } from '@/lib/statsStorage';
 import AllDoneCard from './AllDoneCard';
+import {
+  Top, QuestionLabel, Streak, ResultBanner, BtnRow, NextBtn, SkipBtn,
+  QuestionBlock, pressable, answerMotion, answerFeedback, isMilestone, shuffle, popIn,
+} from './quizChrome';
 
 const BIO_LEN = 200;
-
-const pop = keyframes`
-  0%   { transform: scale(0.92); opacity: 0; }
-  60%  { transform: scale(1.03); }
-  100% { transform: scale(1);    opacity: 1; }
-`;
 
 const Wrapper = styled.div`
   background: ${theme.colors.surface}; border-radius: ${theme.radii.lg};
   padding: ${theme.spacing.xl}; box-shadow: ${theme.shadows.md};
   display: flex; flex-direction: column; gap: ${theme.spacing.lg}; min-width: 0;
-`;
-const Label = styled.div`
-  font-size: 0.8rem; font-weight: 600; color: ${theme.colors.textMuted};
-  text-transform: uppercase; letter-spacing: 0.05em;
 `;
 const BioCard = styled.blockquote`
   font-family: ${theme.fonts.body}; font-size: 1rem; line-height: 1.9;
@@ -36,54 +30,34 @@ const OptionsGrid = styled.div`
   display: grid; grid-template-columns: 1fr 1fr; gap: ${theme.spacing.sm};
 `;
 type BtnState = 'idle' | 'correct' | 'wrong' | 'dim';
-const OptionBtn = styled.button<{ $st: BtnState; $color: string }>`
+const OptionBtn = styled.button<{ $state: BtnState; $color: string }>`
+  ${pressable};
+  ${answerMotion};
   padding: ${theme.spacing.md}; border-radius: ${theme.radii.md};
-  border: 2px solid ${({ $st, $color }) =>
-    $st === 'correct' ? theme.colors.success : $st === 'wrong' ? theme.colors.error : $color + '55'};
-  background: ${({ $st, $color }) =>
-    $st === 'correct' ? theme.colors.bgSuccess : $st === 'wrong' ? theme.colors.bgError : $color + '0A'};
-  color: ${({ $st }) =>
-    $st === 'correct' ? theme.colors.success : $st === 'wrong' ? theme.colors.error :
-    $st === 'dim' ? theme.colors.textMuted : theme.colors.text};
-  opacity: ${({ $st }) => $st === 'dim' ? 0.42 : 1};
+  border: 2px solid ${({ $state, $color }) =>
+    $state === 'correct' ? theme.colors.success : $state === 'wrong' ? theme.colors.error : $color + '55'};
+  background: ${({ $state, $color }) =>
+    $state === 'correct' ? theme.colors.bgSuccess : $state === 'wrong' ? theme.colors.bgError : $color + '0A'};
+  color: ${({ $state }) =>
+    $state === 'correct' ? theme.colors.success : $state === 'wrong' ? theme.colors.error :
+    $state === 'dim' ? theme.colors.textMuted : theme.colors.text};
+  opacity: ${({ $state }) => $state === 'dim' ? 0.42 : 1};
   font-size: 0.92rem; font-family: ${theme.fonts.body}; font-weight: 600;
-  cursor: ${({ $st }) => $st === 'idle' ? 'pointer' : 'default'};
-  pointer-events: ${({ $st }) => $st !== 'idle' ? 'none' : 'auto'};
-  transition: all 0.15s; text-align: center; min-height: 60px;
+  cursor: ${({ $state }) => $state === 'idle' ? 'pointer' : 'default'};
+  pointer-events: ${({ $state }) => $state !== 'idle' ? 'none' : 'auto'};
+  text-align: center; min-height: 60px;
   &:hover { transform: translateY(-2px); box-shadow: 0 5px 14px ${({ $color }) => $color}28; border-color: ${({ $color }) => $color}; }
-  &:active { transform: scale(0.97); }
 `;
-const Banner = styled.div<{ $ok: boolean }>`
-  padding: ${theme.spacing.md}; border-radius: ${theme.radii.md};
-  background: ${({ $ok }) => $ok ? theme.colors.bgSuccess : theme.colors.bgError};
-  color: ${({ $ok }) => $ok ? theme.colors.success : theme.colors.error};
-  font-weight: 700; text-align: center; animation: ${pop} 0.25s ease;
-`;
+const CenterBanner = styled(ResultBanner)`text-align: center;`;
 const RevealCard = styled.div<{ $color: string }>`
   padding: ${theme.spacing.md}; border-radius: ${theme.radii.md};
   background: ${({ $color }) => $color + '10'}; border: 2px solid ${({ $color }) => $color + '40'};
-  display: flex; flex-direction: column; gap: ${theme.spacing.xs}; animation: ${pop} 0.3s ease;
+  display: flex; flex-direction: column; gap: ${theme.spacing.xs}; animation: ${popIn} 0.3s ${theme.motion.spring};
 `;
 const RevealName = styled.div`
   font-size: 1.1rem; font-weight: 700; color: ${theme.colors.text}; font-family: ${theme.fonts.body};
 `;
 const RevealMeta = styled.div`font-size: 0.8rem; color: ${theme.colors.textMuted};`;
-const NextBtn = styled.button`
-  padding: ${theme.spacing.md} ${theme.spacing.xl}; background: ${theme.colors.primary};
-  color: ${theme.colors.onPrimary}; border-radius: ${theme.radii.md}; font-size: 1rem; font-weight: 600;
-  width: 100%; transition: background 0.15s; &:hover { background: ${theme.colors.primaryLight}; }
-`;
-const SkipBtn = styled.button`
-  padding: ${theme.spacing.sm} ${theme.spacing.md}; border: 1.5px solid ${theme.colors.borderLight};
-  border-radius: ${theme.radii.md}; font-size: 0.9rem; color: ${theme.colors.textMuted};
-  align-self: flex-start; transition: all 0.15s;
-  &:hover { border-color: ${theme.colors.primary}; color: ${theme.colors.primary}; }
-`;
-const Top = styled.div`display: flex; align-items: center; justify-content: space-between;`;
-const Streak = styled.div`
-  background: linear-gradient(135deg, #FF6B35, #FF9F1C);
-  color: #3A1A00; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
-`;
 const Empty = styled.div`color: ${theme.colors.textMuted};`;
 
 interface Props { onAnswered: () => void; filterCategory?: string; }
@@ -115,10 +89,10 @@ export default function BioQuiz({ onAnswered, filterCategory = '' }: Props) {
     }
     setAllDone(false);
     const q = pool[Math.floor(Math.random() * pool.length)];
-    const others = inCat.filter(r => r.id !== q.id).sort(() => Math.random() - 0.5).slice(0, 3);
+    const others = shuffle(inCat.filter(r => r.id !== q.id)).slice(0, 3);
     if (others.length < 3) { setQuestion(null); return; }
     setQuestion(q);
-    setOptions([q, ...others].sort(() => Math.random() - 0.5));
+    setOptions(shuffle([q, ...others]));
     setSelected(null);
   }, []);
 
@@ -130,9 +104,10 @@ export default function BioQuiz({ onAnswered, filterCategory = '' }: Props) {
   }, [all, filterCategory, next]);
 
   const pick = (id: string) => {
-    if (selected !== null || !question) return;
+    if (selected !== null || !question || !loaded) return;
     setSelected(id);
     const ok = id === question.id;
+    answerFeedback(ok);
     addStat({ score: ok ? 1 : 0, content: question.name, mode: 'bio' });
     setStreak(s => ok ? s + 1 : 0);
     onAnswered();
@@ -175,28 +150,33 @@ export default function BioQuiz({ onAnswered, filterCategory = '' }: Props) {
   return (
     <Wrapper>
       <Top>
-        <Label>{HE.QUIZ_BIO_QUESTION}</Label>
-        {streak > 0 && <Streak>🔥 {HE.QUIZ_STREAK(streak)}</Streak>}
+        <QuestionLabel>{HE.QUIZ_BIO_QUESTION}</QuestionLabel>
+        {streak > 0 && (
+          <Streak key={streak} $milestone={isMilestone(streak)}>🔥 {HE.QUIZ_STREAK(streak)}</Streak>
+        )}
       </Top>
-      <BioCard>{bio}</BioCard>
-      <OptionsGrid>
-        {options.map(r => (
-          <OptionBtn key={r.id} $st={btnState(r)} $color={colorOf(r)} onClick={() => pick(r.id)}>
-            {r.name}
-          </OptionBtn>
-        ))}
-      </OptionsGrid>
-      {answered && (
-        <>
-          <Banner $ok={isOk}>{isOk ? `✓ ${HE.QUIZ_CORRECT}` : `✗ ${HE.QUIZ_WRONG}`}</Banner>
-          <RevealCard $color={colorOf(question)}>
-            <RevealName>{question.name}{question.fullName ? ` — ${question.fullName}` : ''}</RevealName>
-            <RevealMeta>{CATEGORY_LABELS[question.category as RabbiCategory]} · {question.datePeriod}</RevealMeta>
-          </RevealCard>
-          <NextBtn onClick={handleNext}>{HE.QUIZ_NEXT}</NextBtn>
-        </>
-      )}
-      {!answered && <SkipBtn onClick={handleSkip}>{HE.QUIZ_SKIP}</SkipBtn>}
+      <QuestionBlock key={question.id}>
+        <BioCard>{bio}</BioCard>
+        <OptionsGrid>
+          {options.map(r => (
+            <OptionBtn key={r.id} $state={btnState(r)} $color={colorOf(r)} onClick={() => pick(r.id)}>
+              {r.name}
+            </OptionBtn>
+          ))}
+        </OptionsGrid>
+        {answered && (
+          <>
+            <CenterBanner $correct={isOk}>{isOk ? `✓ ${HE.QUIZ_CORRECT}` : `✗ ${HE.QUIZ_WRONG}`}</CenterBanner>
+            <RevealCard $color={colorOf(question)}>
+              <RevealName>{question.name}{question.fullName ? ` — ${question.fullName}` : ''}</RevealName>
+              <RevealMeta>{CATEGORY_LABELS[question.category as RabbiCategory]} · {question.datePeriod}</RevealMeta>
+            </RevealCard>
+          </>
+        )}
+      </QuestionBlock>
+      {answered
+        ? <NextBtn onClick={handleNext} autoFocus>{HE.QUIZ_NEXT}</NextBtn>
+        : <BtnRow><SkipBtn onClick={handleSkip}>{HE.QUIZ_SKIP}</SkipBtn></BtnRow>}
     </Wrapper>
   );
 }

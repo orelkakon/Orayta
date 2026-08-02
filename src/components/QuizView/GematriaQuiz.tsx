@@ -6,6 +6,10 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { addStat } from '@/lib/statsStorage';
 import AllDoneCard from './AllDoneCard';
+import {
+  Top, QuestionLabel, Streak, ResultBanner, BtnRow, NextBtn, SkipBtn, HintBtn,
+  QuestionBlock, answerFeedback, isMilestone,
+} from './quizChrome';
 
 const Wrapper = styled.div`
   background: ${theme.colors.surface};
@@ -16,14 +20,6 @@ const Wrapper = styled.div`
   flex-direction: column;
   gap: ${theme.spacing.lg};
   min-width: 0;
-`;
-
-const QuestionLabel = styled.div`
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: ${theme.colors.textMuted};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 `;
 
 const ValueBox = styled.div`
@@ -43,15 +39,11 @@ const ValueText = styled.span`
   color: ${theme.colors.primary};
 `;
 
-const HintBtn = styled.button`
-  align-self: flex-start;
-  font-size: 0.85rem;
-  color: ${theme.colors.primaryLight};
-  border: 1px dashed ${theme.colors.border};
-  border-radius: ${theme.radii.sm};
-  padding: ${theme.spacing.xs} ${theme.spacing.md};
-  transition: all 0.15s;
-  &:hover { background: ${theme.colors.surfaceAlt}; }
+const ValueLoading = styled.span`
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: ${theme.colors.textMuted};
+  letter-spacing: 0.2em;
 `;
 
 const HintBox = styled.div`
@@ -77,39 +69,10 @@ const Input = styled.input`
   &:focus { border-color: ${theme.colors.primaryLight}; }
 `;
 
-const BtnRow = styled.div`
-  display: flex;
-  gap: ${theme.spacing.md};
-  flex-wrap: wrap;
-`;
+const WrapRow = styled(BtnRow)`flex-wrap: wrap;`;
 
-const PrimaryBtn = styled.button`
-  padding: ${theme.spacing.md} ${theme.spacing.xl};
-  background: ${theme.colors.primary};
-  color: ${theme.colors.onPrimary};
-  border-radius: ${theme.radii.md};
-  font-size: 1rem;
-  font-weight: 600;
-  &:hover { background: ${theme.colors.primaryLight}; }
+const SubmitBtn = styled(NextBtn)`
   &:disabled { opacity: 0.5; cursor: not-allowed; }
-`;
-
-const SkipBtn = styled.button`
-  padding: ${theme.spacing.md} ${theme.spacing.xl};
-  border: 2px solid ${theme.colors.border};
-  border-radius: ${theme.radii.md};
-  font-size: 1rem;
-  color: ${theme.colors.textMuted};
-  transition: all 0.15s;
-  &:hover { border-color: ${theme.colors.primaryLight}; color: ${theme.colors.primary}; }
-`;
-
-const ResultBanner = styled.div<{ $correct: boolean }>`
-  padding: ${theme.spacing.md};
-  border-radius: ${theme.radii.md};
-  background: ${({ $correct }) => ($correct ? theme.colors.bgSuccess : theme.colors.bgError)};
-  color: ${({ $correct }) => ($correct ? theme.colors.success : theme.colors.error)};
-  font-weight: 700;
 `;
 
 const AnswersBox = styled.div`
@@ -135,11 +98,6 @@ const AnswersText = styled.span`
 `;
 
 const Empty = styled.div`color: ${theme.colors.textMuted};`;
-const Top = styled.div`display: flex; align-items: center; justify-content: space-between;`;
-const Streak = styled.div`
-  background: linear-gradient(135deg, #FF6B35, #FF9F1C);
-  color: #3A1A00; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
-`;
 
 interface Question { value: number; hint: string; }
 interface Result { correct: boolean; answers: string[]; }
@@ -151,6 +109,7 @@ export default function GematriaQuiz({ onAnswered }: Props) {
   const [input, setInput] = useState('');
   const [result, setResult] = useState<Result | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [noResults, setNoResults] = useState(false);
   const [hintShown, setHintShown] = useState(false);
   const [streak, setStreak] = useState(0);
@@ -163,23 +122,28 @@ export default function GematriaQuiz({ onAnswered }: Props) {
     setHintShown(false);
     setNoResults(false);
     setAllDone(false);
+    setLoading(true);
 
-    const params = new URLSearchParams();
-    excludeValues.forEach(v => params.append('exclude', String(v)));
+    try {
+      const params = new URLSearchParams();
+      excludeValues.forEach(v => params.append('exclude', String(v)));
 
-    const res = await fetch(`/api/quiz/gematria?${params}`);
-    if (res.status === 404) {
-      if (excludeValues.length > 0) setAllDone(true);
-      else setNoResults(true);
-      return;
+      const res = await fetch(`/api/quiz/gematria?${params}`);
+      if (res.status === 404) {
+        if (excludeValues.length > 0) setAllDone(true);
+        else setNoResults(true);
+        return;
+      }
+      setQuestion(await res.json() as Question);
+    } finally {
+      setLoading(false);
     }
-    setQuestion(await res.json() as Question);
   }, []);
 
   useEffect(() => { void loadQuestion(); }, [loadQuestion]);
 
   const handleSubmit = async () => {
-    if (!question || !input.trim()) return;
+    if (!question || !input.trim() || loading || submitting) return;
     setSubmitting(true);
     try {
       const res = await fetch('/api/quiz/gematria', {
@@ -189,6 +153,7 @@ export default function GematriaQuiz({ onAnswered }: Props) {
       });
       const data = await res.json() as Result;
       setResult(data);
+      answerFeedback(data.correct);
       addStat({ score: data.correct ? 1 : 0, content: String(question.value), mode: 'gematria' });
       setStreak(s => data.correct ? s + 1 : 0);
       onAnswered();
@@ -221,45 +186,54 @@ export default function GematriaQuiz({ onAnswered }: Props) {
     <Wrapper>
       <Top>
         <QuestionLabel>{HE.QUIZ_GEMATRIA_QUESTION}</QuestionLabel>
-        {streak > 0 && <Streak>🔥 {HE.QUIZ_STREAK(streak)}</Streak>}
+        {streak > 0 && (
+          <Streak key={streak} $milestone={isMilestone(streak)}>🔥 {HE.QUIZ_STREAK(streak)}</Streak>
+        )}
       </Top>
-      <ValueBox>
-        <ValueText>{question?.value ?? HE.LOADING}</ValueText>
-      </ValueBox>
+      <QuestionBlock key={question?.value ?? 'loading'}>
+        <ValueBox>
+          {loading || !question
+            ? <ValueLoading>···</ValueLoading>
+            : <ValueText>{question.value}</ValueText>}
+        </ValueBox>
 
+        {!result ? (
+          <>
+            {!hintShown && (
+              <HintBtn type="button" onClick={() => setHintShown(true)}>{HE.QUIZ_HINT_BUTTON}</HintBtn>
+            )}
+            {hintShown && question && (
+              <HintBox>{HE.QUIZ_GEMATRIA_HINT_LABEL} {question.hint}</HintBox>
+            )}
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={HE.QUIZ_GEMATRIA_PLACEHOLDER}
+              disabled={submitting}
+              onKeyDown={(e) => { if (e.key === 'Enter') void handleSubmit(); }}
+            />
+          </>
+        ) : (
+          <>
+            <ResultBanner $correct={result.correct}>
+              {result.correct ? HE.QUIZ_CORRECT : HE.QUIZ_WRONG}
+            </ResultBanner>
+            <AnswersBox>
+              <AnswersLabel>{HE.QUIZ_GEMATRIA_ANSWERS}</AnswersLabel>
+              <AnswersText>{result.answers.join(' / ')}</AnswersText>
+            </AnswersBox>
+          </>
+        )}
+      </QuestionBlock>
       {!result ? (
-        <>
-          {!hintShown && (
-            <HintBtn type="button" onClick={() => setHintShown(true)}>{HE.QUIZ_HINT_BUTTON}</HintBtn>
-          )}
-          {hintShown && question && (
-            <HintBox>{HE.QUIZ_GEMATRIA_HINT_LABEL} {question.hint}</HintBox>
-          )}
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={HE.QUIZ_GEMATRIA_PLACEHOLDER}
-            disabled={submitting}
-            onKeyDown={(e) => { if (e.key === 'Enter') void handleSubmit(); }}
-          />
-          <BtnRow>
-            <PrimaryBtn onClick={handleSubmit} disabled={!input.trim() || submitting}>
-              {submitting ? HE.LOADING : HE.QUIZ_GEMATRIA_SUBMIT}
-            </PrimaryBtn>
-            <SkipBtn onClick={handleSkip}>{HE.QUIZ_SKIP}</SkipBtn>
-          </BtnRow>
-        </>
+        <WrapRow>
+          <SubmitBtn onClick={handleSubmit} disabled={!input.trim() || submitting}>
+            {submitting ? HE.LOADING : HE.QUIZ_GEMATRIA_SUBMIT}
+          </SubmitBtn>
+          <SkipBtn onClick={handleSkip}>{HE.QUIZ_SKIP}</SkipBtn>
+        </WrapRow>
       ) : (
-        <>
-          <ResultBanner $correct={result.correct}>
-            {result.correct ? HE.QUIZ_CORRECT : HE.QUIZ_WRONG}
-          </ResultBanner>
-          <AnswersBox>
-            <AnswersLabel>{HE.QUIZ_GEMATRIA_ANSWERS}</AnswersLabel>
-            <AnswersText>{result.answers.join(' / ')}</AnswersText>
-          </AnswersBox>
-          <PrimaryBtn onClick={handleNext}>{HE.QUIZ_NEXT}</PrimaryBtn>
-        </>
+        <NextBtn onClick={handleNext} autoFocus>{HE.QUIZ_NEXT}</NextBtn>
       )}
     </Wrapper>
   );

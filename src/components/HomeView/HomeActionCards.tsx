@@ -32,6 +32,7 @@ const Frame = styled(Link)`
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   box-shadow: ${theme.shadows.sm};
   &:hover { transform: translateY(-4px); box-shadow: 0 14px 36px rgba(92,61,30,0.22); }
+  &:active { transform: scale(0.98); }
 `;
 
 const Card = styled.div`

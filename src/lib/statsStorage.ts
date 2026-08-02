@@ -12,6 +12,11 @@ export interface StatsSummary {
   accuracy: number;
   totalScore: number;
   recent: StatEntry[];
+  /** Questions answered today (device-local calendar day). */
+  today: number;
+  /** Consecutive practice days ending today (or yesterday, so an unbroken
+      streak isn't shown as 0 before the user has practiced today). */
+  dayStreak: number;
 }
 
 export function addStat(entry: Omit<StatEntry, 'answeredAt'>): void {
@@ -49,13 +54,32 @@ export function clearStats(): void {
   localStorage.removeItem(KEY);
 }
 
+const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+
 export function computeSummary(stats: StatEntry[]): StatsSummary {
-  if (stats.length === 0) return { total: 0, accuracy: 0, totalScore: 0, recent: [] };
+  if (stats.length === 0) {
+    return { total: 0, accuracy: 0, totalScore: 0, recent: [], today: 0, dayStreak: 0 };
+  }
   const totalScore = stats.reduce((s, e) => s + e.score, 0);
+
+  const days = new Set(stats.map(e => dayKey(new Date(e.answeredAt))));
+  const now = new Date();
+  const today = stats.filter(e => dayKey(new Date(e.answeredAt)) === dayKey(now)).length;
+
+  let dayStreak = 0;
+  const cursor = new Date(now);
+  if (!days.has(dayKey(cursor))) cursor.setDate(cursor.getDate() - 1);
+  while (days.has(dayKey(cursor))) {
+    dayStreak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
   return {
     total: stats.length,
     totalScore,
     accuracy: Math.round((totalScore / stats.length) * 100),
     recent: stats.slice(0, 5),
+    today,
+    dayStreak,
   };
 }

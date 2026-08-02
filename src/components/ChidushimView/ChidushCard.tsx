@@ -1,6 +1,6 @@
 'use client';
 
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Chidush } from '@/types';
@@ -8,7 +8,12 @@ import SpeakButton from '@/components/common/SpeakButton';
 import { trackShare } from '@/lib/shareCounter';
 import { shareStory, chidushStory } from '@/lib/storyShare';
 
-const Card = styled.div`
+const fadeUp = keyframes`
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
+
+const Card = styled.div<{ $index: number }>`
   background: ${theme.colors.surface};
   border-radius: ${theme.radii.lg};
   border: 1px solid ${theme.colors.borderLight};
@@ -18,8 +23,13 @@ const Card = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${theme.spacing.sm};
-  transition: box-shadow 0.15s, transform 0.15s;
-  &:hover { box-shadow: ${theme.shadows.md}; transform: translateY(-1px); }
+  transition: transform 0.15s ease, box-shadow 0.15s;
+  animation: ${fadeUp} 0.45s ease both;
+  animation-delay: ${p => Math.min(p.$index, 12) * 40}ms;
+  @media (hover: hover) {
+    &:hover { box-shadow: ${theme.shadows.md}; transform: translateY(-2px); }
+  }
+  &:active { transform: translateY(-1px) scale(0.98); }
 `;
 
 const Text = styled.p`
@@ -60,22 +70,22 @@ const ShareBtn = styled.a`
   display: inline-flex; align-items: center; gap: 4px;
   font-size: 0.75rem; font-weight: 600;
   padding: 2px ${theme.spacing.sm};
-  background: #25D36618; color: #128C7E;
-  border: 1px solid #25D36630;
+  background: ${theme.brand.whatsapp}18; color: ${theme.brand.whatsappText};
+  border: 1px solid ${theme.brand.whatsapp}30;
   border-radius: ${theme.radii.sm};
   cursor: pointer; text-decoration: none;
-  &:hover { background: #25D36630; }
+  &:hover { background: ${theme.brand.whatsapp}30; }
 `;
 
 const StoryBtn = styled.button`
   display: inline-flex; align-items: center; gap: 4px;
   font-size: 0.75rem; font-weight: 600;
   padding: 2px ${theme.spacing.sm};
-  background: #E1306C14; color: #C13584;
-  border: 1px solid #E1306C30;
+  background: ${theme.brand.instagram}14; color: #C13584;
+  border: 1px solid ${theme.brand.instagram}30;
   border-radius: ${theme.radii.sm};
   cursor: pointer;
-  &:hover { background: #E1306C28; }
+  &:hover { background: ${theme.brand.instagram}28; }
 `;
 
 const AdminRow = styled.div`
@@ -100,6 +110,7 @@ const DeleteBtn = styled.button`
 
 interface Props {
   chidush: Chidush;
+  index: number;
   onEdit?: () => void;
   onDelete?: () => void;
 }
@@ -115,13 +126,13 @@ function buildWaUrl(chidush: Chidush): string {
   return `https://api.whatsapp.com/send?text=${encodeURIComponent(lines.join('\n'))}`;
 }
 
-export default function ChidushCard({ chidush, onEdit, onDelete }: Props) {
+export default function ChidushCard({ chidush, index, onEdit, onDelete }: Props) {
   const hasSource = !!chidush.source;
   const hasAuthor = !!chidush.author;
   const hasMeta = hasSource || hasAuthor;
 
   return (
-    <Card>
+    <Card $index={index}>
       <Text>{chidush.text}</Text>
       <MetaRow>
         <SpeakButton text={chidush.text} />

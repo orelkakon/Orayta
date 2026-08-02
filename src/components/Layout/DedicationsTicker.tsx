@@ -25,7 +25,7 @@ const Strip = styled.div`
   @media (max-width: 480px) { top: 52px; }
 `;
 
-const Tape = styled.div<{ $secs: number }>`
+const Tape = styled.div.attrs({ className: 'anim-loop' })<{ $secs: number }>`
   display: inline-flex; white-space: nowrap; will-change: transform;
   animation: ${scrollRight} ${p => p.$secs}s linear infinite;
 `;

@@ -7,6 +7,10 @@ import { HE } from '@/lib/hebrewTexts';
 import { Citation } from '@/types';
 import { addStat } from '@/lib/statsStorage';
 import AllDoneCard from './AllDoneCard';
+import {
+  Top, QuestionLabel, Streak, ResultBanner, BtnRow, NextBtn, SkipBtn, HintBtn,
+  QuestionBlock, answerFeedback, isMilestone,
+} from './quizChrome';
 
 function getStartWordCount(content: string): number {
   const n = content.trim().split(/\s+/).length;
@@ -32,14 +36,6 @@ const Wrapper = styled.div`
   min-width: 0;
 `;
 
-const QuestionLabel = styled.div`
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: ${theme.colors.textMuted};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-`;
-
 const PromptBox = styled.div`
   background: ${theme.colors.surfaceAlt};
   border-right: 4px solid ${theme.colors.secondary};
@@ -62,17 +58,6 @@ const Ellipsis = styled.span`
   margin-right: ${theme.spacing.xs};
 `;
 
-const HintBtn = styled.button`
-  align-self: flex-start;
-  font-size: 0.85rem;
-  color: ${theme.colors.primaryLight};
-  border: 1px dashed ${theme.colors.border};
-  border-radius: ${theme.radii.sm};
-  padding: ${theme.spacing.xs} ${theme.spacing.md};
-  transition: all 0.15s;
-  &:hover { background: ${theme.colors.surfaceAlt}; }
-`;
-
 const Textarea = styled.textarea`
   padding: ${theme.spacing.md};
   border: 2px solid ${theme.colors.border};
@@ -88,39 +73,13 @@ const Textarea = styled.textarea`
   &:focus { border-color: ${theme.colors.primaryLight}; }
 `;
 
-const BtnRow = styled.div`
-  display: flex;
-  gap: ${theme.spacing.md};
-  flex-wrap: wrap;
-`;
+const WrapRow = styled(BtnRow)`flex-wrap: wrap;`;
 
-const PrimaryBtn = styled.button`
-  padding: ${theme.spacing.md} ${theme.spacing.xl};
-  background: ${theme.colors.primary};
-  color: ${theme.colors.onPrimary};
-  border-radius: ${theme.radii.md};
-  font-size: 1rem;
-  font-weight: 600;
-  &:hover { background: ${theme.colors.primaryLight}; }
+const SubmitBtn = styled(NextBtn)`
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
 
-const SkipBtn = styled.button`
-  padding: ${theme.spacing.md} ${theme.spacing.xl};
-  border: 2px solid ${theme.colors.border};
-  border-radius: ${theme.radii.md};
-  font-size: 1rem;
-  color: ${theme.colors.textMuted};
-  transition: all 0.15s;
-  &:hover { border-color: ${theme.colors.primaryLight}; color: ${theme.colors.primary}; }
-`;
-
-const ResultBanner = styled.div<{ $correct: boolean }>`
-  padding: ${theme.spacing.md};
-  border-radius: ${theme.radii.md};
-  background: ${({ $correct }) => ($correct ? theme.colors.bgSuccess : theme.colors.bgError)};
-  color: ${({ $correct }) => ($correct ? theme.colors.success : theme.colors.error)};
-  font-weight: 700;
+const ScoreBanner = styled(ResultBanner)`
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -175,12 +134,6 @@ const SourceValue = styled.span`
   direction: rtl;
 `;
 
-const Top = styled.div`display: flex; align-items: center; justify-content: space-between;`;
-const Streak = styled.div`
-  background: linear-gradient(135deg, #FF6B35, #FF9F1C);
-  color: #3A1A00; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
-`;
-
 interface Props {
   filterSeder: string;
   filterMasechet: string;
@@ -211,6 +164,7 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
   const [input, setInput] = useState('');
   const [result, setResult] = useState<Result | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [noResults, setNoResults] = useState(false);
   const [hintUsed, setHintUsed] = useState(false);
   const [streak, setStreak] = useState(0);
@@ -223,19 +177,24 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
     setNoResults(false);
     setHintUsed(false);
     setAllDone(false);
+    setLoading(true);
 
-    const params = new URLSearchParams();
-    if (filterMasechet) params.set('masechet', filterMasechet);
-    else if (filterSeder) params.set('seder', filterSeder);
-    excludeIds.forEach(id => params.append('exclude', id));
+    try {
+      const params = new URLSearchParams();
+      if (filterMasechet) params.set('masechet', filterMasechet);
+      else if (filterSeder) params.set('seder', filterSeder);
+      excludeIds.forEach(id => params.append('exclude', id));
 
-    const res = await fetch(`/api/quiz?${params}`);
-    if (res.status === 404) {
-      if (excludeIds.length > 0) setAllDone(true);
-      else setNoResults(true);
-      return;
+      const res = await fetch(`/api/quiz?${params}`);
+      if (res.status === 404) {
+        if (excludeIds.length > 0) setAllDone(true);
+        else setNoResults(true);
+        return;
+      }
+      setQuestion(await res.json() as Citation);
+    } finally {
+      setLoading(false);
     }
-    setQuestion(await res.json() as Citation);
   }, [filterSeder, filterMasechet]);
 
   useEffect(() => {
@@ -245,7 +204,7 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
   }, [loadQuestion]);
 
   const handleSubmit = async () => {
-    if (!question || !input.trim()) return;
+    if (!question || !input.trim() || loading || submitting) return;
     setSubmitting(true);
     try {
       const res = await fetch('/api/quiz/completion', {
@@ -255,6 +214,7 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
       });
       const data = await res.json() as Result;
       setResult(data);
+      answerFeedback(data.correct);
       addStat({ score: data.correct ? 1 : 0, content: question.content.slice(0, 80), mode: 'completion' });
       setStreak(s => data.correct ? s + 1 : 0);
       onAnswered();
@@ -294,51 +254,58 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
     <Wrapper>
       <Top>
         <QuestionLabel>{HE.QUIZ_COMPLETION_PROMPT}</QuestionLabel>
-        {streak > 0 && <Streak>🔥 {HE.QUIZ_STREAK(streak)}</Streak>}
+        {streak > 0 && (
+          <Streak key={streak} $milestone={isMilestone(streak)}>🔥 {HE.QUIZ_STREAK(streak)}</Streak>
+        )}
       </Top>
-      <PromptBox>
-        <PromptText>{prompt} <Ellipsis>...</Ellipsis></PromptText>
-      </PromptBox>
+      <QuestionBlock key={question?.id ?? 'loading'}>
+        <PromptBox>
+          <PromptText>{prompt} <Ellipsis>...</Ellipsis></PromptText>
+        </PromptBox>
 
-      {!result ? (
-        <>
-          {!hintUsed && hintExtra > 0 && (
-            <HintBtn onClick={() => setHintUsed(true)}>{HE.QUIZ_HINT_BUTTON}</HintBtn>
-          )}
-          <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={HE.QUIZ_COMPLETION_PLACEHOLDER}
-            rows={4}
-            disabled={submitting}
-          />
-          <BtnRow>
-            <PrimaryBtn onClick={handleSubmit} disabled={!input.trim() || submitting}>
-              {submitting ? HE.LOADING : HE.QUIZ_COMPLETION_SUBMIT}
-            </PrimaryBtn>
-            <SkipBtn onClick={handleSkip}>{HE.QUIZ_SKIP}</SkipBtn>
-          </BtnRow>
-        </>
-      ) : (
-        <>
-          <ResultBanner $correct={result.correct}>
-            <span>{result.correct ? HE.QUIZ_CORRECT : HE.QUIZ_WRONG}</span>
-            <ScorePct>{Math.round(result.score * 100)}%</ScorePct>
-          </ResultBanner>
-          <FullCitationBox>
-            <FullLabel>{HE.QUIZ_COMPLETION_FULL}</FullLabel>
-            <FullText>{result.fullContent}</FullText>
-            {result.locations.length > 0 && (
-              <SourceRow>
-                <SourceLabel>{HE.QUIZ_COMPLETION_SOURCE}</SourceLabel>
-                <SourceValue>
-                  {result.locations.map(formatLoc).join(' / ')}
-                </SourceValue>
-              </SourceRow>
+        {!result ? (
+          <>
+            {!hintUsed && hintExtra > 0 && (
+              <HintBtn onClick={() => setHintUsed(true)}>{HE.QUIZ_HINT_BUTTON}</HintBtn>
             )}
-          </FullCitationBox>
-          <PrimaryBtn onClick={handleNext}>{HE.QUIZ_NEXT}</PrimaryBtn>
-        </>
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={HE.QUIZ_COMPLETION_PLACEHOLDER}
+              rows={4}
+              disabled={submitting}
+            />
+          </>
+        ) : (
+          <>
+            <ScoreBanner $correct={result.correct}>
+              <span>{result.correct ? HE.QUIZ_CORRECT : HE.QUIZ_WRONG}</span>
+              <ScorePct>{Math.round(result.score * 100)}%</ScorePct>
+            </ScoreBanner>
+            <FullCitationBox>
+              <FullLabel>{HE.QUIZ_COMPLETION_FULL}</FullLabel>
+              <FullText>{result.fullContent}</FullText>
+              {result.locations.length > 0 && (
+                <SourceRow>
+                  <SourceLabel>{HE.QUIZ_COMPLETION_SOURCE}</SourceLabel>
+                  <SourceValue>
+                    {result.locations.map(formatLoc).join(' / ')}
+                  </SourceValue>
+                </SourceRow>
+              )}
+            </FullCitationBox>
+          </>
+        )}
+      </QuestionBlock>
+      {!result ? (
+        <WrapRow>
+          <SubmitBtn onClick={handleSubmit} disabled={!input.trim() || submitting}>
+            {submitting ? HE.LOADING : HE.QUIZ_COMPLETION_SUBMIT}
+          </SubmitBtn>
+          <SkipBtn onClick={handleSkip}>{HE.QUIZ_SKIP}</SkipBtn>
+        </WrapRow>
+      ) : (
+        <NextBtn onClick={handleNext} autoFocus>{HE.QUIZ_NEXT}</NextBtn>
       )}
     </Wrapper>
   );

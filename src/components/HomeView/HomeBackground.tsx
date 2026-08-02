@@ -32,7 +32,7 @@ const Wrap = styled.div`
   pointer-events: none; overflow: hidden;
 `;
 
-const Blob = styled.div`
+const Blob = styled.div.attrs({ className: 'anim-loop' })`
   position: absolute; border-radius: 50%; filter: blur(90px);
   will-change: transform;
 `;
@@ -62,7 +62,7 @@ const BlobWine = styled(Blob)`
 `;
 
 /* delicate gold speck that fades in and out */
-const Speck = styled.span<{ $top: string; $right: string; $delay: string; $dur: string; $size: string }>`
+const Speck = styled.span.attrs({ className: 'anim-loop' })<{ $top: string; $right: string; $delay: string; $dur: string; $size: string }>`
   position: absolute; top: ${p => p.$top}; right: ${p => p.$right};
   width: ${p => p.$size}; height: ${p => p.$size}; border-radius: 50%;
   background: radial-gradient(circle, rgba(212,165,116,0.9), rgba(212,165,116,0) 70%);

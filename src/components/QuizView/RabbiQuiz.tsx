@@ -8,6 +8,10 @@ import { Rabbi, RabbiCategory } from '@/types';
 import { CATEGORY_LABELS, CATEGORY_ORDER, CATEGORY_COLORS } from '@/lib/rabbisData';
 import { addStat } from '@/lib/statsStorage';
 import AllDoneCard from './AllDoneCard';
+import {
+  Top, QuestionLabel, Streak, ResultBanner, BtnRow, NextBtn, SkipBtn,
+  QuestionBlock, pressable, answerMotion, answerFeedback, isMilestone, shuffle,
+} from './quizChrome';
 
 type State = 'default' | 'correct' | 'wrong' | 'faded';
 
@@ -15,10 +19,6 @@ const Wrapper = styled.div`
   background: ${theme.colors.surface}; border-radius: ${theme.radii.lg};
   padding: ${theme.spacing.xl}; box-shadow: ${theme.shadows.md};
   display: flex; flex-direction: column; gap: ${theme.spacing.lg}; min-width: 0;
-`;
-const Label = styled.div`
-  font-size: 0.8rem; font-weight: 600; color: ${theme.colors.textMuted};
-  text-transform: uppercase; letter-spacing: 0.05em;
 `;
 const RabbiName = styled.h2`
   font-family: ${theme.fonts.body}; font-size: 1.4rem; font-weight: 700;
@@ -32,9 +32,11 @@ const BioText = styled.p`
 `;
 const OptionsGrid = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.sm};`;
 const OptionBtn = styled.button<{ $state: State; $color: string }>`
+  ${pressable};
+  ${answerMotion};
   padding: ${theme.spacing.md}; border-radius: ${theme.radii.md};
   font-size: 0.95rem; font-family: ${theme.fonts.body}; text-align: right;
-  width: 100%; transition: all 0.15s;
+  width: 100%;
   border: 2px solid ${({ $state, $color }) =>
     $state === 'correct' ? theme.colors.success :
     $state === 'wrong' ? theme.colors.error :
@@ -49,30 +51,7 @@ const OptionBtn = styled.button<{ $state: State; $color: string }>`
   cursor: ${({ $state }) => $state === 'default' ? 'pointer' : 'default'};
   pointer-events: ${({ $state }) => $state !== 'default' ? 'none' : 'auto'};
 `;
-const ResultBanner = styled.div<{ $correct: boolean }>`
-  padding: ${theme.spacing.md}; border-radius: ${theme.radii.md};
-  background: ${({ $correct }) => ($correct ? theme.colors.bgSuccess : theme.colors.bgError)};
-  color: ${({ $correct }) => ($correct ? theme.colors.success : theme.colors.error)};
-  font-weight: 700;
-`;
-const NextBtn = styled.button`
-  padding: ${theme.spacing.md} ${theme.spacing.xl}; background: ${theme.colors.primary};
-  color: ${theme.colors.onPrimary}; border-radius: ${theme.radii.md}; font-size: 1rem; font-weight: 600;
-  &:hover { background: ${theme.colors.primaryLight}; }
-`;
-const SkipBtn = styled.button`
-  padding: ${theme.spacing.md} ${theme.spacing.xl};
-  border: 2px solid ${theme.colors.border}; border-radius: ${theme.radii.md};
-  font-size: 1rem; color: ${theme.colors.textMuted};
-  &:hover { border-color: ${theme.colors.primaryLight}; color: ${theme.colors.primary}; }
-`;
-const BtnRow = styled.div`display: flex; gap: ${theme.spacing.md};`;
 const Empty = styled.div`color: ${theme.colors.textMuted};`;
-const Top = styled.div`display: flex; align-items: center; justify-content: space-between;`;
-const Streak = styled.div`
-  background: linear-gradient(135deg, #FF6B35, #FF9F1C);
-  color: #3A1A00; font-size: 0.78rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;
-`;
 
 interface Props { onAnswered: () => void; }
 
@@ -102,9 +81,9 @@ export default function RabbiQuiz({ onAnswered }: Props) {
     setAllDone(false);
     const q = available[Math.floor(Math.random() * available.length)];
     const correct = q.category as RabbiCategory;
-    const others = CATEGORY_ORDER.filter(c => c !== correct).sort(() => Math.random() - 0.5).slice(0, 3);
+    const others = shuffle(CATEGORY_ORDER.filter(c => c !== correct)).slice(0, 3);
     setQuestion(q);
-    setOptions([correct, ...others].sort(() => Math.random() - 0.5));
+    setOptions(shuffle([correct, ...others]));
     setSelected(null);
   }, []);
 
@@ -117,9 +96,10 @@ export default function RabbiQuiz({ onAnswered }: Props) {
   }, [allRabbis, loadQuestion]);
 
   const handleSelect = (cat: RabbiCategory) => {
-    if (selected !== null || !question) return;
+    if (selected !== null || !question || !loaded) return;
     setSelected(cat);
     const correct = cat === question.category;
+    answerFeedback(correct);
     addStat({ score: correct ? 1 : 0, content: question.name, mode: 'rabbi' });
     setStreak(s => correct ? s + 1 : 0);
     onAnswered();
@@ -156,33 +136,37 @@ export default function RabbiQuiz({ onAnswered }: Props) {
   return (
     <Wrapper>
       <Top>
-        <Label>{HE.QUIZ_RABBI_QUESTION}</Label>
-        {streak > 0 && <Streak>🔥 {HE.QUIZ_STREAK(streak)}</Streak>}
+        <QuestionLabel>{HE.QUIZ_RABBI_QUESTION}</QuestionLabel>
+        {streak > 0 && (
+          <Streak key={streak} $milestone={isMilestone(streak)}>🔥 {HE.QUIZ_STREAK(streak)}</Streak>
+        )}
       </Top>
-      <div>
-        <RabbiName>{question.name}</RabbiName>
-        {question.fullName && <FullName>{question.fullName}</FullName>}
-      </div>
-      <BioText>{question.bio}</BioText>
-      <OptionsGrid>
-        {options.map(cat => (
-          <OptionBtn
-            key={cat}
-            $state={getState(cat)}
-            $color={CATEGORY_COLORS[cat]}
-            onClick={() => handleSelect(cat)}
-          >
-            {CATEGORY_LABELS[cat]}
-          </OptionBtn>
-        ))}
-      </OptionsGrid>
-      {selected !== null && (
-        <ResultBanner $correct={selected === question.category}>
-          {selected === question.category ? HE.QUIZ_CORRECT : HE.QUIZ_WRONG}
-        </ResultBanner>
-      )}
+      <QuestionBlock key={question.id}>
+        <div>
+          <RabbiName>{question.name}</RabbiName>
+          {question.fullName && <FullName>{question.fullName}</FullName>}
+        </div>
+        <BioText>{question.bio}</BioText>
+        <OptionsGrid>
+          {options.map(cat => (
+            <OptionBtn
+              key={cat}
+              $state={getState(cat)}
+              $color={CATEGORY_COLORS[cat]}
+              onClick={() => handleSelect(cat)}
+            >
+              {CATEGORY_LABELS[cat]}
+            </OptionBtn>
+          ))}
+        </OptionsGrid>
+        {selected !== null && (
+          <ResultBanner $correct={selected === question.category}>
+            {selected === question.category ? HE.QUIZ_CORRECT : HE.QUIZ_WRONG}
+          </ResultBanner>
+        )}
+      </QuestionBlock>
       {selected !== null
-        ? <NextBtn onClick={handleNext}>{HE.QUIZ_NEXT}</NextBtn>
+        ? <NextBtn onClick={handleNext} autoFocus>{HE.QUIZ_NEXT}</NextBtn>
         : <BtnRow><SkipBtn onClick={handleSkip}>{HE.QUIZ_SKIP}</SkipBtn></BtnRow>
       }
     </Wrapper>

@@ -45,6 +45,12 @@ const Card = styled.div`
   animation: ${scaleIn} 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both,
              ${glowPulse} 2.4s ease-in-out 0.6s infinite;
 
+  /* The light-gold slab blinds in dark mode — swap to a deep amber glow. */
+  html[data-theme="dark"] & {
+    background: linear-gradient(135deg, #2e2410 0%, #3a2d12 50%, #453413 100%);
+    border-color: #b8962e;
+  }
+
   &::before {
     content: '';
     position: absolute;
@@ -90,6 +96,7 @@ const Sub = styled.p`
   opacity: 0.85;
   position: relative;
   z-index: 1;
+  html[data-theme="dark"] & { color: #e0c26a; }
 `;
 
 const ResetBtn = styled.button`

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { GeoLocation, LocState } from './TodayView';
@@ -104,7 +104,24 @@ const RetryBtn = styled.button`
   color: ${theme.colors.onPrimary};
   border-radius: ${theme.radii.sm};
   font-size: 0.85rem;
+  transition: all ${theme.motion.fast} ease;
   &:hover { background: ${theme.colors.primaryLight}; }
+  &:active { transform: scale(0.96); }
+`;
+
+const spin = keyframes`to { transform: rotate(360deg); }`;
+
+const Spinner = styled.span`
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 2px solid ${theme.colors.borderLight};
+  border-top-color: ${theme.colors.primary};
+  animation: ${spin} 0.8s linear infinite;
+  @media (prefers-reduced-motion: reduce) { animation-duration: 2.4s; }
+`;
+
+const LoadingBox = styled.div`
+  min-height: 120px;
+  display: flex; align-items: center; justify-content: center;
 `;
 
 function fmt(iso: string): string {
@@ -150,7 +167,7 @@ export default function ZmanimCard({ location, locState, date, onRetry }: Props)
         </Placeholder>
       )}
       {locState === 'loading' && (
-        <Placeholder><span>{HE.LOADING}</span></Placeholder>
+        <LoadingBox role="status" aria-label={HE.LOADING}><Spinner aria-hidden="true" /></LoadingBox>
       )}
       {locState === 'granted' && error && (
         <Placeholder>{HE.TODAY_ERROR}</Placeholder>
@@ -158,7 +175,9 @@ export default function ZmanimCard({ location, locState, date, onRetry }: Props)
       {locState === 'granted' && !error && times && (
         <List>
           {rows.map((e, i) => {
-            const isPast = i < nextIdx || (nextIdx === -1 && i < rows.length);
+            /* nextIdx === -1 means every zman has passed — dimming all rows
+               makes the card look broken, so keep them at full opacity. */
+            const isPast = nextIdx !== -1 && i < nextIdx;
             const isNext = i === nextIdx;
             return (
               <Row key={e.key} $past={isPast} $next={isNext}>
@@ -173,7 +192,7 @@ export default function ZmanimCard({ location, locState, date, onRetry }: Props)
         </List>
       )}
       {locState === 'granted' && !error && !times && (
-        <Placeholder>{HE.LOADING}</Placeholder>
+        <LoadingBox role="status" aria-label={HE.LOADING}><Spinner aria-hidden="true" /></LoadingBox>
       )}
     </Card>
   );

@@ -1,13 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Citation } from '@/types';
 import SpeakButton from '@/components/common/SpeakButton';
 
-const Card = styled.div`
+const fadeUp = keyframes`
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
+
+const Card = styled.div<{ $index: number }>`
   background: ${theme.colors.surface};
   border-radius: ${theme.radii.md};
   padding: ${theme.spacing.lg};
@@ -16,11 +21,17 @@ const Card = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${theme.spacing.md};
-  transition: box-shadow 0.15s;
+  transition: transform 0.15s ease, box-shadow 0.15s;
+  animation: ${fadeUp} 0.45s ease both;
+  animation-delay: ${p => Math.min(p.$index, 12) * 40}ms;
 
-  &:hover {
-    box-shadow: ${theme.shadows.md};
+  @media (hover: hover) {
+    &:hover {
+      box-shadow: ${theme.shadows.md};
+      transform: translateY(-2px);
+    }
   }
+  &:active { transform: translateY(-1px) scale(0.98); }
 `;
 
 const Content = styled.p`
@@ -80,6 +91,7 @@ const ConfirmOverlay = styled.div`
 
 interface Props {
   citation: Citation;
+  index?: number;
   onEdit: (citation: Citation) => void;
   onDelete: (id: string) => void;
   isReadOnly?: boolean;
@@ -91,11 +103,11 @@ function formatLocation(loc: Citation['locations'][0]) {
   return label;
 }
 
-export default function CitationCard({ citation, onEdit, onDelete, isReadOnly = false }: Props) {
+export default function CitationCard({ citation, index = 0, onEdit, onDelete, isReadOnly = false }: Props) {
   const [confirming, setConfirming] = useState(false);
 
   return (
-    <Card>
+    <Card $index={index}>
       <Content>{citation.content}</Content>
       <Locations>
         {citation.locations.map((loc) => (

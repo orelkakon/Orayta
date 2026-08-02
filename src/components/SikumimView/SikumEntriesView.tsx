@@ -55,7 +55,7 @@ const SortRow = styled.div`display: flex; gap: ${theme.spacing.xs};`;
 
 const AddBtn = styled.button`
   padding: ${theme.spacing.sm} ${theme.spacing.lg};
-  background: ${theme.colors.primary}; color: white;
+  background: ${theme.colors.primary}; color: ${theme.colors.onPrimary};
   border-radius: ${theme.radii.md}; font-size: 0.9rem; font-weight: 600;
   &:hover { background: ${theme.colors.primaryLight}; }
 `;
@@ -188,10 +188,11 @@ export default function SikumEntriesView({ book, onBack }: Props) {
           ? <SikumCubesGrid entries={sorted} onOpen={setViewEntry} />
           : (
             <List>
-              {sorted.map(e => (
+              {sorted.map((e, i) => (
                 <SikumEntryCard
                   key={e.id}
                   entry={e}
+                  index={i}
                   onClick={() => setViewEntry(e)}
                   onEdit={role === 'admin' ? () => setEditEntry(e) : undefined}
                   onDelete={role === 'admin' ? () => handleDelete(e) : undefined}

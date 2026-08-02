@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
+import { LineIcon } from '@/components/common/LineIcons';
 import { Rabbi } from '@/types';
 import { matchYahrzeitRabbis, HebDateParts } from '@/lib/yahrzeit';
 
@@ -82,6 +83,22 @@ const Empty = styled.div`
   color: ${theme.colors.textMuted};
   text-align: center;
   font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${theme.spacing.sm};
+`;
+const spin = keyframes`to { transform: rotate(360deg); }`;
+const Spinner = styled.span`
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 2px solid ${theme.colors.borderLight};
+  border-top-color: ${theme.colors.primary};
+  animation: ${spin} 0.8s linear infinite;
+  @media (prefers-reduced-motion: reduce) { animation-duration: 2.4s; }
+`;
+const LoadingBox = styled.div`
+  min-height: 120px;
+  display: flex; align-items: center; justify-content: center;
 `;
 
 const SKIP = new Set(['parashat']);
@@ -129,10 +146,13 @@ export default function EventsCard({ date }: Props) {
     <Card>
       <CardHeader>{HE.TODAY_EVENTS_TITLE}</CardHeader>
       <Body>
-        {loading && <Empty>{HE.LOADING}</Empty>}
+        {loading && <LoadingBox role="status" aria-label={HE.LOADING}><Spinner aria-hidden="true" /></LoadingBox>}
         {error && <Empty>{HE.TODAY_ERROR}</Empty>}
         {!loading && !error && allEvents.length === 0 && (
-          <Empty>{HE.TODAY_EVENTS_EMPTY}</Empty>
+          <Empty>
+            <LineIcon name="calendar" size={28} />
+            {HE.TODAY_EVENTS_EMPTY}
+          </Empty>
         )}
         {!loading && !error && allEvents.map((ev, i) => (
           <EventRow key={i}>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 
@@ -44,9 +44,10 @@ const Item = styled.a`
   padding: ${theme.spacing.md} ${theme.spacing.lg};
   border-bottom: 1px solid ${theme.colors.borderLight};
   text-decoration: none;
-  transition: background 0.15s;
+  transition: background ${theme.motion.fast}, transform ${theme.motion.fast} ease;
   &:last-child { border-bottom: none; }
   &:hover { background: ${theme.colors.surfaceAlt}; }
+  &:active { transform: scale(0.98); background: ${theme.colors.surfaceAlt}; }
 `;
 const ItemType = styled.span`font-size: 0.75rem; color: ${theme.colors.textMuted}; font-weight: 600;`;
 const ItemValue = styled.span`
@@ -74,6 +75,18 @@ const Placeholder = styled.div`
   color: ${theme.colors.textMuted};
   font-size: 0.9rem;
   text-align: center;
+`;
+const spin = keyframes`to { transform: rotate(360deg); }`;
+const Spinner = styled.span`
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 2px solid ${theme.colors.borderLight};
+  border-top-color: ${theme.colors.primary};
+  animation: ${spin} 0.8s linear infinite;
+  @media (prefers-reduced-motion: reduce) { animation-duration: 2.4s; }
+`;
+const LoadingBox = styled.div`
+  min-height: 120px;
+  display: flex; align-items: center; justify-content: center;
 `;
 
 export default function DafYomiCard() {
@@ -104,7 +117,7 @@ export default function DafYomiCard() {
     <Card>
       <CardHeader>{HE.TODAY_DAF_TITLE}</CardHeader>
       <Body>
-        {loading && <Placeholder>{HE.LOADING}</Placeholder>}
+        {loading && <LoadingBox role="status" aria-label={HE.LOADING}><Spinner aria-hidden="true" /></LoadingBox>}
         {error && <Placeholder>{HE.TODAY_ERROR}</Placeholder>}
         {!loading && !error && items.map(it => (
           <Item key={it.label} href={it.url} target="_blank" rel="noopener noreferrer">

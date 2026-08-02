@@ -81,6 +81,15 @@ export const theme = {
     instagram: '#E1306C',
     linkedin: '#0077B5',
   },
+  // Motion vocabulary — one spring + one decel curve everywhere, so the whole
+  // app shares a single physical "feel" instead of per-component ad-hoc eases.
+  motion: {
+    spring:  'cubic-bezier(0.34, 1.56, 0.64, 1)',
+    out:     'cubic-bezier(0.22, 1, 0.36, 1)',
+    fast:    '0.15s',
+    base:    '0.25s',
+    slow:    '0.4s',
+  },
   // Single z-index ladder so overlays stop competing with ad-hoc values.
   z: {
     sticky: 50,

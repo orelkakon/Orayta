@@ -63,7 +63,7 @@ const DraftBadge = styled.div`
   background: ${theme.colors.primary}12; border: 1px solid ${theme.colors.primary}28;
   border-radius: ${theme.radii.sm}; padding: 4px 10px; align-self: flex-start;
 `;
-const ErrorMsg = styled.p`font-size: 0.82rem; color: #dc2626;`;
+const ErrorMsg = styled.p`font-size: 0.82rem; color: ${theme.colors.error};`;
 const BtnRow = styled.div`display: flex; gap: ${theme.spacing.sm}; justify-content: flex-end;`;
 const SaveBtn = styled.button`
   padding: ${theme.spacing.sm} ${theme.spacing.xl};

@@ -35,7 +35,7 @@ const IconBtn = styled.button<{ $active: boolean }>`
   transition: border-color 0.15s, background 0.15s;
   &:hover { border-color: ${theme.colors.primary}; }
 `;
-const ErrorMsg = styled.p`font-size: 0.82rem; color: #dc2626;`;
+const ErrorMsg = styled.p`font-size: 0.82rem; color: ${theme.colors.error};`;
 const BtnRow = styled.div`display: flex; gap: ${theme.spacing.sm}; justify-content: flex-end;`;
 const SaveBtn = styled.button`
   padding: ${theme.spacing.sm} ${theme.spacing.xl};

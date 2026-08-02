@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { theme } from '@/lib/theme';
@@ -11,6 +11,7 @@ import { LineIcon } from '@/components/common/LineIcons';
 import { useDarkMode } from '@/components/common/ThemeContext';
 import { useRole } from '@/components/common/RoleContext';
 import NavDrawer from './NavDrawer';
+import BottomTabBar from './BottomTabBar';
 import { navItems } from './navItems';
 import DedicationsTicker from './DedicationsTicker';
 import AddToHomeScreen from '@/components/common/AddToHomeScreen';
@@ -65,8 +66,9 @@ const ThemeBtn = styled.button`
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; border-radius: ${theme.radii.sm};
   font-size: 0.95rem; color: ${theme.colors.onPrimary}; opacity: 0.7;
-  transition: opacity 0.15s;
+  transition: opacity ${theme.motion.fast} ease, transform ${theme.motion.fast} ease;
   &:hover { opacity: 1; background: rgba(255,255,255,0.15); }
+  &:active { transform: scale(0.9); }
   /* Keep the glyph small but give it a 44px touch target (WCAG 2.5.5). */
   &::before { content: ''; position: absolute; inset: -8px; }
 `;
@@ -109,15 +111,29 @@ const HamBtn = styled.button`
   width: 44px; height: 44px; flex-shrink: 0;
   align-items: center; justify-content: center;
   border-radius: ${theme.radii.sm};
-  transition: background 0.15s;
+  transition: background ${theme.motion.fast} ease, transform ${theme.motion.fast} ease;
   &:hover { background: rgba(255,255,255,0.15); }
+  &:active { transform: scale(0.9); }
   @media (max-width: 1100px) { display: flex; }
+`;
+
+/* Content slides up softly on every route change (AppLayout re-mounts per
+   page). The header renders identically each time, so only the page body
+   reads as animating — a native-style push without a router library. */
+const pageEnter = keyframes`
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
 `;
 
 const Main = styled.main`
   flex: 1; max-width: 1000px; width: 100%;
   margin: 0 auto; padding: ${theme.spacing.xl};
+  animation: ${pageEnter} 0.3s ${theme.motion.out};
   @media (max-width: 600px) { padding: ${theme.spacing.md}; }
+  @media (max-width: 768px) {
+    /* Clear the fixed bottom tab bar. */
+    padding-bottom: calc(64px + env(safe-area-inset-bottom) + ${theme.spacing.lg});
+  }
 `;
 
 const SkipLink = styled.a.attrs({ className: 'skip-link' })``;
@@ -244,6 +260,11 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
       />
 
       <Main id="main" tabIndex={-1}>{children}</Main>
+      <BottomTabBar
+        pathname={pathname}
+        onMore={() => setMenuOpen(true)}
+        moreOpen={menuOpen}
+      />
       <AddToHomeScreen />
       <VisitTracker />
     </Wrapper>
