@@ -45,7 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="he" dir="rtl" className={`${frankRuhl.variable} ${heebo.variable}`}>
       <head>
         {/* Prevent dark-mode flash: read localStorage before first paint */}
-        <script dangerouslySetInnerHTML={{ __html: `try{var s=localStorage.getItem('orayta_theme');var d=s?s==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.setAttribute('data-theme','dark')}catch(e){};window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__bip=e});` }} />
+        <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem('orayta_theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){};window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__bip=e});` }} />
       </head>
       <body>
         <ClientProviders>
