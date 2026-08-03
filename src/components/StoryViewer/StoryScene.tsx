@@ -115,6 +115,14 @@ const AlefWm = styled.span`
   color: rgba(148, 158, 255, 0.1);
 `;
 
+/* rabbiQuiz — floating question marks around the portrait */
+const QMark = styled.span<{ $x: string; $y: string; $s: string; $r: string }>`
+  position: absolute; top: ${p => p.$y}; left: ${p => p.$x};
+  font-family: Georgia, serif; font-size: ${p => p.$s}; line-height: 1;
+  color: rgba(150, 190, 235, 0.14);
+  transform: rotate(${p => p.$r});
+`;
+
 /* daf — an arched beit-midrash window over two text columns */
 const Arch = styled(Layer)`
   background: radial-gradient(ellipse 70% 40% at 50% 0%, rgba(120,196,224,0.18), transparent 70%);
@@ -128,6 +136,14 @@ const PageCol = styled.span<{ $side: 'left' | 'right' }>`
 export default function StoryScene({ storyKey }: { storyKey: StoryKey }) {
   switch (storyKey) {
     case 'rabbi':    return <Halo aria-hidden="true" />;
+    case 'rabbiQuiz': return (
+      <Layer aria-hidden="true">
+        <QMark $x="12%" $y="12%" $s="3.4rem" $r="-14deg">?</QMark>
+        <QMark $x="78%" $y="20%" $s="2.4rem" $r="12deg">?</QMark>
+        <QMark $x="16%" $y="72%" $s="2.1rem" $r="8deg">?</QMark>
+        <QMark $x="80%" $y="66%" $s="3rem" $r="-9deg">?</QMark>
+      </Layer>
+    );
     case 'citation': return <Layer aria-hidden="true"><QuoteWm>”</QuoteWm><Beam /></Layer>;
     case 'reel':
     case 'video':    return <Layer aria-hidden="true"><Film $side="left" /><Film $side="right" /></Layer>;

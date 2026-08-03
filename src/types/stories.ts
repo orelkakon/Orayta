@@ -3,7 +3,7 @@ import type { Citation, Rabbi, Chidush, FeedSikumData, FeedGematriaData } from '
 /* ── Daily stories (homepage Stories row) ─────────────────────────────── */
 
 export type StoryKey =
-  | 'rabbi' | 'citation' | 'reel' | 'parasha' | 'halacha'
+  | 'rabbi' | 'rabbiQuiz' | 'citation' | 'reel' | 'parasha' | 'halacha'
   | 'sikum' | 'quiz' | 'chidush' | 'tale' | 'video' | 'gematria' | 'daf';
 
 export interface StoryHalacha {
@@ -42,8 +42,16 @@ export interface StoryQuiz {
   source: string; // full location, revealed after answering
 }
 
+/** Guess-the-rabbi: a portrait and three names to choose from. */
+export interface StoryWhoRabbi {
+  imageUrl: string;
+  options: string[];
+  correctIndex: number;
+}
+
 export type DailyStory =
   | { key: 'rabbi'; data: Rabbi }
+  | { key: 'rabbiQuiz'; data: StoryWhoRabbi }
   | { key: 'citation'; data: Citation }
   | { key: 'reel'; data: StoryReel }
   | { key: 'parasha'; data: StoryParasha }

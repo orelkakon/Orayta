@@ -5,17 +5,17 @@ import styled, { keyframes } from 'styled-components';
 import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
-import { CandleIcon, QuillIcon } from './HomeIcons';
+import { CandleIcon } from './HomeIcons';
 
 const shine = keyframes`
   from { transform: translateX(160%) skewX(-20deg); }
   to   { transform: translateX(-260%) skewX(-20deg); }
 `;
 
+/* A single centered card — contact lives in the navbar only. */
 const Row = styled.div`
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: ${theme.spacing.md}; width: 100%;
-  @media (max-width: 620px) { grid-template-columns: 1fr; }
+  display: grid; grid-template-columns: 1fr;
+  width: 100%; max-width: 520px; margin: 0 auto;
 `;
 
 /* Gold gradient frame — thin outer layer, card inside */
@@ -113,13 +113,6 @@ const CARDS: CardDef[] = [
     eyebrow: HE.DEDICATIONS_TITLE,
     title: HE.DEDICATION_BANNER_TITLE,
     sub: HE.DEDICATION_BANNER_SUB,
-  },
-  {
-    href: '/contact',
-    icon: <QuillIcon />,
-    eyebrow: HE.NAV_CONTACT,
-    title: HE.HOME_CONTACT_TITLE,
-    sub: HE.HOME_CONTACT_SUB,
   },
 ];
 

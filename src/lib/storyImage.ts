@@ -16,19 +16,19 @@ export interface StoryContent {
   accent?: string;
 }
 
-const W = 1080;
-const H = 1920;
-const GOLD = '#d9b56c';
-const GOLD_DIM = 'rgba(217,181,108,0.55)';
+export const W = 1080;
+export const H = 1920;
+export const GOLD = '#d9b56c';
+export const GOLD_DIM = 'rgba(217,181,108,0.55)';
 const CREAM = '#f6eed9';
-const SITE = SITE_URL.replace(/^https?:\/\//, '');
+export const SITE = SITE_URL.replace(/^https?:\/\//, '');
 
-function cssVar(name: string, fallback: string): string {
+export function cssVar(name: string, fallback: string): string {
   const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   return v || fallback;
 }
 
-async function loadFonts(serif: string, sans: string): Promise<void> {
+export async function loadFonts(serif: string, sans: string): Promise<void> {
   try {
     await Promise.all([
       document.fonts.load(`500 52px ${serif}`),
@@ -69,7 +69,7 @@ function roundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: num
   ctx.closePath();
 }
 
-function drawBackground(ctx: CanvasRenderingContext2D, accent: string): void {
+export function drawBackground(ctx: CanvasRenderingContext2D, accent: string): void {
   const bg = ctx.createLinearGradient(0, 0, 0, H);
   bg.addColorStop(0, '#171310');
   bg.addColorStop(0.5, '#221b12');

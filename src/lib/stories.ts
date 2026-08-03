@@ -49,6 +49,7 @@ export interface StoryArt {
 
 export const STORY_ART: Record<StoryKey, StoryArt> = {
   rabbi:    { icon: 'user',     from: '#3d2513', to: '#8a5a2e', accent: '226,168,98'  },
+  rabbiQuiz:{ icon: 'search',   from: '#1c2733', to: '#4a6a8a', accent: '150,190,235' },
   citation: { icon: 'openbook', from: '#2c1d10', to: '#7a5a2a', accent: '232,203,118' },
   reel:     { icon: 'camera',   from: '#3a1626', to: '#8a3558', accent: '255,138,180' },
   parasha:  { icon: 'scroll',   from: '#1f2a1a', to: '#4f6b35', accent: '178,214,124' },

@@ -33,6 +33,9 @@ const Overlay = styled.div`
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   display: flex; align-items: center; justify-content: center;
   animation: ${overlayIn} 0.2s ease;
+  /* Long-press is a story gesture (pause), never text selection or the
+     iOS copy callout. */
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
 `;
 
 const Stage = styled.div`

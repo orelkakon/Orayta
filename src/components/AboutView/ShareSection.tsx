@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { trackShare } from '@/lib/shareCounter';
-import { shareStory, inviteStory } from '@/lib/storyShare';
+import { shareStory, inviteStory, shareTemplateStory } from '@/lib/storyShare';
 import { SITE_URL, RLM } from '@/lib/siteUrl';
 
 const Card = styled.div`
@@ -167,6 +167,15 @@ export default function ShareSection() {
         >
           <BtnIcon>📸</BtnIcon>
           {HE.ABOUT_SHARE_INSTAGRAM}
+        </ShareBtn>
+
+        <ShareBtn
+          $border="#d9b56c"
+          $hoverBg="rgba(217,181,108,0.09)"
+          onClick={() => { void shareTemplateStory(); }}
+        >
+          <BtnIcon>🖼️</BtnIcon>
+          {HE.ABOUT_TEMPLATE_BTN}
         </ShareBtn>
 
         <ShareBtn

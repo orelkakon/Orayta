@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import styled from 'styled-components';
 import { LineIcon } from '@/components/common/LineIcons';
 import { HE } from '@/lib/hebrewTexts';
 import { STORY_ART } from '@/lib/stories';
@@ -8,7 +10,16 @@ import type { DailyStory } from '@/types';
 import * as P from './StoryCardParts';
 import { ExpandableText } from './ExpandableText';
 import StoryVideo from './StoryVideo';
-import StoryQuiz from './StoryQuiz';
+import StoryQuiz, { StoryWhoRabbi } from './StoryQuiz';
+
+/* The reel's play ring is a real doorway to the feed, not a decoration. */
+const PlayLink = styled(Link)`
+  position: relative; z-index: 3;
+  display: inline-flex; border-radius: 50%;
+  transition: transform 0.15s;
+  &:hover { transform: scale(1.06); }
+  &:active { transform: scale(0.92); }
+`;
 
 /** The inner content of one story card — layout varies per category. */
 export function StoryCardBody({ story }: { story: DailyStory }) {
@@ -35,9 +46,13 @@ export function StoryCardBody({ story }: { story: DailyStory }) {
         {src && <P.SourceChip>{src}</P.SourceChip>}
       </>);
     }
+    case 'rabbiQuiz':
+      return <StoryWhoRabbi quiz={story.data} />;
     case 'reel':
       return (<>
-        <P.PlayRing $accent={accent}><P.PlayGlyph /></P.PlayRing>
+        <PlayLink href="/feed" aria-label={HE.STORY_CTA_REEL}>
+          <P.PlayRing $accent={accent}><P.PlayGlyph /></P.PlayRing>
+        </PlayLink>
         <P.TitleText>{HE.FEED_TITLE}</P.TitleText>
         <P.SubText>{HE.STORY_REEL_SUB}</P.SubText>
         {story.data.username && <P.SourceChip>@{story.data.username}</P.SourceChip>}
@@ -116,6 +131,7 @@ export interface StoryCta {
 export function storyCta(story: DailyStory): StoryCta | null {
   switch (story.key) {
     case 'rabbi':    return { label: HE.STORY_CTA_RABBI, href: '/rabbis' };
+    case 'rabbiQuiz':return { label: HE.STORY_CTA_WHO, href: '/rabbis' };
     case 'citation': return { label: HE.STORY_CTA_CITATION, href: '/study' };
     case 'reel':     return { label: HE.STORY_CTA_REEL, href: '/feed' };
     case 'parasha':  return { label: HE.STORY_CTA_PARASHA, href: story.data.url, external: true };

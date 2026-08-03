@@ -8,11 +8,20 @@ import { haptics } from '@/lib/haptics';
 import type { StoryQuiz as StoryQuizData } from '@/types';
 import { StoryPauseContext } from './ExpandableText';
 import { KickerText, MainText, SourceChip, SubText, CREAM } from './StoryCardParts';
+import type { StoryWhoRabbi as StoryWhoRabbiData } from '@/types';
 
-const Options = styled.div`
+const Options = styled.div<{ $stack?: boolean }>`
   position: relative; z-index: 3;
-  display: grid; grid-template-columns: 1fr 1fr; gap: ${theme.spacing.sm};
+  display: grid; grid-template-columns: ${p => p.$stack ? '1fr' : '1fr 1fr'};
+  gap: ${theme.spacing.sm};
   width: 100%; max-width: 320px;
+`;
+
+const Portrait = styled.img`
+  width: 148px; height: 148px; border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(243, 214, 146, 0.9);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.5);
 `;
 
 const Option = styled.button<{ $state: 'idle' | 'correct' | 'wrong' | 'dim' }>`
@@ -82,6 +91,46 @@ export default function StoryQuiz({ quiz }: { quiz: StoryQuizData }) {
         </>
       )}
       {!answered && <SubText>{HE.STORY_LABELS.quiz}</SubText>}
+    </>
+  );
+}
+
+/** מי בתמונה? — a rabbi's portrait and three names, tap to guess. */
+export function StoryWhoRabbi({ quiz }: { quiz: StoryWhoRabbiData }) {
+  const setEngaged = useContext(StoryPauseContext);
+  const [picked, setPicked] = useState<number | null>(null);
+  const answered = picked !== null;
+  const correct = picked === quiz.correctIndex;
+
+  const answer = (i: number) => {
+    if (answered) return;
+    setPicked(i);
+    setEngaged(true);
+    if (i === quiz.correctIndex) haptics.success();
+    else haptics.error();
+  };
+
+  const stateOf = (i: number): 'idle' | 'correct' | 'wrong' | 'dim' => {
+    if (!answered) return 'idle';
+    if (i === quiz.correctIndex) return 'correct';
+    if (i === picked) return 'wrong';
+    return 'dim';
+  };
+
+  return (
+    <>
+      <Portrait src={quiz.imageUrl} alt="" />
+      <KickerText $accent="150,190,235">{HE.STORY_WHO_PROMPT}</KickerText>
+      <Options $stack>
+        {quiz.options.map((opt, i) => (
+          <Option key={opt} $state={stateOf(i)} onClick={() => answer(i)} disabled={answered}>
+            {opt}
+          </Option>
+        ))}
+      </Options>
+      {answered && (
+        <Verdict $ok={correct}>{correct ? HE.STORY_QUIZ_CORRECT : HE.STORY_QUIZ_WRONG}</Verdict>
+      )}
     </>
   );
 }

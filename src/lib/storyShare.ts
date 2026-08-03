@@ -2,6 +2,7 @@ import type { Chidush, SikumEntry, FeedItem, Citation, Rabbi, Book, FeedGematria
 import { HE } from './hebrewTexts';
 import { trackShare } from './shareCounter';
 import { renderStoryImage, StoryContent } from './storyImage';
+import { renderStoryTemplate } from './storyTemplate';
 import { SITE_URL } from './siteUrl';
 
 /**
@@ -41,11 +42,21 @@ function copySiteUrlLegacy(): void {
 export async function shareStory(content: StoryContent): Promise<void> {
   copySiteUrl();
   const blob = await renderStoryImage(content);
-  const file = new File([blob], 'orayta-story.png', { type: 'image/png' });
+  await shareImageBlob(blob, content.badge);
+}
 
+/** The empty branded story template — for composing posts inside Instagram. */
+export async function shareTemplateStory(): Promise<void> {
+  copySiteUrl();
+  const blob = await renderStoryTemplate();
+  await shareImageBlob(blob, HE.ABOUT_TEMPLATE_BTN);
+}
+
+async function shareImageBlob(blob: Blob, title: string): Promise<void> {
+  const file = new File([blob], 'orayta-story.png', { type: 'image/png' });
   if (typeof navigator !== 'undefined' && navigator.canShare?.({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: content.badge });
+      await navigator.share({ files: [file], title });
       trackShare('story');
     } catch (err) {
       if ((err as Error)?.name !== 'AbortError') downloadBlob(blob);

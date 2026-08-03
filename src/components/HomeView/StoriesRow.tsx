@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -28,6 +28,7 @@ const Section = styled.section`
 /* Edge-bleed scroll strip: the circles glide under the page padding instead
    of clipping hard at the container edge. */
 const Scroller = styled.div`
+  direction: rtl;
   display: flex; gap: ${theme.spacing.ms};
   overflow-x: auto; overscroll-behavior-x: contain;
   padding: 6px 2px 2px;
@@ -52,6 +53,12 @@ export default function StoriesRow() {
   const [failed, setFailed] = useState(false);
   const [viewed, setViewed] = useState<Set<StoryKey>>(new Set());
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
+  // Always open on the row's logical start — the first story at the far right.
+  useEffect(() => {
+    scrollerRef.current?.scrollTo({ left: 0 });
+  }, [payload]);
 
   useEffect(() => {
     fetch('/api/stories/daily')
@@ -77,7 +84,7 @@ export default function StoriesRow() {
 
   return (
     <Section aria-label={HE.STORIES_KICKER}>
-      <Scroller role="list">
+      <Scroller role="list" ref={scrollerRef}>
         {payload
           ? payload.stories.map((s, i) => (
               <StoryCircle

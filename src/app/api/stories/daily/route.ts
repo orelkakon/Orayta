@@ -5,7 +5,7 @@ import { MASECHTOT } from '@/lib/hebrewData';
 import { HALACHOT } from '@/lib/storiesContent/halachot';
 import { TALES } from '@/lib/storiesContent/tales';
 import { findParashaInsight } from '@/lib/storiesContent/parashot';
-import type { DailyStoriesPayload, DailyStory, StoryDaf, StoryQuiz, Amud } from '@/types';
+import type { DailyStoriesPayload, DailyStory, StoryDaf, StoryQuiz, StoryWhoRabbi, Amud } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,9 +51,10 @@ export async function GET() {
     include: { page: { select: { username: true } } },
   };
 
-  const [[nRabbi, nCitation, nReel, nSikum, nChidush, nGematria], cal] = await Promise.all([
+  const [[nRabbi, nRabbiImg, nCitation, nReel, nSikum, nChidush, nGematria], cal] = await Promise.all([
     Promise.all([
       prisma.rabbi.count(),
+      prisma.rabbi.count({ where: { imageUrl: { not: null } } }),
       prisma.citation.count(),
       prisma.instagramReel.count({ where: { active: true } }),
       prisma.sikumEntry.count(),
@@ -67,8 +68,14 @@ export async function GET() {
   let videoSkip = Math.floor(Math.random() * Math.max(1, nReel));
   if (nReel > 1 && videoSkip === skip(nReel)) videoSkip = (videoSkip + 1) % nReel;
 
-  const [rabbi, citation, quizCitation, reel, videoReel, sikum, chidush, gematria] = await Promise.all([
+  const [rabbi, whoCandidate, nameWindow, citation, quizCitation, reel, videoReel, sikum, chidush, gematria] = await Promise.all([
     nRabbi ? prisma.rabbi.findFirst({ ...byId, skip: skip(nRabbi) }) : null,
+    nRabbiImg ? prisma.rabbi.findFirst({
+      ...byId, where: { imageUrl: { not: null } }, skip: (day * 3 + 1) % nRabbiImg,
+    }) : null,
+    nRabbi >= 3 ? prisma.rabbi.findMany({
+      ...byId, skip: (day * 11) % Math.max(1, nRabbi - 8), take: 8, select: { name: true },
+    }) : [],
     nCitation ? prisma.citation.findFirst({ ...byId, skip: skip(nCitation), include: { locations: true } }) : null,
     nCitation ? prisma.citation.findFirst({ ...byId, skip: (day * 7 + 3) % nCitation, include: { locations: true } }) : null,
     nReel ? prisma.instagramReel.findFirst({ ...reelQuery, skip: skip(nReel) }) : null,
@@ -98,6 +105,21 @@ export async function GET() {
     quiz = { question: quizCitation.content, options, correctIndex, source: locSource(qLoc) };
   }
 
+  // Guess-the-rabbi: a daily portrait plus two distractor names from a
+  // deterministic window of the directory.
+  let whoRabbi: StoryWhoRabbi | null = null;
+  if (whoCandidate?.imageUrl) {
+    const distractors = Array.from(new Set(nameWindow.map(r => r.name)))
+      .filter(n => n !== whoCandidate.name)
+      .slice(0, 2);
+    if (distractors.length === 2) {
+      const correctIndex = day % 3;
+      const options = [...distractors];
+      options.splice(correctIndex, 0, whoCandidate.name);
+      whoRabbi = { imageUrl: whoCandidate.imageUrl, options, correctIndex };
+    }
+  }
+
   const parashaInsight = cal.parashaName ? findParashaInsight(cal.parashaName) : null;
   const stories: DailyStory[] = [];
 
@@ -105,6 +127,7 @@ export async function GET() {
     key: 'rabbi',
     data: { ...rabbi, createdAt: rabbi.createdAt.toISOString() },
   });
+  if (whoRabbi) stories.push({ key: 'rabbiQuiz', data: whoRabbi });
   if (citation) stories.push({
     key: 'citation',
     data: {
