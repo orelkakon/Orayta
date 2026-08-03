@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
-import { STORY_ART } from '@/lib/stories';
+import { STORY_ART, STORY_DURATION_MS } from '@/lib/stories';
 import { shareStory } from '@/lib/storyShare';
 import { haptics } from '@/lib/haptics';
 import { trackEvent } from '@/lib/track';
@@ -106,7 +106,9 @@ export default function StoryViewer({ stories, startIndex, onViewed, onClose }: 
   const viewedRef = useRef(onViewed);
   viewedRef.current = onViewed;
 
-  const barRef = useStoryTimer(index, holding || sharing || engaged, autoplay, next);
+  // The video story gets triple time so a clip can actually be watched.
+  const duration = story.key === 'video' ? STORY_DURATION_MS * 3 : STORY_DURATION_MS;
+  const barRef = useStoryTimer(index, holding || sharing || engaged, autoplay, next, duration);
 
   useEffect(() => { setEngaged(false); }, [index]);
   useEffect(() => {

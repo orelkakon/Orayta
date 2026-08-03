@@ -1,10 +1,8 @@
 'use client';
 
-import { useContext, useEffect } from 'react';
 import styled from 'styled-components';
 import { HE } from '@/lib/hebrewTexts';
 import type { StoryReel } from '@/types';
-import { StoryPauseContext } from './ExpandableText';
 import { SourceChip } from './StoryCardParts';
 
 /* Same Instagram-embed crop the feed uses: oversize the iframe and shift it
@@ -25,13 +23,10 @@ const CroppedFrame = styled.iframe`
 
 /**
  * The random-video story: the reel is embedded immediately with the video
- * visible — one tap on its own play button starts it. The auto-advance
- * timer is held for this story so playback is never cut off.
+ * visible — one tap on its own play button starts it. This story runs on a
+ * tripled auto-advance timer (see StoryViewer) so a clip can be watched.
  */
 export default function StoryVideo({ reel }: { reel: StoryReel }) {
-  const setEngaged = useContext(StoryPauseContext);
-  useEffect(() => { setEngaged(true); }, [setEngaged]);
-
   return (
     <>
       <VideoBox>

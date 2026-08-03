@@ -16,6 +16,7 @@ export function useStoryTimer(
   paused: boolean,
   enabled: boolean,
   onDone: () => void,
+  durationMs: number = STORY_DURATION_MS,
 ): RefObject<HTMLDivElement> {
   const barRef = useRef<HTMLDivElement>(null);
   const elapsedRef = useRef(0);
@@ -35,7 +36,7 @@ export function useStoryTimer(
     const tick = (now: number) => {
       elapsedRef.current += now - last;
       last = now;
-      const p = Math.min(1, elapsedRef.current / STORY_DURATION_MS);
+      const p = Math.min(1, elapsedRef.current / durationMs);
       if (barRef.current) barRef.current.style.transform = `scaleX(${p})`;
       if (p >= 1) {
         if (!finished) { finished = true; doneRef.current(); }
@@ -45,7 +46,7 @@ export function useStoryTimer(
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [index, paused, enabled]);
+  }, [index, paused, enabled, durationMs]);
 
   return barRef;
 }
