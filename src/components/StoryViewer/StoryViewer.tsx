@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -146,7 +147,10 @@ export default function StoryViewer({ stories, startIndex, onViewed, onClose }: 
     try { await shareStory(share); } finally { setSharing(false); }
   };
 
-  return (
+  /* Portaled to <body>: the homepage wrapper creates its own stacking context
+     (position + z-index), so rendered in place the header/tab bar would paint
+     over the viewer no matter how high its z-index is. */
+  return createPortal(
     <Overlay>
       <Stage role="dialog" aria-modal="true" aria-label={HE.STORIES_VIEWER_LABEL}>
         <CardLayer key={index}>
@@ -177,6 +181,7 @@ export default function StoryViewer({ stories, startIndex, onViewed, onClose }: 
         />
         <SrOnly aria-live="polite">{HE.STORIES_COUNTER(index + 1, n)}</SrOnly>
       </Stage>
-    </Overlay>
+    </Overlay>,
+    document.body,
   );
 }

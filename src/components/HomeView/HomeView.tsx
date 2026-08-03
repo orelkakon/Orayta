@@ -121,6 +121,8 @@ export default function HomeView() {
     <>
       <HomeBackground />
       <Page>
+      <StoriesRow />
+
       <Hero>
         <AppTitle>{HE.APP_NAME}</AppTitle>
         <Tagline>{HE.HOME_TAGLINE}</Tagline>
@@ -129,8 +131,6 @@ export default function HomeView() {
           <QuoteSource>{HE.HOME_QUOTE_SOURCE}</QuoteSource>
         </QuoteBlock>
       </Hero>
-
-      <StoriesRow />
 
       <FeedBannerBlock />
 
