@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -79,6 +80,7 @@ interface StoryCircleProps {
 }
 
 export default function StoryCircle({ storyKey, viewed, index, imageUrl, onClick }: StoryCircleProps) {
+  const [imgFailed, setImgFailed] = useState(false);
   const art = STORY_ART[storyKey];
   const label = HE.STORY_LABELS[storyKey];
   const RingComp = viewed ? Ring : UnreadRing;
@@ -91,8 +93,8 @@ export default function StoryCircle({ storyKey, viewed, index, imageUrl, onClick
     >
       <RingComp>
         <Art $from={art.from} $to={art.to}>
-          {imageUrl
-            ? <Photo src={imageUrl} alt="" loading="lazy" />
+          {imageUrl && !imgFailed
+            ? <Photo src={imageUrl} alt="" loading="lazy" onError={() => setImgFailed(true)} />
             : <LineIcon name={art.icon} size={28} />}
         </Art>
       </RingComp>

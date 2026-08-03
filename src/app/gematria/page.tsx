@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import AppLayout from '@/components/Layout/AppLayout';
+import SectionPing from '@/components/common/SectionPing';
 import GematriaView from '@/components/GematriaView/GematriaView';
 
 const TITLE = 'גימטריות';
@@ -18,6 +19,7 @@ interface Props { searchParams: { q?: string } }
 export default function GematriaPage({ searchParams }: Props) {
   return (
     <AppLayout>
+      <SectionPing metric="gematria" />
       <GematriaView initialSearch={searchParams.q ?? ''} />
     </AppLayout>
   );

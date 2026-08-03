@@ -4,9 +4,7 @@ import { useEffect, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
-import { formatHebrewDate } from '@/lib/hebrewDate';
 import { getViewedKeys, markStoryViewed } from '@/lib/stories';
-import { trackSession } from '@/lib/track';
 import { haptics } from '@/lib/haptics';
 import StoryCircle from './StoryCircle';
 import StoryViewer from '@/components/StoryViewer/StoryViewer';
@@ -15,10 +13,6 @@ import type { DailyStoriesPayload, StoryKey } from '@/types';
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: none; }
-`;
-const pulse = keyframes`
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: 0.45; transform: scale(0.75); }
 `;
 const shimmer = keyframes`
   0%, 100% { opacity: 0.45; }
@@ -29,40 +23,6 @@ const Section = styled.section`
   width: 100%;
   display: flex; flex-direction: column; gap: ${theme.spacing.sm};
   animation: ${fadeUp} 0.45s ease both;
-`;
-
-const HeaderRow = styled.div`
-  display: flex; align-items: baseline; justify-content: space-between;
-  gap: ${theme.spacing.sm};
-  padding: 0 2px;
-`;
-
-const TitleWrap = styled.div`
-  display: flex; align-items: baseline; gap: ${theme.spacing.sm};
-`;
-
-const Kicker = styled.h2`
-  font-family: ${theme.fonts.body};
-  font-size: 1.15rem; font-weight: 800; color: ${theme.colors.primary};
-`;
-
-const DateLine = styled.span`
-  font-size: 0.78rem; color: ${theme.colors.textLight};
-`;
-
-const FreshChip = styled.span`
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 0.7rem; font-weight: 700; color: ${theme.colors.secondaryText};
-  background: ${theme.colors.surfaceAlt};
-  border: 1px solid ${theme.colors.borderLight};
-  padding: 3px 10px; border-radius: 999px;
-  white-space: nowrap;
-`;
-
-const Dot = styled.span.attrs({ className: 'anim-loop' })`
-  width: 6px; height: 6px; border-radius: 50%;
-  background: ${theme.colors.secondary};
-  animation: ${pulse} 1.8s ease-in-out infinite;
 `;
 
 /* Edge-bleed scroll strip: the circles glide under the page padding instead
@@ -92,10 +52,8 @@ export default function StoriesRow() {
   const [failed, setFailed] = useState(false);
   const [viewed, setViewed] = useState<Set<StoryKey>>(new Set());
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const [hebDate, setHebDate] = useState('');
 
   useEffect(() => {
-    setHebDate(formatHebrewDate(new Date()));
     fetch('/api/stories/daily')
       .then(r => { if (!r.ok) throw new Error('stories fetch failed'); return r.json(); })
       .then((data: DailyStoriesPayload) => {
@@ -110,7 +68,6 @@ export default function StoriesRow() {
 
   const openStory = (i: number) => {
     haptics.tap();
-    trackSession('content');
     setOpenIndex(i);
   };
 
@@ -120,13 +77,6 @@ export default function StoriesRow() {
 
   return (
     <Section aria-label={HE.STORIES_KICKER}>
-      <HeaderRow>
-        <TitleWrap>
-          <Kicker>{HE.STORIES_KICKER}</Kicker>
-          {hebDate && <DateLine>{hebDate}</DateLine>}
-        </TitleWrap>
-        <FreshChip><Dot aria-hidden="true" />{HE.STORIES_FRESH_CHIP}</FreshChip>
-      </HeaderRow>
       <Scroller role="list">
         {payload
           ? payload.stories.map((s, i) => (

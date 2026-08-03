@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import AppLayout from '@/components/Layout/AppLayout';
+import SectionPing from '@/components/common/SectionPing';
 import SikumimView from '@/components/SikumimView/SikumimView';
 
 const TITLE = 'סיכומים';
@@ -18,6 +19,7 @@ interface Props { searchParams: { q?: string } }
 export default function SikumimPage({ searchParams }: Props) {
   return (
     <AppLayout>
+      <SectionPing metric="sikumim" />
       <SikumimView initialSearch={searchParams.q ?? ''} />
     </AppLayout>
   );

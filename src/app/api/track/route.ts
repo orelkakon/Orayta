@@ -3,7 +3,10 @@ import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-const METRICS = ['users', 'feed', 'content', 'today', 'pwa'] as const;
+const METRICS = [
+  'users', 'feed', 'content', 'today', 'pwa',
+  'stories', 'quiz', 'rabbis', 'study', 'sikumim', 'chidushim', 'gematria',
+] as const;
 type Metric = (typeof METRICS)[number];
 
 function todayKey(): string {

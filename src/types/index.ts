@@ -196,13 +196,13 @@ export interface FeedSealSlide {
 
 export type FeedSlide = FeedItem | FeedDedicationSlide | FeedReelSlide | FeedSealSlide;
 
-export interface AdminDailyRow {
+/** Every per-day metric stored in DailyStat and shown in the admin panel. */
+export type DailyMetric =
+  | 'users' | 'feed' | 'content' | 'today' | 'pwa'
+  | 'stories' | 'quiz' | 'rabbis' | 'study' | 'sikumim' | 'chidushim' | 'gematria';
+
+export interface AdminDailyRow extends Record<DailyMetric, number> {
   day: string;
-  users: number;
-  feed: number;
-  content: number;
-  today: number;
-  pwa: number;
 }
 
 export interface AdminStats {
@@ -211,7 +211,7 @@ export interface AdminStats {
   saves: number;
   shares: { wa: number; story: number };
   reactions: { total: number; heart: number; fire: number; spark: number };
-  totals: { users: number; feed: number; content: number; today: number; pwa: number };
+  totals: Record<DailyMetric, number>;
   daily: AdminDailyRow[];
 }
 

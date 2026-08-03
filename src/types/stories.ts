@@ -4,7 +4,7 @@ import type { Citation, Rabbi, Chidush, FeedSikumData, FeedGematriaData } from '
 
 export type StoryKey =
   | 'rabbi' | 'citation' | 'reel' | 'parasha' | 'halacha'
-  | 'sikum' | 'chidush' | 'tale' | 'gematria' | 'daf';
+  | 'sikum' | 'quiz' | 'chidush' | 'tale' | 'video' | 'gematria' | 'daf';
 
 export interface StoryHalacha {
   text: string;
@@ -20,6 +20,7 @@ export interface StoryTale {
 export interface StoryParasha {
   name: string;
   insight: string;
+  url: string; // Sefaria reading for this parasha
 }
 
 export interface StoryDaf {
@@ -33,6 +34,14 @@ export interface StoryReel {
   username: string | null;
 }
 
+/** Tap-to-answer daily question: identify the masechet of a citation. */
+export interface StoryQuiz {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  source: string; // full location, revealed after answering
+}
+
 export type DailyStory =
   | { key: 'rabbi'; data: Rabbi }
   | { key: 'citation'; data: Citation }
@@ -40,8 +49,10 @@ export type DailyStory =
   | { key: 'parasha'; data: StoryParasha }
   | { key: 'halacha'; data: StoryHalacha }
   | { key: 'sikum'; data: FeedSikumData }
+  | { key: 'quiz'; data: StoryQuiz }
   | { key: 'chidush'; data: Chidush }
   | { key: 'tale'; data: StoryTale }
+  | { key: 'video'; data: StoryReel }
   | { key: 'gematria'; data: FeedGematriaData }
   | { key: 'daf'; data: StoryDaf };
 

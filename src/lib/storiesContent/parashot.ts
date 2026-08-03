@@ -64,8 +64,9 @@ const INSIGHTS: Record<string, string> = {
 
 const norm = (s: string) => s.replace(/^פרשת\s+/, '').replace(/["״׳']/g, '').trim();
 
-/** Matches a Sefaria parasha name (possibly doubled, e.g. מטות־מסעי) to an insight. */
-export function findParashaInsight(name: string): StoryParasha | null {
+/** Matches a Sefaria parasha name (possibly doubled, e.g. מטות־מסעי) to an
+ *  insight; the API route attaches the Sefaria reading URL. */
+export function findParashaInsight(name: string): Omit<StoryParasha, 'url'> | null {
   const parts = norm(name).split(/[-־–]/).map(p => p.trim());
   for (const part of parts) {
     const insight = INSIGHTS[part];

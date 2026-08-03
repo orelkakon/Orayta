@@ -8,9 +8,12 @@ import { HE } from '@/lib/hebrewTexts';
 import { STORY_ART } from '@/lib/stories';
 import { shareStory } from '@/lib/storyShare';
 import { haptics } from '@/lib/haptics';
+import { trackEvent } from '@/lib/track';
 import { useStoryTimer } from './useStoryTimer';
-import { Shell, Body, Ornament } from './StoryCardParts';
+import { Shell, Body } from './StoryCardParts';
 import { StoryCardBody, storyCta, storyShareContent } from './storyCards';
+import { StoryPauseContext } from './ExpandableText';
+import StoryScene from './StoryScene';
 import StoryChrome from './StoryChrome';
 import type { DailyStory, StoryKey } from '@/types';
 
@@ -71,6 +74,9 @@ export default function StoryViewer({ stories, startIndex, onViewed, onClose }: 
   const [index, setIndex] = useState(startIndex);
   const [holding, setHolding] = useState(false);
   const [sharing, setSharing] = useState(false);
+  // A card reported in-card engagement (full text open, video playing, quiz
+  // answered) — hold the clock until the user moves on.
+  const [engaged, setEngaged] = useState(false);
   // Reduced-motion users navigate manually — no ticking clock.
   const [autoplay] = useState(() =>
     !window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
@@ -97,9 +103,13 @@ export default function StoryViewer({ stories, startIndex, onViewed, onClose }: 
   const viewedRef = useRef(onViewed);
   viewedRef.current = onViewed;
 
-  const barRef = useStoryTimer(index, holding || sharing, autoplay, next);
+  const barRef = useStoryTimer(index, holding || sharing || engaged, autoplay, next);
 
-  useEffect(() => { viewedRef.current(story.key); }, [story.key]);
+  useEffect(() => { setEngaged(false); }, [index]);
+  useEffect(() => {
+    viewedRef.current(story.key);
+    trackEvent('stories');
+  }, [story.key]);
 
   useEffect(() => {
     const prevFocus = document.activeElement as HTMLElement | null;
@@ -155,9 +165,12 @@ export default function StoryViewer({ stories, startIndex, onViewed, onClose }: 
       <Stage role="dialog" aria-modal="true" aria-label={HE.STORIES_VIEWER_LABEL}>
         <CardLayer key={index}>
           <Shell $from={art.from} $to={art.to} $accent={art.accent}>
-            <Ornament $accent={art.accent} style={{ top: '15%', right: '9%' }} aria-hidden="true">✦</Ornament>
-            <Ornament $accent={art.accent} style={{ bottom: '19%', left: '8%' }} aria-hidden="true">✦</Ornament>
-            <Body><StoryCardBody story={story} /></Body>
+            <StoryScene storyKey={story.key} />
+            <Body>
+              <StoryPauseContext.Provider value={setEngaged}>
+                <StoryCardBody story={story} />
+              </StoryPauseContext.Provider>
+            </Body>
           </Shell>
         </CardLayer>
         <GestureLayer

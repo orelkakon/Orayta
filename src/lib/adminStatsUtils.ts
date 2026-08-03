@@ -1,6 +1,7 @@
 import type { AdminDailyRow } from '@/types';
 
-export type DailyMetric = 'users' | 'feed' | 'content' | 'today' | 'pwa';
+export type { DailyMetric } from '@/types';
+import type { DailyMetric } from '@/types';
 
 /** Sum of the last `n` days for a metric, skipping `offset` days from the end. */
 export function sumLast(daily: AdminDailyRow[], metric: DailyMetric, n: number, offset = 0): number {

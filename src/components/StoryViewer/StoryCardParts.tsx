@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
+import { LineIcon } from '@/components/common/LineIcons';
 
 /*
  * Shared visual primitives for story cards. The cards are an immersive dark
@@ -19,12 +21,6 @@ export const Shell = styled.div<{ $from: string; $to: string; $accent: string }>
     radial-gradient(ellipse at 50% -12%, rgba(${p => p.$accent}, 0.34), transparent 52%),
     radial-gradient(ellipse at 12% 108%, rgba(${p => p.$accent}, 0.16), transparent 45%),
     linear-gradient(168deg, ${p => p.$from} 0%, #150d07 56%, ${p => p.$to} 165%);
-`;
-
-export const Ornament = styled.span<{ $accent: string }>`
-  position: absolute; font-size: 0.8rem; pointer-events: none;
-  color: rgba(${p => p.$accent}, 0.55);
-  text-shadow: 0 0 12px rgba(${p => p.$accent}, 0.6);
 `;
 
 export const Body = styled.div`
@@ -83,12 +79,21 @@ export const Medallion = styled.span<{ $accent: string }>`
   box-shadow: 0 6px 28px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 `;
 
-export const RabbiPhoto = styled.img`
+const RabbiPhoto = styled.img`
   width: 118px; height: 118px; border-radius: 50%;
   object-fit: cover;
   border: 3px solid rgba(243, 214, 146, 0.9);
   box-shadow: 0 10px 34px rgba(0, 0, 0, 0.5);
 `;
+
+/** The rabbi's real photo when a working imageUrl exists; a gold medallion otherwise. */
+export function RabbiPortrait({ url, name, accent }: { url: string | null; name: string; accent: string }) {
+  const [failed, setFailed] = useState(false);
+  if (!url || failed) {
+    return <Medallion $accent={accent}><LineIcon name="user" size={40} /></Medallion>;
+  }
+  return <RabbiPhoto src={url} alt={name} onError={() => setFailed(true)} />;
+}
 
 export const QuoteMark = styled.span`
   font-family: ${theme.fonts.body};

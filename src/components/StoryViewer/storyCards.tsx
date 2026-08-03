@@ -6,6 +6,9 @@ import { STORY_ART } from '@/lib/stories';
 import type { StoryContent } from '@/lib/storyImage';
 import type { DailyStory } from '@/types';
 import * as P from './StoryCardParts';
+import { ExpandableText } from './ExpandableText';
+import StoryVideo from './StoryVideo';
+import StoryQuiz from './StoryQuiz';
 
 /** The inner content of one story card — layout varies per category. */
 export function StoryCardBody({ story }: { story: DailyStory }) {
@@ -14,13 +17,11 @@ export function StoryCardBody({ story }: { story: DailyStory }) {
     case 'rabbi': {
       const r = story.data;
       return (<>
-        {r.imageUrl
-          ? <P.RabbiPhoto src={r.imageUrl} alt={r.name} />
-          : <P.Medallion $accent={accent}><LineIcon name="user" size={40} /></P.Medallion>}
+        <P.RabbiPortrait url={r.imageUrl} name={r.name} accent={accent} />
         <P.TitleText>{r.name}</P.TitleText>
         {r.fullName && <P.SubText>{r.fullName}</P.SubText>}
         <P.SourceChip>{r.datePeriod}</P.SourceChip>
-        <P.MainText $size="1.02rem" $clamp={7}>{r.bio}</P.MainText>
+        <ExpandableText text={r.bio} size="1.02rem" clamp={7} />
       </>);
     }
     case 'citation': {
@@ -29,7 +30,7 @@ export function StoryCardBody({ story }: { story: DailyStory }) {
       const src = l ? `${l.masechet} ${HE.STUDY_DAF} ${l.daf}${l.amud ? ` ${HE.STUDY_AMUD} ${l.amud}` : ''}` : null;
       return (<>
         <P.QuoteMark aria-hidden="true">”</P.QuoteMark>
-        <P.MainText $size="1.34rem" $clamp={8}>{c.content}</P.MainText>
+        <ExpandableText text={c.content} size="1.34rem" clamp={8} />
         <P.GoldRule />
         {src && <P.SourceChip>{src}</P.SourceChip>}
       </>);
@@ -46,12 +47,12 @@ export function StoryCardBody({ story }: { story: DailyStory }) {
         <P.KickerText $accent={accent}>{HE.STORY_LABELS.parasha}</P.KickerText>
         <P.TitleText>{HE.STORY_PARASHA_PREFIX} {story.data.name}</P.TitleText>
         <P.GoldRule />
-        <P.MainText $clamp={8}>{story.data.insight}</P.MainText>
+        <ExpandableText text={story.data.insight} clamp={8} />
       </>);
     case 'halacha':
       return (<>
         <P.Medallion $accent={accent}><LineIcon name="candle" size={38} /></P.Medallion>
-        <P.MainText $clamp={8}>{story.data.text}</P.MainText>
+        <ExpandableText text={story.data.text} clamp={8} />
         <P.GoldRule />
         <P.SourceChip>{story.data.source}</P.SourceChip>
       </>);
@@ -62,15 +63,17 @@ export function StoryCardBody({ story }: { story: DailyStory }) {
         <P.KickerText $accent={accent}>{s.bookName}</P.KickerText>
         {s.title && <P.TitleText>{s.title}</P.TitleText>}
         <P.SourceChip>{HE.STORY_READ_TIME(mins)}</P.SourceChip>
-        <P.MainText $size="1.02rem" $clamp={8}>{s.text}</P.MainText>
+        <ExpandableText text={s.text} size="1.02rem" clamp={8} />
       </>);
     }
+    case 'quiz':
+      return <StoryQuiz quiz={story.data} />;
     case 'chidush': {
       const c = story.data;
       const src = [c.author, c.source].filter(Boolean).join(' · ');
       return (<>
         <P.Medallion $accent={accent}><LineIcon name="bulb" size={38} /></P.Medallion>
-        <P.MainText $clamp={9}>{c.text}</P.MainText>
+        <ExpandableText text={c.text} clamp={9} />
         {src && <><P.GoldRule /><P.SourceChip>{src}</P.SourceChip></>}
       </>);
     }
@@ -78,9 +81,11 @@ export function StoryCardBody({ story }: { story: DailyStory }) {
       return (<>
         <P.KickerText $accent={accent}>{HE.STORY_LABELS.tale}</P.KickerText>
         <P.TitleText>{story.data.title}</P.TitleText>
-        <P.MainText $size="1.05rem" $clamp={10}>{story.data.text}</P.MainText>
+        <ExpandableText text={story.data.text} size="1.05rem" clamp={10} />
         <P.SourceChip>{story.data.source}</P.SourceChip>
       </>);
+    case 'video':
+      return <StoryVideo reel={story.data} />;
     case 'gematria': {
       const g = story.data;
       return (<>
@@ -113,9 +118,11 @@ export function storyCta(story: DailyStory): StoryCta | null {
     case 'rabbi':    return { label: HE.STORY_CTA_RABBI, href: '/rabbis' };
     case 'citation': return { label: HE.STORY_CTA_CITATION, href: '/study' };
     case 'reel':     return { label: HE.STORY_CTA_REEL, href: '/feed' };
-    case 'parasha':  return { label: HE.STORY_CTA_PARASHA, href: '/today' };
+    case 'parasha':  return { label: HE.STORY_CTA_PARASHA, href: story.data.url, external: true };
     case 'sikum':    return { label: HE.STORY_CTA_SIKUM, href: '/sikumim' };
+    case 'quiz':     return { label: HE.STORY_CTA_QUIZ, href: '/quiz' };
     case 'chidush':  return { label: HE.STORY_CTA_CHIDUSH, href: '/chidushim' };
+    case 'video':    return { label: HE.STORY_CTA_VIDEO, href: '/feed' };
     case 'gematria': return { label: HE.STORY_CTA_GEMATRIA, href: '/gematria' };
     case 'daf':      return { label: HE.STORY_CTA_DAF, href: story.data.url, external: true };
     default:         return null;

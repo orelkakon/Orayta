@@ -5,7 +5,9 @@
  * one tiny counter row per metric per day (see /api/track and DailyStat).
  */
 
-export type TrackMetric = 'users' | 'feed' | 'content' | 'today' | 'pwa';
+export type TrackMetric =
+  | 'users' | 'feed' | 'content' | 'today' | 'pwa'
+  | 'stories' | 'quiz' | 'rabbis' | 'study' | 'sikumim' | 'chidushim' | 'gematria';
 
 function post(metric: TrackMetric) {
   void fetch('/api/track', {
@@ -41,4 +43,9 @@ export function trackSession(metric: TrackMetric) {
 /** Counts once ever per device — e.g. PWA install. */
 export function trackOnce(metric: TrackMetric) {
   if (firstTime(localStorage, `orayta_track_once_${metric}`, '1')) post(metric);
+}
+
+/** Counts every occurrence — view-style metrics like daily-story views. */
+export function trackEvent(metric: TrackMetric) {
+  post(metric);
 }

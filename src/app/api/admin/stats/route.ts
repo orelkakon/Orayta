@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { isAdmin } from '@/lib/auth';
-import type { AdminStats, AdminDailyRow } from '@/types';
+import type { AdminStats, AdminDailyRow, DailyMetric } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
 const DAYS = 30;
 const COUNTER_KEYS = ['questions', 'feedSaves', 'whatsappShares', 'storyShares'];
+const METRICS: DailyMetric[] = [
+  'users', 'feed', 'content', 'today', 'pwa',
+  'stories', 'quiz', 'rabbis', 'study', 'sikumim', 'chidushim', 'gematria',
+];
 
 function dayKeys(n: number): string[] {
   const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' });
@@ -30,10 +34,11 @@ export async function GET(req: NextRequest) {
   const total    = (m: string) => totalRows.find(x => x.metric === m)?._sum.count ?? 0;
 
   const daily: AdminDailyRow[] = days.map(day => {
-    const row: AdminDailyRow = { day, users: 0, feed: 0, content: 0, today: 0, pwa: 0 };
+    const row = { day } as AdminDailyRow;
+    METRICS.forEach(m => { row[m] = 0; });
     dailyRows
-      .filter(r => r.day === day)
-      .forEach(r => { row[r.metric as keyof Omit<AdminDailyRow, 'day'>] = r.count; });
+      .filter(r => r.day === day && (METRICS as string[]).includes(r.metric))
+      .forEach(r => { row[r.metric as DailyMetric] = r.count; });
     return row;
   });
 
@@ -47,13 +52,7 @@ export async function GET(req: NextRequest) {
     saves: counter('feedSaves'),
     shares: { wa: counter('whatsappShares'), story: counter('storyShares') },
     reactions: { total: heart + fire + spark, heart, fire, spark },
-    totals: {
-      users: total('users'),
-      feed: total('feed'),
-      content: total('content'),
-      today: total('today'),
-      pwa: total('pwa'),
-    },
+    totals: Object.fromEntries(METRICS.map(m => [m, total(m)])) as Record<DailyMetric, number>,
     daily,
   };
   return NextResponse.json(stats);

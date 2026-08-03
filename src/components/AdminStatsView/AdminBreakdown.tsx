@@ -66,13 +66,22 @@ const Chip = styled.span`
 `;
 
 const SECTIONS: { metric: DailyMetric; icon: string; label: string }[] = [
-  { metric: 'feed',    icon: 'sparkle',  label: HE.ADMIN_SECTION_FEED },
-  { metric: 'content', icon: 'openbook', label: HE.ADMIN_SECTION_CONTENT },
-  { metric: 'today',   icon: 'calendar', label: HE.ADMIN_SECTION_TODAY },
+  { metric: 'feed',      icon: 'sparkle',  label: HE.ADMIN_SECTION_FEED },
+  { metric: 'stories',   icon: 'eye',      label: HE.ADMIN_SECTION_STORIES },
+  { metric: 'content',   icon: 'openbook', label: HE.ADMIN_SECTION_CONTENT },
+  { metric: 'today',     icon: 'calendar', label: HE.ADMIN_SECTION_TODAY },
+  { metric: 'quiz',      icon: 'target',   label: HE.ADMIN_SECTION_QUIZ },
+  { metric: 'rabbis',    icon: 'users',    label: HE.ADMIN_SECTION_RABBIS },
+  { metric: 'study',     icon: 'scroll',   label: HE.ADMIN_SECTION_STUDY },
+  { metric: 'sikumim',   icon: 'pencil',   label: HE.ADMIN_SECTION_SIKUMIM },
+  { metric: 'chidushim', icon: 'bulb',     label: HE.ADMIN_SECTION_CHIDUSHIM },
+  { metric: 'gematria',  icon: 'aleph',    label: HE.ADMIN_SECTION_GEMATRIA },
 ];
 
 export default function AdminBreakdown({ stats }: { stats: AdminStats }) {
   const { daily, totals, reactions, shares } = stats;
+  // Most-used first — the table doubles as a "where do people go" ranking.
+  const sections = [...SECTIONS].sort((a, b) => totals[b.metric] - totals[a.metric]);
 
   const engagement = [
     { icon: 'target',   label: HE.ADMIN_ENGAGE_QUESTIONS, value: stats.questions },
@@ -96,7 +105,7 @@ export default function AdminBreakdown({ stats }: { stats: AdminStats }) {
             <ColHead>{HE.ADMIN_COL_WEEK}</ColHead>
             <ColHead>{HE.ADMIN_COL_TOTAL}</ColHead>
           </HeadRow>
-          {SECTIONS.map(s => (
+          {sections.map(s => (
             <Row key={s.metric}>
               <NameCell>
                 <IconWrap><LineIcon name={s.icon} size={16} strokeWidth={1.8} /></IconWrap>
