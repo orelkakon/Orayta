@@ -8,6 +8,7 @@ import FeedBannerBlock from './FeedBannerBlock';
 import SectionIcon from './HomeIcons';
 import HomeActionCards from './HomeActionCards';
 import HomeBackground from './HomeBackground';
+import StoriesRow from './StoriesRow';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(10px); }
@@ -128,6 +129,8 @@ export default function HomeView() {
           <QuoteSource>{HE.HOME_QUOTE_SOURCE}</QuoteSource>
         </QuoteBlock>
       </Hero>
+
+      <StoriesRow />
 
       <FeedBannerBlock />
 
