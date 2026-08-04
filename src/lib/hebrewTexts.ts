@@ -284,6 +284,18 @@ export const HE = {
   TODAY_EVENTS_TITLE: 'אירועי היום',
   TODAY_HEBCAL_TITLE: 'לוח שנה עברי',
   TODAY_HEBCAL_EMPTY: 'לא נמצאו תאריכים קרובים',
+  TODAY_CAL_TODAY_BTN: 'היום',
+  TODAY_CAL_PREV: 'חודש קודם',
+  TODAY_CAL_NEXT: 'חודש הבא',
+  TODAY_CAL_WEEKDAYS: ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'],
+  TODAY_CAL_NO_EVENTS: 'אין אירועים מיוחדים ביום זה',
+  TODAY_CAL_CATEGORIES: {
+    holiday: 'חג',
+    roshchodesh: 'ר״ח',
+    fast: 'צום',
+    mevarchim: 'מברכים',
+    parashat: 'פרשה',
+  } as Record<string, string>,
   TODAY_EVENTS_EMPTY: 'אין אירועים מיוחדים היום',
   TODAY_ERROR: 'שגיאה בטעינת הנתונים',
 
