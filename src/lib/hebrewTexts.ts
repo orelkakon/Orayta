@@ -81,7 +81,10 @@ export const HE = {
   DUPLICATE_GEMATRIA: 'מילה זו כבר קיימת במאגר',
 
   LOGIN_TITLE: 'ברוך הבא לאורייתא',
-  LOGIN_SUBTITLE: 'כניסת מנהל — הזן קוד',
+  LOGIN_ADMIN_BADGE: 'אזור ניהול',
+  LOGIN_ADMIN_TITLE: 'כניסת מנהל',
+  LOGIN_ADMIN_NOTE: 'העמוד הזה מיועד למנהל האתר בלבד. הגלישה באורייתא פתוחה לכולם — אין צורך בהתחברות.',
+  LOGIN_SUBTITLE: 'הזן קוד מנהל',
   LOGIN_PLACEHOLDER: 'קוד מנהל',
   LOGIN_BUTTON: 'כניסה',
   LOGIN_ERROR: 'קוד שגוי, נסה שנית',
@@ -299,17 +302,15 @@ export const HE = {
   CONTENTS_TITLE: 'תפילות ותנ״ך',
   CONTENTS_SUBTITLE: 'סידור, תהילים, תנ״ך מלא וברכות',
 
-  HOME_QUOTE: 'כִּי נֵר מִצְוָה וְתוֹרָה אוֹר',
-  HOME_QUOTE_SOURCE: 'משלי ו׳, כ״ג',
   HOME_WELCOME: 'ברוך הבא לאורייתא',
   HOME_NAV_HINT: 'בחר מדור להתחיל',
   HOME_SECTIONS: [
     { icon: '📝', href: '/sikumim',   label: 'סיכומי חומרים',  desc: 'סיכומי לימוד יומיים לפי ספר' },
     { icon: '👥', href: '/rabbis',    label: 'רבנים וספרים',   desc: 'מנהיגים, פוסקים וספרי קודש' },
     { icon: '📚', href: '/content',   label: 'תפילות ותנ״ך',  desc: 'סידור, תהילים ותנ"ך מלא' },
-    { icon: '📅', href: '/today',     label: 'לימוד יומי',     desc: 'זמנים ולוח שנה עברי' },
-    { icon: '📜', href: '/study',     label: 'תלמוד בבלי',     desc: 'ציטוטים וחיפוש בש"ס' },
     { icon: '🎯', href: '/quiz',      label: 'תרגול ומשחקים',  desc: 'חידונים ועשרה מצבים' },
+    { icon: '📜', href: '/study',     label: 'תלמוד בבלי',     desc: 'ציטוטים וחיפוש בש"ס' },
+    { icon: '📅', href: '/today',     label: 'לימוד יומי',     desc: 'זמנים ולוח שנה עברי' },
     { icon: '💡', href: '/chidushim', label: 'חידושים',        desc: 'חידושי תורה ומחשבה' },
     { icon: '🔢', href: '/gematria',  label: 'גימטריות',       desc: 'ערכי אותיות ומילים' },
   ] as { icon: string; href: string; label: string; desc: string }[],
@@ -778,7 +779,7 @@ export const HE = {
   ARIA_SKIP_TO_CONTENT: 'דלג לתוכן הראשי',
 
   /* ── Home hero ── */
-  HOME_TAGLINE: 'ספרייה יהודית חיה — תלמוד, רבנים ותפילות, עם רגע לימוד יומי בכיס',
+  HOME_TAGLINE: 'האתר שלך לחיזוק האמונה ולימוד התורה — בכל יום, בכל מקום',
   HEADER_TAGLINE: 'בס״ד · מקורות יהודיים',
   NAV_MENU: 'תפריט ניווט',
 

@@ -140,10 +140,6 @@ export async function GET() {
       updatedAt: citation.updatedAt.toISOString(),
     },
   });
-  if (reel) stories.push({
-    key: 'reel',
-    data: { code: reel.code, url: reel.url, username: reel.page?.username ?? null },
-  });
   if (parashaInsight && cal.parashaUrl) stories.push({
     key: 'parasha',
     data: { ...parashaInsight, url: cal.parashaUrl },
@@ -176,6 +172,11 @@ export async function GET() {
     data: { ...gematria, createdAt: gematria.createdAt.toISOString(), matches },
   });
   if (cal.daf) stories.push({ key: 'daf', data: cal.daf });
+  // רגע של תורה stays last so the reel closes the row (leftmost circle in RTL).
+  if (reel) stories.push({
+    key: 'reel',
+    data: { code: reel.code, url: reel.url, username: reel.page?.username ?? null },
+  });
 
   const payload: DailyStoriesPayload = { date, stories };
   return NextResponse.json(payload);

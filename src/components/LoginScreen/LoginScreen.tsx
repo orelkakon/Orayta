@@ -95,18 +95,26 @@ const AppName = styled.h1`
   margin-bottom: ${theme.spacing.xs};
 `;
 
-const Sub = styled.p`
-  color: ${theme.colors.textMuted}; font-size: 0.875rem; line-height: 1.5;
-  margin-bottom: ${theme.spacing.md};
+const AdminBadge = styled.span`
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px ${theme.spacing.md};
+  border-radius: 999px;
+  background: rgba(196,149,106,0.14);
+  border: 1px solid rgba(196,149,106,0.4);
+  color: ${theme.colors.primary};
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em;
+  margin-bottom: ${theme.spacing.sm};
 `;
 
-const Verse = styled.p`
+const AdminTitle = styled.p`
   font-family: ${theme.fonts.body};
-  font-size: 0.82rem; color: ${theme.colors.textLight}; font-style: italic;
-  padding: ${theme.spacing.sm} ${theme.spacing.md};
-  border-top: 1px solid ${theme.colors.borderLight};
-  border-bottom: 1px solid ${theme.colors.borderLight};
-  margin-bottom: ${theme.spacing.xl};
+  font-size: 1.1rem; font-weight: 700; color: ${theme.colors.text};
+  margin-bottom: ${theme.spacing.xs};
+`;
+
+const AdminNote = styled.p`
+  color: ${theme.colors.textMuted}; font-size: 0.83rem; line-height: 1.6;
+  max-width: 34ch; margin: 0 auto ${theme.spacing.xl};
 `;
 
 const FieldLabel = styled.label`
@@ -193,8 +201,9 @@ export default function LoginScreen() {
         <CardBar />
         <LogoWrap><OraytaLogo size={76} /></LogoWrap>
         <AppName>{HE.APP_NAME}</AppName>
-        <Sub>{HE.APP_SUBTITLE}</Sub>
-        <Verse>&ldquo;{HE.ABOUT_VERSE}&rdquo;</Verse>
+        <AdminBadge>🔒 {HE.LOGIN_ADMIN_BADGE}</AdminBadge>
+        <AdminTitle>{HE.LOGIN_ADMIN_TITLE}</AdminTitle>
+        <AdminNote>{HE.LOGIN_ADMIN_NOTE}</AdminNote>
         <form onSubmit={handleSubmit}>
           <FieldLabel htmlFor="passcode">{HE.LOGIN_SUBTITLE}</FieldLabel>
           <Input

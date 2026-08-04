@@ -54,22 +54,6 @@ const Tagline = styled.p`
   margin: 0 auto;
 `;
 
-const QuoteBlock = styled.blockquote`
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  border-right: 3px solid ${theme.colors.secondary};
-  padding-right: ${theme.spacing.md};
-`;
-
-const QuoteText = styled.p`
-  font-family: ${theme.fonts.body};
-  font-size: 0.95rem; color: ${theme.colors.textMuted};
-  font-style: italic; line-height: 1.6;
-`;
-
-const QuoteSource = styled.span`
-  font-size: 0.76rem; color: ${theme.colors.textLight}; letter-spacing: 0.03em;
-`;
-
 const Divider = styled.div`
   width: 140px; height: 2px;
   background: linear-gradient(90deg, transparent, ${theme.colors.secondary}, transparent);
@@ -138,10 +122,6 @@ export default function HomeView() {
         <LogoMedallion><OraytaLogo size={32} /></LogoMedallion>
         <AppTitle>{HE.APP_NAME}</AppTitle>
         <Tagline>{HE.HOME_TAGLINE}</Tagline>
-        <QuoteBlock>
-          <QuoteText>{HE.HOME_QUOTE}</QuoteText>
-          <QuoteSource>{HE.HOME_QUOTE_SOURCE}</QuoteSource>
-        </QuoteBlock>
       </Hero>
 
       <LiveBannerBlock />
