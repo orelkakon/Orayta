@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Book } from '@/types';
-import { getJson, isAbort } from '@/lib/apiClient';
+import { getJson, freshUrl, isAbort } from '@/lib/apiClient';
 import { useRole } from '@/components/common/RoleContext';
 import BookCard from './BookCard';
 import BookForm from './BookForm';
@@ -93,10 +93,10 @@ export default function BooksView({ onViewRabbi }: Props) {
   // save or delete keep the current rows on screen.
   const hasLoaded = useRef(false);
 
-  const load = useCallback((signal?: AbortSignal) => {
+  const load = useCallback((signal?: AbortSignal, fresh = false) => {
     if (!hasLoaded.current) setLoading(true);
     setLoadError(false);
-    getJson<Book[]>('/api/books', signal)
+    getJson<Book[]>(fresh ? freshUrl('/api/books') : '/api/books', signal)
       .then(data => { setBooks(data); hasLoaded.current = true; setLoading(false); })
       .catch((e: unknown) => {
         if (isAbort(e)) return;
@@ -123,7 +123,7 @@ export default function BooksView({ onViewRabbi }: Props) {
     if (!window.confirm(HE.BOOK_DELETE_CONFIRM)) return;
     setDeleteError(false);
     const res = await fetch(`/api/books/${book.id}`, { method: 'DELETE' });
-    if (res.ok) load();
+    if (res.ok) load(undefined, true);
     else setDeleteError(true);
   };
 
@@ -133,7 +133,7 @@ export default function BooksView({ onViewRabbi }: Props) {
         <BookForm
           book={editBook ?? undefined}
           onClose={() => { setAddOpen(false); setEditBook(null); }}
-          onSaved={load}
+          onSaved={() => load(undefined, true)}
         />
       )}
 

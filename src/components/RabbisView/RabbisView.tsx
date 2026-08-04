@@ -7,7 +7,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Rabbi, RabbiCategory, Book } from '@/types';
 import { CATEGORY_LABELS, CATEGORY_ORDER, CATEGORY_COLORS } from '@/lib/rabbisData';
-import { getJson, isAbort } from '@/lib/apiClient';
+import { getJson, freshUrl, isAbort } from '@/lib/apiClient';
 import { useRole } from '@/components/common/RoleContext';
 import RabbiCard from './RabbiCard';
 import RabbiForm from './RabbiForm';
@@ -155,10 +155,10 @@ export default function RabbisView({ initialSearch = '' }: Props) {
   // save or delete keep the current rows on screen.
   const hasLoaded = useRef(false);
 
-  const load = useCallback((signal?: AbortSignal) => {
+  const load = useCallback((signal?: AbortSignal, fresh = false) => {
     if (!hasLoaded.current) setLoading(true);
     setLoadError(false);
-    getJson<Rabbi[]>('/api/rabbis', signal)
+    getJson<Rabbi[]>(fresh ? freshUrl('/api/rabbis') : '/api/rabbis', signal)
       .then(data => { setRabbis(data); hasLoaded.current = true; setLoading(false); })
       .catch((e: unknown) => {
         if (isAbort(e)) return;
@@ -198,7 +198,7 @@ export default function RabbisView({ initialSearch = '' }: Props) {
     if (!window.confirm(HE.RABBI_DELETE_CONFIRM)) return;
     setDeleteError(false);
     const res = await fetch(`/api/rabbis/${rabbi.id}`, { method: 'DELETE' });
-    if (res.ok) load();
+    if (res.ok) load(undefined, true);
     else setDeleteError(true);
   };
 
@@ -208,7 +208,7 @@ export default function RabbisView({ initialSearch = '' }: Props) {
         <RabbiForm
           rabbi={editRabbi ?? undefined}
           onClose={() => { setAddOpen(false); setEditRabbi(null); }}
-          onSaved={load}
+          onSaved={() => load(undefined, true)}
         />
       )}
 

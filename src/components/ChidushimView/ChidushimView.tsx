@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Chidush } from '@/types';
-import { getJson, isAbort } from '@/lib/apiClient';
+import { getJson, freshUrl, isAbort } from '@/lib/apiClient';
 import { useRole } from '@/components/common/RoleContext';
 import ChidushCard from './ChidushCard';
 import ChidushForm from './ChidushForm';
@@ -61,10 +61,10 @@ export default function ChidushimView({ initialSearch = '' }: { initialSearch?: 
   // save or delete keep the current rows on screen.
   const hasLoaded = useRef(false);
 
-  const load = useCallback((signal?: AbortSignal) => {
+  const load = useCallback((signal?: AbortSignal, fresh = false) => {
     if (!hasLoaded.current) setLoading(true);
     setLoadError(false);
-    getJson<Chidush[]>('/api/chidushim', signal)
+    getJson<Chidush[]>(fresh ? freshUrl('/api/chidushim') : '/api/chidushim', signal)
       .then(data => { setItems(data); hasLoaded.current = true; setLoading(false); })
       .catch((e: unknown) => {
         if (isAbort(e)) return;
@@ -93,7 +93,7 @@ export default function ChidushimView({ initialSearch = '' }: { initialSearch?: 
     if (!window.confirm(HE.CHIDUSH_DELETE_CONFIRM)) return;
     setDeleteError(false);
     const res = await fetch(`/api/chidushim/${c.id}`, { method: 'DELETE' });
-    if (res.ok) load();
+    if (res.ok) load(undefined, true);
     else setDeleteError(true);
   };
 
@@ -103,7 +103,7 @@ export default function ChidushimView({ initialSearch = '' }: { initialSearch?: 
         <ChidushForm
           chidush={editItem ?? undefined}
           onClose={() => { setAddOpen(false); setEditItem(null); }}
-          onSaved={load}
+          onSaved={() => load(undefined, true)}
         />
       )}
 

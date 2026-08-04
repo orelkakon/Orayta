@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Gematria } from '@/types';
-import { getJson, isAbort } from '@/lib/apiClient';
+import { getJson, freshUrl, isAbort } from '@/lib/apiClient';
 import { useRole } from '@/components/common/RoleContext';
 import GematriaCard from './GematriaCard';
 import GematriaForm from './GematriaForm';
@@ -87,10 +87,10 @@ export default function GematriaView({ initialSearch = '' }: { initialSearch?: s
   // save or delete keep the current rows on screen.
   const hasLoaded = useRef(false);
 
-  const load = useCallback((signal?: AbortSignal) => {
+  const load = useCallback((signal?: AbortSignal, fresh = false) => {
     if (!hasLoaded.current) setLoading(true);
     setLoadError(false);
-    getJson<Gematria[]>('/api/gematria', signal)
+    getJson<Gematria[]>(fresh ? freshUrl('/api/gematria') : '/api/gematria', signal)
       .then(data => { setItems(data); hasLoaded.current = true; setLoading(false); })
       .catch((e: unknown) => {
         if (isAbort(e)) return;
@@ -128,7 +128,7 @@ export default function GematriaView({ initialSearch = '' }: { initialSearch?: s
     if (!window.confirm(HE.GEMATRIA_DELETE_CONFIRM)) return;
     setDeleteError(false);
     const res = await fetch(`/api/gematria/${item.id}`, { method: 'DELETE' });
-    if (res.ok) load();
+    if (res.ok) load(undefined, true);
     else setDeleteError(true);
   };
 
@@ -139,7 +139,7 @@ export default function GematriaView({ initialSearch = '' }: { initialSearch?: s
           gematria={editItem ?? undefined}
           allItems={items}
           onClose={() => { setAddOpen(false); setEditItem(null); }}
-          onSaved={load}
+          onSaved={() => load(undefined, true)}
         />
       )}
 

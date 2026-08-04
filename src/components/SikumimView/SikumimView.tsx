@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { SikumBook } from '@/types';
-import { getJson, isAbort } from '@/lib/apiClient';
+import { getJson, freshUrl, isAbort } from '@/lib/apiClient';
 import { deleteWithPasscode } from '@/lib/sikumDelete';
 import { useRole } from '@/components/common/RoleContext';
 import SearchField from '@/components/common/SearchField';
@@ -89,10 +89,10 @@ export default function SikumimView({ initialSearch = '' }: { initialSearch?: st
   // save or delete keep the current rows on screen.
   const hasLoaded = useRef(false);
 
-  const load = useCallback((signal?: AbortSignal) => {
+  const load = useCallback((signal?: AbortSignal, fresh = false) => {
     if (!hasLoaded.current) setLoading(true);
     setLoadError(false);
-    getJson<SikumBook[]>('/api/sikum-books', signal)
+    getJson<SikumBook[]>(fresh ? freshUrl('/api/sikum-books') : '/api/sikum-books', signal)
       .then(data => { setBooks(data); hasLoaded.current = true; setLoading(false); })
       .catch((e: unknown) => {
         if (isAbort(e)) return;
@@ -123,7 +123,7 @@ export default function SikumimView({ initialSearch = '' }: { initialSearch?: st
     if (!window.confirm(HE.SIKUMIM_BOOK_DELETE_CONFIRM)) return;
     setDeleteError(null);
     const result = await deleteWithPasscode(`/api/sikum-books/${book.id}`);
-    if (result === 'ok') load();
+    if (result === 'ok') load(undefined, true);
     else if (result === 'wrong-pass') setDeleteError(HE.SIKUMIM_DELETE_PASSWORD_WRONG);
     else if (result === 'error') setDeleteError(HE.DELETE_ERROR);
   };
@@ -132,7 +132,7 @@ export default function SikumimView({ initialSearch = '' }: { initialSearch?: st
     return (
       <SikumEntriesView
         book={selectedBook}
-        onBack={() => { setSelectedBook(null); load(); }}
+        onBack={() => { setSelectedBook(null); load(undefined, true); }}
       />
     );
   }
@@ -143,7 +143,7 @@ export default function SikumimView({ initialSearch = '' }: { initialSearch?: st
         <SikumBookForm
           book={editBook ?? undefined}
           onClose={() => { setAddOpen(false); setEditBook(null); }}
-          onSaved={load}
+          onSaved={() => load(undefined, true)}
         />
       )}
 
