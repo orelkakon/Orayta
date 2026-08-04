@@ -124,3 +124,27 @@ export async function getLiveSnapshot(): Promise<LiveSnapshot> {
 export async function invalidateLiveSnapshot(): Promise<void> {
   await prisma.appConfig.deleteMany({ where: { key: SNAPSHOT_KEY } });
 }
+
+/** TEMP diagnostics: what does YouTube serve this host for each channel? */
+export async function debugProbe(): Promise<unknown[]> {
+  const channels = await prisma.liveChannel.findMany({ where: { active: true } });
+  return Promise.all(channels.map(async c => {
+    try {
+      const res = await fetch(`https://www.youtube.com/channel/${c.channelId}/live?hl=en`, {
+        headers: YT_HEADERS, redirect: 'follow',
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS), cache: 'no-store',
+      });
+      const html = res.ok ? await res.text() : '';
+      return {
+        name: c.name, status: res.status, finalUrl: res.url, length: html.length,
+        canonical: /rel="canonical" href="([^"]+)"/.exec(html)?.[1] ?? null,
+        videoDetailsLive: /"videoDetails":\{.{0,1200}?"isLive":true/.test(html),
+        anyIsLive: html.includes('"isLive":true'),
+        upcoming: html.includes('"isUpcoming":true'),
+        head: html.slice(0, 220),
+      };
+    } catch (e) {
+      return { name: c.name, error: String(e) };
+    }
+  }));
+}
