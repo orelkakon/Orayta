@@ -16,6 +16,7 @@ import { useFeedEngagement } from './useFeedEngagement';
 import type { FeedItem, FeedSlide, Dedication, InstagramReel } from '@/types';
 import { ALL_FEED_TYPES, FeedPrefs, DEFAULT_FEED_PREFS, getFeedPrefs, saveFeedPrefs, isCustomPrefs } from '@/lib/feedPrefs';
 import { shuffleArray } from '@/lib/feedShuffle';
+import { loadFeedDeck, saveFeedDeck, freshFeedDeck } from '@/lib/feedDeck';
 import { buildFeedSlides, ensureReelGaps } from '@/lib/feedSlides';
 import { bumpStreak, isFirstVisit, StreakInfo } from '@/lib/feedStreak';
 import { HE } from '@/lib/hebrewTexts';
@@ -85,8 +86,10 @@ export default function FeedView() {
   const fetchingRef = useRef(false);
   const prefsRef    = useRef<FeedPrefs>(DEFAULT_FEED_PREFS);
   const genRef      = useRef(0);
-  // Session deck: seed + page let the server deal content without repeats
-  // until the full pool is exhausted (see /api/feed and lib/feedShuffle)
+  // Persistent deck: seed + page let the server deal content without repeats
+  // until the full pool is exhausted (see /api/feed and lib/feedShuffle).
+  // Restored from localStorage on mount so revisits continue the same deck
+  // instead of reshuffling — otherwise small pools feel repetitive.
   const seedRef     = useRef(Math.floor(Math.random() * 4294967296));
   const pageRef     = useRef(0);
   const slidesLenRef = useRef(0);
@@ -106,6 +109,7 @@ export default function FeedView() {
       const items: FeedItem[] = await res.json();
       if (gen === genRef.current) {
         pageRef.current += 1;
+        saveFeedDeck({ seed: seedRef.current, page: pageRef.current });
         setCards(prev => [...prev, ...items]);
       }
     } finally {
@@ -132,6 +136,11 @@ export default function FeedView() {
     const loadedPrefs = getFeedPrefs();
     prefsRef.current = loadedPrefs;
     setPrefs(loadedPrefs);
+
+    // Continue the persisted deck from where the last visit stopped
+    const deck = loadFeedDeck();
+    seedRef.current = deck.seed;
+    pageRef.current = deck.page;
 
     void fetchMore();
     void fetch('/api/dedications').then(r => r.json()).then((d: Dedication[]) => {
@@ -173,8 +182,10 @@ export default function FeedView() {
     setSettingsOpen(false);
     genRef.current += 1;       // discard any in-flight page of the old mix
     fetchingRef.current = false;
-    seedRef.current = Math.floor(Math.random() * 4294967296); // new deck
-    pageRef.current = 0;
+    const deck = freshFeedDeck(); // new deck for the new content mix
+    saveFeedDeck(deck);
+    seedRef.current = deck.seed;
+    pageRef.current = deck.page;
     setCards([]);
     scrollRef.current?.scrollTo({ top: 0 });
     void fetchMore();
