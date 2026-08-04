@@ -48,7 +48,8 @@ const AppTitle = styled.h1`
 
 /* One-line slogan: the font scales down with the viewport instead of wrapping. */
 const Tagline = styled.p`
-  font-size: clamp(0.68rem, 2.7vw, ${theme.fontSizes.sm});
+  font-size: clamp(0.76rem, 3.1vw, 1.05rem);
+  font-weight: 500;
   color: ${theme.colors.textMuted};
   line-height: 1.5;
   white-space: nowrap;
