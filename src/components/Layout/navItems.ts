@@ -14,6 +14,7 @@ export interface NavItem {
 
 export const navItems: NavItem[] = [
   { href: '/feed',        label: HE.FEED_TITLE,            icon: 'sparkle' },
+  { href: '/live',        label: HE.NAV_LIVE,              icon: 'live' },
   { href: '/rabbis',      label: HE.NAV_RABBIS_AND_BOOKS,  icon: 'users',
     match: p => p.startsWith('/rabbis') || p.startsWith('/books') },
   { href: '/sikumim',     label: HE.NAV_SIKUMIM,           icon: 'pencil' },

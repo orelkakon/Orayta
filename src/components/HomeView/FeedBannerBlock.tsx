@@ -65,6 +65,29 @@ const Title = styled.div`
   @media (max-width: 480px) { font-size: 1.5rem; }
 `;
 
+/* Fanned story-cards with a play button — says "short video feed" at a glance */
+const CardsGlyph = styled.span`
+  display: inline-flex; line-height: 0;
+  filter: drop-shadow(0 3px 8px rgba(0,0,0,0.35));
+  transition: transform 0.2s ${theme.motion.spring};
+  ${Banner}:hover & { transform: translateY(-3px) scale(1.06); }
+`;
+
+function FeedCardsIllustration() {
+  return (
+    <svg width="58" height="44" viewBox="0 0 58 44" fill="none" aria-hidden="true">
+      <rect x="6" y="5" width="20" height="32" rx="4" transform="rotate(-10 16 21)"
+        fill="rgba(255,235,190,0.28)" stroke="rgba(255,235,190,0.75)" strokeWidth="1.4" />
+      <rect x="32" y="5" width="20" height="32" rx="4" transform="rotate(10 42 21)"
+        fill="rgba(255,235,190,0.28)" stroke="rgba(255,235,190,0.75)" strokeWidth="1.4" />
+      <rect x="19" y="2" width="21" height="37" rx="4.5"
+        fill="rgba(61,37,19,0.85)" stroke="#ffe9c4" strokeWidth="1.6" />
+      <circle cx="29.5" cy="20.5" r="7.5" fill="rgba(255,235,190,0.95)" />
+      <path d="M27.2 16.8v7.4l6-3.7z" fill="#3d2513" />
+    </svg>
+  );
+}
+
 const Tagline = styled.div`
   color: #ffe9c4; font-family: ${theme.fonts.body};
   font-size: 0.95rem; font-weight: 700; letter-spacing: 0.02em;
@@ -94,6 +117,7 @@ export default function FeedBannerBlock() {
       <Spark $top="62%" $side="14%" $delay="0.9s"  $size="0.65rem">✦</Spark>
       <Spark $top="24%" $side="86%" $delay="0.5s"  $size="0.75rem">✦</Spark>
       <Spark $top="70%" $side="90%" $delay="1.4s"  $size="0.9rem">✦</Spark>
+      <CardsGlyph><FeedCardsIllustration /></CardsGlyph>
       <Title>✨ {HE.FEED_TITLE}</Title>
       <Tagline>{HE.FEED_BANNER_TAGLINE}</Tagline>
       <Cta>

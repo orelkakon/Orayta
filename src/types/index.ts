@@ -215,6 +215,8 @@ export interface AdminStats {
   daily: AdminDailyRow[];
 }
 
-/* Daily-stories types live in ./stories to keep this file within reach of
-   the 200-line rule; re-exported so consumers keep importing from '@/types'. */
+/* Daily-stories and live-torah types live in sibling files to keep this file
+   within reach of the 200-line rule; re-exported so consumers keep importing
+   from '@/types'. */
 export * from './stories';
+export * from './live';

@@ -156,6 +156,17 @@ model AppConfig {
   value String
 }
 
+// YouTube channels followed by the "Live Torah" section. Liveness is not
+// stored per-channel — a periodically refreshed snapshot lives in AppConfig.
+model LiveChannel {
+  id        String   @id @default(cuid())
+  channelId String   @unique
+  name      String
+  url       String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
 model QuizResult {
   id         String   @id @default(cuid())
   citationId String

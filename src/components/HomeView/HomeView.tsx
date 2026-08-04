@@ -4,7 +4,9 @@ import styled, { keyframes } from 'styled-components';
 import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
+import OraytaLogo from '@/components/common/OraytaLogo';
 import FeedBannerBlock from './FeedBannerBlock';
+import LiveBannerBlock from './LiveBannerBlock';
 import SectionIcon from './HomeIcons';
 import HomeActionCards from './HomeActionCards';
 import HomeBackground from './HomeBackground';
@@ -30,9 +32,18 @@ const Hero = styled.div`
   animation: ${fadeUp} 0.45s ease both;
 `;
 
+/* Gold-ringed logo medallion — gives the text-only hero a visual anchor. */
+const LogoMedallion = styled.div`
+  width: 64px; height: 64px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 32% 28%, rgba(196,149,106,0.3), rgba(196,149,106,0.06));
+  border: 1.5px solid rgba(196,149,106,0.55);
+  box-shadow: 0 3px 14px rgba(92,61,30,0.18), inset 0 1px 0 rgba(255,255,255,0.35);
+`;
+
 const AppTitle = styled.h1`
   font-family: ${theme.fonts.body};
-  font-size: 1.9rem; font-weight: 700; color: ${theme.colors.primary};
+  font-size: 1.55rem; font-weight: 700; color: ${theme.colors.primary};
 `;
 
 const Tagline = styled.p`
@@ -80,7 +91,7 @@ const SectionCard = styled(Link)<{ $index: number }>`
   border: 1px solid ${theme.colors.borderLight};
   border-top: 3px solid ${theme.colors.secondary};
   border-radius: ${theme.radii.lg};
-  padding: ${theme.spacing.lg} ${theme.spacing.sm};
+  padding: ${theme.spacing.md} ${theme.spacing.sm};
   display: flex; flex-direction: column; align-items: center;
   gap: 5px; text-align: center;
   box-shadow: ${theme.shadows.sm};
@@ -105,9 +116,9 @@ const CardIcon = styled.span`
 `;
 const CardLabel = styled.span`
   font-family: ${theme.fonts.body};
-  font-size: 1.3rem; font-weight: 800; color: ${theme.colors.primary};
+  font-size: 1.15rem; font-weight: 800; color: ${theme.colors.primary};
   line-height: 1.25;
-  @media (max-width: 480px) { font-size: 1.1rem; }
+  @media (max-width: 480px) { font-size: 1.02rem; }
 `;
 /* Kept visible at every width: the description is the only thing that
    distinguishes the similarly-named sections at a glance. */
@@ -124,6 +135,7 @@ export default function HomeView() {
       <StoriesRow />
 
       <Hero>
+        <LogoMedallion><OraytaLogo size={40} /></LogoMedallion>
         <AppTitle>{HE.APP_NAME}</AppTitle>
         <Tagline>{HE.HOME_TAGLINE}</Tagline>
         <QuoteBlock>
@@ -132,6 +144,8 @@ export default function HomeView() {
         </QuoteBlock>
       </Hero>
 
+      <LiveBannerBlock />
+
       <FeedBannerBlock />
 
       <Divider />
@@ -139,7 +153,7 @@ export default function HomeView() {
       <Grid>
         {HE.HOME_SECTIONS.map((s, i) => (
           <SectionCard key={s.href} href={s.href} $index={i}>
-            <CardIcon><SectionIcon href={s.href} size={26} /></CardIcon>
+            <CardIcon><SectionIcon href={s.href} size={23} /></CardIcon>
             <CardLabel>{s.label}</CardLabel>
             <CardDesc>{s.desc}</CardDesc>
           </SectionCard>

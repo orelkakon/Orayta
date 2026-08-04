@@ -13,6 +13,7 @@ const SECTION_ICONS: Record<string, string> = {
   '/today': 'calendar',
   '/chidushim': 'bulb',
   '/gematria': 'aleph',
+  '/live': 'live',
   '/about': 'info',
 };
 
