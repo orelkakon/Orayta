@@ -7,7 +7,7 @@
 
 export type TrackMetric =
   | 'users' | 'feed' | 'content' | 'today' | 'pwa'
-  | 'stories' | 'quiz' | 'rabbis' | 'study' | 'sikumim' | 'chidushim' | 'gematria';
+  | 'stories' | 'quiz' | 'rabbis' | 'study' | 'sikumim' | 'chidushim' | 'gematria' | 'live';
 
 function post(metric: TrackMetric) {
   void fetch('/api/track', {

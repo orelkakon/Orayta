@@ -199,7 +199,7 @@ export type FeedSlide = FeedItem | FeedDedicationSlide | FeedReelSlide | FeedSea
 /** Every per-day metric stored in DailyStat and shown in the admin panel. */
 export type DailyMetric =
   | 'users' | 'feed' | 'content' | 'today' | 'pwa'
-  | 'stories' | 'quiz' | 'rabbis' | 'study' | 'sikumim' | 'chidushim' | 'gematria';
+  | 'stories' | 'quiz' | 'rabbis' | 'study' | 'sikumim' | 'chidushim' | 'gematria' | 'live';
 
 export interface AdminDailyRow extends Record<DailyMetric, number> {
   day: string;

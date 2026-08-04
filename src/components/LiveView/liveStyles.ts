@@ -46,8 +46,10 @@ export const CountChip = styled.span`
 
 export const Grid = styled.div`
   display: grid; width: 100%;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   gap: ${theme.spacing.sm};
+  /* Phones always fit two cards side by side. */
+  ${theme.media.sm} { grid-template-columns: repeat(2, 1fr); gap: ${theme.spacing.xs}; }
 `;
 
 export const EmptyCard = styled.div`

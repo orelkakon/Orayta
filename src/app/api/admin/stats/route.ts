@@ -9,7 +9,7 @@ const DAYS = 30;
 const COUNTER_KEYS = ['questions', 'feedSaves', 'whatsappShares', 'storyShares'];
 const METRICS: DailyMetric[] = [
   'users', 'feed', 'content', 'today', 'pwa',
-  'stories', 'quiz', 'rabbis', 'study', 'sikumim', 'chidushim', 'gematria',
+  'stories', 'quiz', 'rabbis', 'study', 'sikumim', 'chidushim', 'gematria', 'live',
 ];
 
 function dayKeys(n: number): string[] {

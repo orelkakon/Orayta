@@ -679,7 +679,7 @@ export const HE = {
   // Live Torah (שידור חי)
   NAV_LIVE: 'שידור חי',
   LIVE_TITLE: 'שידור חי',
-  LIVE_SUBTITLE: 'שיעורי תורה ותפילות בשידור ישיר, מבתי הכנסת והרבנים שאתם אוהבים',
+  LIVE_SUBTITLE: 'שיעורי תורה בשידור ישיר, מבתי הכנסת והרבנים שאתם אוהבים',
   LIVE_BADGE: 'LIVE',
   LIVE_NOW_SINGLE: 'שידור אחד פעיל עכשיו',
   LIVE_NOW_COUNT: (n: number) => `${n} שידורים פעילים עכשיו`,
@@ -689,7 +689,7 @@ export const HE = {
   LIVE_WATCH: 'לצפייה בשידור',
   LIVE_HOME_BANNER_CTA: 'הצטרפו לשידור החי',
   LIVE_HOME_QUIET_TITLE: 'שידורים חיים',
-  LIVE_HOME_QUIET_SUB: 'שיעורים ותפילות בשידור ישיר',
+  LIVE_HOME_QUIET_SUB: 'שיעורי תורה בשידור ישיר',
   LIVE_ADMIN_TITLE: 'ניהול ערוצי שידור',
   LIVE_ADMIN_NOTE: 'הדביקו קישור לערוץ יוטיוב (או @כינוי). המערכת מזהה לבד מתי הערוץ בשידור חי.',
   LIVE_ADMIN_PLACEHOLDER: 'קישור לערוץ יוטיוב...',
@@ -738,6 +738,7 @@ export const HE = {
   ADMIN_SECTIONS_TITLE: 'כניסות למדורים',
   ADMIN_SECTIONS_SUB: 'כניסה אחת נספרת לכל ביקור',
   ADMIN_SECTION_FEED: 'רגע של תורה',
+  ADMIN_SECTION_LIVE: 'שידור חי',
   ADMIN_SECTION_CONTENT: 'תפילות ותנ״ך',
   ADMIN_SECTION_TODAY: 'יומי',
   ADMIN_ENGAGE_TITLE: 'מעורבות',
@@ -783,7 +784,7 @@ export const HE = {
 
   /* ── Mobile bottom tab bar (short labels) ── */
   TAB_FEED: 'פיד',
-  TAB_QUIZ: 'תרגול',
+  TAB_PRAYERS: 'תפילות',
   TAB_TODAY: 'היומי',
   TAB_MORE: 'עוד',
   ARIA_MUSIC_ON: 'הפעל מוזיקת רקע',

@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 const METRICS = [
   'users', 'feed', 'content', 'today', 'pwa',
-  'stories', 'quiz', 'rabbis', 'study', 'sikumim', 'chidushim', 'gematria',
+  'stories', 'quiz', 'rabbis', 'study', 'sikumim', 'chidushim', 'gematria', 'live',
 ] as const;
 type Metric = (typeof METRICS)[number];
 

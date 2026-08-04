@@ -67,6 +67,7 @@ const Chip = styled.span`
 
 const SECTIONS: { metric: DailyMetric; icon: string; label: string }[] = [
   { metric: 'feed',      icon: 'sparkle',  label: HE.ADMIN_SECTION_FEED },
+  { metric: 'live',      icon: 'live',     label: HE.ADMIN_SECTION_LIVE },
   { metric: 'stories',   icon: 'eye',      label: HE.ADMIN_SECTION_STORIES },
   { metric: 'content',   icon: 'openbook', label: HE.ADMIN_SECTION_CONTENT },
   { metric: 'today',     icon: 'calendar', label: HE.ADMIN_SECTION_TODAY },
