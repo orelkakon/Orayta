@@ -39,11 +39,11 @@ const ThumbShade = styled.div`
 `;
 
 const Badge = styled.span.attrs({ className: 'anim-loop' })`
-  position: absolute; top: 10px; right: 10px;
-  display: inline-flex; align-items: center; gap: 5px;
+  position: absolute; top: 8px; right: 8px;
+  display: inline-flex; align-items: center; gap: 4px;
   background: #dc2626; color: #fff;
-  font-size: 0.68rem; font-weight: 900; letter-spacing: 0.14em;
-  padding: 3px 9px; border-radius: 6px;
+  font-size: 0.6rem; font-weight: 900; letter-spacing: 0.12em;
+  padding: 2px 7px; border-radius: 5px;
   box-shadow: 0 2px 10px rgba(220,38,38,0.5);
   &::before {
     content: ''; width: 6px; height: 6px; border-radius: 50%; background: #fff;
@@ -53,7 +53,7 @@ const Badge = styled.span.attrs({ className: 'anim-loop' })`
 
 const PlayDisc = styled.span`
   position: absolute; inset: 0; margin: auto;
-  width: 54px; height: 54px; border-radius: 50%;
+  width: 42px; height: 42px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   background: rgba(0,0,0,0.55); color: #fff;
   border: 2px solid rgba(255,255,255,0.85);
@@ -62,18 +62,18 @@ const PlayDisc = styled.span`
 `;
 
 const Meta = styled.div`
-  display: flex; flex-direction: column; gap: 3px;
-  padding: ${theme.spacing.ms} ${theme.spacing.md};
+  display: flex; flex-direction: column; gap: 2px;
+  padding: ${theme.spacing.sm} ${theme.spacing.ms};
   width: 100%;
 `;
 
 const Channel = styled.span`
   font-family: ${theme.fonts.body};
-  font-size: ${theme.fontSizes.md}; font-weight: 800; color: ${theme.colors.primary};
+  font-size: ${theme.fontSizes.sm}; font-weight: 800; color: ${theme.colors.primary};
 `;
 
 const Title = styled.span`
-  font-size: ${theme.fontSizes.sm}; color: ${theme.colors.textMuted}; line-height: 1.45;
+  font-size: ${theme.fontSizes.xs}; color: ${theme.colors.textMuted}; line-height: 1.4;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 `;
 

@@ -32,14 +32,14 @@ const Banner = styled(Link)`
     radial-gradient(ellipse at 85% 0%, rgba(255,215,150,0.18), transparent 55%),
     linear-gradient(140deg, #3d2513 0%, ${theme.colors.primary} 40%, #8a5a2e 78%, #b07c42 100%);
   border-radius: ${theme.radii.xl};
-  padding: ${theme.spacing.md} ${theme.spacing.xl};
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: ${theme.spacing.ms} ${theme.spacing.xl};
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
   text-align: center;
   animation: ${glow} 3s ease-in-out infinite;
   transition: transform 0.2s;
   &:hover  { transform: translateY(-3px) scale(1.005); }
   &:active { transform: scale(0.97); }
-  @media (max-width: 480px) { padding: ${theme.spacing.md} ${theme.spacing.md}; }
+  @media (max-width: 480px) { padding: ${theme.spacing.ms} ${theme.spacing.md}; }
 `;
 
 /* moving band of light sweeping across the banner */
@@ -75,7 +75,7 @@ const CardsGlyph = styled.span`
 
 function FeedCardsIllustration() {
   return (
-    <svg width="58" height="44" viewBox="0 0 58 44" fill="none" aria-hidden="true">
+    <svg width="50" height="38" viewBox="0 0 58 44" fill="none" aria-hidden="true">
       <rect x="6" y="5" width="20" height="32" rx="4" transform="rotate(-10 16 21)"
         fill="rgba(255,235,190,0.28)" stroke="rgba(255,235,190,0.75)" strokeWidth="1.4" />
       <rect x="32" y="5" width="20" height="32" rx="4" transform="rotate(10 42 21)"

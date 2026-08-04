@@ -46,8 +46,8 @@ export const CountChip = styled.span`
 
 export const Grid = styled.div`
   display: grid; width: 100%;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-  gap: ${theme.spacing.md};
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: ${theme.spacing.sm};
 `;
 
 export const EmptyCard = styled.div`

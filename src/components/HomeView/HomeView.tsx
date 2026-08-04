@@ -22,19 +22,19 @@ const fadeUp = keyframes`
 const Page = styled.div`
   position: relative; z-index: 1;
   display: flex; flex-direction: column; align-items: center;
-  gap: ${theme.spacing.md};
-  padding: ${theme.spacing.md} 0 ${theme.spacing.xl};
+  gap: ${theme.spacing.ms};
+  padding: ${theme.spacing.sm} 0 ${theme.spacing.xl};
 `;
 
 const Hero = styled.div`
   display: flex; flex-direction: column; align-items: center;
-  gap: ${theme.spacing.sm}; text-align: center;
+  gap: ${theme.spacing.xs}; text-align: center;
   animation: ${fadeUp} 0.45s ease both;
 `;
 
 /* Gold-ringed logo medallion — gives the text-only hero a visual anchor. */
 const LogoMedallion = styled.div`
-  width: 64px; height: 64px; border-radius: 50%;
+  width: 52px; height: 52px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   background: radial-gradient(circle at 32% 28%, rgba(196,149,106,0.3), rgba(196,149,106,0.06));
   border: 1.5px solid rgba(196,149,106,0.55);
@@ -135,7 +135,7 @@ export default function HomeView() {
       <StoriesRow />
 
       <Hero>
-        <LogoMedallion><OraytaLogo size={40} /></LogoMedallion>
+        <LogoMedallion><OraytaLogo size={32} /></LogoMedallion>
         <AppTitle>{HE.APP_NAME}</AppTitle>
         <Tagline>{HE.HOME_TAGLINE}</Tagline>
         <QuoteBlock>

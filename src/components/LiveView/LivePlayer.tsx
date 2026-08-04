@@ -62,25 +62,6 @@ const Frame = styled.div`
   iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 `;
 
-const BottomRow = styled.div`
-  display: flex; align-items: center; justify-content: space-between;
-  gap: ${theme.spacing.sm}; flex-wrap: wrap;
-`;
-
-const Hint = styled.span`
-  font-size: ${theme.fontSizes.xs}; color: rgba(255,255,255,0.55); line-height: 1.5;
-`;
-
-const YtLink = styled.a`
-  flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px;
-  font-size: ${theme.fontSizes.xs}; font-weight: 700;
-  color: #fff; background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.25);
-  padding: 6px 14px; border-radius: 999px;
-  transition: background ${theme.motion.fast} ease;
-  &:hover { background: rgba(255,255,255,0.22); }
-`;
-
 interface Props {
   stream: LiveStream;
   onClose: () => void;
@@ -109,22 +90,15 @@ export default function LivePlayer({ stream, onClose }: Props) {
           <CloseBtn onClick={onClose} aria-label={HE.CLOSE}>×</CloseBtn>
         </TopBar>
         <Frame>
+          {/* vq is best-effort — YouTube's embed treats quality as a hint and
+              still adapts to bandwidth; there is no supported hard override. */}
           <iframe
-            src={`https://www.youtube-nocookie.com/embed/${stream.videoId}?autoplay=1&rel=0&hl=he`}
+            src={`https://www.youtube-nocookie.com/embed/${stream.videoId}?autoplay=1&rel=0&hl=he&vq=hd1080`}
             title={stream.title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
           />
         </Frame>
-        <BottomRow>
-          <Hint>{HE.LIVE_PLAYER_HINT}</Hint>
-          <YtLink
-            href={`https://www.youtube.com/watch?v=${stream.videoId}`}
-            target="_blank" rel="noopener noreferrer"
-          >
-            {HE.LIVE_OPEN_YOUTUBE} ↗
-          </YtLink>
-        </BottomRow>
       </Sheet>
     </Overlay>
   );
