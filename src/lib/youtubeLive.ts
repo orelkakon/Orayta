@@ -75,14 +75,18 @@ export async function fetchLiveStream(
 ): Promise<LiveStream | null> {
   const html = await fetchPage(`https://www.youtube.com/channel/${channelId}/live?hl=en`);
   if (!html) return null;
-  // A live page canonicalizes to a watch URL; upcoming waiting rooms do too,
-  // so require the player's own videoDetails.isLive and reject scheduled
-  // streams (waiting rooms carry "isUpcoming":true and a "N waiting" counter).
-  const videoId = /rel="canonical" href="https:\/\/www\.youtube\.com\/watch\?v=([\w-]{11})"/.exec(html)?.[1];
+  // Marker choice is constrained by what YouTube serves datacenter IPs: the
+  // live watch page keeps "isLive":true (viewer counter) but may ship
+  // canonical="undefined" and omit videoDetails. Waiting rooms carry
+  // "isUpcoming":true; an offline channel page has no "isLive":true at all.
+  if (!html.includes('"isLive":true') || html.includes('"isUpcoming":true')) return null;
+  const videoId =
+    /rel="canonical" href="https:\/\/www\.youtube\.com\/watch\?v=([\w-]{11})"/.exec(html)?.[1] ??
+    /"currentVideoEndpoint":.{0,300}?"videoId":"([\w-]{11})"/.exec(html)?.[1];
   if (!videoId) return null;
-  const isLive = /"videoDetails":\{.{0,1200}?"isLive":true/.test(html);
-  if (!isLive || html.includes('"isUpcoming":true')) return null;
-  const rawTitle = /<meta name="title" content="([^"]*)"/.exec(html)?.[1];
+  const rawTitle =
+    /<meta name="title" content="([^"]*)"/.exec(html)?.[1] ??
+    /property="og:title" content="([^"]*)"/.exec(html)?.[1];
   return {
     channelId,
     channelName,
@@ -138,10 +142,10 @@ export async function debugProbe(): Promise<unknown[]> {
       return {
         name: c.name, status: res.status, finalUrl: res.url, length: html.length,
         canonical: /rel="canonical" href="([^"]+)"/.exec(html)?.[1] ?? null,
-        videoDetailsLive: /"videoDetails":\{.{0,1200}?"isLive":true/.test(html),
+        currentVideo: /"currentVideoEndpoint":.{0,300}?"videoId":"([\w-]{11})"/.exec(html)?.[1] ?? null,
+        metaTitle: /<meta name="title" content="([^"]{0,80})/.exec(html)?.[1] ?? null,
         anyIsLive: html.includes('"isLive":true'),
         upcoming: html.includes('"isUpcoming":true'),
-        head: html.slice(0, 220),
       };
     } catch (e) {
       return { name: c.name, error: String(e) };
