@@ -27,6 +27,7 @@ const GLYPHS: Record<string, React.ReactNode> = {
   search: <><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></>,
   camera: <><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></>,
   sparkle: <><path d="M12 3c.5 4 2 6.5 6 7-4 .5-5.5 3-6 7-.5-4-2-6.5-6-7 4-.5 5.5-3 6-7z" /><path d="M19 15l.7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7z" /></>,
+  reels: <><rect x="3" y="3" width="18" height="18" rx="4.5" /><path d="M3 8.5h18" /><path d="M8.2 3.4l2.6 5.1M14 3.4l2.6 5.1" /><polygon points="10.3 12.2 15.7 15.3 10.3 18.4" fill="currentColor" stroke="none" /></>,
   note: <><path d="M9 18V5l11-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="17" cy="16" r="3" /></>,
   bread: <><path d="M4 11a8 5 0 0 1 16 0v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" /><path d="M9 9.5v3M15 9.5v3M12 8.5v3" /></>,
   cup: <><path d="M8 3h8l-1 6.5a3.2 3.2 0 0 1-6 0z" /><path d="M12 13v5" /><path d="M8 21h8" /></>,

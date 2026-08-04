@@ -282,6 +282,8 @@ export const HE = {
   TODAY_DAF_RAMBAM: 'רמב״ם יומי',
   TODAY_PARASHA: 'פרשת השבוע',
   TODAY_EVENTS_TITLE: 'אירועי היום',
+  TODAY_HEBCAL_TITLE: 'לוח שנה עברי',
+  TODAY_HEBCAL_EMPTY: 'לא נמצאו תאריכים קרובים',
   TODAY_EVENTS_EMPTY: 'אין אירועים מיוחדים היום',
   TODAY_ERROR: 'שגיאה בטעינת הנתונים',
 
@@ -606,10 +608,10 @@ export const HE = {
   FEED_STREAK_DAYS: 'ימים ברצף של תורה',
   FEED_STREAK_DAY1: 'היום מתחיל רצף חדש',
 
-  /* ── Daily seal (חתימת היום) ── */
-  FEED_SEAL_KICKER: 'חתימת היום',
+  /* ── Daily seal (סיום היום) ── */
+  FEED_SEAL_KICKER: 'סיום היום',
   FEED_SEAL_TITLE: 'סיימת את רגע התורה היומי',
-  FEED_SEAL_SUB: 'עוד יום של תורה נחתם. קבעת עתים לתורה.',
+  FEED_SEAL_SUB: 'עוד יום של תורה הושלם. קבעת עתים לתורה.',
   FEED_SEAL_MOMENTS: (n: number) => `${n} רגעים של תורה היום`,
   FEED_SEAL_STREAK: (n: number) => `${n} ימים ברצף`,
   FEED_SEAL_BEST: (n: number) => `שיא אישי: ${n}`,
@@ -626,13 +628,13 @@ export const HE = {
       : 'סיימתי את רגע התורה היומי שלי באורייתא ✨',
 
   /* ── First-visit + ritual-aware splash ── */
-  FEED_WELCOME_LINE: 'בכל יום — כמה רגעים קצרים של תורה. גללו, למדו, וחתמו את היום.',
-  FEED_SPLASH_SEALED: 'היום כבר נחתם ✓ גלילה חופשית',
+  FEED_WELCOME_LINE: 'בכל יום — כמה רגעים קצרים של תורה. גללו, למדו, וסיימו את היום.',
+  FEED_SPLASH_SEALED: 'היום כבר הושלם ✓ גלילה חופשית',
   FEED_SWIPE_HINT: 'החליקו למעלה כדי להתחיל',
 
   /* Rotating seal blessing lines — one per day, so the ritual never goes stale. */
   FEED_SEAL_LINES: [
-    'עוד יום של תורה נחתם. קבעת עתים לתורה.',
+    'עוד יום של תורה הושלם. קבעת עתים לתורה.',
     'רגע אחד ביום — וקביעות נבנית.',
     'התורה נקנית ברגעים הקטנים.',
     'יום אחר יום, רגע אחר רגע.',
@@ -779,7 +781,7 @@ export const HE = {
   ARIA_SKIP_TO_CONTENT: 'דלג לתוכן הראשי',
 
   /* ── Home hero ── */
-  HOME_TAGLINE: 'האתר שלך לחיזוק האמונה ולימוד התורה — בכל יום, בכל מקום',
+  HOME_TAGLINE: 'האתר שלך לחיזוק האמונה וקביעת עיתים לתורה בדרך ייחודית',
   HEADER_TAGLINE: 'בס״ד · מקורות יהודיים',
   NAV_MENU: 'תפריט ניווט',
 

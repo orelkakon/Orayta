@@ -6,6 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { formatHebrewDate } from '@/lib/hebrewDate';
 import ZmanimCard from './ZmanimCard';
+import HebrewCalendarCard from './HebrewCalendarCard';
 import CompassCard from './CompassCard';
 import DafYomiCard from './DafYomiCard';
 import EventsCard from './EventsCard';
@@ -113,6 +114,7 @@ export default function TodayView() {
       <Grid>
         <Col>
           <ZmanimCard location={location} locState={locState} date={dateStr} onRetry={requestLocation} />
+          <HebrewCalendarCard date={dateStr} />
           <CompassCard location={location} locState={locState} onRetry={requestLocation} />
         </Col>
         <Col>

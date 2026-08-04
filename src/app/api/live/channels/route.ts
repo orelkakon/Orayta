@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { resolveChannel, invalidateLiveSnapshot } from '@/lib/youtubeLive';
+import { resolveChannel, fetchChannelAvatar, invalidateLiveSnapshot } from '@/lib/youtubeLive';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,6 +12,19 @@ export async function GET(req: NextRequest) {
     where: wantAll ? undefined : { active: true },
     orderBy: { createdAt: 'asc' },
   });
+  // One-time avatar backfill for rows added before the avatarUrl column.
+  // null = never fetched; a failed fetch stays null so a later request retries.
+  await Promise.allSettled(
+    channels
+      .filter(c => c.avatarUrl === null)
+      .map(async c => {
+        const avatarUrl = await fetchChannelAvatar(c.channelId);
+        if (avatarUrl !== null) {
+          c.avatarUrl = avatarUrl;
+          await prisma.liveChannel.update({ where: { id: c.id }, data: { avatarUrl } });
+        }
+      }),
+  );
   return NextResponse.json(channels);
 }
 

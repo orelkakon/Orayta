@@ -94,7 +94,7 @@ export default function LiveCard({ stream, onWatch }: Props) {
       </Thumb>
       <Meta>
         <Channel>{stream.channelName}</Channel>
-        <Title>{stream.title}</Title>
+        {stream.title.trim() !== stream.channelName.trim() && <Title>{stream.title}</Title>}
       </Meta>
     </Card>
   );

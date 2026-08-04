@@ -134,7 +134,22 @@
       "Bash(npx tsc *)",
       "Bash(echo \"EXIT: $?\")",
       "Bash(npx eslint *)",
-      "Bash(awk '$1>200 && $2!=\"total\"')"
+      "Bash(awk '$1>200 && $2!=\"total\"')",
+      "Bash(cp /private/tmp/claude-501/-Users-user-Desktop-Claude-orayta/d53f52d8-7849-4e60-8a38-4cd37675f946/scratchpad/import.ts /Users/user/Desktop/Claude/orayta/.import-tmp.ts)",
+      "Bash(rm /Users/user/Desktop/Claude/orayta/.import-tmp.ts)",
+      "Bash(echo \"build-exit: $?\")",
+      "Bash(echo \"exit:$?\")",
+      "Bash(echo \"own-files-errors: $?\")",
+      "Bash(npx next *)",
+      "Bash(npx playwright-core *)",
+      "Bash(sed -i '' 's|await page.mouse.move\\(195, 500\\);|// wheel unsupported on mobile webkit|; s|await page.mouse.wheel\\(0, 700\\);||' repro-wk.js)",
+      "Bash(sed -i '' 's|const w = await probe\\(page, mode + . after wheel.\\);|const w = { scrollTop: 0 };|\" repro-wk.js 2>/dev/null; grep -n \"after wheel\" repro-wk.js)",
+      "Bash(kill %1)",
+      "Bash(pkill -f \"next start\")",
+      "Bash(lsof -nP -iTCP:3123 -sTCP:LISTEN)",
+      "Bash(echo \"any-exit: $?\")",
+      "Artifact",
+      "Bash(grep -oE '\"videoDetails\":\\\\{.{0,200}')"
     ]
   }
 }

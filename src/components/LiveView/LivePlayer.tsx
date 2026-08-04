@@ -22,7 +22,7 @@ const Overlay = styled.div`
 `;
 
 const Sheet = styled.div`
-  width: 100%; max-width: 960px;
+  width: 100%; max-width: 1080px;
   display: flex; flex-direction: column; gap: ${theme.spacing.sm};
   animation: ${rise} 0.3s ${theme.motion.out};
 `;
@@ -60,6 +60,9 @@ const Frame = styled.div`
   background: #000; border-radius: ${theme.radii.lg}; overflow: hidden;
   box-shadow: 0 24px 70px rgba(0,0,0,0.6);
   iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  /* Phones: a strict 16:9 strip is cramped — give the player more height
+     (the video letterboxes slightly, the controls gain room). */
+  @media (max-width: 640px) { aspect-ratio: auto; height: min(48vh, 300px); }
 `;
 
 interface Props {
@@ -84,8 +87,10 @@ export default function LivePlayer({ stream, onClose }: Props) {
       <Sheet role="dialog" aria-modal="true" aria-label={`${HE.LIVE_TITLE}: ${stream.channelName}`}>
         <TopBar>
           <StreamTitle>
-            <ChannelName>🔴 {stream.channelName}</ChannelName>
-            <VideoTitle>{stream.title}</VideoTitle>
+            <ChannelName>{stream.channelName}</ChannelName>
+            {stream.title.trim() !== stream.channelName.trim() && (
+              <VideoTitle>{stream.title}</VideoTitle>
+            )}
           </StreamTitle>
           <CloseBtn onClick={onClose} aria-label={HE.CLOSE}>×</CloseBtn>
         </TopBar>

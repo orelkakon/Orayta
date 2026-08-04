@@ -17,7 +17,7 @@ import { haptics } from '@/lib/haptics';
 
 const TABS = [
   { href: '/',      label: HE.NAV_HOME,  icon: 'home' },
-  { href: '/feed',  label: HE.TAB_FEED,  icon: 'sparkle' },
+  { href: '/feed',  label: HE.TAB_FEED,  icon: 'reels' },
   { href: '/content', label: HE.TAB_PRAYERS, icon: 'book' },
   { href: '/today', label: HE.TAB_TODAY, icon: 'calendar' },
 ];

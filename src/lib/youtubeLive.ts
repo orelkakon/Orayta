@@ -51,10 +51,18 @@ export function channelInputToUrl(input: string): string | null {
   return m ? `https://www.youtube.com/${m[1]}` : null;
 }
 
-/** Resolve a channel URL/handle to its canonical id + display name (scraped, no API). */
+function extractAvatar(html: string): string {
+  return (
+    /"avatar":\s*\{"thumbnails":\[\{"url":"(https:\/\/yt3\.[^"]+)"/.exec(html)?.[1] ??
+    /property="og:image" content="(https:\/\/yt3\.[^"]+)"/.exec(html)?.[1] ??
+    ''
+  );
+}
+
+/** Resolve a channel URL/handle to its canonical id + display name + avatar (scraped, no API). */
 export async function resolveChannel(
   input: string,
-): Promise<{ channelId: string; name: string; url: string } | null> {
+): Promise<{ channelId: string; name: string; url: string; avatarUrl: string } | null> {
   const url = channelInputToUrl(input);
   if (!url) return null;
   const html = await fetchPage(url);
@@ -65,7 +73,16 @@ export async function resolveChannel(
   if (!id) return null;
   const rawTitle = /<title>([^<]*)<\/title>/.exec(html)?.[1] ?? id;
   const name = decodeEntities(rawTitle).replace(/\s*-\s*YouTube\s*$/, '').trim() || id;
-  return { channelId: id, name, url };
+  return { channelId: id, name, url, avatarUrl: extractAvatar(html) };
+}
+
+/**
+ * Fetch just the avatar for an already-known channel (backfill for pre-avatar
+ * rows). null = page unreachable (retry later); "" = fetched, no avatar found.
+ */
+export async function fetchChannelAvatar(channelId: string): Promise<string | null> {
+  const html = await fetchPage(`https://www.youtube.com/channel/${channelId}`);
+  return html ? extractAvatar(html) : null;
 }
 
 /** Check one channel's /live page; null when nothing is on the air. */

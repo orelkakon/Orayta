@@ -47,14 +47,17 @@ export interface StoryArt {
   accent: string;     // "r,g,b" triplet — ring hue, card glow, badge tint
 }
 
+/* The first five circles in row order (rabbi, rabbiQuiz, citation, parasha,
+   halacha) deliberately span distinct hue families — amber, blue, purple,
+   green, gold — so the row opens with clearly different colors. */
 export const STORY_ART: Record<StoryKey, StoryArt> = {
   rabbi:    { icon: 'user',     from: '#3d2513', to: '#8a5a2e', accent: '226,168,98'  },
-  rabbiQuiz:{ icon: 'search',   from: '#1c2733', to: '#4a6a8a', accent: '150,190,235' },
-  citation: { icon: 'openbook', from: '#2c1d10', to: '#7a5a2a', accent: '232,203,118' },
+  rabbiQuiz:{ icon: 'search',   from: '#14263d', to: '#3a6ba8', accent: '130,185,255' },
+  citation: { icon: 'openbook', from: '#2c1836', to: '#6b3f8a', accent: '214,150,244' },
   reel:     { icon: 'camera',   from: '#3a1626', to: '#8a3558', accent: '255,138,180' },
-  parasha:  { icon: 'scroll',   from: '#1f2a1a', to: '#4f6b35', accent: '178,214,124' },
-  halacha:  { icon: 'candle',   from: '#33210b', to: '#8a6a1e', accent: '244,203,94'  },
-  sikum:    { icon: 'pencil',   from: '#2c1836', to: '#6b3f8a', accent: '214,150,244' },
+  parasha:  { icon: 'scroll',   from: '#1f2a1a', to: '#4f7a35', accent: '178,220,120' },
+  halacha:  { icon: 'candle',   from: '#33210b', to: '#a8791e', accent: '250,205,84'  },
+  sikum:    { icon: 'pencil',   from: '#361019', to: '#a03048', accent: '255,140,150' },
   quiz:     { icon: 'target',   from: '#0f2f2b', to: '#2e7a6a', accent: '110,214,190' },
   chidush:  { icon: 'bulb',     from: '#3a2210', to: '#9a5a1e', accent: '255,158,84'  },
   tale:     { icon: 'flame',    from: '#301414', to: '#8a3030', accent: '255,148,128' },

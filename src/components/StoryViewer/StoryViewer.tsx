@@ -69,11 +69,13 @@ const SrOnly = styled.span`
 interface StoryViewerProps {
   stories: DailyStory[];
   startIndex: number;
+  /** Keys already watched today — re-watches are not counted in the stats. */
+  viewed: Set<StoryKey>;
   onViewed: (key: StoryKey) => void;
   onClose: () => void;
 }
 
-export default function StoryViewer({ stories, startIndex, onViewed, onClose }: StoryViewerProps) {
+export default function StoryViewer({ stories, startIndex, viewed, onViewed, onClose }: StoryViewerProps) {
   const [index, setIndex] = useState(startIndex);
   const [holding, setHolding] = useState(false);
   const [sharing, setSharing] = useState(false);
@@ -105,6 +107,8 @@ export default function StoryViewer({ stories, startIndex, onViewed, onClose }: 
   navRef.current = { next, prev, close: onClose };
   const viewedRef = useRef(onViewed);
   viewedRef.current = onViewed;
+  const viewedSetRef = useRef(viewed);
+  viewedSetRef.current = viewed;
 
   // The video story gets triple time so a clip can actually be watched.
   const duration = story.key === 'video' ? STORY_DURATION_MS * 3 : STORY_DURATION_MS;
@@ -112,8 +116,9 @@ export default function StoryViewer({ stories, startIndex, onViewed, onClose }: 
 
   useEffect(() => { setEngaged(false); }, [index]);
   useEffect(() => {
+    const firstViewToday = !viewedSetRef.current.has(story.key);
     viewedRef.current(story.key);
-    trackEvent('stories');
+    if (firstViewToday) trackEvent('stories');
   }, [story.key]);
 
   useEffect(() => {

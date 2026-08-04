@@ -11,7 +11,7 @@ import LiveAdminCard from './LiveAdminCard';
 import {
   Page, Hero, HeroTitleRow, LiveDot, HeroTitle, HeroSub, CountChip, Grid,
   EmptyCard, EmptyTitle, EmptySub, SectionTitle, ChannelsRow, ChannelItem,
-  ChannelDisc, ChannelName, ChannelLiveTag,
+  ChannelDisc, ChannelAvatarImg, ChannelName, ChannelLiveTag,
 } from './liveStyles';
 
 const POLL_MS = 75_000;
@@ -93,7 +93,12 @@ export default function LiveView() {
                 rel="noopener noreferrer"
                 $live={liveIds.has(c.channelId)}
               >
-                <ChannelDisc $live={liveIds.has(c.channelId)}>{c.name.trim().charAt(0)}</ChannelDisc>
+                <ChannelDisc $live={liveIds.has(c.channelId)}>
+                  {c.avatarUrl
+                    /* eslint-disable-next-line @next/next/no-img-element -- remote YouTube avatar, not an optimizable asset */
+                    ? <ChannelAvatarImg src={c.avatarUrl} alt="" loading="lazy" />
+                    : c.name.trim().charAt(0)}
+                </ChannelDisc>
                 <ChannelName>{c.name}</ChannelName>
                 {liveIds.has(c.channelId) && <ChannelLiveTag>● {HE.LIVE_BADGE}</ChannelLiveTag>}
               </ChannelItem>

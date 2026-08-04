@@ -102,6 +102,7 @@ export default function StoriesRow() {
         <StoryViewer
           stories={payload.stories}
           startIndex={openIndex}
+          viewed={viewed}
           onViewed={handleViewed}
           onClose={() => setOpenIndex(null)}
         />

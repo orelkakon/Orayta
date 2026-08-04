@@ -163,6 +163,8 @@ model LiveChannel {
   channelId String   @unique
   name      String
   url       String
+  // Scraped channel avatar; null = not fetched yet, "" = fetch attempted, none found.
+  avatarUrl String?
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
 }

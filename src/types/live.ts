@@ -6,6 +6,8 @@ export interface LiveChannel {
   channelId: string;
   name: string;
   url: string;
+  /** Scraped channel avatar; null = never fetched, empty string = none found. */
+  avatarUrl: string | null;
   active: boolean;
   createdAt: string;
 }

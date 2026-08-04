@@ -93,11 +93,16 @@ export const ChannelItem = styled.a<{ $live: boolean }>`
 export const ChannelDisc = styled.span<{ $live: boolean }>`
   width: 62px; height: 62px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
   font-family: ${theme.fonts.body}; font-size: 1.5rem; font-weight: 800;
   color: ${theme.colors.primary};
   background: radial-gradient(circle at 32% 28%, rgba(196,149,106,0.32), rgba(196,149,106,0.08));
   border: 2px solid ${p => (p.$live ? '#dc2626' : 'rgba(196,149,106,0.55)')};
   box-shadow: ${theme.shadows.sm};
+`;
+
+export const ChannelAvatarImg = styled.img`
+  width: 100%; height: 100%; object-fit: cover; display: block;
 `;
 
 export const ChannelName = styled.span`
