@@ -1,5 +1,6 @@
 import type { SiddurSection } from './prayers/types';
 import { TEFILLIN_GROUPS } from './prayers/tefillin';
+import { CHAFETZ_CHAIM_GROUPS } from './prayers/chafetzChaim';
 
 // Segment ranges (e.g. The_Shema.2-9) rely on context=0 in SefariaPrayerView —
 // without it Sefaria returns the whole node.
@@ -7,6 +8,7 @@ import { TEFILLIN_GROUPS } from './prayers/tefillin';
 export const SIDDUR_SECTIONS: SiddurSection[] = [
   { name: 'ברכות השחר', sefariaRef: 'Siddur_Edot_HaMizrach, Preparatory_Prayers, Morning_Blessings' },
   { name: 'ברכות התורה', sefariaRef: 'Siddur_Edot_HaMizrach, Preparatory_Prayers, Torah_Blessings' },
+  { name: 'תפילת החפץ חיים', groups: CHAFETZ_CHAIM_GROUPS },
   { name: 'ברכות התפילין', groups: TEFILLIN_GROUPS },
   { name: 'קורבנות', sefariaRef: 'Siddur_Edot_HaMizrach, Weekday_Mincha, Offerings.4-11' },
   { name: 'למנצח על הגיתית', sefariaRef: 'Siddur_Edot_HaMizrach, Weekday_Mincha, Offerings.2-3' },
