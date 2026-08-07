@@ -3,7 +3,7 @@ import type { StaticGroup, SiddurSection } from './prayers/types';
 import { BRACHOT_NEHENIN_GROUPS } from './prayers/brachotNehenin';
 import { BRACHOT_REIYA_GROUPS } from './prayers/brachotReiya';
 import { BRACHOT_ACHARONOT_GROUPS } from './prayers/brachotAchronot';
-import { KADDISH_GROUPS } from './prayers/kaddish';
+import { WOMEN_PRAYER_SECTIONS } from './prayers/womenPrayers';
 import { ASHER_YATZAR } from './staticPrayers';
 import { SIDDUR_SECTIONS } from './siddurContent';
 
@@ -99,13 +99,13 @@ export const SECTIONS: ContentSection[] = [
     totalChapters: 150,
   },
   {
-    id: 'kaddish',
+    id: 'women-prayers',
     icon: 'candle',
-    title: 'קדיש',
-    desc: 'קדיש יתום, שלם ודרבנן',
+    title: 'תפילה לנשים',
+    desc: 'תודה, ישועה, ילדים ורפואה',
     group: 'tefillot',
-    type: 'static',
-    staticGroups: KADDISH_GROUPS,
+    type: 'static-sections',
+    staticSections: WOMEN_PRAYER_SECTIONS,
   },
   {
     id: 'tefilat-haderech',

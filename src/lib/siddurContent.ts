@@ -1,6 +1,7 @@
 import type { SiddurSection } from './prayers/types';
 import { TEFILLIN_GROUPS } from './prayers/tefillin';
 import { CHAFETZ_CHAIM_GROUPS } from './prayers/chafetzChaim';
+import { KADDISH_GROUPS } from './prayers/kaddish';
 
 // Segment ranges (e.g. The_Shema.2-9) rely on context=0 in SefariaPrayerView —
 // without it Sefaria returns the whole node.
@@ -37,4 +38,10 @@ export const SIDDUR_SECTIONS: SiddurSection[] = [
   { name: 'וידוי ותחנון', sefariaRef: 'Siddur_Edot_HaMizrach, Weekday_Shacharit, Vidui' },
   { name: 'שיר למעלות אשא עיני', sefariaRef: 'Psalms.121' },
   { name: 'עלינו לשבח', sefariaRef: 'Siddur_Edot_HaMizrach, Weekday_Shacharit, Alenu' },
+  { name: 'קדיש', groups: KADDISH_GROUPS },
+  {
+    name: 'קריאת שמע שעל המיטה',
+    sefariaRef: 'Siddur_Edot_HaMizrach, Bedtime_Shema',
+    jump: { label: 'ברכת המפיל', match: 'המפיל חבלי שנה' },
+  },
 ];
