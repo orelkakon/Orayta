@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
+import { HE } from '@/lib/hebrewTexts';
 import { ContentSection, SefariaBook } from '@/lib/contentsSections';
 import type { StaticGroup } from '@/lib/prayers/types';
 import { toHebrewNumeral } from '@/lib/hebrewNumerals';
@@ -10,68 +11,10 @@ import SpeakButton from '@/components/common/SpeakButton';
 import StaticGroupsView from './StaticGroupsView';
 import SefariaPrayerView from './SefariaPrayerView';
 import SiddurSectionsView from './SiddurSectionsView';
-
-interface SefariaResp { he: string[]; heRef?: string; }
-
-const Wrap = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
-
-const Controls = styled.div`
-  display: flex; align-items: center; gap: ${theme.spacing.sm}; flex-wrap: wrap;
-`;
-
-const Select = styled.select`
-  padding: 6px ${theme.spacing.sm}; border-radius: ${theme.radii.sm};
-  border: 1.5px solid ${theme.colors.border}; background: ${theme.colors.surface};
-  color: ${theme.colors.text}; font-size: 0.88rem; font-family: ${theme.fonts.body};
-  &:focus { outline: none; border-color: ${theme.colors.primary}; }
-`;
-
-const NavBtn = styled.button`
-  padding: 6px 14px; border-radius: ${theme.radii.sm};
-  border: 1.5px solid ${theme.colors.border};
-  font-size: 0.88rem; color: ${theme.colors.textMuted};
-  transition: all 0.15s;
-  &:hover:not(:disabled) { border-color: ${theme.colors.primary}; color: ${theme.colors.primary}; }
-  &:disabled { opacity: 0.3; }
-`;
-
-const JumpBtn = styled.button`
-  padding: 6px 14px; border-radius: ${theme.radii.sm};
-  border: 1.5px solid ${theme.colors.secondary};
-  font-size: 0.82rem; font-weight: 600; color: ${theme.colors.secondary};
-  transition: all 0.15s;
-  &:hover { background: ${theme.colors.secondary}14; }
-`;
-
-const RefLabel = styled.div`
-  font-size: 0.82rem; color: ${theme.colors.textMuted};
-  margin-right: auto; font-family: ${theme.fonts.body};
-`;
-
-const TextCard = styled.div`
-  background: ${theme.colors.surface};
-  border: 1px solid ${theme.colors.borderLight};
-  border-radius: ${theme.radii.lg};
-  padding: ${theme.spacing.xl};
-  box-shadow: ${theme.shadows.sm};
-`;
-
-const Verses = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
-
-const Verse = styled.div`
-  display: flex; gap: ${theme.spacing.sm}; align-items: flex-start;
-`;
-
-const VerseNum = styled.span`
-  font-size: 0.72rem; color: ${theme.colors.textLight};
-  min-width: 22px; padding-top: 4px; flex-shrink: 0; font-weight: 600;
-  font-family: ${theme.fonts.body};
-`;
-
-const VerseText = styled.p`
-  font-family: ${theme.fonts.body}; font-size: 1.05rem; line-height: 1.9;
-  color: ${theme.colors.text};
-`;
+import TikkunHaklaliView from './TikkunHaklaliView';
+import VersesCard from './VersesCard';
+import { useSefariaChapter } from './useSefariaChapter';
+import { Wrap, Controls, Select, NavBtn, JumpBtn, RefLabel, TextCard } from './readerStyles';
 
 const BlessingRow = styled.div`
   display: flex; align-items: flex-start;
@@ -85,35 +28,22 @@ const BlessingText = styled.p`
   color: ${theme.colors.text};
 `;
 
-const Loading = styled.div`
-  text-align: center; color: ${theme.colors.textMuted};
-  padding: ${theme.spacing.xxl}; font-size: 0.95rem;
-`;
-
 interface Props { section: ContentSection; }
+
+const isSefariaChapters = (t: ContentSection['type']) => t === 'sefaria-chapters' || t === 'sefaria-books';
 
 export default function ContentReader({ section }: Props) {
   const [book, setBook] = useState<SefariaBook | null>(section.books?.[0] ?? null);
   const [chapter, setChapter] = useState(1);
-  const [verses, setVerses] = useState<string[]>([]);
-  const [refLabel, setRefLabel] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [tikkun, setTikkun] = useState(false);
   const maxChapters = book?.chapters ?? section.totalChapters ?? 1;
+  const isTehillim = section.id === 'tehillim';
 
-  useEffect(() => {
-    if (section.type === 'static' || section.type === 'static-sections' || section.type === 'sefaria-prayer') return;
-    const baseRef = book?.ref ?? section.ref ?? '';
-    const ref = maxChapters > 1 ? `${baseRef}.${chapter}` : baseRef;
-    setLoading(true);
-    fetch(`https://www.sefaria.org/api/texts/${ref}?lang=he`)
-      .then(r => r.json())
-      .then((d: SefariaResp) => {
-        setVerses(d.he ?? []);
-        setRefLabel(d.heRef ?? '');
-      })
-      .catch(() => setVerses([]))
-      .finally(() => setLoading(false));
-  }, [book, chapter, section, maxChapters]);
+  const baseRef = book?.ref ?? section.ref ?? '';
+  const chapterRef = isSefariaChapters(section.type) && !tikkun
+    ? (maxChapters > 1 ? `${baseRef}.${chapter}` : baseRef)
+    : null;
+  const { verses, refLabel, loading } = useSefariaChapter(chapterRef);
 
   const handleBookChange = (ref: string) => {
     const b = section.books?.find(b => b.ref === ref) ?? null;
@@ -144,6 +74,10 @@ export default function ContentReader({ section }: Props) {
       );
   }
 
+  if (isTehillim && tikkun) {
+    return <TikkunHaklaliView onExit={() => setTikkun(false)} />;
+  }
+
   const fullText = verses.join(' ');
 
   return (
@@ -166,28 +100,20 @@ export default function ContentReader({ section }: Props) {
           </>
         )}
         {refLabel && <RefLabel>{refLabel}</RefLabel>}
-        {section.id === 'tehillim' && chapter !== 100 && (
-          <JumpBtn onClick={() => setChapter(100)} title="מזמור לתודה — תהילים ק׳">
-            🕊️ מזמור לתודה
+        {isTehillim && chapter !== 100 && (
+          <JumpBtn onClick={() => setChapter(100)} title={HE.TEHILLIM_TODAH_TITLE}>
+            {HE.TEHILLIM_TODAH_BTN}
+          </JumpBtn>
+        )}
+        {isTehillim && (
+          <JumpBtn onClick={() => setTikkun(true)} title={HE.TIKKUN_BTN_TITLE}>
+            {HE.TIKKUN_BTN}
           </JumpBtn>
         )}
         {fullText && <SpeakButton text={fullText} />}
       </Controls>
 
-      <TextCard>
-        {loading ? (
-          <Loading>טוען...</Loading>
-        ) : (
-          <Verses>
-            {verses.map((v, i) => (
-              <Verse key={i}>
-                <VerseNum>{toHebrewNumeral(i + 1)}</VerseNum>
-                <VerseText dangerouslySetInnerHTML={{ __html: v }} />
-              </Verse>
-            ))}
-          </Verses>
-        )}
-      </TextCard>
+      <VersesCard verses={verses} loading={loading} />
     </Wrap>
   );
 }

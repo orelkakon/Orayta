@@ -3,7 +3,7 @@ import type { StaticGroup, SiddurSection } from './prayers/types';
 import { BRACHOT_NEHENIN_GROUPS } from './prayers/brachotNehenin';
 import { BRACHOT_REIYA_GROUPS } from './prayers/brachotReiya';
 import { BRACHOT_ACHARONOT_GROUPS } from './prayers/brachotAchronot';
-import { WOMEN_PRAYER_SECTIONS } from './prayers/womenPrayers';
+import { GENERAL_PRAYER_SECTIONS } from './prayers/generalPrayers';
 import { ASHER_YATZAR } from './staticPrayers';
 import { SIDDUR_SECTIONS } from './siddurContent';
 
@@ -92,20 +92,20 @@ export const SECTIONS: ContentSection[] = [
     id: 'tehillim',
     icon: 'note',
     title: 'תהילים',
-    desc: '150 פרקים',
+    desc: '150 פרקים, מזמור לתודה ותיקון הכללי',
     group: 'tefillot',
     type: 'sefaria-chapters',
     ref: 'Psalms',
     totalChapters: 150,
   },
   {
-    id: 'women-prayers',
+    id: 'general-prayers',
     icon: 'candle',
-    title: 'תפילה לנשים',
-    desc: 'תודה, ישועה, ילדים ורפואה',
+    title: 'תפילות כלליות',
+    desc: 'הבדלה, תודה, ישועה, ילדים ורפואה',
     group: 'tefillot',
     type: 'static-sections',
-    staticSections: WOMEN_PRAYER_SECTIONS,
+    staticSections: GENERAL_PRAYER_SECTIONS,
   },
   {
     id: 'tefilat-haderech',
