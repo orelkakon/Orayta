@@ -30,12 +30,28 @@ export const JumpBtn = styled.button`
   border: 1.5px solid ${theme.colors.secondary};
   font-size: 0.82rem; font-weight: 600; color: ${theme.colors.secondary};
   transition: all 0.15s;
-  &:hover { background: ${theme.colors.secondary}14; }
+  &:hover:not(:disabled) { background: ${theme.colors.secondary}14; }
+  &:disabled { opacity: 0.4; }
 `;
 
-export const RefLabel = styled.div`
-  font-size: 0.82rem; color: ${theme.colors.textMuted};
-  margin-right: auto; font-family: ${theme.fonts.body};
+// Pushes the trailing item (e.g. the speak button) to the far end of the row
+export const Spacer = styled.div`flex: 1;`;
+
+// Secondary row of quick-jump chips under the main navigation
+export const Shortcuts = styled.div`
+  display: flex; align-items: center; gap: ${theme.spacing.sm}; flex-wrap: wrap;
+`;
+
+export const CardTitle = styled.h2`
+  font-family: ${theme.fonts.body}; font-size: 1.25rem; font-weight: 700;
+  color: ${theme.colors.primary}; text-align: center;
+  padding-bottom: ${theme.spacing.sm}; margin-bottom: ${theme.spacing.md};
+  border-bottom: 2px solid ${theme.colors.borderLight};
+`;
+
+export const CardSubtitle = styled.div`
+  font-size: 0.8rem; font-weight: 600; color: ${theme.colors.textMuted};
+  margin-top: 4px;
 `;
 
 export const TextCard = styled.div`

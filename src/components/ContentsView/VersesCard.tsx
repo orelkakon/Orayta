@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { toHebrewNumeral } from '@/lib/hebrewNumerals';
-import { TextCard, Loading } from './readerStyles';
+import { TextCard, Loading, CardTitle, CardSubtitle } from './readerStyles';
 
 const Verses = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
 
@@ -23,11 +23,17 @@ const VerseText = styled.p`
   color: ${theme.colors.text};
 `;
 
-interface Props { verses: string[]; loading: boolean; }
+interface Props { verses: string[]; loading: boolean; title?: string; subtitle?: string; }
 
-export default function VersesCard({ verses, loading }: Props) {
+export default function VersesCard({ verses, loading, title, subtitle }: Props) {
   return (
     <TextCard>
+      {title && (
+        <CardTitle>
+          {title}
+          {subtitle && <CardSubtitle>{subtitle}</CardSubtitle>}
+        </CardTitle>
+      )}
       {loading ? (
         <Loading>{HE.LOADING}</Loading>
       ) : (

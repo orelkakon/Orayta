@@ -10,7 +10,7 @@ import SpeakButton from '@/components/common/SpeakButton';
 import StaticGroupsView from './StaticGroupsView';
 import VersesCard from './VersesCard';
 import { useSefariaChapter } from './useSefariaChapter';
-import { Wrap, Controls, NavBtn, JumpBtn, RefLabel } from './readerStyles';
+import { Wrap, Controls, NavBtn, JumpBtn, Spacer } from './readerStyles';
 
 const Steps = styled.div`
   display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;
@@ -33,7 +33,12 @@ const Done = styled.div`
   color: ${theme.colors.primary}; padding: ${theme.spacing.sm};
 `;
 
-const BottomNav = styled.div`display: flex; justify-content: space-between;`;
+const BottomNav = styled.div`display: flex; justify-content: space-between; gap: ${theme.spacing.sm};`;
+
+const Title = styled.div`
+  font-family: ${theme.fonts.body}; font-size: 1.1rem; font-weight: 700;
+  color: ${theme.colors.primary};
+`;
 
 interface Props { onExit: () => void; }
 
@@ -52,22 +57,13 @@ export default function TikkunHaklaliView({ onExit }: Props) {
     topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const nav = (
-    <>
-      <NavBtn disabled={step <= 0} onClick={() => go(step - 1)}>→</NavBtn>
-      <NavBtn disabled={isLast} onClick={() => go(step + 1)}>←</NavBtn>
-    </>
-  );
-
   return (
     <Wrap ref={topRef}>
       <Controls>
-        <JumpBtn onClick={onExit}>{HE.TIKKUN_BACK}</JumpBtn>
-        {nav}
-        <RefLabel>
-          {chapter ? `${HE.TIKKUN_PROGRESS(toHebrewNumeral(step), toHebrewNumeral(TOTAL))} · ${refLabel}` : HE.TIKKUN_TITLE}
-        </RefLabel>
+        <Title>{HE.TIKKUN_TITLE}</Title>
+        <Spacer />
         {verses.length > 0 && <SpeakButton text={verses.join(' ')} />}
+        <JumpBtn onClick={onExit}>{HE.TIKKUN_BACK}</JumpBtn>
       </Controls>
 
       <Steps>
@@ -80,11 +76,21 @@ export default function TikkunHaklaliView({ onExit }: Props) {
       </Steps>
 
       {chapter
-        ? <VersesCard verses={verses} loading={loading} />
+        ? (
+          <VersesCard
+            verses={verses}
+            loading={loading}
+            title={loading ? undefined : refLabel}
+            subtitle={HE.TIKKUN_PROGRESS(toHebrewNumeral(step), toHebrewNumeral(TOTAL))}
+          />
+        )
         : <StaticGroupsView groups={TIKKUN_HAKLALI_INTRO} />}
 
       {isLast && !loading && <Done>{HE.TIKKUN_DONE}</Done>}
-      <BottomNav>{nav}</BottomNav>
+      <BottomNav>
+        <NavBtn disabled={step <= 0} onClick={() => go(step - 1)}>{HE.TIKKUN_PREV}</NavBtn>
+        <NavBtn disabled={isLast} onClick={() => go(step + 1)}>{HE.TIKKUN_NEXT}</NavBtn>
+      </BottomNav>
     </Wrap>
   );
 }

@@ -324,6 +324,8 @@ export const HE = {
   TIKKUN_BACK: '← חזרה לתהילים',
   TIKKUN_PROGRESS: (i: string, total: string) => `מזמור ${i} מתוך ${total}`,
   TIKKUN_DONE: 'סיימת את עשרת המזמורים 🙌',
+  TIKKUN_PREV: '→ הקודם',
+  TIKKUN_NEXT: 'הבא ←',
 
   HOME_WELCOME: 'ברוך הבא לאורייתא',
   HOME_NAV_HINT: 'בחר מדור להתחיל',

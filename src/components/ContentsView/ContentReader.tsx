@@ -14,7 +14,7 @@ import SiddurSectionsView from './SiddurSectionsView';
 import TikkunHaklaliView from './TikkunHaklaliView';
 import VersesCard from './VersesCard';
 import { useSefariaChapter } from './useSefariaChapter';
-import { Wrap, Controls, Select, NavBtn, JumpBtn, RefLabel, TextCard } from './readerStyles';
+import { Wrap, Controls, Select, NavBtn, JumpBtn, Spacer, Shortcuts, TextCard } from './readerStyles';
 
 const BlessingRow = styled.div`
   display: flex; align-items: flex-start;
@@ -99,21 +99,22 @@ export default function ContentReader({ section }: Props) {
             <NavBtn disabled={chapter >= maxChapters} onClick={() => setChapter(c => c + 1)}>←</NavBtn>
           </>
         )}
-        {refLabel && <RefLabel>{refLabel}</RefLabel>}
-        {isTehillim && chapter !== 100 && (
-          <JumpBtn onClick={() => setChapter(100)} title={HE.TEHILLIM_TODAH_TITLE}>
-            {HE.TEHILLIM_TODAH_BTN}
-          </JumpBtn>
-        )}
-        {isTehillim && (
-          <JumpBtn onClick={() => setTikkun(true)} title={HE.TIKKUN_BTN_TITLE}>
-            {HE.TIKKUN_BTN}
-          </JumpBtn>
-        )}
+        <Spacer />
         {fullText && <SpeakButton text={fullText} />}
       </Controls>
 
-      <VersesCard verses={verses} loading={loading} />
+      {isTehillim && (
+        <Shortcuts>
+          <JumpBtn disabled={chapter === 100} onClick={() => setChapter(100)} title={HE.TEHILLIM_TODAH_TITLE}>
+            {HE.TEHILLIM_TODAH_BTN}
+          </JumpBtn>
+          <JumpBtn onClick={() => setTikkun(true)} title={HE.TIKKUN_BTN_TITLE}>
+            {HE.TIKKUN_BTN}
+          </JumpBtn>
+        </Shortcuts>
+      )}
+
+      <VersesCard verses={verses} loading={loading} title={loading ? undefined : refLabel} />
     </Wrap>
   );
 }
