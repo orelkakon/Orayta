@@ -6,6 +6,8 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { formatHebrewDate } from '@/lib/hebrewDate';
 import { buildHebMonth, addDays, fromISO, toISO } from '@/lib/hebrewMonth';
+import { buildYahrzeitEvents } from '@/lib/yahrzeit';
+import type { Rabbi } from '@/types';
 import CalendarGrid, { CalEvent, EVENT_COLORS } from './CalendarGrid';
 
 interface HebItem { title: string; date: string; category: string; hebrew?: string; }
@@ -98,9 +100,31 @@ export default function HebrewCalendarCard({ date }: Props) {
   const [anchorISO, setAnchorISO] = useState(date);
   const [selectedISO, setSelectedISO] = useState(date);
   const [events, setEvents] = useState<Record<string, CalEvent[]>>({});
+  const [rabbis, setRabbis] = useState<Rabbi[]>([]);
   const [error, setError] = useState(false);
 
   const grid = useMemo(() => buildHebMonth(fromISO(anchorISO)), [anchorISO]);
+
+  useEffect(() => {
+    void fetch('/api/rabbis')
+      .then(r => r.json() as Promise<Rabbi[]>)
+      .then(setRabbis)
+      .catch(() => {});
+  }, []);
+
+  const yahrzeitEvents = useMemo(
+    () => (grid && rabbis.length ? buildYahrzeitEvents(grid, rabbis) : {}),
+    [grid, rabbis]
+  );
+
+  const allEvents = useMemo(() => {
+    const isos = new Set([...Object.keys(events), ...Object.keys(yahrzeitEvents)]);
+    const merged: Record<string, CalEvent[]> = {};
+    isos.forEach(iso => {
+      merged[iso] = [...(events[iso] ?? []), ...(yahrzeitEvents[iso] ?? [])];
+    });
+    return merged;
+  }, [events, yahrzeitEvents]);
 
   useEffect(() => {
     if (!grid) return;
@@ -132,7 +156,7 @@ export default function HebrewCalendarCard({ date }: Props) {
 
   const onCurrentMonth = date >= grid.startISO && date <= grid.endISO;
   const goToday = () => { setAnchorISO(date); setSelectedISO(date); };
-  const dayEvents = events[selectedISO] ?? [];
+  const dayEvents = allEvents[selectedISO] ?? [];
 
   return (
     <Card>
@@ -151,7 +175,7 @@ export default function HebrewCalendarCard({ date }: Props) {
       </Toolbar>
       <CalendarGrid
         grid={grid}
-        events={events}
+        events={allEvents}
         todayISO={date}
         selectedISO={selectedISO}
         onSelect={setSelectedISO}

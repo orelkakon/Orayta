@@ -295,6 +295,7 @@ export const HE = {
     fast: 'צום',
     mevarchim: 'מברכים',
     parashat: 'פרשה',
+    yahrzeit: 'יארצייט',
   } as Record<string, string>,
   TODAY_EVENTS_EMPTY: 'אין אירועים מיוחדים היום',
   TODAY_ERROR: 'שגיאה בטעינת הנתונים',

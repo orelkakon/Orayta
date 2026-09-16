@@ -13,6 +13,7 @@ export const EVENT_COLORS: Record<string, string> = {
   fast:       '#8b3a3a',
   mevarchim:  'var(--color-primary-light)',
   parashat:   'var(--color-primary)',
+  yahrzeit:   '#8b5e3c',
 };
 
 const Grid = styled.div`

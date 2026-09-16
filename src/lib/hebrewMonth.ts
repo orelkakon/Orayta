@@ -12,6 +12,7 @@ export interface HebDayCell {
 
 export interface HebMonthGrid {
   title: string;        // e.g. "אב התשפ״ו"
+  monthHe: string;       // e.g. "אב" / "אדר א׳" — bare month name, no year
   leading: number;      // blank cells before day 1 (weekday of the 1st)
   cells: HebDayCell[];
   startISO: string;
@@ -79,6 +80,7 @@ export function buildHebMonth(anchor: Date): HebMonthGrid | null {
 
   return {
     title: `${ap.month} ${yearToLetters(ap.year)}`,
+    monthHe: ap.month,
     leading: start.getDay(),
     cells,
     startISO: cells[0].iso,
