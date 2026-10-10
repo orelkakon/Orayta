@@ -8,7 +8,8 @@ import { HE } from '@/lib/hebrewTexts';
 import { useRole } from '@/components/common/RoleContext';
 import type { InstagramPage } from '@/types';
 import ReelsAdminCard from './ReelsAdminCard';
-import { Card, CardTitle, FormRow, Input, SaveBtn, List, Row, RowText, Muted, Actions, SmallBtn, DelBtn, Empty } from './adminStyles';
+import PageRow from './PageRow';
+import { Card, CardTitle, FormRow, Input, SaveBtn, List, Muted, Empty } from './adminStyles';
 
 const Wrap = styled.div`
   display: flex; flex-direction: column; align-items: center;
@@ -31,6 +32,7 @@ export default function InstagramAdmin() {
   const [maxSeconds, setMaxSeconds] = useState('60');
   const [savingCfg, setSavingCfg]   = useState(false);
   const [cfgSaved, setCfgSaved]     = useState(false);
+  const [reelsVersion, setReelsVersion] = useState(0);
 
   const loadPages = useCallback(() => {
     void fetch('/api/instagram/pages')
@@ -38,6 +40,12 @@ export default function InstagramAdmin() {
       .then((data: unknown) => { if (Array.isArray(data)) setPages(data as InstagramPage[]); })
       .catch(() => {});
   }, []);
+
+  // After a backfill: refresh page counts and the reels list below.
+  const onPagesChanged = useCallback(() => {
+    loadPages();
+    setReelsVersion(v => v + 1);
+  }, [loadPages]);
 
   useEffect(() => {
     if (role !== 'admin') return;
@@ -98,21 +106,19 @@ export default function InstagramAdmin() {
           : (
             <List>
               {pages.map(p => (
-                <Row key={p.id} $off={!p.active}>
-                  <RowText>@{p.username} <Muted>({p.reelCount ?? 0})</Muted></RowText>
-                  <Actions>
-                    <SmallBtn onClick={() => void handleTogglePage(p.id)}>
-                      {p.active ? HE.IG_ADMIN_ACTIVE : HE.IG_ADMIN_INACTIVE}
-                    </SmallBtn>
-                    <DelBtn onClick={() => void handleDeletePage(p.id)}>✕</DelBtn>
-                  </Actions>
-                </Row>
+                <PageRow
+                  key={p.id}
+                  page={p}
+                  onToggle={() => void handleTogglePage(p.id)}
+                  onDelete={() => void handleDeletePage(p.id)}
+                  onChanged={onPagesChanged}
+                />
               ))}
             </List>
           )}
       </Card>
 
-      <ReelsAdminCard pages={pages} onChanged={loadPages} />
+      <ReelsAdminCard pages={pages} onChanged={loadPages} refreshKey={reelsVersion} />
       <BackLink href="/feed">{HE.IG_ADMIN_BACK}</BackLink>
     </Wrap>
   );

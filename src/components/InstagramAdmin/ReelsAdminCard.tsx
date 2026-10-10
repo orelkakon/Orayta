@@ -8,11 +8,13 @@ import { Card, CardTitle, FormRow, Input, Select, SaveBtn, List, Row, RowText, M
 interface Props {
   pages: InstagramPage[];
   onChanged: () => void;
+  /** Bumped by the parent when reels were added elsewhere (backfill). */
+  refreshKey?: number;
 }
 
 const PAGE_SIZE = 20;
 
-export default function ReelsAdminCard({ pages, onChanged }: Props) {
+export default function ReelsAdminCard({ pages, onChanged, refreshKey }: Props) {
   const [reels, setReels]     = useState<InstagramReel[]>([]);
   const [url, setUrl]         = useState('');
   const [pageId, setPageId]   = useState('');
@@ -26,7 +28,7 @@ export default function ReelsAdminCard({ pages, onChanged }: Props) {
       .catch(() => {});
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(); }, [load, refreshKey]);
 
   const handleAdd = async () => {
     if (!url.trim() || saving) return;
