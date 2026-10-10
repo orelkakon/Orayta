@@ -8,7 +8,8 @@
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "next lint",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "test": "tsx --test tests/*.test.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",
@@ -30,6 +31,7 @@
     "eslint": "^8",
     "eslint-config-next": "13.5.6",
     "prisma": "^5.10.0",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

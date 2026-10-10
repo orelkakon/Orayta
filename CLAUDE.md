@@ -50,6 +50,20 @@ Live YouTube streams from a followed list of channels (`LiveChannel` model), wat
 
 ---
 
+### 2c. מניין קרוב (Nearby minyanim) — `/minyan`
+Map + distance-sorted list of synagogues near the visitor, with honest schedule status.
+
+- **Locations:** OpenStreetMap via Overpass (`src/lib/minyan/osm.ts`, mirror fallback, 6h in-process cache on a ~1km grid). OSM has no reliable schedules — never present a minyan without a report.
+- **Schedules:** community reports in `MinyanReport` (confirm/dispute per service+day+time, one vote per HMAC-hashed IP). Graded in `src/lib/minyan/confidence.ts` from corroboration, freshness and disputes; admin submissions are `verified`. Reports older than 365 days are ignored. Status per synagogue: verified / reported / unknown.
+- **Gabbai phone:** only admin-entered (`SynagogueContact`) — visitors can't publish phone numbers. OSM `phone` is shown separately, labeled as OSM.
+- **Manual location:** Nominatim proxy `/api/minyan/geocode` (submit-only — Nominatim forbids autocomplete; 1 req/s throttle + cache).
+- **API:** `GET /api/minyan/nearby`, `POST /api/minyan/reports` (rate-limited; admin dispute = delete), `PUT /api/minyan/contacts` (admin).
+
+### 2d. Torah video admin — backfill (`/feed-videos`)
+Per-page "השלמת חסרים" button → `POST /api/instagram/pages/[id]/backfill` (streams NDJSON progress). Walks newest→older, imports ≤10 reels, stops at the first reel already in the DB; skips pinned posts, non-videos, reels over `reel_max_seconds` and preview-only embeds. Source: Graph API Business Discovery when `IG_GRAPH_TOKEN` + `IG_GRAPH_USER_ID` are set, otherwise the public profile embed (newest ~6 posts, no pagination). An unfinished gap is resumed via `AppConfig` key `ig_backfill_session:<pageId>`. Logic is in `src/lib/igBackfill.ts` (pure, tested).
+
+---
+
 ### 3. תרגול (Quiz / Training)
 Four quiz modes, all accessible to both roles:
 
@@ -296,6 +310,7 @@ TypeScript strict mode. Never use `any`. Define proper interfaces in `src/types/
 npm run dev          # start dev server
 npm run build        # production build (runs type check)
 npm run lint         # ESLint
+npm test             # unit tests (node:test via tsx, tests/*.test.ts)
 npm run db:push      # push Prisma schema changes to DB
 ```
 
