@@ -167,10 +167,10 @@ export default function HebrewCalendarCard({ date }: Props) {
           {HE.TODAY_CAL_TODAY_BTN}
         </TodayBtn>
         <NavBtn aria-label={HE.TODAY_CAL_PREV} onClick={() => setAnchorISO(toISO(addDays(fromISO(grid.startISO), -1)))}>
-          ›
+          ‹
         </NavBtn>
         <NavBtn aria-label={HE.TODAY_CAL_NEXT} onClick={() => setAnchorISO(toISO(addDays(fromISO(grid.endISO), 1)))}>
-          ‹
+          ›
         </NavBtn>
       </Toolbar>
       <CalendarGrid

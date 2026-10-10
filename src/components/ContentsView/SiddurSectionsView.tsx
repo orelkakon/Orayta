@@ -7,6 +7,7 @@ import type { SiddurSection } from '@/lib/prayers/types';
 import StaticGroupsView from './StaticGroupsView';
 import SefariaPrayerView from './SefariaPrayerView';
 import MenorahPsalmView from './MenorahPsalmView';
+import { useSwipeNav } from '@/components/common/useSwipeNav';
 
 const Wrap = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
 
@@ -45,9 +46,16 @@ interface Props { sections: SiddurSection[]; }
 export default function SiddurSectionsView({ sections }: Props) {
   const [idx, setIdx] = useState(0);
   const current = sections[idx];
+  const swipe = useSwipeNav({
+    onNext: () => setIdx(i => i + 1),
+    onPrev: () => setIdx(i => i - 1),
+    canNext: idx < sections.length - 1,
+    canPrev: idx > 0,
+    enabled: sections.length > 1,
+  });
 
   return (
-    <Wrap>
+    <Wrap {...swipe}>
       <Controls>
         <NavBtn disabled={idx <= 0} onClick={() => setIdx(i => i - 1)}>→</NavBtn>
         <Select value={idx} onChange={e => setIdx(Number(e.target.value))}>

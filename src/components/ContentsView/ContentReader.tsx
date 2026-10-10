@@ -14,6 +14,7 @@ import SiddurSectionsView from './SiddurSectionsView';
 import TikkunHaklaliView from './TikkunHaklaliView';
 import VersesCard from './VersesCard';
 import { useSefariaChapter } from './useSefariaChapter';
+import { useSwipeNav } from '@/components/common/useSwipeNav';
 import { Wrap, Controls, Select, NavBtn, JumpBtn, Spacer, Shortcuts, TextCard } from './readerStyles';
 
 const BlessingRow = styled.div`
@@ -44,6 +45,13 @@ export default function ContentReader({ section }: Props) {
     ? (maxChapters > 1 ? `${baseRef}.${chapter}` : baseRef)
     : null;
   const { verses, refLabel, loading } = useSefariaChapter(chapterRef);
+  const swipe = useSwipeNav({
+    onNext: () => setChapter(c => c + 1),
+    onPrev: () => setChapter(c => c - 1),
+    canNext: chapter < maxChapters,
+    canPrev: chapter > 1,
+    enabled: maxChapters > 1,
+  });
 
   const handleBookChange = (ref: string) => {
     const b = section.books?.find(b => b.ref === ref) ?? null;
@@ -81,7 +89,7 @@ export default function ContentReader({ section }: Props) {
   const fullText = verses.join(' ');
 
   return (
-    <Wrap>
+    <Wrap {...swipe}>
       <Controls>
         {section.books && (
           <Select value={book?.ref ?? ''} onChange={e => handleBookChange(e.target.value)}>

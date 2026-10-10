@@ -10,6 +10,7 @@ import SpeakButton from '@/components/common/SpeakButton';
 import StaticGroupsView from './StaticGroupsView';
 import VersesCard from './VersesCard';
 import { useSefariaChapter } from './useSefariaChapter';
+import { useSwipeNav } from '@/components/common/useSwipeNav';
 import { Wrap, Controls, NavBtn, JumpBtn, Spacer } from './readerStyles';
 
 const Steps = styled.div`
@@ -56,9 +57,15 @@ export default function TikkunHaklaliView({ onExit }: Props) {
     setStep(next);
     topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
+  const swipe = useSwipeNav({
+    onNext: () => go(step + 1),
+    onPrev: () => go(step - 1),
+    canNext: !isLast,
+    canPrev: step > 0,
+  });
 
   return (
-    <Wrap ref={topRef}>
+    <Wrap ref={topRef} {...swipe}>
       <Controls>
         <Title>{HE.TIKKUN_TITLE}</Title>
         <Spacer />
