@@ -21,6 +21,8 @@ const GLYPHS: Record<string, React.ReactNode> = {
   bulb: <><path d="M9 18h6" /><path d="M10 21h4" /><path d="M12 3a6 6 0 0 0-3.6 10.8c.8.62 1.35 1.5 1.5 2.2h4.2c.15-.7.7-1.58 1.5-2.2A6 6 0 0 0 12 3z" /></>,
   aleph: <><text x="12" y="16.5" textAnchor="middle" fontSize="17" fontWeight="600" fontFamily={theme.fonts.body} fill="currentColor" stroke="none">א</text><path d="M4 21h16" /></>,
   info: <><circle cx="12" cy="12" r="9" /><line x1="12" y1="11" x2="12" y2="16.5" /><circle cx="12" cy="7.8" r="0.4" fill="currentColor" /></>,
+  synagogue: <><path d="M2.5 10.5L12 4l9.5 6.5" /><path d="M5 9v12h14V9" /><path d="M10 21v-3.5a2 2 0 0 1 4 0V21" /><path d="M12 8.6l1.5 2.6h-3z" /><path d="M12 12.8l-1.5-2.6h3z" /><path d="M3 21h18" /></>,
+  pin: <><path d="M12 21.5s-7-6.1-7-11.6a7 7 0 0 1 14 0c0 5.5-7 11.6-7 11.6z" /><circle cx="12" cy="9.8" r="2.6" /></>,
   candle: <><path d="M12 2.5c-1.2 1.6-2 2.7-2 3.9a2 2 0 0 0 4 0c0-1.2-.8-2.3-2-3.9z" /><path d="M9.5 11h5v10h-5z" /><path d="M7 21h10" /></>,
   quill: <><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" /><line x1="16" y1="8" x2="2" y2="22" /><line x1="17.5" y1="15" x2="9" y2="15" /></>,
   hourglass: <><path d="M6 2h12M6 22h12" /><path d="M7 2v4l5 5 5-5V2" /><path d="M7 22v-4l5-5 5 5v4" /></>,

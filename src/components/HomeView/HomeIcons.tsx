@@ -15,6 +15,7 @@ const SECTION_ICONS: Record<string, string> = {
   '/gematria': 'aleph',
   '/live': 'live',
   '/about': 'info',
+  '/minyan': 'synagogue',
 };
 
 export default function SectionIcon({ href, size = 32 }: { href: string; size?: number }) {
@@ -23,6 +24,10 @@ export default function SectionIcon({ href, size = 32 }: { href: string; size?: 
 
 export function CandleIcon({ size = 26 }: { size?: number }) {
   return <LineIcon name="candle" size={size} />;
+}
+
+export function SynagogueIcon({ size = 26 }: { size?: number }) {
+  return <LineIcon name="synagogue" size={size} />;
 }
 
 export function QuillIcon({ size = 26 }: { size?: number }) {

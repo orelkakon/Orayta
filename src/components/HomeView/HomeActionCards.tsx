@@ -5,16 +5,16 @@ import styled, { keyframes } from 'styled-components';
 import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
-import { CandleIcon } from './HomeIcons';
+import { CandleIcon, SynagogueIcon } from './HomeIcons';
 
 const shine = keyframes`
   from { transform: translateX(160%) skewX(-20deg); }
   to   { transform: translateX(-260%) skewX(-20deg); }
 `;
 
-/* A single centered card — contact lives in the navbar only. */
+/* Stacked centered cards — contact lives in the navbar only. */
 const Row = styled.div`
-  display: grid; grid-template-columns: 1fr;
+  display: grid; grid-template-columns: 1fr; gap: ${theme.spacing.ms};
   width: 100%; max-width: 520px; margin: 0 auto;
 `;
 
@@ -107,6 +107,13 @@ interface CardDef {
 }
 
 const CARDS: CardDef[] = [
+  {
+    href: '/minyan',
+    icon: <SynagogueIcon />,
+    eyebrow: HE.MN_TITLE,
+    title: HE.MN_HOME_TITLE,
+    sub: HE.MN_HOME_SUB,
+  },
   {
     href: '/dedications',
     icon: <CandleIcon />,

@@ -205,3 +205,30 @@ model SikumEntry {
   @@index([bookId])
   @@index([date])
 }
+
+/// Community report for one minyan time at an OSM synagogue (placeId = "node/123").
+/// kind: "confirm" (this time is right / still active) | "dispute" (wrong / no minyan).
+/// reporter is a salted hash of the client IP — never the raw IP.
+/// verified = submitted by the logged-in admin.
+model MinyanReport {
+  id        String   @id @default(cuid())
+  placeId   String
+  service   String
+  dayType   String
+  time      String
+  kind      String
+  verified  Boolean  @default(false)
+  reporter  String
+  createdAt DateTime @default(now())
+
+  @@unique([placeId, service, dayType, time, kind, reporter])
+  @@index([placeId])
+}
+
+/// Admin-verified gabbai contact for an OSM synagogue.
+model SynagogueContact {
+  placeId     String   @id
+  gabbaiName  String?
+  gabbaiPhone String?
+  updatedAt   DateTime @updatedAt
+}

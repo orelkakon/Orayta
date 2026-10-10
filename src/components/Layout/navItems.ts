@@ -25,6 +25,7 @@ export const navItems: NavItem[] = [
   { href: '/chidushim',   label: HE.NAV_CHIDUSHIM,         icon: 'bulb' },
   { href: '/quiz',        label: HE.NAV_LEARN,             icon: 'target' },
   { href: '/today',       label: HE.NAV_TODAY,             icon: 'calendar' },
+  { href: '/minyan',      label: HE.NAV_MINYAN,            icon: 'synagogue' },
   { href: '/dedications', label: HE.NAV_DEDICATIONS,       icon: 'candle' },
   { href: '/contact',     label: HE.NAV_CONTACT,           icon: 'phone' },
   { href: '/about',       label: HE.NAV_ABOUT,             icon: 'info' },
