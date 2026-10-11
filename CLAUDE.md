@@ -51,13 +51,17 @@ Live YouTube streams from a followed list of channels (`LiveChannel` model), wat
 ---
 
 ### 2c. מניין קרוב (Nearby minyanim) — `/minyan`
-Map + distance-sorted list of synagogues near the visitor, with honest schedule status.
+Map + distance-sorted list of synagogues near the visitor. **Fully automatic — no manual reports, contacts or admin workflow.** Never show data no source publishes; missing fields are omitted or marked unknown.
 
-- **Locations:** OpenStreetMap via Overpass (`src/lib/minyan/osm.ts`, mirror fallback, 6h in-process cache on a ~1km grid). OSM has no reliable schedules — never present a minyan without a report.
-- **Schedules:** community reports in `MinyanReport` (confirm/dispute per service+day+time, one vote per HMAC-hashed IP). Graded in `src/lib/minyan/confidence.ts` from corroboration, freshness and disputes; admin submissions are `verified`. Reports older than 365 days are ignored. Status per synagogue: verified / reported / unknown.
-- **Gabbai phone:** only admin-entered (`SynagogueContact`) — visitors can't publish phone numbers. OSM `phone` is shown separately, labeled as OSM.
-- **Manual location:** Nominatim proxy `/api/minyan/geocode` (submit-only — Nominatim forbids autocomplete; 1 req/s throttle + cache).
-- **API:** `GET /api/minyan/nearby`, `POST /api/minyan/reports` (rate-limited; admin dispute = delete), `PUT /api/minyan/contacts` (admin).
+- **Sources** (`src/lib/minyan/sources/`, queried in parallel by `GET /api/minyan/nearby`, each cached in-process on a ~1km grid; a failing source is reported in `providers` and contributes nothing):
+  - `osm.ts` — OpenStreetMap via Overpass (ODbL). Names/locations/addresses, sometimes phone/website/`service_times`. Freshness = latest of last edit and `check_date`.
+  - `wikidata.ts` — Wikidata SPARQL (CC0), notable synagogues only. Freshness = item `dateModified`.
+  - `municipal.ts` — data.gov.il CKAN API, Be'er Sheva municipal dataset (official, coords). data.gov.il terms require naming site + dataset + update date (shown in the attribution footer). Haifa (no coords) and Petah Tikva (empty) were evaluated and are unusable.
+  - `telaviv.ts` — Tel Aviv municipal GIS dataset 96 (prayer times, nusach, gabbai). **Off unless `TLV_OPENDATA_APPROVED=1`** — the portal's terms forbid re-publishing on other sites / automated access without written consent.
+- **Merge + reliability** (`merge.ts`, `reliability.ts`, pure + tested): records are merged by distance + Hebrew name tokens (one record per provider per place). Reliability is computed separately for location and schedule: high = ≥2 independent current providers agree, medium = one current provider, low = stale/undated/conflicting. Copies of one source count once (an OSM `source` tag naming another provider collapses them). Current = 5y for location, 1y for schedules.
+- **Prayer times** are shown verbatim as published, with the source and its date. Nedarim Plus has no documented API — we only link to its public area page (`nedarimAreaUrl`).
+- **Map tiles:** `src/lib/mapTiles.ts` (OSM standard tiles, keyless; CARTO now returns "API KEY REQUIRED" images). Override with `NEXT_PUBLIC_MAP_TILE_URL` / `NEXT_PUBLIC_MAP_TILE_ATTRIBUTION`. Leaflet path classes must be passed as the `className` prop, not inside `pathOptions` (setStyle ignores it).
+- **"חדש" badges:** `src/lib/newBadges.ts` — date-expiring, no follow-up commit needed.
 
 ### 2d. Torah video admin — backfill (`/feed-videos`)
 Per-page "השלמת חסרים" button → `POST /api/instagram/pages/[id]/backfill` (streams NDJSON progress). Walks newest→older, imports ≤10 reels, stops at the first reel already in the DB; skips pinned posts, non-videos, reels over `reel_max_seconds` and preview-only embeds. Source: Graph API Business Discovery when `IG_GRAPH_TOKEN` + `IG_GRAPH_USER_ID` are set, otherwise the public profile embed (newest ~6 posts, no pagination). An unfinished gap is resumed via `AppConfig` key `ig_backfill_session:<pageId>`. Logic is in `src/lib/igBackfill.ts` (pure, tested).

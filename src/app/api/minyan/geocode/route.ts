@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { clientIp, makeRateLimiter } from '@/lib/minyan/server';
+import { withoutStreetWord } from '@/lib/minyan/geocodeQuery';
 import type { GeocodeResult } from '@/types/minyan';
 
 export const dynamic = 'force-dynamic';
@@ -18,6 +19,25 @@ interface NominatimItem { display_name: string; lat: string; lon: string; }
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
+/** One upstream call, serialized to ≤1 request/second across this instance. */
+async function nominatim(q: string): Promise<GeocodeResult[]> {
+  const wait = lastCall + 1100 - Date.now();
+  if (wait > 0) await sleep(wait);
+  lastCall = Date.now();
+  const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=il'
+    + `&accept-language=he&q=${encodeURIComponent(q)}`;
+  const res = await fetch(url, {
+    headers: { 'User-Agent': 'Orayta/1.0 (+https://orayta-eight.vercel.app)' },
+    cache: 'no-store',
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!res.ok) throw new Error(`nominatim HTTP ${res.status}`);
+  const items = await res.json() as NominatimItem[];
+  return items
+    .map(i => ({ label: shortLabel(i.display_name), lat: Number(i.lat), lng: Number(i.lon) }))
+    .filter(i => Number.isFinite(i.lat) && Number.isFinite(i.lng));
+}
+
 /** Keeps the first three parts of Nominatim's long comma-separated label. */
 function shortLabel(display: string): string {
   return display.split(',').map(s => s.trim()).filter(Boolean).slice(0, 3).join(', ');
@@ -32,23 +52,12 @@ export async function GET(req: NextRequest) {
   const hit = cache.get(key);
   if (hit && Date.now() - hit.at < CACHE_TTL_MS) return NextResponse.json(hit.data);
 
-  const wait = lastCall + 1100 - Date.now();
-  if (wait > 0) await sleep(wait);
-  lastCall = Date.now();
-
   try {
-    const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=il'
-      + `&accept-language=he&q=${encodeURIComponent(q)}`;
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Orayta/1.0 (+https://orayta-eight.vercel.app)' },
-      cache: 'no-store',
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return NextResponse.json({ error: 'geocoder unavailable' }, { status: 502 });
-    const items = await res.json() as NominatimItem[];
-    const data: GeocodeResult[] = items
-      .map(i => ({ label: shortLabel(i.display_name), lat: Number(i.lat), lng: Number(i.lon) }))
-      .filter(i => Number.isFinite(i.lat) && Number.isFinite(i.lng));
+    let data = await nominatim(q);
+    // Provider limitation, not a fallback: retry once without the generic
+    // street word Nominatim can't match (see withoutStreetWord).
+    const alt = data.length === 0 ? withoutStreetWord(q) : null;
+    if (alt) data = await nominatim(alt);
     if (cache.size > 1000) cache.delete(cache.keys().next().value as string);
     cache.set(key, { at: Date.now(), data });
     return NextResponse.json(data);

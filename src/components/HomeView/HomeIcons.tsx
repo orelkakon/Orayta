@@ -26,10 +26,6 @@ export function CandleIcon({ size = 26 }: { size?: number }) {
   return <LineIcon name="candle" size={size} />;
 }
 
-export function SynagogueIcon({ size = 26 }: { size?: number }) {
-  return <LineIcon name="synagogue" size={size} />;
-}
-
 export function QuillIcon({ size = 26 }: { size?: number }) {
   return <LineIcon name="quill" size={size} />;
 }

@@ -5,11 +5,13 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { LineIcon } from '@/components/common/LineIcons';
-import type { MinyanTime, Synagogue } from '@/types/minyan';
-import { googleMapsUrl, wazeUrl, telHref, nextPrayer } from '@/lib/minyan/geo';
-import { StatusBadge } from './ConfidenceBadge';
-import ScheduleList from './ScheduleList';
-import { STATUS_COLOR, ActionLink, GhostBtn, Muted } from './minyanStyles';
+import type { Synagogue } from '@/types/minyan';
+import { googleMapsUrl, wazeUrl, telHref } from '@/lib/minyan/geo';
+import ReliabilityBadge from './ReliabilityBadge';
+import ScheduleBlock from './ScheduleBlock';
+import SourcesLine from './SourcesLine';
+import { GoogleMapsIcon, WazeIcon } from './BrandIcons';
+import { LEVEL_COLOR, IconAction, Muted } from './minyanStyles';
 
 const Card = styled.article<{ $selected: boolean; $c: string }>`
   background: ${theme.colors.surface};
@@ -23,10 +25,15 @@ const Card = styled.article<{ $selected: boolean; $c: string }>`
   transition: border-color ${theme.motion.fast} ease, box-shadow ${theme.motion.fast} ease;
 `;
 
+/* Details on the start side, compact icon actions on the end side. */
+const Top = styled.div`display: flex; align-items: flex-start; gap: ${theme.spacing.sm};`;
+
 const Head = styled.button`
-  display: flex; align-items: flex-start; justify-content: space-between; gap: ${theme.spacing.sm};
-  text-align: right; width: 100%;
+  flex: 1; min-width: 0; text-align: right;
+  display: flex; flex-direction: column; gap: 2px;
 `;
+
+const NameRow = styled.span`display: flex; align-items: baseline; gap: ${theme.spacing.sm}; flex-wrap: wrap;`;
 
 const Name = styled.h3`
   font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.lg}; font-weight: 800;
@@ -34,92 +41,67 @@ const Name = styled.h3`
 `;
 
 const Distance = styled.span`
-  flex-shrink: 0; font-size: ${theme.fontSizes.sm}; font-weight: 800; color: ${theme.colors.secondary};
-  font-variant-numeric: tabular-nums;
+  font-size: ${theme.fontSizes.sm}; font-weight: 800; color: ${theme.colors.secondary};
+  font-variant-numeric: tabular-nums; white-space: nowrap;
 `;
 
-const Row = styled.div`display: flex; align-items: center; flex-wrap: wrap; gap: ${theme.spacing.sm};`;
+const Actions = styled.div`display: flex; gap: 6px; flex-shrink: 0;`;
 
-const Next = styled.div`
-  font-size: ${theme.fontSizes.sm}; font-weight: 700; color: ${theme.colors.success};
-  background: ${theme.colors.bgSuccess}; border-radius: ${theme.radii.sm}; padding: 6px ${theme.spacing.sm};
-`;
-
-const Note = styled.p`font-size: ${theme.fontSizes.sm}; color: ${theme.colors.textMuted}; line-height: 1.5;`;
-
-const Contact = styled.div`
-  display: flex; flex-direction: column; gap: 2px;
-  font-size: ${theme.fontSizes.sm}; color: ${theme.colors.text};
+const Contact = styled.p`
+  font-size: ${theme.fontSizes.sm}; color: ${theme.colors.text}; line-height: 1.6;
   a { color: ${theme.colors.primary}; font-weight: 700; direction: ltr; unicode-bidi: isolate; }
 `;
 
-const Actions = styled.div`display: flex; gap: ${theme.spacing.sm}; flex-wrap: wrap;`;
+interface Props { s: Synagogue; selected: boolean; onSelect: () => void; }
 
-interface Props {
-  s: Synagogue;
-  now: Date;
-  selected: boolean;
-  isAdmin: boolean;
-  onSelect: () => void;
-  onReport: () => void;
-  onPickTime: (t: MinyanTime) => void;
-  onEditGabbai: () => void;
-}
-
-const SynagogueCard = forwardRef<HTMLElement, Props>(function SynagogueCard(
-  { s, now, selected, isAdmin, onSelect, onReport, onPickTime, onEditGabbai }, ref,
-) {
-  const next = nextPrayer(s.times, now);
-  const callPhone = s.gabbai?.phone ?? s.phone;
-  const callHref = callPhone ? telHref(callPhone) : null;
+const SynagogueCard = forwardRef<HTMLElement, Props>(function SynagogueCard({ s, selected, onSelect }, ref) {
+  const name = s.name ?? HE.MN_UNNAMED;
+  const callHref = s.phone ? telHref(s.phone.value) : null;
+  const gabbaiHref = s.gabbai?.phone ? telHref(s.gabbai.phone) : null;
 
   return (
-    <Card ref={ref} $selected={selected} $c={STATUS_COLOR[s.status]} aria-current={selected || undefined}>
-      <Head onClick={onSelect} aria-label={s.name ?? HE.MN_UNNAMED}>
-        <div>
-          <Name>{s.name ?? HE.MN_UNNAMED}</Name>
+    <Card ref={ref} $selected={selected} $c={LEVEL_COLOR[s.existence.level]} aria-current={selected || undefined}>
+      <Top>
+        <Head onClick={onSelect}>
+          <NameRow><Name>{name}</Name><Distance>{HE.MN_DISTANCE(s.distanceM)}</Distance></NameRow>
           {s.address && <Muted>{s.address}</Muted>}
-        </div>
-        <Distance>{HE.MN_DISTANCE(s.distanceM)}</Distance>
-      </Head>
-
-      <Row><StatusBadge status={s.status} /></Row>
-      {next && <Next>{HE.MN_NEXT(HE.MN_SERVICES[next.service], next.time, next.minutesUntil)}</Next>}
-
-      {s.times.length > 0
-        ? <ScheduleList times={s.times} now={now} onPick={onPickTime} />
-        : <Note>{HE.MN_UNKNOWN_NOTE}</Note>}
-      {s.osmServiceTimes && <Note>{HE.MN_OSM_TIMES} <span dir="auto">{s.osmServiceTimes}</span></Note>}
-
-      {(s.gabbai || s.phone) && (
-        <Contact>
-          {s.gabbai && (
-            <span>
-              {HE.MN_GABBAI}{s.gabbai.name ? `: ${s.gabbai.name}` : ''}
-              {s.gabbai.phone && <> · <a href={telHref(s.gabbai.phone) ?? undefined}>{s.gabbai.phone}</a></>}
-              {' '}<Muted>({HE.MN_GABBAI_VERIFIED})</Muted>
-            </span>
+          {s.nusach && <Muted>{HE.MN_NUSACH(s.nusach)}</Muted>}
+        </Head>
+        <Actions>
+          <IconAction href={googleMapsUrl(s.lat, s.lng)} target="_blank" rel="noopener noreferrer"
+            aria-label={`${HE.MN_NAV_GOOGLE} — ${name}`} title={HE.MN_NAV_GOOGLE}>
+            <GoogleMapsIcon size={22} />
+          </IconAction>
+          <IconAction href={wazeUrl(s.lat, s.lng)} target="_blank" rel="noopener noreferrer"
+            aria-label={`${HE.MN_NAV_WAZE} — ${name}`} title={HE.MN_NAV_WAZE}>
+            <WazeIcon size={24} />
+          </IconAction>
+          {callHref && (
+            <IconAction href={callHref} aria-label={`${HE.MN_CALL} — ${name}`} title={HE.MN_CALL}>
+              <LineIcon name="phone" size={19} />
+            </IconAction>
           )}
-          {s.phone && <span>{HE.MN_PHONE_OSM}: <a href={telHref(s.phone) ?? undefined}>{s.phone}</a></span>}
+        </Actions>
+      </Top>
+
+      <ReliabilityBadge label={HE.MN_EXIST_LABEL} r={s.existence} />
+      <ScheduleBlock schedules={s.schedules} reliability={s.schedule} />
+
+      {(s.phone || s.gabbai) && (
+        <Contact>
+          {s.phone && <>{HE.MN_PHONE}: <a href={callHref ?? undefined}>{s.phone.value}</a> <Muted>{HE.MN_VIA(HE.MN_PROVIDERS[s.phone.provider])}</Muted></>}
+          {s.phone && s.gabbai && <br />}
+          {s.gabbai && (
+            <>
+              {HE.MN_GABBAI}{s.gabbai.name ? `: ${s.gabbai.name}` : ''}
+              {s.gabbai.phone && <> · <a href={gabbaiHref ?? undefined}>{s.gabbai.phone}</a></>}
+              {' '}<Muted>{HE.MN_VIA(HE.MN_PROVIDERS[s.gabbai.provider])}</Muted>
+            </>
+          )}
         </Contact>
       )}
-
-      <Actions>
-        <ActionLink href={googleMapsUrl(s.lat, s.lng)} target="_blank" rel="noopener noreferrer">
-          <LineIcon name="pin" size={16} />{HE.MN_NAV_GOOGLE}
-        </ActionLink>
-        <ActionLink href={wazeUrl(s.lat, s.lng)} target="_blank" rel="noopener noreferrer">
-          <LineIcon name="pin" size={16} />{HE.MN_NAV_WAZE}
-        </ActionLink>
-        {callHref && <ActionLink href={callHref}><LineIcon name="phone" size={16} />{HE.MN_CALL}</ActionLink>}
-      </Actions>
-      <Actions>
-        <GhostBtn onClick={onReport}>{HE.MN_REPORT_BTN}</GhostBtn>
-        {s.website && (
-          <GhostBtn as="a" href={s.website} target="_blank" rel="noopener noreferrer">{HE.MN_WEBSITE}</GhostBtn>
-        )}
-        {isAdmin && <GhostBtn onClick={onEditGabbai}>{HE.MN_GABBAI_EDIT}</GhostBtn>}
-      </Actions>
+      {s.website && <Contact><a href={s.website} target="_blank" rel="noopener noreferrer">{HE.MN_WEBSITE} ↗</a></Contact>}
+      <SourcesLine sources={s.sources} />
     </Card>
   );
 });

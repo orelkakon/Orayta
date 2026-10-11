@@ -1,13 +1,14 @@
 'use client';
 
 import { Fragment, useState, useMemo } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Polyline, Tooltip } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Polyline, Tooltip, AttributionControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { Rabbi, RabbiCategory } from '@/types';
 import { CATEGORY_COLORS, CATEGORY_LABELS } from '@/lib/rabbisData';
 import { extractLocations } from '@/lib/rabbiLocations';
+import { TILE_URL, TILE_ATTRIBUTION, TILE_MAX_ZOOM } from '@/lib/mapTiles';
 
 const slideUp = keyframes`from { transform: translateY(100%); } to { transform: translateY(0); }`;
 
@@ -146,13 +147,11 @@ export default function RabbisMapInner({ rabbis }: { rabbis: Rabbi[] }) {
 
   return (
     <Wrap>
-      <MapContainer center={[38, 22]} zoom={4} style={{ width: '100%', height: '100%' }} scrollWheelZoom>
-        <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a> &copy; <a href="https://carto.com">CARTO</a>'
-          subdomains="abcd"
-          maxZoom={18}
-        />
+      {/* Attribution sits top-right: the details sheet slides over the bottom of
+          the map, and the OSM tile policy forbids hiding attribution under UI. */}
+      <MapContainer center={[38, 22]} zoom={4} style={{ width: '100%', height: '100%' }} scrollWheelZoom attributionControl={false}>
+        <AttributionControl position="topright" />
+        <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} maxZoom={TILE_MAX_ZOOM} />
         {placed.map(p => (
           <Fragment key={p.rabbi.id}>
             {p.trail && (

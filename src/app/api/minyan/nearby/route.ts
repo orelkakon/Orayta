@@ -1,17 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { findSynagogues } from '@/lib/minyan/osm';
 import { clampRadius, isValidCoord } from '@/lib/minyan/geo';
-import { scheduleStatus } from '@/lib/minyan/confidence';
-import { clientIp, loadPlaceData, makeRateLimiter } from '@/lib/minyan/server';
-import type { NearbyResponse, Synagogue } from '@/types/minyan';
+import { clientIp, makeRateLimiter } from '@/lib/minyan/server';
+import { mergeRecords } from '@/lib/minyan/merge';
+import { osmSource } from '@/lib/minyan/sources/osm';
+import { wikidataSource } from '@/lib/minyan/sources/wikidata';
+import { beershevaSource } from '@/lib/minyan/sources/municipal';
+import { telAvivSource } from '@/lib/minyan/sources/telaviv';
+import type { NearbyResponse, ProviderId, ProviderStatus } from '@/types/minyan';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 const limited = makeRateLimiter(30, 60_000);
 
 /**
- * Public: synagogues near a point (OpenStreetMap) merged with community
- * minyan reports and admin-verified gabbai contacts, closest first.
+ * Public: synagogues near a point, merged from every external source that
+ * covers the area, with automatic reliability per entry. Sources are queried
+ * in parallel and cached server-side; a failing source is reported in
+ * `providers` and simply contributes nothing.
  * GET ?lat=31.78&lng=35.21&r=2000
  */
 export async function GET(req: NextRequest) {
@@ -25,28 +31,28 @@ export async function GET(req: NextRequest) {
   }
   const radiusM = clampRadius(Number(sp.get('r')));
 
-  let found;
-  try {
-    found = await findSynagogues(lat, lng, radiusM);
-  } catch {
-    return NextResponse.json({ error: 'map data unavailable' }, { status: 502 });
+  const ids: ProviderId[] = ['osm', 'wikidata', 'muni-beersheva', 'muni-telaviv'];
+  const results = await Promise.all([
+    osmSource(lat, lng, radiusM),
+    wikidataSource(lat, lng, radiusM),
+    beershevaSource(lat, lng, radiusM),
+    telAvivSource(lat, lng, radiusM),
+  ]);
+
+  const providers: ProviderStatus[] = results.map((r, i) => ({ provider: ids[i], state: r.state, datasetUpdatedAt: r.datasetUpdatedAt }));
+  // Every source that covers this area failed — that's an error, not "no synagogues".
+  if (results.every(r => r.state !== 'ok')) {
+    return NextResponse.json({ error: 'sources unavailable', providers }, { status: 502 });
   }
 
-  const { times, contacts } = await loadPlaceData(found.synagogues.map(s => s.id));
-  const synagogues: Synagogue[] = found.synagogues.map(s => {
-    const t = times.get(s.id) ?? [];
-    return {
-      id: s.id, name: s.name, lat: s.lat, lng: s.lng, distanceM: s.distanceM,
-      address: s.address, phone: s.phone, website: s.website,
-      osmServiceTimes: s.serviceTimes,
-      gabbai: contacts.get(s.id) ?? null,
-      times: t,
-      status: scheduleStatus(t),
-    };
-  });
-
+  const now = new Date();
   const body: NearbyResponse = {
-    center: { lat, lng }, radiusM, synagogues, truncated: found.truncated, fetchedAt: new Date().toISOString(),
+    center: { lat, lng },
+    radiusM,
+    synagogues: mergeRecords(results.flatMap(r => r.records), { lat, lng }, radiusM, now),
+    providers,
+    truncated: results.some(r => r.truncated),
+    fetchedAt: now.toISOString(),
   };
   return NextResponse.json(body, { headers: { 'Cache-Control': 'no-store' } });
 }

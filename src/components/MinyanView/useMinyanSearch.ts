@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { MinyanTime, NearbyResponse, GabbaiContact } from '@/types/minyan';
-import { scheduleStatus } from '@/lib/minyan/confidence';
+import type { NearbyResponse } from '@/types/minyan';
 import { DEFAULT_RADIUS_M } from '@/lib/minyan/geo';
 
 export type Phase = 'idle' | 'locating' | 'loading' | 'ready' | 'denied' | 'unavailable' | 'error' | 'rate-limited';
@@ -70,17 +69,5 @@ export function useMinyanSearch() {
     if (origin) void load(origin, radius); else locate();
   }, [origin, radius, load, locate]);
 
-  /** Apply a report/contact result locally instead of refetching the whole area. */
-  const patchPlace = useCallback((placeId: string, patch: { times?: MinyanTime[]; gabbai?: GabbaiContact | null }) => {
-    setData(prev => prev && {
-      ...prev,
-      synagogues: prev.synagogues.map(s => {
-        if (s.id !== placeId) return s;
-        const times = patch.times ?? s.times;
-        return { ...s, ...patch, times, status: scheduleStatus(times) };
-      }),
-    });
-  }, []);
-
-  return { phase, origin, radius, data, locate, searchAt, changeRadius, retry, patchPlace };
+  return { phase, origin, radius, data, locate, searchAt, changeRadius, retry };
 }

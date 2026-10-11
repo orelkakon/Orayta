@@ -1,7 +1,4 @@
 /* Geo + navigation helpers for מניין קרוב (pure, client- and server-safe). */
-import type { DayType, MinyanTime, PrayerService } from '@/types/minyan';
-import { toMinutes } from './confidence';
-
 const EARTH_R = 6_371_000;
 const rad = (d: number) => (d * Math.PI) / 180;
 
@@ -38,26 +35,13 @@ export function telHref(phone: string): string | null {
   return cleaned.replace(/\D/g, '').length >= 7 ? `tel:${cleaned}` : null;
 }
 
-/** Day type for "now" — Saturday counts as Shabbat, every other day as a weekday. */
-export function dayTypeFor(date: Date): DayType {
-  return date.getDay() === 6 ? 'shabbat' : 'weekday';
-}
-
-export interface NextPrayer { service: PrayerService; time: string; minutesUntil: number; }
-
 /**
- * The next not-disputed minyan later today (within `horizonMin`), or null.
- * Used for the "next prayer" hint on each card — only from reported times.
+ * Outbound link to the Nedarim Plus national prayer-times directory for the
+ * same area. It's a link to their public page (opened in a new tab), not a
+ * data integration — they offer no documented API for this data.
+ * Their page accepts 0.5–3 km.
  */
-export function nextPrayer(times: MinyanTime[], now: Date, horizonMin = 180): NextPrayer | null {
-  const day = dayTypeFor(now);
-  const nowMin = now.getHours() * 60 + now.getMinutes();
-  let best: NextPrayer | null = null;
-  for (const t of times) {
-    if (t.dayType !== day || t.level === 'disputed') continue;
-    const diff = toMinutes(t.time) - nowMin;
-    if (diff < 0 || diff > horizonMin) continue;
-    if (!best || diff < best.minutesUntil) best = { service: t.service, time: t.time, minutesUntil: diff };
-  }
-  return best;
+export function nedarimAreaUrl(lat: number, lng: number, radiusM: number): string {
+  const km = Math.min(3, Math.max(0.5, radiusM / 1000));
+  return `https://www.matara.pro/nedarimplus/Zmanim/result.html?radius=${km}&lat=${lat.toFixed(6)}&lng=${lng.toFixed(6)}`;
 }

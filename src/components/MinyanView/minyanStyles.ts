@@ -1,20 +1,11 @@
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
-import type { ConfidenceLevel, ScheduleStatus } from '@/types/minyan';
+import type { ReliabilityLevel } from '@/types/minyan';
 
-/* Status → color tokens. Verified = success, reported = brand gold, unknown = muted. */
-export const STATUS_COLOR: Record<ScheduleStatus, string> = {
-  verified: theme.colors.success,
-  reported: theme.colors.secondary,
-  unknown:  theme.colors.textLight,
-};
-
-export const LEVEL_COLOR: Record<ConfidenceLevel, string> = {
-  verified: theme.colors.success,
-  high:     theme.colors.success,
-  medium:   theme.colors.secondary,
-  low:      theme.colors.textMuted,
-  disputed: theme.colors.error,
+export const LEVEL_COLOR: Record<ReliabilityLevel, string> = {
+  high:   theme.colors.success,
+  medium: theme.colors.secondary,
+  low:    theme.colors.textMuted,
 };
 
 export const Panel = styled.div`
@@ -59,23 +50,21 @@ export const GhostBtn = styled.button`
   &:disabled { opacity: 0.5; }
 `;
 
-/* Same look as GhostBtn, for external links (navigation apps, tel:). */
-export const ActionLink = styled.a`
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  flex: 1; min-width: 0; padding: 8px ${theme.spacing.sm}; min-height: 42px;
-  border: 1.5px solid ${theme.colors.border}; border-radius: ${theme.radii.md};
-  color: ${theme.colors.primary}; font-weight: 700; font-size: ${theme.fontSizes.sm};
-  background: ${theme.colors.surface}; white-space: nowrap;
-  &:hover { border-color: ${theme.colors.primary}; }
-  &:active { transform: scale(0.97); }
+/* Compact icon-only action (brand nav icons, call). 44px tap target per WCAG 2.5.5. */
+export const IconAction = styled.a`
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 44px; height: 44px; border-radius: ${theme.radii.md};
+  background: ${theme.brand.brandTileBg};
+  border: 1px solid ${theme.colors.borderLight};
+  box-shadow: ${theme.shadows.sm};
+  color: ${theme.colors.primary};
+  transition: transform ${theme.motion.fast} ease, box-shadow ${theme.motion.fast} ease;
+  &:hover { box-shadow: ${theme.shadows.md}; }
+  &:active { transform: scale(0.92); }
+  &:focus-visible { outline: 2px solid ${theme.colors.primary}; outline-offset: 2px; }
 `;
 
 export const Muted = styled.span`font-size: ${theme.fontSizes.xs}; color: ${theme.colors.textMuted};`;
-
-export const Field = styled.label`
-  display: flex; flex-direction: column; gap: 4px;
-  font-size: ${theme.fontSizes.sm}; font-weight: 600; color: ${theme.colors.text};
-`;
 
 export const Input = styled.input`
   padding: 10px ${theme.spacing.md}; min-height: 44px;

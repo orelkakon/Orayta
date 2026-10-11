@@ -1,65 +1,84 @@
-/* Nearby minyanim (מניין קרוב) — shared client/server types. */
+/* Nearby minyanim (מניין קרוב) — shared client/server types.
+   Everything here is derived automatically from external sources; nothing is
+   entered by hand. A field is null when no source provides it. */
 
-export type PrayerService = 'shacharit' | 'mincha' | 'maariv';
-export type DayType = 'weekday' | 'shabbat';
-export type ReportKind = 'confirm' | 'dispute';
+/** An external data provider. One provider = one independent origin. */
+export type ProviderId = 'osm' | 'wikidata' | 'muni-beersheva' | 'muni-telaviv';
+
+export type ReliabilityLevel = 'high' | 'medium' | 'low';
 
 /**
- * verified  — entered by the site admin
- * high/medium/low — community reports, graded by corroboration + freshness
- * disputed  — recent reports say the time is wrong / no minyan
+ * Why a level was assigned — rendered as a short explanation.
+ *   multi   — several independent, current sources agree
+ *   single  — one credible, current source
+ *   stale   — sources exist but none is reasonably current
+ *   undated — the source gives no usable last-updated date
+ *   conflict — independent current sources disagree (schedules only)
  */
-export type ConfidenceLevel = 'verified' | 'high' | 'medium' | 'low' | 'disputed';
+export type ReliabilityReason = 'multi' | 'single' | 'stale' | 'undated' | 'conflict';
 
-/** Per-synagogue headline: never claims a minyan without supporting reports. */
-export type ScheduleStatus = 'verified' | 'reported' | 'unknown';
-
-export interface MinyanTime {
-  service: PrayerService;
-  dayType: DayType;
-  time: string;              // "HH:MM"
-  level: ConfidenceLevel;
-  verified: boolean;
-  reporters: number;         // distinct people who confirmed this time
-  disputes: number;          // distinct people who disputed it since the last confirmation
-  lastConfirmedAt: string;   // ISO
+export interface Reliability {
+  level: ReliabilityLevel;
+  reason: ReliabilityReason;
+  /** Independent, reasonably current providers (copies of one source count once). */
+  independent: number;
+  /** All independent providers, current or not. */
+  total: number;
 }
 
-export interface GabbaiContact {
-  name: string | null;
-  phone: string | null;
-  updatedAt: string;
+/** One provider's record for a synagogue. */
+export interface SourceRef {
+  provider: ProviderId;
+  /** Last update/verification date published by the source (ISO date), if any. */
+  updatedAt: string | null;
+  /** Link to the record or dataset at the source, if any. */
+  url: string | null;
 }
+
+/** A prayer schedule exactly as one source publishes it (free text, not parsed). */
+export interface ScheduleText {
+  provider: ProviderId;
+  weekday: string | null;
+  shabbat: string | null;
+  /** Source text that doesn't split by day (e.g. OSM service_times). */
+  general: string | null;
+  updatedAt: string | null;
+}
+
+export interface ContactValue { value: string; provider: ProviderId; }
 
 export interface Synagogue {
-  id: string;                // OSM element, e.g. "node/123"
+  id: string;
   name: string | null;
   lat: number;
   lng: number;
   distanceM: number;
   address: string | null;
-  phone: string | null;      // public phone from OpenStreetMap
+  nusach: string | null;
+  phone: ContactValue | null;
+  gabbai: { name: string | null; phone: string | null; provider: ProviderId } | null;
   website: string | null;
-  osmServiceTimes: string | null; // free-text OSM tag, unverified
-  gabbai: GabbaiContact | null;   // admin-verified
-  times: MinyanTime[];
-  status: ScheduleStatus;
+  sources: SourceRef[];
+  existence: Reliability;
+  schedules: ScheduleText[];
+  /** null when no source publishes a schedule — shown as "unknown". */
+  schedule: Reliability | null;
+}
+
+export interface ProviderStatus {
+  provider: ProviderId;
+  /** 'ok' | 'error' (source unavailable now) | 'out-of-area' (not queried). */
+  state: 'ok' | 'error' | 'out-of-area';
+  datasetUpdatedAt: string | null;
 }
 
 export interface NearbyResponse {
   center: { lat: number; lng: number };
   radiusM: number;
   synagogues: Synagogue[];
+  providers: ProviderStatus[];
   truncated: boolean;
   fetchedAt: string;
 }
 
 export interface GeocodeResult { label: string; lat: number; lng: number; }
-
-export interface MinyanReportInput {
-  placeId: string;
-  service: PrayerService;
-  dayType: DayType;
-  time: string;
-  kind: ReportKind;
-}

@@ -80,6 +80,14 @@ export const theme = {
     telegram: '#2AABEE',
     instagram: '#E1306C',
     linkedin: '#0077B5',
+    waze: '#33CCFF',
+    // Google Maps 2020 pin — the five fixed segment colors of the official icon.
+    gmapsBlueDark: '#1A73E8',
+    gmapsRed: '#EA4335',
+    gmapsBlue: '#4285F4',
+    gmapsYellow: '#FBBC04',
+    gmapsGreen: '#34A853',
+    brandTileBg: '#FFFFFF',
   },
   // Motion vocabulary — one spring + one decel curve everywhere, so the whole
   // app shares a single physical "feel" instead of per-component ad-hoc eases.

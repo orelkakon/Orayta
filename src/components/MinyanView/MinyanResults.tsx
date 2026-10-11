@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
-import type { MinyanTime, NearbyResponse, Synagogue } from '@/types/minyan';
+import type { NearbyResponse } from '@/types/minyan';
+import { nedarimAreaUrl } from '@/lib/minyan/geo';
+import { formatSourceDate } from '@/lib/minyan/format';
 import type { Origin } from './useMinyanSearch';
 import SynagogueCard from './SynagogueCard';
 import ReliabilityLegend from './ReliabilityLegend';
@@ -26,62 +28,66 @@ const Chips = styled.div`display: flex; gap: 6px;`;
 const List = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.ms};`;
 const Empty = styled(Panel)`text-align: center; display: flex; flex-direction: column; gap: 6px; padding: ${theme.spacing.xl};`;
 const EmptyTitle = styled.strong`font-size: ${theme.fontSizes.lg}; color: ${theme.colors.primary};`;
+const Warn = styled.p`font-size: ${theme.fontSizes.xs}; color: ${theme.colors.text}; background: ${theme.colors.bgWarning}; padding: 6px ${theme.spacing.sm}; border-radius: ${theme.radii.sm};`;
 
-export type Picker =
-  | { kind: 'report'; s: Synagogue; time: MinyanTime | null }
-  | { kind: 'gabbai'; s: Synagogue };
+const External = styled.a`
+  display: flex; flex-direction: column; gap: 2px;
+  padding: ${theme.spacing.sm} ${theme.spacing.md}; border-radius: ${theme.radii.md};
+  border: 1.5px dashed ${theme.colors.secondary}; background: ${theme.colors.surface};
+  font-weight: 700; color: ${theme.colors.primary}; font-size: ${theme.fontSizes.sm};
+  &:hover { background: ${theme.colors.surfaceAlt}; }
+`;
 
-interface Props {
-  data: NearbyResponse;
-  origin: Origin;
-  radius: number;
-  isAdmin: boolean;
-  onOpen: (p: Picker) => void;
-}
+const Attribution = styled.p`font-size: 0.68rem; color: ${theme.colors.textLight}; line-height: 1.5;`;
 
-/** Map + filter + distance-sorted list, with honest empty states. */
-export default function MinyanResults({ data, origin, radius, isAdmin, onOpen }: Props) {
+interface Props { data: NearbyResponse; origin: Origin; radius: number; }
+
+/** Map + filter + distance-sorted list, with honest empty / partial states. */
+export default function MinyanResults({ data, origin, radius }: Props) {
   const [knownOnly, setKnownOnly] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [now, setNow] = useState(() => new Date());
   const cardRefs = useRef(new Map<string, HTMLElement>());
 
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 60_000);
-    return () => clearInterval(id);
-  }, []);
-
-  const known = data.synagogues.filter(s => s.status !== 'unknown');
-  const shown = knownOnly ? known : data.synagogues;
+  const withTimes = data.synagogues.filter(s => s.schedule);
+  const shown = knownOnly ? withTimes : data.synagogues;
+  const down = data.providers.filter(p => p.state === 'error');
+  const bsDate = formatSourceDate(data.providers.find(p => p.provider === 'muni-beersheva')?.datasetUpdatedAt ?? null);
 
   const selectFromMap = (id: string) => {
     setSelectedId(id);
-    if (knownOnly && !known.some(s => s.id === id)) setKnownOnly(false);
+    if (knownOnly && !withTimes.some(s => s.id === id)) setKnownOnly(false);
     requestAnimationFrame(() => cardRefs.current.get(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   };
 
-  if (data.synagogues.length === 0) {
-    return (
-      <Empty role="status">
-        <EmptyTitle>{HE.MN_EMPTY_TITLE}</EmptyTitle>
-        <Muted>{HE.MN_EMPTY_SUB}</Muted>
-      </Empty>
-    );
-  }
+  const footer = <Attribution>{HE.MN_ATTRIBUTION}{bsDate ? HE.MN_ATTRIBUTION_DATE(bsDate) : ''}</Attribution>;
+  const nedarim = (
+    <External href={nedarimAreaUrl(origin.lat, origin.lng, radius)} target="_blank" rel="noopener noreferrer">
+      {HE.MN_NEDARIM_LINK}
+      <Muted>{HE.MN_NEDARIM_NOTE}</Muted>
+    </External>
+  );
 
   return (
     <>
-      <MinyanMap origin={origin} radius={radius} synagogues={shown} selectedId={selectedId} onSelect={selectFromMap} />
-      <Toolbar>
-        <Muted role="status">{HE.MN_RESULTS_COUNT(data.synagogues.length, known.length)}</Muted>
-        <Chips role="group">
-          <Chip $active={!knownOnly} aria-pressed={!knownOnly} onClick={() => setKnownOnly(false)}>{HE.MN_FILTER_ALL}</Chip>
-          <Chip $active={knownOnly} aria-pressed={knownOnly} onClick={() => setKnownOnly(true)}>{HE.MN_FILTER_KNOWN}</Chip>
-        </Chips>
-      </Toolbar>
-      {data.truncated && <Muted>{HE.MN_TRUNCATED}</Muted>}
+      {down.map(p => <Warn key={p.provider} role="status">{HE.MN_PROVIDER_DOWN(HE.MN_PROVIDERS[p.provider])}</Warn>)}
+      {data.synagogues.length === 0 ? (
+        <Empty role="status"><EmptyTitle>{HE.MN_EMPTY_TITLE}</EmptyTitle><Muted>{HE.MN_EMPTY_SUB}</Muted></Empty>
+      ) : (
+        <>
+          <MinyanMap origin={origin} radius={radius} synagogues={shown} selectedId={selectedId} onSelect={selectFromMap} />
+          <Toolbar>
+            <Muted role="status">{HE.MN_RESULTS_COUNT(data.synagogues.length, withTimes.length)}</Muted>
+            <Chips role="group">
+              <Chip $active={!knownOnly} aria-pressed={!knownOnly} onClick={() => setKnownOnly(false)}>{HE.MN_FILTER_ALL}</Chip>
+              <Chip $active={knownOnly} aria-pressed={knownOnly} onClick={() => setKnownOnly(true)}>{HE.MN_FILTER_KNOWN}</Chip>
+            </Chips>
+          </Toolbar>
+          {data.truncated && <Muted>{HE.MN_TRUNCATED}</Muted>}
+        </>
+      )}
+      {nedarim}
       <ReliabilityLegend />
-      {shown.length === 0 ? (
+      {data.synagogues.length > 0 && (shown.length === 0 ? (
         <Empty role="status"><Muted>{HE.MN_EMPTY_FILTERED}</Muted></Empty>
       ) : (
         <List>
@@ -90,17 +96,13 @@ export default function MinyanResults({ data, origin, radius, isAdmin, onOpen }:
               key={s.id}
               ref={el => { if (el) cardRefs.current.set(s.id, el); else cardRefs.current.delete(s.id); }}
               s={s}
-              now={now}
               selected={s.id === selectedId}
-              isAdmin={isAdmin}
               onSelect={() => setSelectedId(s.id)}
-              onReport={() => onOpen({ kind: 'report', s, time: null })}
-              onPickTime={t => onOpen({ kind: 'report', s, time: t })}
-              onEditGabbai={() => onOpen({ kind: 'gabbai', s })}
             />
           ))}
         </List>
-      )}
+      ))}
+      {footer}
     </>
   );
 }
