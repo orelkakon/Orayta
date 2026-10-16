@@ -11,6 +11,7 @@ import CompassCard from './CompassCard';
 import DafYomiCard from './DafYomiCard';
 import EventsCard from './EventsCard';
 import DailySection from './DailySection';
+import ShabbatTimes from './ShabbatTimes';
 
 export interface GeoLocation { lat: number; lon: number; tz: string; }
 export type LocState = 'loading' | 'granted' | 'denied';
@@ -107,6 +108,7 @@ export default function TodayView() {
         <Title>{HE.TODAY_TITLE}</Title>
         {hebrewDate && <HebrewDate>{hebrewDate}</HebrewDate>}
         {dayLine && <DayLine>{dayLine}</DayLine>}
+        {dayIdx === 5 && <ShabbatTimes date={dateStr} />}
         <Subtitle>{HE.TODAY_SUBTITLE}</Subtitle>
       </Header>
       <DailySection />
