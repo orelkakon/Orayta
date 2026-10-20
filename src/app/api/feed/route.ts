@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { deckPage } from '@/lib/feedShuffle';
 import { commentCounts } from '@/lib/feedCommentsServer';
+import { matchYahrzeitRabbis } from '@/lib/yahrzeit';
 import type { FeedReactions, FeedItemType } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -34,20 +35,13 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-const GEMATRIA_HE = ['','א','ב','ג','ד','ה','ו','ז','ח','ט','י','י״א','י״ב','י״ג','י״ד','ט״ו','ט״ז','י״ז','י״ח','י״ט','כ','כ״א','כ״ב','כ״ג','כ״ד','כ״ה','כ״ו','כ״ז','כ״ח','כ״ט','ל'];
-const MONTHS_HE: Record<string, string> = { 'Nisan':'ניסן','Iyyar':'אייר','Sivan':'סיון','Tamuz':'תמוז','Av':'אב','Elul':'אלול','Tishrei':'תשרי','Cheshvan':'חשוון','Kislev':'כסלו','Tevet':'טבת','Shvat':'שבט','Adar':'אדר','Adar I':'אדר א׳','Adar II':'אדר ב׳' };
-function normalizeHeb(s: string) { return s.replace(/[״׳"']/g, '').replace(/\s+/g, ' ').trim(); }
-
 async function getYahrzeitRabbiIds(): Promise<Set<string>> {
   try {
     const dateStr = new Date().toISOString().split('T')[0];
     const hd = await fetch(`https://www.hebcal.com/converter?cfg=json&date=${dateStr}&g2h=1&strict=1`, { next: { revalidate: 3600 } })
       .then(r => r.json()) as { hd: number; hm: string };
-    const todayKey = normalizeHeb(`${GEMATRIA_HE[hd.hd] ?? ''} ${MONTHS_HE[hd.hm] ?? hd.hm}`);
     const all = await prisma.rabbi.findMany({ where: { deathDate: { not: null } }, select: { id: true, deathDate: true } });
-    const ids = new Set<string>();
-    all.forEach(r => { if (r.deathDate && normalizeHeb(r.deathDate) === todayKey) ids.add(r.id); });
-    return ids;
+    return new Set(matchYahrzeitRabbis(all, hd).map(r => r.id));
   } catch { return new Set(); }
 }
 

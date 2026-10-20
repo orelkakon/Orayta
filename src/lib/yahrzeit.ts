@@ -15,14 +15,19 @@ export const HEB_MONTHS_HE: Record<string, string> = {
   'Adar I': 'אדר א׳', 'Adar II': 'אדר ב׳',
 };
 
-/** Collapses ktiv-male/ktiv-chaser variance (e.g. סיוון/סיון, חשוון/חשון) so both spellings match. */
+/** Collapses ktiv-male/ktiv-chaser variance (e.g. סיוון/סיון, חשוון/חשון, מרחשוון) so all spellings match. */
 export function normalizeHebDate(s: string): string {
-  return s.replace(/[״׳"']/g, '').replace(/ו{2,}/g, 'ו').replace(/\s+/g, ' ').trim();
+  return s.replace(/[״׳"']/g, '').replace(/ו{2,}/g, 'ו').replace(/מרחשון/g, 'חשון').replace(/\s+/g, ' ').trim();
+}
+
+/** Normalized key for a hebcal date, comparable to normalizeHebDate(deathDate). */
+export function yahrzeitKey(hd: HebDateParts): string {
+  return normalizeHebDate(`${HEB_DAY_GEMATRIA[hd.hd] ?? ''} ${HEB_MONTHS_HE[hd.hm] ?? hd.hm}`);
 }
 
 /** Rabbis whose deathDate matches today's Hebrew date (hebcal converter parts). */
-export function matchYahrzeitRabbis(rabbis: Rabbi[], hd: HebDateParts): Rabbi[] {
-  const todayKey = normalizeHebDate(`${HEB_DAY_GEMATRIA[hd.hd] ?? ''} ${HEB_MONTHS_HE[hd.hm] ?? hd.hm}`);
+export function matchYahrzeitRabbis<R extends Pick<Rabbi, 'deathDate'>>(rabbis: R[], hd: HebDateParts): R[] {
+  const todayKey = yahrzeitKey(hd);
   return rabbis.filter(r => r.deathDate && normalizeHebDate(r.deathDate) === todayKey);
 }
 
