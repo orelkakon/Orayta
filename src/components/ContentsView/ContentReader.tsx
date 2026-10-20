@@ -29,13 +29,13 @@ const BlessingText = styled.p`
   color: ${theme.colors.text};
 `;
 
-interface Props { section: ContentSection; }
+interface Props { section: ContentSection; initialChapter?: number; }
 
 const isSefariaChapters = (t: ContentSection['type']) => t === 'sefaria-chapters' || t === 'sefaria-books';
 
-export default function ContentReader({ section }: Props) {
+export default function ContentReader({ section, initialChapter = 1 }: Props) {
   const [book, setBook] = useState<SefariaBook | null>(section.books?.[0] ?? null);
-  const [chapter, setChapter] = useState(1);
+  const [chapter, setChapter] = useState(initialChapter);
   const [tikkun, setTikkun] = useState(false);
   const maxChapters = book?.chapters ?? section.totalChapters ?? 1;
   const isTehillim = section.id === 'tehillim';

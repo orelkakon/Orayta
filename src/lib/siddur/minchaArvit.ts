@@ -1,10 +1,18 @@
-import type { PrayerService } from './types';
+import type { PrayerService, PrayerPart } from './types';
 import { MINCHA_AMIDA, ARVIT_AMIDA } from './amida';
 import { HE } from '@/lib/hebrewTexts';
 
 const MI = 'Weekday_Mincha';
 const AR = 'Weekday_Arvit';
 const TR = 'Weekday_Shacharit, Torah_Reading';
+const OM = 'Counting_of_the_Omer';
+
+// Sefaria's omer node: 2–4 opening + bracha ("…הַיּוֹם"), then per day n a
+// date line (3n+2), the count (3n+3) and its sefira (3n+4); 152–161 close.
+const OMER_DAYS: PrayerPart[] = Array.from({ length: 49 }, (_, i) => ({
+  node: OM, from: 3 * (i + 1) + 3, to: 3 * (i + 1) + 4,
+  when: `omer-${i + 1}` as const, only: true, mark: HE.OMER_SIDDUR_MARK(i + 1),
+}));
 
 export const MINCHA: PrayerService = {
   id: 'mincha',
@@ -88,6 +96,14 @@ export const ARVIT: PrayerService = {
         { node: `${AR}, Amidah`, from: 54, to: 61, mark: 'ויהי נועם', when: 'motzash', note: HE.SIDDUR_WHEN_MOTZASH },
         { node: `${AR}, Amidah`, from: 62, to: 66, mark: 'קדיש תתקבל' },
         { node: `${AR}, Amidah`, from: 67, to: 73, mark: 'שיר למעלות וברכו' },
+      ],
+    },
+    {
+      id: 'omer', title: 'ספירת העומר', when: 'omer', note: HE.SIDDUR_WHEN_OMER,
+      parts: [
+        { node: OM, from: 2, to: 4 },
+        ...OMER_DAYS,
+        { node: OM, from: 152, to: 161, mark: 'הרחמן, למנצח ואנא בכח' },
       ],
     },
     { id: 'alenu', title: 'עלינו לשבח', chip: 'עלינו', parts: [{ node: `${AR}, Alenu`, from: 2, to: 4 }] },

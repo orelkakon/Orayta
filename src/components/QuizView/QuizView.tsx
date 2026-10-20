@@ -7,7 +7,9 @@ import { HE } from '@/lib/hebrewTexts';
 import { MASECHTOT, SEDARIM } from '@/lib/hebrewData';
 import { Citation, Amud } from '@/types';
 import { addStat } from '@/lib/statsStorage';
-import { LineIcon } from '@/components/common/LineIcons';
+import { recordQuizResult } from '@/lib/srs';
+import type { QuizMode } from '@/types/quizModes';
+import ContextButton from '@/components/TalmudContext/ContextButton';
 
 import MultipleChoiceQuiz from './MultipleChoiceQuiz';
 import CompletionQuiz from './CompletionQuiz';
@@ -18,6 +20,11 @@ import WhoFirstQuiz from './WhoFirstQuiz';
 import SederQuiz from './SederQuiz';
 import BioQuiz from './BioQuiz';
 import ImageQuiz from './ImageQuiz';
+import KnowledgeQuiz from './KnowledgeQuiz';
+import ChronoQuiz from './chrono/ChronoQuiz';
+import SmartReview from './review/SmartReview';
+import ModeGrid, { usesCitationFilter } from './ModeGrid';
+import GroupEntryCard from './GroupEntryCard';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/lib/rabbisData';
 import { RabbiCategory } from '@/types';
 
@@ -245,56 +252,6 @@ const CorrectAnswer = styled.div`
   color: ${theme.colors.textMuted};
 `;
 
-const ModeGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: ${theme.spacing.sm};
-  @media (max-width: 600px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-`;
-
-const ModeButton = styled.button<{ $active?: boolean }>`
-  ${pressable};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-width: 0;
-  padding: ${theme.spacing.sm} ${theme.spacing.xs};
-  border-radius: ${theme.radii.md};
-  border: 2px solid ${({ $active }) => ($active ? theme.colors.primary : theme.colors.borderLight)};
-  background: ${({ $active }) => ($active ? theme.colors.surfaceAlt : theme.colors.surface)};
-  box-shadow: ${({ $active }) => ($active ? theme.shadows.md : theme.shadows.sm)};
-  color: ${({ $active }) => ($active ? theme.colors.primary : theme.colors.textMuted)};
-
-  @media (hover: hover) {
-    &:hover {
-      border-color: ${theme.colors.primaryLight};
-      color: ${theme.colors.primary};
-      transform: translateY(-1px);
-    }
-  }
-`;
-
-const ModeIcon = styled.span`
-  display: inline-flex;
-  line-height: 1;
-`;
-
-const ModeLabel = styled.span`
-  font-size: 0.74rem;
-  font-weight: 600;
-  text-align: center;
-  line-height: 1.2;
-  word-break: break-word;
-
-  @media (max-width: 380px) {
-    font-size: 0.7rem;
-  }
-`;
-
 interface AnswerResult {
   score: number;
   correctLocations: Citation['locations'];
@@ -311,8 +268,6 @@ function scoreLabel(score: number) {
   if (score > 0) return HE.QUIZ_HALF;
   return HE.QUIZ_WRONG;
 }
-
-type QuizMode = 'classic' | 'multiple' | 'completion' | 'rabbi' | 'gematria' | 'books' | 'whoFirst' | 'seder' | 'bio' | 'image';
 
 export default function QuizView() {
   const [quizMode, setQuizMode] = useState<QuizMode>('classic');
@@ -388,6 +343,7 @@ export default function QuizView() {
       setResult(data);
       answerFeedback(data.score >= 1);
       addStat({ score: data.score, content: question.content.slice(0, 80), mode: 'classic' });
+      recordQuizResult(question.id, data.score);
       setStreak(s => data.score >= 1 ? s + 1 : 0);
       bumpStats();
     } finally {
@@ -423,50 +379,10 @@ export default function QuizView() {
         <Title>{HE.QUIZ_TITLE}</Title>
       </TitleRow>
 
-      <ModeGrid>
-        <ModeButton $active={quizMode === 'classic'} onClick={() => handleModeSwitch('classic')}>
-          <ModeIcon><LineIcon name="target" size={21} /></ModeIcon>
-          <ModeLabel>{HE.QUIZ_MODE_CLASSIC}</ModeLabel>
-        </ModeButton>
-        <ModeButton $active={quizMode === 'multiple'} onClick={() => handleModeSwitch('multiple')}>
-          <ModeIcon><LineIcon name="list" size={21} /></ModeIcon>
-          <ModeLabel>{HE.QUIZ_MODE_MULTIPLE}</ModeLabel>
-        </ModeButton>
-        <ModeButton $active={quizMode === 'completion'} onClick={() => handleModeSwitch('completion')}>
-          <ModeIcon><LineIcon name="pencil" size={21} /></ModeIcon>
-          <ModeLabel>{HE.QUIZ_MODE_COMPLETION}</ModeLabel>
-        </ModeButton>
-        <ModeButton $active={quizMode === 'rabbi'} onClick={() => handleModeSwitch('rabbi')}>
-          <ModeIcon><LineIcon name="user" size={21} /></ModeIcon>
-          <ModeLabel>{HE.QUIZ_MODE_RABBI}</ModeLabel>
-        </ModeButton>
-        <ModeButton $active={quizMode === 'gematria'} onClick={() => handleModeSwitch('gematria')}>
-          <ModeIcon><LineIcon name="aleph" size={21} /></ModeIcon>
-          <ModeLabel>{HE.QUIZ_MODE_GEMATRIA}</ModeLabel>
-        </ModeButton>
-        <ModeButton $active={quizMode === 'books'} onClick={() => handleModeSwitch('books')}>
-          <ModeIcon><LineIcon name="book" size={21} /></ModeIcon>
-          <ModeLabel>{HE.QUIZ_MODE_BOOKS}</ModeLabel>
-        </ModeButton>
-        <ModeButton $active={quizMode === 'whoFirst'} onClick={() => handleModeSwitch('whoFirst')}>
-          <ModeIcon><LineIcon name="hourglass" size={21} /></ModeIcon>
-          <ModeLabel>{HE.QUIZ_MODE_WHO_FIRST}</ModeLabel>
-        </ModeButton>
-        <ModeButton $active={quizMode === 'seder'} onClick={() => handleModeSwitch('seder')}>
-          <ModeIcon><LineIcon name="openbook" size={21} /></ModeIcon>
-          <ModeLabel>{HE.QUIZ_MODE_SEDER}</ModeLabel>
-        </ModeButton>
-        <ModeButton $active={quizMode === 'bio'} onClick={() => handleModeSwitch('bio')}>
-          <ModeIcon><LineIcon name="search" size={21} /></ModeIcon>
-          <ModeLabel>{HE.QUIZ_MODE_BIO}</ModeLabel>
-        </ModeButton>
-        <ModeButton $active={quizMode === 'image'} onClick={() => handleModeSwitch('image')}>
-          <ModeIcon><LineIcon name="camera" size={21} /></ModeIcon>
-          <ModeLabel>{HE.QUIZ_MODE_IMAGE}</ModeLabel>
-        </ModeButton>
-      </ModeGrid>
+      <GroupEntryCard />
+      <ModeGrid mode={quizMode} onSelect={handleModeSwitch} />
 
-      <FilterBar style={{ display: quizMode === 'rabbi' || quizMode === 'gematria' || quizMode === 'books' || quizMode === 'whoFirst' || quizMode === 'seder' || quizMode === 'bio' || quizMode === 'image' ? 'none' : undefined }}>
+      <FilterBar style={{ display: usesCitationFilter(quizMode) ? undefined : 'none' }}>
         <FilterLabel>{HE.QUIZ_FILTER_TITLE}</FilterLabel>
         <FilterSelect value={filterSeder} onChange={(e) => handleFilterSederChange(e.target.value)}>
           <option value="">{HE.QUIZ_FILTER_ALL}</option>
@@ -496,7 +412,13 @@ export default function QuizView() {
         <NoResultsCard>{HE.QUIZ_NO_RESULTS}</NoResultsCard>
       ) : (
       <QuizGrid>
-        {quizMode === 'multiple' ? (
+        {quizMode === 'review' ? (
+          <SmartReview filterSeder={filterSeder} filterMasechet={filterMasechet} onAnswered={bumpStats} />
+        ) : quizMode === 'chrono' ? (
+          <ChronoQuiz onAnswered={bumpStats} />
+        ) : quizMode === 'knowledge' ? (
+          <KnowledgeQuiz onAnswered={bumpStats} />
+        ) : quizMode === 'multiple' ? (
           <MultipleChoiceQuiz
             filterSeder={filterSeder}
             filterMasechet={filterMasechet}
@@ -603,6 +525,7 @@ export default function QuizView() {
                 {HE.QUIZ_ANSWER_WAS}{' '}
                 {result.correctLocations.map(formatLocation).join(' / ')}
               </CorrectAnswer>
+              {question && <ContextButton citation={{ content: question.content, locations: result.correctLocations }} variant="inline" />}
               <ButtonRow>
                 <PrimaryBtn autoFocus onClick={() => {
                   if (result.score >= 1 && question) {

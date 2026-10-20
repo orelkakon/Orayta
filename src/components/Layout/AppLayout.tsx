@@ -16,6 +16,7 @@ import { navItems } from './navItems';
 import DedicationsTicker from './DedicationsTicker';
 import AddToHomeScreen from '@/components/common/AddToHomeScreen';
 import VisitTracker from '@/components/common/VisitTracker';
+import { openNotifications } from '@/lib/push/client';
 
 const TICKER_KEY = 'orayta_dedications_strip';
 
@@ -188,6 +189,9 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             title={isDark ? HE.THEME_LIGHT : HE.THEME_DARK}
           >
             {isDark ? '☀' : '☾'}
+          </ThemeBtn>
+          <ThemeBtn onClick={openNotifications} aria-label={HE.PUSH_OPEN_ARIA} title={HE.PUSH_TITLE}>
+            <LineIcon name="bell" size={15} />
           </ThemeBtn>
           {isHome && (
             <ThemeBtn

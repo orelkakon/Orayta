@@ -4,7 +4,8 @@ export interface StatEntry {
   score: number;
   answeredAt: string;
   content: string;
-  mode: 'classic' | 'multiple' | 'completion' | 'rabbi' | 'gematria' | 'books' | 'who_first' | 'seder' | 'bio' | 'image';
+  mode: 'classic' | 'multiple' | 'completion' | 'rabbi' | 'gematria' | 'books' | 'who_first' | 'seder' | 'bio' | 'image'
+    | 'review' | 'chrono' | 'knowledge';
 }
 
 export interface StatsSummary {

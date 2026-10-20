@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
@@ -92,18 +92,29 @@ const SectionTitle = styled.div`
 
 export default function ContentsView() {
   const [active, setActive] = useState<ContentSection | null>(null);
+  const [initialChapter, setInitialChapter] = useState(1);
+
+  // Deep link: /content?open=tehillim&chapter=16 (used by the hilula page).
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const target = SECTIONS.find(s => s.id === q.get('open') && !s.href);
+    if (!target) return;
+    const ch = Number(q.get('chapter'));
+    if (Number.isInteger(ch) && ch >= 1 && ch <= (target.totalChapters ?? 1)) setInitialChapter(ch);
+    setActive(target);
+  }, []);
 
   if (active) {
     return (
       <Page>
         <ReaderHeader>
-          <BackBtn onClick={() => setActive(null)}>← {HE.CLOSE}</BackBtn>
+          <BackBtn onClick={() => { setActive(null); setInitialChapter(1); }}>← {HE.CLOSE}</BackBtn>
           <SectionTitle>
             <LineIcon name={active.icon} size={22} />
             <span>{active.title}</span>
           </SectionTitle>
         </ReaderHeader>
-        <ContentReader section={active} />
+        <ContentReader section={active} initialChapter={initialChapter} />
       </Page>
     );
   }

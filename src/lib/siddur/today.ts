@@ -35,5 +35,6 @@ export function occasionLabels(day: PrayerDay): string[] {
   const labels: string[] = [];
   if (day.chanukahDay) labels.push(HE.SIDDUR_CHANUKAH_DAY(day.chanukahDay));
   day.occasions.forEach(o => { const l = HE.SIDDUR_OCCASIONS[o]; if (l) labels.push(l); });
+  if (day.omerDay) labels.push(HE.OMER_DAY_TAG(day.omerDay));
   return labels;
 }

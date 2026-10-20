@@ -89,6 +89,30 @@ export const theme = {
     gmapsGreen: '#34A853',
     brandTileBg: '#FFFFFF',
   },
+  // Group quiz stage (/play) — a fixed night-and-gold stage in both themes
+  // (like the feed), and the four answer colours, always paired with a shape
+  // so colour is never the only cue.
+  game: {
+    stage:      'linear-gradient(165deg, #0A0E22 0%, #141E48 52%, #0A0C1E 100%)',
+    stageSolid: '#0E1430',
+    ink:        '#F7F2E4',
+    inkMuted:   'rgba(247,242,228,0.68)',
+    inkFaint:   'rgba(247,242,228,0.38)',
+    glass:      'rgba(255,255,255,0.07)',
+    glassHi:    'rgba(255,255,255,0.13)',
+    glassLine:  'rgba(255,255,255,0.14)',
+    gold:       '#E8CB76',
+    goldDeep:   '#B8923A',
+    onGold:     '#241A05',
+    right:      '#2FB463',
+    rightBg:    'linear-gradient(165deg, #0E3B24 0%, #16603A 100%)',
+    wrong:      '#E0475B',
+    wrongBg:    'linear-gradient(165deg, #3E0E17 0%, #6B1A27 100%)',
+    answers:    ['#E0354B', '#2F6FD6', '#D9A21B', '#2E9A4A'] as string[],
+    // QR codes need maximum contrast regardless of theme.
+    qrDark:     '#0A0E22',
+    qrLight:    '#FFFFFF',
+  },
   // Motion vocabulary — one spring + one decel curve everywhere, so the whole
   // app shares a single physical "feel" instead of per-component ad-hoc eases.
   motion: {

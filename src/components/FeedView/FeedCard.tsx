@@ -2,8 +2,9 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
-import type { FeedItem, FeedReaction, FeedCommentsTarget } from '@/types';
+import type { FeedItem, FeedReaction, FeedCommentsTarget, Citation } from '@/types';
 import { renderContent, MetaChip, MetaChipLink } from './FeedCardContent';
+import ContextButton from '@/components/TalmudContext/ContextButton';
 import FeedCardActions from './FeedCardActions';
 import FeedReactionPill from './FeedReactionPill';
 import { FEED_TYPE_STYLES } from './feedTypes';
@@ -166,6 +167,7 @@ export default function FeedCard({ item, reacted, isSaved, onReact, onBookmark, 
               ? <MetaChipLink key={i} href={m.href}>{m.label}</MetaChipLink>
               : <MetaChip key={i}>{m.label}</MetaChip>
             )}
+            {item.type === 'citation' && <ContextButton citation={item.data as Citation} variant="feed" />}
           </MetaRow>
         )}
       </ContentArea>

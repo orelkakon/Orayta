@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -103,6 +104,7 @@ const FONT_LABELS = [HE.A11Y_FONT_NORMAL, HE.A11Y_FONT_LARGE, HE.A11Y_FONT_XLARG
 export default function AccessibilityWidget() {
   const [open, setOpen] = useState(false);
   const [settings, setSettings] = useState<A11ySettings>(DEFAULT_A11Y);
+  const pathname = usePathname();
 
   useEffect(() => {
     const loaded = loadA11y();
@@ -125,6 +127,10 @@ export default function AccessibilityWidget() {
     { key: 'underlineLinks', label: HE.A11Y_LINKS },
     { key: 'reduceMotion',   label: HE.A11Y_MOTION },
   ];
+
+  // The group quiz is full-screen answer tiles — a floating button there would
+  // sit on top of an answer. Saved settings still apply (effect above).
+  if (pathname?.startsWith('/play')) return null;
 
   return (
     <>

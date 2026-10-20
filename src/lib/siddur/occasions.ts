@@ -27,6 +27,8 @@ export interface PrayerDay {
   occasions: Set<Occasion>;
   /** 1–8 during Chanukah. */
   chanukahDay: number | null;
+  /** 1–49 during the Omer: the count of this Hebrew day (its night opens it). */
+  omerDay: number | null;
   tachanun: boolean;
   /** Why tachanun is not said (null when it is). */
   noTachanunReason: string | null;
@@ -73,6 +75,14 @@ function fastOf(h: HebDate, wd: number): Occasion | null {
   if (isAdar(h.month) && ((h.day === 13 && wd !== 6) || (h.day === 11 && wd === 4))) return 'fast-esther';
   if ((is(h, 'Tamuz', 17) && wd !== 6) || (is(h, 'Tamuz', 18) && wd === 0)) return 'fast-tammuz';
   if ((is(h, 'Av', 9) && wd !== 6) || (is(h, 'Av', 10) && wd === 0)) return 'tisha-bav';
+  return null;
+}
+
+/** Day of the Omer (1–49) that a Hebrew day belongs to: 16 Nisan … 5 Sivan. */
+export function omerDayOf(h: HebDate): number | null {
+  if (h.month === 'Nisan' && h.day >= 16) return h.day - 15;
+  if (h.month === 'Iyar') return h.day + 15;
+  if (h.month === 'Sivan' && h.day <= 5) return h.day + 44;
   return null;
 }
 
@@ -131,5 +141,6 @@ export function prayerDay(now: Date, service: ServiceId): PrayerDay {
   }
 
   const reason = heb ? noTachanunReason(heb, o, service, wd) : null;
-  return { service, at, weekday: wd, heb, occasions: o, chanukahDay, tachanun: reason === null, noTachanunReason: reason };
+  const omerDay = heb ? omerDayOf(heb) : null;
+  return { service, at, weekday: wd, heb, occasions: o, chanukahDay, omerDay, tachanun: reason === null, noTachanunReason: reason };
 }

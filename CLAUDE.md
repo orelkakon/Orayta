@@ -72,6 +72,16 @@ Weekday services in נוסח עדות המזרח, read as one continuous text wi
 - **Time of day:** Jerusalem sun times (NOAA equation, `calendar.ts`) → `suggestService` drives the "עכשיו" badge on `/siddur`.
 - **UI** (`src/components/SiddurView/`): `TodayStrip` (Hebrew date, occasions, tachanun, jumps to today's inserts), sticky `ReaderBar` (service switcher, section chips with scroll-spy, progress, font size remembered in `orayta_siddur_font`, contents sheet), deep links via `#section-id`. Standalone pieces (bedtime Shema, Kaddish, …) are `SIDDUR_EXTRAS` in `lib/siddurContent.ts`.
 
+### 2g. ספירת העומר — `/omer`
+- **Logic** (`src/lib/omer.ts`, pure, tested in `tests/omer.test.ts`): `omerDayOf(hebDate)` lives in `siddur/occasions.ts` (16 Nisan … 5 Sivan → 1–49; `PrayerDay.omerDay`). `omerStatus(now)` uses Jerusalem sunset/dawn: after sunset the count is tonight's (next Hebrew day); by day `today` = last night's count (forgot → count without bracha) and `tonight` = the coming one. `getOmerDay(date)` = tonight's count (push reminders use it). `omerCount(n)` builds the Edot HaMizrach wording + sefira (verified against Sefaria's 49 lines; Sefaria has a nikud typo on day 15).
+- **Siddur:** arvit section `omer` (`when: 'omer'`) from Sefaria node `Counting_of_the_Omer`: 2–4 opening + bracha, per day n count = segment 3n+3 and sefira 3n+4 as 49 `only` parts (`when: 'omer-<n>'`), 152–161 הרחמן/למנצח/אנא בכח.
+- **UI** (`src/components/OmerView/`): hero ring with the Hebrew numeral, nusach card, 7×7 map (tap a day), "ספרתי" check-off + streak in `orayta_omer` (per Hebrew year), out-of-season countdown to the evening of 15 Nisan. `TodayView/OmerTodayCard` shows only in season.
+
+### 2h. Daily learning reader — `/today/learn/[kind]`
+- Kinds (`src/lib/dailyLearning/kinds.ts`): daf, mishnah, halakhah (Shulchan Arukh), rambam, yerushalmi (+ rambam3, tanakh, perek929, tanya behind "עוד לימודים"), matched by exact `title.en` in Sefaria's calendar.
+- **API:** `GET /api/learn?date=YYYY-MM-DD` (today's items + parasha) and `GET /api/learn/[kind]?date=&explain=1` (text; `explain` adds Steinsaltz Hebrew for the daf). Clients always pass the Israel date — Sefaria's undated calendar follows its own server timezone. Texts are normalized by `normalize.ts` (pure, tested: spanning refs → blocks with פרק/סימן/עמוד headings, first block may start mid-chapter, footnotes/markers stripped, siddur sanitizer).
+- **UI** (`src/components/LearnView/`): header with font size (shared `orayta_siddur_font`), chips between today's cycles, numbered segments, "סיימתי" per cycle with day streak in `orayta_daily_learning`, Sefaria attribution (CC-BY-NC for the William Davidson Talmud). `TodayView/DafYomiCard` lists the cycles with ✓ and links into the reader.
+
 ### 2e. Feed comments (רגע של תורה)
 Public, anonymous comments (text + optional name/nickname) on every feed post — content items and reels (`itemType` = feed type or `'reel'`, `itemId` = the item/reel id). Model `FeedComment`.
 
@@ -83,10 +93,32 @@ Public, anonymous comments (text + optional name/nickname) on every feed post �
 ### 2d. Torah video admin — backfill (`/feed-videos`)
 Per-page "השלמת חסרים" button → `POST /api/instagram/pages/[id]/backfill` (streams NDJSON progress). Walks newest→older, imports ≤10 reels, stops at the first reel already in the DB; skips pinned posts, non-videos, reels over `reel_max_seconds` and preview-only embeds. Source: Graph API Business Discovery when `IG_GRAPH_TOKEN` + `IG_GRAPH_USER_ID` are set, otherwise the public profile embed (newest ~6 posts, no pagination). An unfinished gap is resumed via `AppConfig` key `ig_backfill_session:<pageId>`. Logic is in `src/lib/igBackfill.ts` (pure, tested).
 
+### 2i. Push notifications (התראות) + `/hilula`
+Web Push (VAPID, `web-push`), one `PushSubscription` row per device: daily reminder at the user's chosen time (default 08:00, 15-min steps, in the device's time zone), one combined hilula notification on days with yahrzeits (candle + Tehillim reminder → `/hilula`), and an omer reminder after Israel nightfall in season.
+
+- **iOS:** push exists only for home-screen web apps (iOS/iPadOS 16.4+), so the sheet shows install steps in Safari. Permission is requested only from a tap.
+- **Service worker** `public/sw.js`: push / notificationclick / pushsubscriptionchange only — **no fetch handler, no caching** (it must never change how the site loads). Served `no-cache` (next.config.js).
+- **API:** `GET /api/push/key`, `POST /api/push/subscribe` (upsert by endpoint, rate-limited per hashed IP), `PATCH/DELETE /api/push/subscription` (ownership = endpoint + the subscription's `auth` secret), `POST /api/push/test` (admin, real push to own device), `POST /api/push/dispatch` (`Authorization: Bearer $CRON_SECRET`).
+- **Scheduling:** Vercel Hobby crons are daily, so `.github/workflows/push-dispatch.yml` calls the dispatcher every 10 min (secrets `DISPATCH_URL`, `CRON_SECRET`). GitHub may delay/skip scheduled runs, so dispatch is "send if due and not yet sent today" with a 3h late window (`src/lib/push/schedule.ts`, pure, tested); each send first claims its `last*Day` marker with a conditional update, so overlapping runs never double-send. 404/410 → row deleted. GitHub pauses schedules in repos idle for 60 days — re-enable from the Actions tab if that happens.
+- **Hilula matching** is offline (Intl Hebrew calendar, `src/lib/push/hilula.ts`) on top of `yahrzeit.ts`. `/hilula` shows today's tzadikim, a "light a candle" counter (`GlobalCounter` key `hilula_candles:<day>`) and links into the Tehillim reader (`/content?open=tehillim&chapter=N`).
+- **UI:** `src/components/Notifications/` — sheet opened via `openNotifications()` (bell in the header, `PushOptInCard` on home/today, snoozed after dismiss); local mirror in `orayta_push`.
+- Env: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (optional), `CRON_SECRET`. Rotating the VAPID pair invalidates all subscriptions.
+
+### 2j. חידון קבוצתי (Group quiz) — `/play`
+Kahoot-style live game for a shiur / Shabbat table. Anyone can host (no account); everyone answers from their phone.
+
+- **Routes:** `/play` (join: PIN → name + symbol; `?code=` from the QR), `/play/new` (host setup: topics talmud/rabbis/gematria, optional seder/masechet, 5–20 questions, 10–45s), `/play/host/[code]` (host: stage + controls; space/→/Enter advance), `/play/screen/[code]` (read-only projector view), `/play/[code]` (player phone). All full-screen on a fixed night-and-gold stage (`theme.game`); the a11y FAB is hidden under `/play`.
+- **Models:** `GameSession` (questions frozen as JSON at creation, `status` lobby → question → reveal → board → … → ended, `version` bumped on every phase change), `GamePlayer`, `GameAnswer` (unique per player+question). Games live 12h; rows older than 3 days are swept on each create.
+- **Sync is polling, not websockets** (Vercel): every device polls `GET /api/play/[code]` (~1s, slower when hidden) and gets the state *as that viewer may see it* (`src/lib/play/state.ts` — the correct answer and correctness stay hidden until reveal). The shared snapshot is cached per instance for 600ms and invalidated by writes. Clients keep a server-clock offset (lowest-RTT sample) so timers agree across devices.
+- **Server-authoritative timing + transitions:** answers are scored on the server clock (`questionPoints`: 1000 → 500 over the window, + capped streak bonus), accepted until `endsAt + GRACE_MS`. Reveal happens automatically once every active player answered or the buzzer passed — applied lazily by whichever request sees it, guarded by `version` (`updateMany where version`), so two devices can never advance one phase twice.
+- **Identity:** random secrets, only their sha256 stored. Host key + player key live in localStorage (`orayta_play_host`, `orayta_play_me`); the "remote control" QR carries the host key in the URL hash (never sent to the server) to move control to another phone. Headers: `x-play-host`, `x-play-id` + `x-play-key`.
+- **Abuse controls:** create 10/hour per hashed IP (admin exempt), join 80 / 10 min per IP (a whole beit midrash shares one Wi-Fi), names 1–16 chars with bidi/control chars stripped and no links, max 100 players, host can kick.
+- **Questions** (`src/lib/play/build.ts`, pure, tested): masechet of a citation, completing a citation, era of a rabbi (overlapping eras never offered together), who came first (≥40 years apart, disputed dates skipped), bio with the name masked, author of a book, gematria value. Never an ambiguous question; the same row is never asked twice in a game.
+
 ---
 
 ### 3. תרגול (Quiz / Training)
-Four quiz modes, all accessible to both roles:
+Modes are listed in `QuizView/ModeGrid.tsx` (one config array). Besides the table below: **חזרה חכמה** (flashcards with Leitner spaced repetition, `src/lib/srs.ts`, localStorage `orayta_srs`; the citation modes feed it too), **סדר כרונולוגי** (drag-to-order with Pointer Events, `QuizView/chrono/`), **שאלות ידע** (century, yahrzeit, teacher/student links parsed from bios, same era, and a curated bank in `src/lib/knowledge/bank.ts` — re-check it when bios change), plus the books/gematria/seder/bio/image/who-first modes. A card at the top links to the group quiz (`/play`).
 
 | Mode | Hebrew label | Description |
 |------|-------------|-------------|

@@ -6,7 +6,9 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Citation, CitationLocation } from '@/types';
 import { addStat } from '@/lib/statsStorage';
+import { recordQuizResult } from '@/lib/srs';
 import AllDoneCard from './AllDoneCard';
+import ContextButton from '@/components/TalmudContext/ContextButton';
 import {
   Top, QuestionLabel, Streak, ResultBanner, BtnRow, NextBtn, SkipBtn, HintBtn,
   QuestionBlock, pressable, answerMotion, answerFeedback, isMilestone, shuffle,
@@ -148,6 +150,7 @@ export default function MultipleChoiceQuiz({ filterSeder, filterMasechet, onAnsw
       setScore(result.score);
       answerFeedback(correct);
       addStat({ score: result.score, content: question.content.slice(0, 80), mode: 'multiple' });
+      recordQuizResult(question.id, result.score);
       setStreak(s => correct ? s + 1 : 0);
       onAnswered();
     } catch {
@@ -214,6 +217,7 @@ export default function MultipleChoiceQuiz({ filterSeder, filterMasechet, onAnsw
             {score >= 1 ? HE.QUIZ_CORRECT : HE.QUIZ_WRONG}
           </ResultBanner>
         )}
+        {score !== null && question && <ContextButton citation={question} variant="inline" />}
       </QuestionBlock>
       {selectedId !== null ? (
         <NextBtn onClick={handleNext} autoFocus>{HE.QUIZ_NEXT}</NextBtn>

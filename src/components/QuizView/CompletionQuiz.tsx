@@ -6,7 +6,9 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Citation } from '@/types';
 import { addStat } from '@/lib/statsStorage';
+import { recordQuizResult } from '@/lib/srs';
 import AllDoneCard from './AllDoneCard';
+import ContextButton from '@/components/TalmudContext/ContextButton';
 import {
   Top, QuestionLabel, Streak, ResultBanner, BtnRow, NextBtn, SkipBtn, HintBtn,
   QuestionBlock, answerFeedback, isMilestone,
@@ -216,6 +218,7 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
       setResult(data);
       answerFeedback(data.correct);
       addStat({ score: data.correct ? 1 : 0, content: question.content.slice(0, 80), mode: 'completion' });
+      recordQuizResult(question.id, data.correct ? 1 : 0);
       setStreak(s => data.correct ? s + 1 : 0);
       onAnswered();
     } finally {
@@ -294,6 +297,7 @@ export default function CompletionQuiz({ filterSeder, filterMasechet, onAnswered
                 </SourceRow>
               )}
             </FullCitationBox>
+            <ContextButton citation={{ content: result.fullContent, locations: result.locations }} variant="inline" />
           </>
         )}
       </QuestionBlock>

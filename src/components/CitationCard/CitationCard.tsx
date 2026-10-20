@@ -6,6 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Citation } from '@/types';
 import SpeakButton from '@/components/common/SpeakButton';
+import ContextButton from '@/components/TalmudContext/ContextButton';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(10px); }
@@ -115,6 +116,7 @@ export default function CitationCard({ citation, index = 0, onEdit, onDelete, is
         ))}
       </Locations>
       <Actions>
+        <ContextButton citation={citation} />
         <SpeakButton text={`${citation.content}. ${citation.locations.map(formatLocation).join(', ')}`} />
         {!isReadOnly && !confirming && (
           <>

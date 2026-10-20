@@ -5,6 +5,7 @@ import GlobalStyles from './GlobalStyles';
 import { RoleProvider } from './RoleContext';
 import { ThemeProvider } from './ThemeContext';
 import AccessibilityWidget from './AccessibilityWidget';
+import NotificationsHost from '@/components/Notifications/NotificationsHost';
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
@@ -14,6 +15,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
         <RoleProvider>
           {children}
           <AccessibilityWidget />
+          <NotificationsHost />
         </RoleProvider>
       </ThemeProvider>
     </StyledComponentsRegistry>

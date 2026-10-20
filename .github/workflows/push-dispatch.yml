@@ -1,0 +1,31 @@
+# Triggers the Web Push dispatcher (/api/push/dispatch). Vercel Hobby crons run
+# only once a day, so the 10-minute heartbeat lives here. GitHub may delay or
+# skip scheduled runs under load — the dispatcher is "send if due and not yet
+# sent today", so a late run still delivers and a doubled run sends nothing twice.
+name: push-dispatch
+
+on:
+  schedule:
+    - cron: '3-59/10 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: push-dispatch
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Call dispatcher
+        env:
+          DISPATCH_URL: ${{ secrets.DISPATCH_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$DISPATCH_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "DISPATCH_URL / CRON_SECRET secrets are not set — skipping."
+            exit 0
+          fi
+          curl --fail-with-body --silent --show-error --max-time 90 \
+            -X POST -H "Authorization: Bearer $CRON_SECRET" "$DISPATCH_URL"

@@ -7,6 +7,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { Rabbi, RabbiCategory } from '@/types';
 import { CATEGORY_LABELS, CATEGORY_COLORS } from '@/lib/rabbisData';
 import { addStat } from '@/lib/statsStorage';
+import { maskName } from '@/lib/knowledgeQuiz';
 import AllDoneCard from './AllDoneCard';
 import {
   Top, QuestionLabel, Streak, ResultBanner, BtnRow, NextBtn, SkipBtn,
@@ -145,7 +146,9 @@ export default function BioQuiz({ onAnswered, filterCategory = '' }: Props) {
 
   const answered = selected !== null;
   const isOk = selected === question.id;
-  const bio = question.bio.length > BIO_LEN ? question.bio.slice(0, BIO_LEN).trimEnd() + '...' : question.bio;
+  // The bio is the clue — hide the answer's own name inside it.
+  const masked = maskName(question.bio, question);
+  const bio = masked.length > BIO_LEN ? masked.slice(0, BIO_LEN).trimEnd() + '...' : masked;
 
   return (
     <Wrapper>

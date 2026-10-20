@@ -9,7 +9,9 @@ import ZmanimCard from './ZmanimCard';
 import HebrewCalendarCard from './HebrewCalendarCard';
 import CompassCard from './CompassCard';
 import DafYomiCard from './DafYomiCard';
+import OmerTodayCard from './OmerTodayCard';
 import EventsCard from './EventsCard';
+import PushOptInCard from '@/components/Notifications/PushOptInCard';
 import DailySection from './DailySection';
 import ShabbatTimes from './ShabbatTimes';
 
@@ -112,6 +114,7 @@ export default function TodayView() {
         <Subtitle>{HE.TODAY_SUBTITLE}</Subtitle>
       </Header>
       <DailySection />
+      <PushOptInCard />
       <EventsCard date={dateStr} />
       <Grid>
         <Col>
@@ -120,6 +123,7 @@ export default function TodayView() {
           <CompassCard location={location} locState={locState} onRetry={requestLocation} />
         </Col>
         <Col>
+          <OmerTodayCard />
           <DafYomiCard />
         </Col>
       </Grid>

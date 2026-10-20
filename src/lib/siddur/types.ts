@@ -11,7 +11,8 @@ export type PartCondition =
   | 'rosh-chodesh' | 'hallel' | 'full-hallel' | 'yaale' | 'al-hanisim'
   | 'chanukah' | `chanukah-${ChanukahDay}` | 'purim'
   | 'fast' | 'public-fast' | 'tisha-bav' | 'not-tisha-bav' | 'fast-gedalia-tevet' | 'fast-esther-purim' | 'fast-tammuz'
-  | 'aseret' | 'after-yk' | 'motzash' | 'friday' | 'not-friday' | 'summer' | 'winter' | 'optional';
+  | 'aseret' | 'after-yk' | 'motzash' | 'friday' | 'not-friday' | 'summer' | 'winter' | 'optional'
+  | 'omer' | `omer-${number}`;
 
 /**
  * A contiguous slice of one Sefaria node of Siddur Edot HaMizrach.

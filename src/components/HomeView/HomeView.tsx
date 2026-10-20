@@ -11,6 +11,7 @@ import SectionIcon from './HomeIcons';
 import HomeActionCards from './HomeActionCards';
 import HomeBackground from './HomeBackground';
 import StoriesRow from './StoriesRow';
+import PushOptInCard from '@/components/Notifications/PushOptInCard';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(10px); }
@@ -142,6 +143,7 @@ export default function HomeView() {
         ))}
       </Grid>
 
+      <PushOptInCard />
       <HomeActionCards />
       </Page>
     </>

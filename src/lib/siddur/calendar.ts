@@ -7,7 +7,7 @@ export type { PrayerDay } from './occasions';
 const has = (d: PrayerDay, ...o: Occasion[]) => o.some(x => d.occasions.has(x));
 
 /** One rule per condition — the single place prayer logic meets the calendar. */
-const CONDITIONS: Record<Exclude<PartCondition, `chanukah-${number}`>, (d: PrayerDay) => boolean> = {
+const CONDITIONS: Record<Exclude<PartCondition, `chanukah-${number}` | `omer-${number}`>, (d: PrayerDay) => boolean> = {
   'tachanun':           d => d.tachanun,
   'no-tachanun':        d => !d.tachanun,
   'mon-thu':            d => has(d, 'mon-thu'),
@@ -34,6 +34,7 @@ const CONDITIONS: Record<Exclude<PartCondition, `chanukah-${number}`>, (d: Praye
   'not-friday':         d => !has(d, 'friday'),
   'summer':             d => !has(d, 'winter'),
   'winter':             d => has(d, 'winter'),
+  'omer':               d => d.omerDay !== null,
   'optional':           () => false,
 };
 
@@ -41,6 +42,8 @@ export function conditionApplies(when: PartCondition | undefined, day: PrayerDay
   if (!when) return true;
   const m = /^chanukah-(\d)$/.exec(when);
   if (m) return day.chanukahDay === Number(m[1]);
+  const om = /^omer-(\d+)$/.exec(when);
+  if (om) return day.omerDay === Number(om[1]);
   return CONDITIONS[when as keyof typeof CONDITIONS](day);
 }
 

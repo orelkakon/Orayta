@@ -222,3 +222,85 @@ model SikumEntry {
   @@index([bookId])
   @@index([date])
 }
+
+// One Web Push subscription per browser/device. Possession of endpoint + auth
+// is the credential for changing it; ipHash only feeds the signup rate limit.
+model PushSubscription {
+  id            String   @id @default(cuid())
+  endpoint      String   @unique
+  p256dh        String
+  auth          String
+  timeZone      String   @default("Asia/Jerusalem")
+  dailyMinutes  Int      @default(480) // minutes after local midnight
+  daily         Boolean  @default(true)
+  hilula        Boolean  @default(true)
+  omer          Boolean  @default(true)
+  lastDailyDay  String? // 'YYYY-MM-DD' in the subscription's time zone
+  lastHilulaDay String?
+  lastOmerDay   String?
+  failures      Int      @default(0)
+  ipHash        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([ipHash, createdAt])
+}
+
+// Group quiz (חידון קבוצתי, /play). One row per live game; the question set is
+// frozen into `questions` at creation so every device plays the same game.
+// `version` bumps on every phase change — transitions are guarded by it so two
+// devices (host + lazy timeout) can never advance the same phase twice.
+model GameSession {
+  id         String       @id @default(cuid())
+  code       String       @unique // 6-digit join PIN
+  hostHash   String // sha256 of the host's secret key
+  status     String       @default("lobby") // lobby | question | reveal | board | ended
+  questions  Json
+  settings   Json
+  current    Int          @default(-1)
+  phaseAt    DateTime     @default(now())
+  questionMs Int
+  version    Int          @default(0)
+  ipHash     String
+  createdAt  DateTime     @default(now())
+  players    GamePlayer[]
+  answers    GameAnswer[]
+
+  @@index([ipHash, createdAt])
+  @@index([createdAt])
+}
+
+model GamePlayer {
+  id        String       @id @default(cuid())
+  sessionId String
+  session   GameSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  name      String
+  avatar    String
+  keyHash   String // sha256 of the player's secret key
+  score     Int          @default(0)
+  streak    Int          @default(0)
+  kicked    Boolean      @default(false)
+  ipHash    String
+  joinedAt  DateTime     @default(now())
+  answers   GameAnswer[]
+
+  @@unique([sessionId, name])
+  @@index([ipHash, joinedAt])
+}
+
+model GameAnswer {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  playerId  String
+  player    GamePlayer  @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  qIndex    Int
+  choice    Int
+  correct   Boolean
+  points    Int
+  ms        Int
+  createdAt DateTime    @default(now())
+
+  @@unique([playerId, qIndex])
+  @@index([sessionId, qIndex])
+}
