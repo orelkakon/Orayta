@@ -1,10 +1,17 @@
 export type ServiceId = 'shacharit' | 'mincha' | 'arvit';
 
 /**
- * When a seasonal/conditional part is said. Parts with a condition render
- * collapsed unless it applies today ('optional' is always collapsed).
+ * When a conditional part (or section) is said. It renders folded unless it
+ * applies to the prayer-day ('optional' is always folded). Rules live in
+ * calendar.ts → CONDITIONS.
  */
-export type PartCondition = 'mon-thu' | 'aseret' | 'motzash' | 'optional';
+export type ChanukahDay = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+export type PartCondition =
+  | 'tachanun' | 'no-tachanun' | 'mon-thu' | 'not-mon-thu' | 'torah-reading'
+  | 'rosh-chodesh' | 'hallel' | 'full-hallel' | 'yaale' | 'al-hanisim'
+  | 'chanukah' | `chanukah-${ChanukahDay}` | 'purim'
+  | 'fast' | 'public-fast' | 'tisha-bav' | 'not-tisha-bav' | 'fast-gedalia-tevet' | 'fast-esther-purim' | 'fast-tammuz'
+  | 'aseret' | 'after-yk' | 'motzash' | 'friday' | 'not-friday' | 'summer' | 'winter' | 'optional';
 
 /**
  * A contiguous slice of one Sefaria node of Siddur Edot HaMizrach.
@@ -21,6 +28,8 @@ export interface PrayerPart {
   when?: PartCondition;
   /** Short explanation shown on a collapsed conditional part. */
   note?: string;
+  /** Hide entirely (not just fold) on days it doesn't apply — e.g. one of eight Chanukah readings. */
+  only?: boolean;
   /** Song of the day: 0 = Sunday … 5 = Friday. */
   weekday?: number;
 }
@@ -32,6 +41,8 @@ export interface PrayerSection {
   chip?: string;
   /** One-line context under the heading ("אין אומרים בימים שאין בהם תחנון"). */
   note?: string;
+  /** Whole-section condition (הלל, מוסף…): folded and dropped from the chips when it doesn't apply. */
+  when?: PartCondition;
   parts: PrayerPart[];
 }
 

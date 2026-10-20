@@ -8,7 +8,9 @@ import { HE } from '@/lib/hebrewTexts';
 import { LineIcon } from '@/components/common/LineIcons';
 import { SERVICES } from '@/lib/siddur';
 import type { ServiceId } from '@/lib/siddur';
-import { suggestService } from '@/lib/siddur/calendar';
+import { suggestService, prayerDay, PrayerDay } from '@/lib/siddur/calendar';
+import { occasionLabels } from '@/lib/siddur/today';
+import { formatHebrewDate } from '@/lib/hebrewDate';
 import SiddurExtras from './SiddurExtras';
 
 const Page = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
@@ -59,18 +61,41 @@ const Now = styled.span`
   background: ${theme.colors.secondary}; border-radius: 999px; padding: 3px 10px;
 `;
 
+const Today = styled.p`
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  font-size: ${theme.fontSizes.sm}; color: ${theme.colors.textMuted};
+  strong { color: ${theme.colors.primary}; font-family: ${theme.fonts.body}; }
+`;
+
+const Tag = styled.span`
+  font-size: ${theme.fontSizes.xs}; font-weight: 700; border-radius: 999px; padding: 2px 9px;
+  color: ${theme.colors.onPrimary}; background: ${theme.colors.secondary};
+`;
+
 const Arrow = styled.span`display: none; color: ${theme.colors.textLight}; ${theme.media.md} { display: flex; }`;
 
 export default function SiddurHome() {
   // Client-only: the suggestion depends on the reader's current time.
   const [now, setNow] = useState<ServiceId | null>(null);
-  useEffect(() => { setNow(suggestService(new Date())); }, []);
+  const [day, setDay] = useState<PrayerDay | null>(null);
+  useEffect(() => {
+    const t = new Date();
+    setNow(suggestService(t));
+    setDay(prayerDay(t, 'shacharit'));
+  }, []);
 
   return (
     <Page>
       <Head>
         <Title><LineIcon name="book" size={28} />{HE.SIDDUR_TITLE}</Title>
         <Subtitle>{HE.SIDDUR_SUBTITLE}</Subtitle>
+        {day && (
+          <Today>
+            <strong>{formatHebrewDate(day.at)}</strong>
+            {occasionLabels(day).map(o => <Tag key={o}>{o}</Tag>)}
+            <span>· {day.tachanun ? HE.SIDDUR_TACHANUN_SAID : HE.SIDDUR_TACHANUN_NOT(day.noTachanunReason ?? '')}</span>
+          </Today>
+        )}
       </Head>
       <Cards>
         {SERVICES.map(s => (

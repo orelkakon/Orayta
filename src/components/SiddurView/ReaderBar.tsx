@@ -8,6 +8,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { LineIcon } from '@/components/common/LineIcons';
 import { SERVICES } from '@/lib/siddur';
 import type { PrayerService } from '@/lib/siddur';
+import { sectionApplies, PrayerDay } from '@/lib/siddur/calendar';
 
 const Bar = styled.div`
   position: sticky; top: 60px; z-index: ${theme.z.sticky};
@@ -79,6 +80,7 @@ const Progress = styled.div`
 
 interface Props {
   service: PrayerService;
+  day: PrayerDay | null;
   active: string;
   progress: number;
   canShrink: boolean;
@@ -117,7 +119,7 @@ const ReaderBar = forwardRef<HTMLDivElement, Props>(function ReaderBar(p, ref) {
         </Tools>
       </Row>
       <Chips ref={chipsRef} role="navigation" aria-label={HE.SIDDUR_NAV_ARIA}>
-        {p.service.sections.map(s => (
+        {p.service.sections.filter(s => !s.when || (p.day !== null && sectionApplies(s, p.day))).map(s => (
           <Chip key={s.id} data-id={s.id} $on={s.id === p.active} aria-current={s.id === p.active ? 'location' : undefined} onClick={() => p.onJump(s.id)}>
             {s.chip ?? s.title}
           </Chip>

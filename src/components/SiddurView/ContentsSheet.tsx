@@ -6,13 +6,14 @@ import { HE } from '@/lib/hebrewTexts';
 import Modal from '@/components/common/Modal';
 import { markAnchor } from '@/lib/siddur';
 import type { PrayerService } from '@/lib/siddur';
-import { partApplies, PrayerDay } from '@/lib/siddur/calendar';
+import { partApplies, sectionApplies, PrayerDay } from '@/lib/siddur/calendar';
 
 const List = styled.ol`list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column;`;
 
 const Item = styled.li`border-bottom: 1px solid ${theme.colors.borderLight}; &:last-child { border-bottom: none; }`;
 
-const SectionBtn = styled.button<{ $on: boolean }>`
+const SectionBtn = styled.button<{ $on: boolean; $dim?: boolean }>`
+  opacity: ${p => p.$dim ? 0.55 : 1};
   width: 100%; min-height: 48px; display: flex; align-items: center; gap: ${theme.spacing.sm};
   text-align: start; padding: ${theme.spacing.xs} 0;
   font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.lg}; font-weight: 700;
@@ -51,10 +52,11 @@ export default function ContentsSheet({ service, active, day, onJump, onClose }:
     <Modal title={`${HE.SIDDUR_CONTENTS} · ${service.title}`} onClose={onClose}>
       <List>
         {service.sections.map((s, i) => {
-          const marks = s.parts.map((p, pi) => ({ p, pi })).filter(({ p }) => p.mark);
+          const marks = s.parts.map((p, pi) => ({ p, pi }))
+            .filter(({ p }) => p.mark && !(p.only && !partApplies(p, day)));
           return (
             <Item key={s.id}>
-              <SectionBtn $on={s.id === active} onClick={() => onJump(s.id)} aria-current={s.id === active ? 'location' : undefined}>
+              <SectionBtn $on={s.id === active} $dim={!sectionApplies(s, day)} onClick={() => onJump(s.id)} aria-current={s.id === active ? 'location' : undefined}>
                 <Num $on={s.id === active}>{i + 1}</Num>{s.title}
               </SectionBtn>
               {marks.length > 0 && (

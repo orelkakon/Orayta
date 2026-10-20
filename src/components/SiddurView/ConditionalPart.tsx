@@ -4,7 +4,6 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
-import type { PrayerPart } from '@/lib/siddur';
 
 const Box = styled.div<{ $open: boolean; $today: boolean }>`
   scroll-margin-top: var(--siddur-offset, 180px);
@@ -34,20 +33,21 @@ const Action = styled.span`
 `;
 
 interface Props {
-  id: string;
-  part: PrayerPart;
+  id?: string;
+  title: string;
+  note?: string;
   applies: boolean;
   children: React.ReactNode;
 }
 
 /** A seasonal block: open with a "said today" badge when it applies, folded otherwise. */
-export default function ConditionalPart({ id, part, applies, children }: Props) {
+export default function ConditionalPart({ id, title, note, applies, children }: Props) {
   const [open, setOpen] = useState(applies);
   return (
     <Box id={id} $open={open} $today={applies}>
       <Head onClick={() => setOpen(o => !o)} aria-expanded={open}>
-        <Name>{part.mark}</Name>
-        <When>{part.note}</When>
+        <Name>{title}</Name>
+        <When>{note}</When>
         {applies && <Today>{HE.SIDDUR_SAID_TODAY}</Today>}
         <Action>{open ? HE.SIDDUR_HIDE : HE.SIDDUR_SHOW}</Action>
       </Head>

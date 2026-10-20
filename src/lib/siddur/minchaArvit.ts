@@ -1,8 +1,10 @@
 import type { PrayerService } from './types';
+import { MINCHA_AMIDA, ARVIT_AMIDA } from './amida';
 import { HE } from '@/lib/hebrewTexts';
 
 const MI = 'Weekday_Mincha';
 const AR = 'Weekday_Arvit';
+const TR = 'Weekday_Shacharit, Torah_Reading';
 
 export const MINCHA: PrayerService = {
   id: 'mincha',
@@ -26,21 +28,25 @@ export const MINCHA: PrayerService = {
       ],
     },
     {
-      id: 'amida', title: 'עמידה',
+      // On a public fast (including Tisha B'Av) mincha has "ויחל" before the Amida.
+      id: 'torah-reading', title: 'קריאת התורה', when: 'fast', note: HE.SIDDUR_WHEN_FAST,
       parts: [
-        { node: `${MI}, Amida`, from: 2, to: 50 },
-        { node: `${MI}, Amida`, from: 51, to: 63, mark: 'ברכת כהנים (בתענית ציבור)' },
-        { node: `${MI}, Amida`, from: 64, to: 72, mark: 'שים שלום ואלהי נצור' },
-        { node: `${MI}, Amida`, from: 74, to: 105, mark: 'אבינו מלכנו', when: 'aseret', note: HE.SIDDUR_WHEN_ASERET },
-        { node: `${MI}, Amida`, from: 107, to: 107, mark: 'יהי שם', when: 'optional', note: HE.SIDDUR_WHEN_NO_TACHANUN },
+        { node: TR, from: 7, to: 18 },
+        { node: 'Fast_Days_and_Mourning, Torah_Reading_for_Fast_Days', from: 2, to: 2, mark: HE.SIDDUR_FAST_READING },
+        { node: TR, from: 19, to: 21, mark: 'חצי קדיש' },
       ],
     },
+    { id: 'amida', title: 'עמידה', parts: MINCHA_AMIDA },
     {
-      id: 'tachanun', title: 'וידוי ותחנון', chip: 'תחנון', note: HE.SIDDUR_NOTE_TACHANUN,
+      id: 'tachanun', title: 'תחנון וקדיש', chip: 'תחנון', note: HE.SIDDUR_NOTE_TACHANUN,
       parts: [
-        { node: `${MI}, Vidui`, from: 2, to: 5, mark: 'וידוי ושלוש עשרה מידות' },
-        { node: `${MI}, Vidui`, from: 6, to: 10, mark: 'נפילת אפיים' },
-        { node: `${MI}, Vidui`, from: 11, to: 24, mark: 'קדיש תתקבל ולמנצח' },
+        { node: `${MI}, Vidui`, from: 2, to: 5, mark: 'וידוי ושלוש עשרה מידות', when: 'tachanun', note: HE.SIDDUR_WHEN_TACHANUN },
+        { node: `${MI}, Vidui`, from: 6, to: 10, mark: 'נפילת אפיים', when: 'tachanun', note: HE.SIDDUR_WHEN_TACHANUN },
+        { node: `${MI}, Vidui`, from: 11, to: 15, mark: 'קדיש תתקבל' },
+        { node: `${MI}, Vidui`, from: 16, to: 17, mark: 'למנצח בנגינות', when: 'not-friday', note: HE.SIDDUR_WHEN_NOT_FRIDAY },
+        { node: `${MI}, Vidui`, from: 18, to: 19, mark: 'ה׳ מלך', when: 'friday', note: HE.SIDDUR_WHEN_FRIDAY },
+        { node: `${MI}, Vidui`, from: 20, to: 21, mark: 'תפלה לעני', when: 'fast', note: HE.SIDDUR_WHEN_FAST },
+        { node: `${MI}, Vidui`, from: 22, to: 24, mark: 'קדיש יהא שלמא' },
       ],
     },
     { id: 'alenu', title: 'עלינו לשבח', chip: 'עלינו', parts: [{ node: `${MI}, Alenu`, from: 2, to: 4 }] },
@@ -56,7 +62,7 @@ export const ARVIT: PrayerService = {
     {
       id: 'barchu', title: 'והוא רחום וברכו', chip: 'ברכו',
       parts: [
-        { node: `${AR}, Barchu`, from: 3, to: 3, mark: 'ברכי נפשי', when: 'optional', note: HE.SIDDUR_WHEN_ROSH_CHODESH },
+        { node: `${AR}, Barchu`, from: 2, to: 3, mark: 'ברכי נפשי', when: 'rosh-chodesh', note: HE.SIDDUR_WHEN_RC_NIGHT },
         { node: `${AR}, Barchu`, from: 4, to: 8 },
         { node: `${AR}, Barchu`, from: 9, to: 11, mark: 'ברכו' },
       ],
@@ -75,7 +81,7 @@ export const ARVIT: PrayerService = {
         { node: `${AR}, The_Shema`, from: 10, to: 13, mark: 'אמת ואמונה והשכיבנו' },
       ],
     },
-    { id: 'amida', title: 'עמידה', parts: [{ node: `${AR}, Amidah`, from: 2, to: 52 }] },
+    { id: 'amida', title: 'עמידה', parts: ARVIT_AMIDA },
     {
       id: 'sium', title: 'קדיש ושיר המעלות', chip: 'שיר המעלות',
       parts: [

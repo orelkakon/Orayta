@@ -12,6 +12,7 @@ import { prayerDay, PrayerDay } from '@/lib/siddur/calendar';
 import ReaderBar from './ReaderBar';
 import ContentsSheet from './ContentsSheet';
 import PrayerSectionView from './PrayerSectionView';
+import TodayStrip from './TodayStrip';
 import { useServiceText } from './useServiceText';
 import { useScrollSpy, jumpTo } from './useScrollSpy';
 import { useSiddurFont } from './useSiddurFont';
@@ -73,8 +74,8 @@ export default function ServiceReader({ id }: { id: ServiceId }) {
   const { active, progress } = useScrollSpy(ids, rootRef, barRef);
   const [contentsOpen, setContentsOpen] = useState(false);
   // Computed after mount: the server has no idea what day it is for the reader.
-  const [day, setDay] = useState<PrayerDay>({ weekday: 0, aseret: false });
-  useEffect(() => { setDay(prayerDay(new Date())); }, []);
+  const [day, setDay] = useState<PrayerDay | null>(null);
+  useEffect(() => { setDay(prayerDay(new Date(), id)); }, [id]);
 
   // Deep link (#shema): jump once the text is laid out.
   const linkedRef = useRef(false);
@@ -100,10 +101,11 @@ export default function ServiceReader({ id }: { id: ServiceId }) {
         <Back href="/siddur">{HE.SIDDUR_BACK}</Back>
       </Top>
       <ReaderBar
-        ref={barRef} service={service} active={active} progress={progress}
+        ref={barRef} service={service} day={day} active={active} progress={progress}
         canShrink={font.canShrink} canGrow={font.canGrow} onSmaller={font.smaller} onLarger={font.larger}
         onJump={jumpTo} onContents={() => setContentsOpen(true)}
       />
+      {day && <TodayStrip service={service} day={day} onJump={jumpTo} />}
       {status === 'error' ? (
         <ErrorBox role="alert">
           <span>{HE.SIDDUR_LOAD_ERROR}</span>
@@ -122,7 +124,7 @@ export default function ServiceReader({ id }: { id: ServiceId }) {
         </EndLinks>
         <Source>{HE.SIDDUR_SOURCE}</Source>
       </End>
-      {contentsOpen && (
+      {contentsOpen && day && (
         <ContentsSheet service={service} active={active} day={day} onJump={jumpFromSheet} onClose={() => setContentsOpen(false)} />
       )}
     </Page>
