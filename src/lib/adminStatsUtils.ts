@@ -3,6 +3,17 @@ import type { AdminDailyRow } from '@/types';
 export type { DailyMetric } from '@/types';
 import type { DailyMetric } from '@/types';
 
+/** The last `n` day keys ('YYYY-MM-DD', Asia/Jerusalem), oldest first. */
+export function dayKeys(n: number, now = Date.now()): string[] {
+  const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' });
+  return Array.from({ length: n }, (_, i) => fmt.format(new Date(now - (n - 1 - i) * 86400000)));
+}
+
+/** A timestamp's day key in Asia/Jerusalem. */
+export function jerusalemDay(d: Date): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(d);
+}
+
 /** Sum of the last `n` days for a metric, skipping `offset` days from the end. */
 export function sumLast(daily: AdminDailyRow[], metric: DailyMetric, n: number, offset = 0): number {
   const end = daily.length - offset;

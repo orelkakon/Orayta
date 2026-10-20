@@ -246,8 +246,31 @@ export interface AdminStats {
   saves: number;
   shares: { wa: number; story: number };
   reactions: { total: number; heart: number; fire: number; spark: number };
+  comments: AdminCommentStats;
   totals: Record<DailyMetric, number>;
   daily: AdminDailyRow[];
+}
+
+/** A post as the admin sees it in comment stats: what it is + a short preview. */
+export interface AdminCommentPost {
+  type: FeedCommentTarget;
+  id: string;
+  preview: string;
+}
+
+export interface AdminCommentStats {
+  total: number;
+  today: number;
+  yesterday: number;
+  week: number;
+  prevWeek: number;
+  /** Distinct devices/IPs that ever commented. */
+  commenters: number;
+  /** Distinct posts with at least one comment. */
+  posts: number;
+  byType: Partial<Record<FeedCommentTarget, number>>;
+  top: (AdminCommentPost & { count: number })[];
+  recent: (FeedComment & { post: AdminCommentPost })[];
 }
 
 /* Daily-stories and live-torah types live in sibling files to keep this file

@@ -9,6 +9,7 @@ import type { AdminStats } from '@/types';
 import AdminKpiRow from './AdminKpiRow';
 import AdminUsersChart from './AdminUsersChart';
 import AdminBreakdown from './AdminBreakdown';
+import AdminCommentsCard from './AdminCommentsCard';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(14px); }
@@ -68,6 +69,7 @@ export default function AdminStatsView() {
       <AdminKpiRow stats={stats} />
       <AdminUsersChart daily={stats.daily} />
       <AdminBreakdown stats={stats} />
+      <AdminCommentsCard comments={stats.comments} />
     </Page>
   );
 }

@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import type { FeedComment } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
-import { commentAge, avatarTint } from '@/lib/feedComments';
+import { avatarTint } from '@/lib/feedComments';
+import { formatCommentAge } from './formatCommentAge';
 import { LineIcon } from '@/components/common/LineIcons';
 
 const arrive = keyframes`
@@ -59,18 +60,6 @@ const DeleteBtn = styled.button<{ $armed: boolean }>`
   &:hover, &:focus-visible { background: rgba(255,110,110,0.14); color: rgba(255,160,160,0.95); }
 `;
 
-function formatAge(iso: string): string {
-  const a = commentAge(new Date(iso), new Date());
-  switch (a.unit) {
-    case 'now':  return HE.COMMENTS_AGE_NOW;
-    case 'min':  return HE.COMMENTS_AGE_MIN(a.n);
-    case 'hour': return HE.COMMENTS_AGE_HOUR(a.n);
-    case 'day':  return HE.COMMENTS_AGE_DAY(a.n);
-    case 'week': return HE.COMMENTS_AGE_WEEK(a.n);
-    case 'date': return a.date.toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' });
-  }
-}
-
 interface Props {
   comment: FeedComment;
   mine: boolean;
@@ -96,7 +85,7 @@ export default function CommentRow({ comment, mine, canDelete, fresh, onDelete }
         <Head>
           <Name>{name}</Name>
           {mine && <You>{HE.COMMENTS_YOU}</You>}
-          <Age dateTime={comment.createdAt}>{formatAge(comment.createdAt)}</Age>
+          <Age dateTime={comment.createdAt}>{formatCommentAge(comment.createdAt)}</Age>
         </Head>
         <Text>{comment.text}</Text>
       </Body>

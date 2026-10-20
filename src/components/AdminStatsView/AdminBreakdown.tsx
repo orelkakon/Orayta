@@ -87,6 +87,7 @@ export default function AdminBreakdown({ stats }: { stats: AdminStats }) {
   const engagement = [
     { icon: 'target',   label: HE.ADMIN_ENGAGE_QUESTIONS, value: stats.questions },
     { icon: 'flame',    label: HE.ADMIN_ENGAGE_REACTIONS, value: reactions.total },
+    { icon: 'comment',  label: HE.ADMIN_ENGAGE_COMMENTS,  value: stats.comments.total },
     { icon: 'bookmark', label: HE.ABOUT_FEED_SAVES,       value: stats.saves },
     { icon: 'copy',     label: HE.ABOUT_FEED_SHARES,      value: shares.wa },
     { icon: 'camera',   label: HE.ABOUT_STORY_SHARES,     value: shares.story },

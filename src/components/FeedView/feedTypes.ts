@@ -1,4 +1,4 @@
-import type { FeedItemType } from '@/types';
+import type { FeedItemType, FeedCommentTarget } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
 
 /**
@@ -50,3 +50,10 @@ export const FEED_TYPE_STYLES: Record<FeedItemType, FeedTypeStyle> = {
     chip: 'linear-gradient(135deg, #170926 0%, #341553 100%)',
   },
 };
+
+/** Label + icon for anything commentable — feed types plus reels. */
+export function commentTargetMeta(t: FeedCommentTarget): { label: string; icon: string } {
+  return t === 'reel'
+    ? { label: HE.COMMENTS_REEL_LABEL, icon: 'reels' }
+    : { label: FEED_TYPE_STYLES[t].label, icon: FEED_TYPE_STYLES[t].icon };
+}
