@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { parseReelCode, canonicalReelUrl } from '@/lib/instagram';
+import { commentCounts } from '@/lib/feedCommentsServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +16,8 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: 'desc' },
   });
 
+  const counts = await commentCounts(reels.map(r => ({ itemType: 'reel', itemId: r.id })));
+
   return NextResponse.json(reels.map(r => ({
     id: r.id,
     pageId: r.pageId,
@@ -23,6 +26,7 @@ export async function GET(req: NextRequest) {
     active: r.active,
     createdAt: r.createdAt,
     username: r.page?.username ?? null,
+    comments: counts.get(`reel:${r.id}`) ?? 0,
   })));
 }
 

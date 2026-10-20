@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
-import type { FeedItem, FeedReaction } from '@/types';
+import type { FeedItem, FeedReaction, FeedCommentsTarget } from '@/types';
 import { renderContent, MetaChip, MetaChipLink } from './FeedCardContent';
 import FeedCardActions from './FeedCardActions';
 import FeedReactionPill from './FeedReactionPill';
@@ -102,9 +102,11 @@ interface Props {
   onReact: (item: FeedItem, r: FeedReaction) => void;
   onBookmark: (item: FeedItem) => void;
   onExpand: (data: ReaderData) => void;
+  commentCount: number;
+  onComments: (target: FeedCommentsTarget) => void;
 }
 
-export default function FeedCard({ item, reacted, isSaved, onReact, onBookmark, onExpand }: Props) {
+export default function FeedCard({ item, reacted, isSaved, onReact, onBookmark, onExpand, commentCount, onComments }: Props) {
   const cfg = FEED_TYPE_STYLES[item.type];
   const [visible, setVisible] = useState(false);
   const [showBurst, setShowBurst] = useState(false);
@@ -170,7 +172,8 @@ export default function FeedCard({ item, reacted, isSaved, onReact, onBookmark, 
       <FeedReactionPill item={item} reacted={reacted} visible={visible} onReact={onReact} />
       <FeedCardActions
         item={item} isSaved={isSaved} slideRef={slideRef}
-        onBookmark={onBookmark} copyText={copyText}
+        onBookmark={onBookmark} copyText={copyText} commentCount={commentCount}
+        onComments={() => onComments({ type: item.type, id: item.id, label: cfg.label, icon: cfg.icon, accent: cfg.accent })}
       />
     </Slide>
   );

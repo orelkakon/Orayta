@@ -120,6 +120,23 @@ model FeedLike {
   @@index([reaction])
 }
 
+// Public, anonymous comments on feed posts (content items and reels).
+// ipHash is a salted hash used only for DB-backed rate limiting — never
+// returned to clients. Authors delete their own comment with a signed
+// token kept on their device; the admin can delete any comment.
+model FeedComment {
+  id        String   @id @default(cuid())
+  itemType  String
+  itemId    String
+  name      String?
+  text      String
+  ipHash    String
+  createdAt DateTime @default(now())
+
+  @@index([itemType, itemId, createdAt])
+  @@index([ipHash, createdAt])
+}
+
 model InstagramPage {
   id        String          @id @default(cuid())
   username  String          @unique

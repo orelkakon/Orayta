@@ -17,6 +17,22 @@ export function createAuthToken(): string | null {
   return createHmac('sha256', secret).update('orayta-admin-v1').digest('hex');
 }
 
+// Generic HMAC with the same secret — for other signed, unforgeable values
+// (e.g. a feed comment's author delete-token). Callers namespace `value`.
+export function signValue(value: string): string | null {
+  const secret = getSecret();
+  if (!secret) return null;
+  return createHmac('sha256', secret).update(value).digest('hex');
+}
+
+export function verifySignedValue(value: string, signature: string | null): boolean {
+  const expected = signValue(value);
+  if (!signature || !expected) return false;
+  const a = Buffer.from(signature);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
 export function isValidAuthToken(value: string | undefined): boolean {
   const expected = createAuthToken();
   if (!value || !expected) return false;

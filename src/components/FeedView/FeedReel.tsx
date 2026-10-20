@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import styled, { css, keyframes } from 'styled-components';
-import type { FeedReelSlide } from '@/types';
+import type { FeedReelSlide, FeedCommentsTarget } from '@/types';
+import { LineIcon } from '@/components/common/LineIcons';
+import { FEED_GOLD } from './feedTypes';
 import { HE } from '@/lib/hebrewTexts';
 import { trackShare } from '@/lib/shareCounter';
 import { reelCodeToMediaId } from '@/lib/instagram';
@@ -98,9 +100,11 @@ function InstagramIcon() {
 interface Props {
   slide: FeedReelSlide;
   onVisible: (visible: boolean) => void;
+  commentCount: number;
+  onComments: (target: FeedCommentsTarget) => void;
 }
 
-export default function FeedReel({ slide, onVisible }: Props) {
+export default function FeedReel({ slide, onVisible, commentCount, onComments }: Props) {
   const slideRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
   const activeRef = useRef(false);
@@ -166,6 +170,12 @@ export default function FeedReel({ slide, onVisible }: Props) {
         <Shield $pos="right" />
       </FrameWrap>
       <Bar>
+        <BarBtn
+          onClick={() => onComments({ type: 'reel', id: slide.reelId, label: HE.COMMENTS_REEL_LABEL, icon: 'reels', accent: FEED_GOLD })}
+          aria-label={`${HE.COMMENTS_OPEN} (${commentCount})`}
+        >
+          <LineIcon name="comment" size={16} strokeWidth={2} /> {commentCount > 0 ? commentCount : HE.COMMENTS_OPEN}
+        </BarBtn>
         <BarBtn onClick={doShare}>↗ {HE.FEED_REEL_SHARE}</BarBtn>
         <BarBtn onClick={openInInstagram}>
           <InstagramIcon /> {HE.FEED_REEL_OPEN_IG}

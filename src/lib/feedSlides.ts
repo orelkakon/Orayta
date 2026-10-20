@@ -62,6 +62,8 @@ export function buildFeedSlides(
         code: reel.code,
         url: reel.url,
         username: reel.username ?? null,
+        reelId: reel.id,
+        comments: reel.comments ?? 0,
       });
       gapIdx += 1;
     }

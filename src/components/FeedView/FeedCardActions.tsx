@@ -31,6 +31,13 @@ const RailBtn = styled.button<{ $active?: boolean; $tint?: string }>`
   &:active { transform: scale(0.85); }
 `;
 
+// Icon button with its count underneath (comments), Instagram-rail style.
+const RailStack = styled.div`
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  color: rgba(255,255,255,0.85); font-size: 0.7rem; font-weight: 700;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.6); font-variant-numeric: tabular-nums;
+`;
+
 const bookmarkPop = keyframes`
   0%   { transform: scale(1); }
   40%  { transform: scale(1.3); }
@@ -66,10 +73,12 @@ interface Props {
   isSaved: boolean;
   slideRef: React.RefObject<HTMLDivElement | null>;
   onBookmark: (item: FeedItem) => void;
+  onComments: () => void;
+  commentCount: number;
   copyText?: string;
 }
 
-export default function FeedCardActions({ item, isSaved, slideRef, onBookmark, copyText }: Props) {
+export default function FeedCardActions({ item, isSaved, slideRef, onBookmark, onComments, commentCount, copyText }: Props) {
   const [copied, setCopied] = useState(false);
   const [bmkPop, setBmkPop] = useState(false);
 
@@ -135,6 +144,12 @@ export default function FeedCardActions({ item, isSaved, slideRef, onBookmark, c
 
   return (
     <Rail>
+      <RailStack>
+        <RailBtn onClick={e => { e.stopPropagation(); onComments(); }} aria-label={`${HE.COMMENTS_OPEN} (${commentCount})`} title={HE.COMMENTS_OPEN}>
+          <LineIcon name="comment" size={21} strokeWidth={2} />
+        </RailBtn>
+        {commentCount > 0 && <span aria-hidden>{commentCount}</span>}
+      </RailStack>
       <BookmarkRailBtn
         $active={isSaved} $tint={FEED_GOLD}
         className={bmkPop ? 'pop' : ''}

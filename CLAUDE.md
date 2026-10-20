@@ -63,6 +63,13 @@ Map + distance-sorted list of synagogues near the visitor. **Fully automatic —
 - **Map tiles:** `src/lib/mapTiles.ts` (OSM standard tiles, keyless; CARTO now returns "API KEY REQUIRED" images). Override with `NEXT_PUBLIC_MAP_TILE_URL` / `NEXT_PUBLIC_MAP_TILE_ATTRIBUTION`. Leaflet path classes must be passed as the `className` prop, not inside `pathOptions` (setStyle ignores it).
 - **"חדש" badges:** `src/lib/newBadges.ts` — date-expiring, no follow-up commit needed.
 
+### 2e. Feed comments (רגע של תורה)
+Public, anonymous comments (text + optional name/nickname) on every feed post — content items and reels (`itemType` = feed type or `'reel'`, `itemId` = the item/reel id). Model `FeedComment`.
+
+- **API:** `GET /api/feed/comments?type=&id=&cursor=` (newest first, 20/page, returns `total`), `POST /api/feed/comments`, `DELETE /api/feed/comments/[id]` (admin, or the author via the signed `x-comment-token` returned on POST and kept in localStorage). Counts ship with `/api/feed` and `/api/instagram/reels` (`comments` field, one `groupBy`).
+- **Abuse controls:** rules in `src/lib/feedComments.ts` (pure, tested — length limits, no links, bidi/control chars stripped); DB-backed rate limit per hashed IP (5 / 10 min, 40 / day), duplicate check, honeypot field, target must exist. `ipHash` is never returned.
+- **UI:** `src/components/FeedView/comments/` — rail button with count on cards, button in the reel bar, bottom sheet (`CommentsSheet`) with composer; name is remembered per device.
+
 ### 2d. Torah video admin — backfill (`/feed-videos`)
 Per-page "השלמת חסרים" button → `POST /api/instagram/pages/[id]/backfill` (streams NDJSON progress). Walks newest→older, imports ≤10 reels, stops at the first reel already in the DB; skips pinned posts, non-videos, reels over `reel_max_seconds` and preview-only embeds. Source: Graph API Business Discovery when `IG_GRAPH_TOKEN` + `IG_GRAPH_USER_ID` are set, otherwise the public profile embed (newest ~6 posts, no pagination). An unfinished gap is resumed via `AppConfig` key `ig_backfill_session:<pageId>`. Logic is in `src/lib/igBackfill.ts` (pure, tested).
 

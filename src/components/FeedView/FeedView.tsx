@@ -13,6 +13,8 @@ import FeedReader, { ReaderData } from './FeedReader';
 import FeedReel from './FeedReel';
 import SavedPanel from './SavedPanel';
 import { useFeedEngagement } from './useFeedEngagement';
+import { useCommentsSheet } from './comments/useCommentsSheet';
+import CommentsSheet from './comments/CommentsSheet';
 import type { FeedItem, FeedSlide, Dedication, InstagramReel } from '@/types';
 import { ALL_FEED_TYPES, FeedPrefs, DEFAULT_FEED_PREFS, getFeedPrefs, saveFeedPrefs, isCustomPrefs } from '@/lib/feedPrefs';
 import { shuffleArray } from '@/lib/feedShuffle';
@@ -96,6 +98,7 @@ export default function FeedView() {
   const reelGapsRef = useRef<number[]>([]);
 
   const { reacted, savedIds, savedItems, handleReact, handleBookmark } = useFeedEngagement(setCards);
+  const comments = useCommentsSheet();
 
   const fetchMore = useCallback(async () => {
     if (fetchingRef.current) return;
@@ -211,7 +214,12 @@ export default function FeedView() {
         {displaySlides.map((slide, i) => {
           if ('slideType' in slide) {
             if (slide.slideType === 'reel') {
-              return <FeedReel key={`reel-${slide.id}`} slide={slide} onVisible={handleReelVisible} />;
+              return (
+                <FeedReel
+                  key={`reel-${slide.id}`} slide={slide} onVisible={handleReelVisible}
+                  commentCount={comments.countFor('reel', slide.reelId, slide.comments)} onComments={comments.open}
+                />
+              );
             }
             if (slide.slideType === 'seal') {
               return <FeedSeal key="seal" days={streak.days} best={streak.best} viewed={viewedToday} />;
@@ -229,11 +237,19 @@ export default function FeedView() {
               onReact={handleReact}
               onBookmark={handleBookmark}
               onExpand={setReader}
+              commentCount={comments.countFor(item.type, item.id, item.comments)}
+              onComments={comments.open}
             />
           );
         })}
       </Scroll>
       {reader && <FeedReader data={reader} onClose={() => setReader(null)} />}
+      {comments.target && (
+        <CommentsSheet
+          key={`${comments.target.type}:${comments.target.id}`}
+          target={comments.target} onTotal={comments.onTotal} onClose={comments.close}
+        />
+      )}
       <SavedPanel
         open={savedMode}
         items={savedItems}

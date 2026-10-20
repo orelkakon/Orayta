@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { deckPage } from '@/lib/feedShuffle';
+import { commentCounts } from '@/lib/feedCommentsServer';
 import type { FeedReactions, FeedItemType } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -104,7 +105,10 @@ export async function GET(req: NextRequest) {
     ...sikumEntries.map(s => ({ itemType: 'sikum', itemId: s.id })),
   ];
 
-  const likeRecords = refs.length > 0 ? await prisma.feedLike.findMany({ where: { OR: refs } }) : [];
+  const [likeRecords, commentMap] = await Promise.all([
+    refs.length > 0 ? prisma.feedLike.findMany({ where: { OR: refs } }) : [],
+    commentCounts(refs),
+  ]);
   const reactMap = new Map<string, FeedReactions>();
   likeRecords.forEach(l => {
     const key = `${l.itemType}:${l.itemId}`;
@@ -116,6 +120,8 @@ export async function GET(req: NextRequest) {
   });
   const getReactions = (type: string, id: string): FeedReactions =>
     reactMap.get(`${type}:${id}`) ?? { heart: 0, fire: 0, spark: 0 };
+  const withComments = <T extends { type: string; id: string }>(item: T) =>
+    ({ ...item, comments: commentMap.get(`${item.type}:${item.id}`) ?? 0 });
 
   const yahrzeitItems = extraYahrzeitRabbis.map(r => ({
     type: 'rabbi' as const, id: r.id, isYahrzeit: true,
@@ -131,5 +137,5 @@ export async function GET(req: NextRequest) {
     ...sikumEntries.map(s => ({ type: 'sikum' as const, id: s.id, reactions: getReactions('sikum', s.id), data: { id: s.id, title: s.title, text: s.text, bookName: s.book.name, bookIcon: s.book.icon, location: s.location, date: s.date } })),
   ]);
 
-  return NextResponse.json([...yahrzeitItems, ...regularItems]);
+  return NextResponse.json([...yahrzeitItems, ...regularItems].map(withComments));
 }

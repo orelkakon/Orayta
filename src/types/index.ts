@@ -150,6 +150,7 @@ export interface FeedItem {
   type: FeedItemType;
   id: string;
   reactions: FeedReactions;
+  comments?: number;
   isYahrzeit?: boolean;
   data: Citation | Rabbi | Book | Chidush | FeedGematriaData | FeedSikumData;
 }
@@ -178,6 +179,7 @@ export interface InstagramReel {
   active: boolean;
   createdAt: string;
   username?: string | null;
+  comments?: number;
 }
 
 export interface FeedReelSlide {
@@ -186,6 +188,39 @@ export interface FeedReelSlide {
   code: string;
   url: string;
   username: string | null;
+  reelId: string;
+  comments: number;
+}
+
+/** Anything in the feed people can comment on (content items + reels). */
+export type FeedCommentTarget = FeedItemType | 'reel';
+
+export interface FeedComment {
+  id: string;
+  name: string | null;
+  text: string;
+  createdAt: string;
+}
+
+export interface FeedCommentsPage {
+  comments: FeedComment[];
+  total: number;
+  nextCursor: string | null;
+}
+
+/** POST /api/feed/comments response — `token` lets the author delete it later. */
+export interface FeedCommentCreated {
+  comment: FeedComment;
+  token: string;
+}
+
+/** Which post the comments sheet is open for. */
+export interface FeedCommentsTarget {
+  type: FeedCommentTarget;
+  id: string;
+  label: string;
+  icon: string;
+  accent: string;
 }
 
 /** The daily "חתימה" celebration slide — appears once per day at the goal. */
