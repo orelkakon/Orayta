@@ -1,17 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import styled, { css, keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { LineIcon } from '@/components/common/LineIcons';
 import { SERVICES } from '@/lib/siddur';
-import type { ServiceId } from '@/lib/siddur';
-import { suggestService, prayerDay, PrayerDay } from '@/lib/siddur/calendar';
 import { occasionLabels } from '@/lib/siddur/today';
 import { formatHebrewDate } from '@/lib/hebrewDate';
 import SiddurExtras from './SiddurExtras';
+import { usePrayerDay } from './usePrayerDay';
 
 const Page = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
 
@@ -75,14 +73,11 @@ const Tag = styled.span`
 const Arrow = styled.span`display: none; color: ${theme.colors.textLight}; ${theme.media.md} { display: flex; }`;
 
 export default function SiddurHome() {
-  // Client-only: the suggestion depends on the reader's current time.
-  const [now, setNow] = useState<ServiceId | null>(null);
-  const [day, setDay] = useState<PrayerDay | null>(null);
-  useEffect(() => {
-    const t = new Date();
-    setNow(suggestService(t));
-    setDay(prayerDay(t, 'shacharit'));
-  }, []);
+  // The service that fits the time, and its day: after sunset that is
+  // tonight's arvit, so the date shown has already moved on.
+  const day = usePrayerDay('auto');
+  const now = day?.service ?? null;
+  const evening = now === 'arvit';
 
   return (
     <Page>
@@ -91,9 +86,9 @@ export default function SiddurHome() {
         <Subtitle>{HE.SIDDUR_SUBTITLE}</Subtitle>
         {day && (
           <Today>
-            <strong>{formatHebrewDate(day.at)}</strong>
+            <strong>{evening ? `${HE.SIDDUR_TONIGHT} · ` : ''}{formatHebrewDate(day.at)}</strong>
             {occasionLabels(day).map(o => <Tag key={o}>{o}</Tag>)}
-            <span>· {day.tachanun ? HE.SIDDUR_TACHANUN_SAID : HE.SIDDUR_TACHANUN_NOT(day.noTachanunReason ?? '')}</span>
+            {!evening && <span>· {day.tachanun ? HE.SIDDUR_TACHANUN_SAID : HE.SIDDUR_TACHANUN_NOT(day.noTachanunReason ?? '')}</span>}
           </Today>
         )}
       </Head>

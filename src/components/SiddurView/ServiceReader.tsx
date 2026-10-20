@@ -8,32 +8,16 @@ import { HE } from '@/lib/hebrewTexts';
 import { LineIcon } from '@/components/common/LineIcons';
 import { getService, SERVICES } from '@/lib/siddur';
 import type { ServiceId } from '@/lib/siddur';
-import { prayerDay, PrayerDay } from '@/lib/siddur/calendar';
 import ReaderBar from './ReaderBar';
 import ContentsSheet from './ContentsSheet';
 import PrayerSectionView from './PrayerSectionView';
-import TodayStrip from './TodayStrip';
+import ReaderHeader from './ReaderHeader';
 import { useServiceText } from './useServiceText';
 import { useScrollSpy, jumpTo } from './useScrollSpy';
 import { useSiddurFont } from './useSiddurFont';
+import { usePrayerDay } from './usePrayerDay';
 
 const Page = styled.div`display: flex; flex-direction: column;`;
-
-const Top = styled.div`display: flex; align-items: center; justify-content: space-between; gap: ${theme.spacing.sm}; margin-bottom: ${theme.spacing.sm};`;
-
-const Back = styled(Link)`
-  font-size: ${theme.fontSizes.sm}; color: ${theme.colors.textMuted};
-  padding: 6px 10px; min-height: 36px; display: inline-flex; align-items: center;
-  border-radius: ${theme.radii.sm}; border: 1px solid ${theme.colors.border};
-  &:hover { color: ${theme.colors.primary}; border-color: ${theme.colors.primary}; }
-`;
-
-const Title = styled.h1`
-  display: flex; align-items: center; gap: ${theme.spacing.sm};
-  font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.h1}; color: ${theme.colors.primary};
-`;
-
-const Nusach = styled.span`font-family: ${theme.fonts.ui}; font-size: ${theme.fontSizes.xs}; color: ${theme.colors.textMuted};`;
 
 const Body = styled.article`padding-top: ${theme.spacing.sm};`;
 
@@ -73,9 +57,8 @@ export default function ServiceReader({ id }: { id: ServiceId }) {
   const ids = useMemo(() => service.sections.map(s => s.id), [service]);
   const { active, progress } = useScrollSpy(ids, rootRef, barRef);
   const [contentsOpen, setContentsOpen] = useState(false);
-  // Computed after mount: the server has no idea what day it is for the reader.
-  const [day, setDay] = useState<PrayerDay | null>(null);
-  useEffect(() => { setDay(prayerDay(new Date(), id)); }, [id]);
+  // Client-only: the server has no idea what day it is for the reader.
+  const day = usePrayerDay(id);
 
   // Deep link (#shema): jump once the text is laid out.
   const linkedRef = useRef(false);
@@ -96,16 +79,14 @@ export default function ServiceReader({ id }: { id: ServiceId }) {
 
   return (
     <Page ref={rootRef} style={{ ['--siddur-scale' as string]: font.scale }}>
-      <Top>
-        <Title><LineIcon name={service.icon} size={26} />{service.title}<Nusach>{HE.SIDDUR_NUSACH}</Nusach></Title>
-        <Back href="/siddur">{HE.SIDDUR_BACK}</Back>
-      </Top>
+      <ReaderHeader
+        service={service} day={day} onJump={jumpTo}
+        canShrink={font.canShrink} canGrow={font.canGrow} onSmaller={font.smaller} onLarger={font.larger}
+      />
       <ReaderBar
         ref={barRef} service={service} day={day} active={active} progress={progress}
-        canShrink={font.canShrink} canGrow={font.canGrow} onSmaller={font.smaller} onLarger={font.larger}
         onJump={jumpTo} onContents={() => setContentsOpen(true)}
       />
-      {day && <TodayStrip service={service} day={day} onJump={jumpTo} />}
       {status === 'error' ? (
         <ErrorBox role="alert">
           <span>{HE.SIDDUR_LOAD_ERROR}</span>
