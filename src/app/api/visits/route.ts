@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import { prisma } from '@/lib/db';
+import { isAdmin } from '@/lib/auth';
 
 // Read side lives in the admin-only /api/admin/stats aggregate.
 export async function POST(req: NextRequest) {
+  // The admin's own browsing never counts toward the stats.
+  if (isAdmin(req)) return NextResponse.json({ ok: true });
   const raw = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
     ?? req.headers.get('x-real-ip')
     ?? '0.0.0.0';

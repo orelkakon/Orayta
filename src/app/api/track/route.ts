@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { isAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +15,8 @@ function todayKey(): string {
 }
 
 export async function POST(req: NextRequest) {
+  // The admin's own browsing never counts toward the stats.
+  if (isAdmin(req)) return NextResponse.json({ ok: true });
   const body = (await req.json().catch(() => null)) as { metric?: string } | null;
   const metric = body?.metric;
   if (!metric || !METRICS.includes(metric as Metric)) {
