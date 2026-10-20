@@ -5,7 +5,15 @@ export type PlayStatus = 'lobby' | 'question' | 'reveal' | 'board' | 'ended';
 export type PlayTopic = 'talmud' | 'rabbis' | 'gematria';
 
 export type PlayQuestionKind =
-  | 'masechet' | 'complete' | 'era' | 'whoFirst' | 'bio' | 'book' | 'gematria';
+  // Talmud
+  | 'masechet' | 'daf' | 'complete' | 'seder'
+  // Rabbis
+  | 'era' | 'century' | 'whoFirst' | 'whoLast' | 'contemporary' | 'bio' | 'image'
+  | 'yahrzeit' | 'relation' | 'fact' | 'book' | 'bookOf'
+  // Gematria
+  | 'gematria' | 'gematriaWord';
+
+export type PlayLevel = 'easy' | 'normal' | 'hard';
 
 /** A frozen question as stored in GameSession.questions. */
 export interface PlayQuestion {
@@ -17,17 +25,22 @@ export interface PlayQuestion {
   correct: number;
   /** Shown on reveal — the source or a short explanation. */
   explain?: string;
+  /** Optional picture (rabbi portrait) shown with the prompt. */
+  image?: string;
   /** Read-only time before the options open, scaled to the prompt length. */
   leadMs: number;
 }
 
 export interface PlaySettings {
-  topics: PlayTopic[];
+  kinds: PlayQuestionKind[];
   count: number;
   seconds: number;
+  level: PlayLevel;
+  /** Talmud questions only from this seder / masechet. */
   seder?: string;
   masechet?: string;
-  title?: string;
+  /** Rabbi questions only about these eras (RabbiCategory keys); empty = all. */
+  eras?: string[];
 }
 
 export type PlayCreateRequest = PlaySettings;
@@ -63,6 +76,7 @@ export interface PlayPublicQuestion {
   kind: PlayQuestionKind;
   prompt: string;
   body?: string;
+  image?: string;
   options: string[];
   /** When the question appeared (the read-only lead starts here). */
   shownAt: number;

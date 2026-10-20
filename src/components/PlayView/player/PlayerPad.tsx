@@ -6,6 +6,7 @@ import { HE } from '@/lib/hebrewTexts';
 import type { PlayState } from '@/types/play';
 import AnswerTile, { Shape } from '../AnswerTile';
 import LeadBar from '../LeadBar';
+import QuestionImage from '../QuestionImage';
 import TimerRing from '../TimerRing';
 import { useTicker } from '../usePlayState';
 import { Center, Glass, Pill, Sub, Title, popIn, reduced } from '../playStyles';
@@ -87,7 +88,8 @@ export default function PlayerPad({ state, now, picked, onPick }: Props) {
         {open ? <TimerRing opensAt={q.opensAt} endsAt={q.endsAt} now={now} size={52} /> : <Pill>{HE.PLAY_POINTS(state.me?.score ?? 0)}</Pill>}
       </Head>
       <Prompt $small={open}>{q.prompt}</Prompt>
-      {q.body && <Body $word={q.kind === 'gematria'}>{q.body}</Body>}
+      {q.image && <QuestionImage src={q.image} height={open ? '18vh' : '30vh'} />}
+      {q.body && <Body $word={q.kind === 'gematria' || q.kind === 'gematriaWord'}>{q.body}</Body>}
       {!open ? (
         <LeadBar from={q.shownAt} to={q.opensAt} now={now} label={HE.PLAY_READ_Q} />
       ) : (

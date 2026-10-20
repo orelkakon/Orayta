@@ -20,7 +20,7 @@ const Side = styled.div`display: flex; align-items: center; gap: ${theme.spacing
 const Brand = styled.strong`font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.lg}; color: ${theme.game.gold};`;
 const Code = styled(Pill)`direction: ltr; color: ${theme.game.ink}; font-size: ${theme.fontSizes.md};`;
 
-type Kind = 'remote' | 'screen' | 'players' | 'end';
+type Kind = 'remote' | 'screen' | 'players' | 'end' | 'invite';
 
 export default function HostTopBar({ state, reconnecting, onOpen }: { state: PlayState; reconnecting: boolean; onOpen: (k: Kind) => void }) {
   return (
@@ -31,6 +31,7 @@ export default function HostTopBar({ state, reconnecting, onOpen }: { state: Pla
         <ReconnectBadge show={reconnecting} />
       </Side>
       <Side>
+        {state.status !== 'ended' && <GhostButton type="button" onClick={() => onOpen('invite')}>📤 {HE.PLAY_INVITE}</GhostButton>}
         <GhostButton type="button" onClick={() => onOpen('players')}>👥 {state.playerCount}</GhostButton>
         <GhostButton type="button" onClick={() => onOpen('screen')}>🖥️ {HE.PLAY_OPEN_SCREEN}</GhostButton>
         <GhostButton type="button" onClick={() => onOpen('remote')}>📱 {HE.PLAY_REMOTE}</GhostButton>

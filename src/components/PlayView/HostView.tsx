@@ -98,6 +98,8 @@ function HostGame({ code, hostKey }: { code: string; hostKey: string }) {
           code={code}
           hostKey={hostKey}
           roster={state.roster}
+          total={state.total}
+          seconds={state.settings.seconds}
           onClose={() => setSheet(null)}
           onAskKick={(id, name) => setSheet({ kind: 'kick', id, name })}
           onKick={id => { void act({ action: 'kick', playerId: id }); }}

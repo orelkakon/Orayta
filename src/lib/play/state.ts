@@ -118,7 +118,7 @@ export function buildState(s: Snapshot, viewer: Viewer, now: number): PlayState 
       ? players.slice(0, ROSTER_SIZE).map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score }))
       : [],
     question: q && live
-      ? { index: s.current, kind: q.kind, prompt: q.prompt, body: q.body, options: q.options, shownAt: s.phaseAt, ...win }
+      ? { index: s.current, kind: q.kind, prompt: q.prompt, body: q.body, image: q.image, options: q.options, shownAt: s.phaseAt, ...win }
       : null,
     reveal: q && shown && s.status !== 'ended' ? { correct: q.correct, counts, explain: q.explain } : null,
     board: shown ? ranked.slice(0, BOARD_SIZE) : [],

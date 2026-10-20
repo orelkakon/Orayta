@@ -7,6 +7,7 @@ import type { PlayState } from '@/types/play';
 import AnswerTile, { type TileState } from '../AnswerTile';
 import TimerRing from '../TimerRing';
 import LeadBar from '../LeadBar';
+import QuestionImage from '../QuestionImage';
 import { useTicker } from '../usePlayState';
 import { Glass, Pill, reduced, rise } from '../playStyles';
 
@@ -92,7 +93,8 @@ export default function StageQuestion({ state, now }: Props) {
         </Pills>
       </Head>
       <Prompt key={`p${q.index}`}>{q.prompt}</Prompt>
-      {q.body && <Body key={`b${q.index}`} $word={q.kind === 'gematria'}>{q.body}</Body>}
+      {q.image && <QuestionImage key={`i${q.index}`} src={q.image} height="34vh" />}
+      {q.body && <Body key={`b${q.index}`} $word={q.kind === 'gematria' || q.kind === 'gematriaWord'}>{q.body}</Body>}
       {leading && <LeadBar from={q.shownAt} to={q.opensAt} now={now} label={HE.PLAY_READ_Q} />}
       {!leading && (
         <Tiles>

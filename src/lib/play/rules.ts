@@ -1,5 +1,7 @@
-import type { PlaySettings, PlayStatus, PlayTopic, PlayHostAction } from '@/types/play';
+import type { PlaySettings, PlayStatus, PlayHostAction, PlayLevel } from '@/types/play';
 import { MASECHTOT, SEDARIM } from '@/lib/hebrewData';
+import { CATEGORY_ORDER } from '@/lib/rabbisData';
+import { ALL_KINDS, LEVELS } from './kinds';
 
 /**
  * Pure rules of the group quiz — limits, validation, scoring, ranking and the
@@ -15,7 +17,6 @@ export const GRACE_MS = 1500;
 export const SESSION_TTL_MS = 12 * 3600_000;
 export const QUESTION_COUNTS = [5, 10, 15, 20] as const;
 export const QUESTION_SECONDS = [10, 20, 30, 45] as const;
-export const TOPICS: readonly PlayTopic[] = ['talmud', 'rabbis', 'gematria'];
 export const AVATARS = ['🦁', '🕊️', '📜', '🕯️', '🍇', '🌟', '📖', '🔥', '🌿', '🍯', '🎺', '🏛️', '🌙', '🍎', '💎', '🦌'] as const;
 
 const MAX_POINTS = 1000;
@@ -55,16 +56,19 @@ export function validateAvatar(raw: unknown): string {
 export function validateSettings(raw: unknown): PlaySettings | null {
   if (typeof raw !== 'object' || raw === null) return null;
   const r = raw as Record<string, unknown>;
-  const topics = Array.isArray(r.topics)
-    ? TOPICS.filter(t => (r.topics as unknown[]).includes(t))
-    : [];
-  if (topics.length === 0) return null;
+  const kinds = Array.isArray(r.kinds) ? ALL_KINDS.filter(k => (r.kinds as unknown[]).includes(k)) : [];
+  if (kinds.length === 0) return null;
+  const level: PlayLevel = LEVELS.find(l => l === r.level) ?? 'normal';
+  const eras = Array.isArray(r.eras) ? CATEGORY_ORDER.filter(c => (r.eras as unknown[]).includes(c)) : [];
   const count = (QUESTION_COUNTS as readonly number[]).includes(Number(r.count)) ? Number(r.count) : null;
   const seconds = (QUESTION_SECONDS as readonly number[]).includes(Number(r.seconds)) ? Number(r.seconds) : null;
   if (count === null || seconds === null) return null;
   const masechet = typeof r.masechet === 'string' && MASECHTOT.some(m => m.name === r.masechet) ? r.masechet : undefined;
   const seder = !masechet && typeof r.seder === 'string' && (SEDARIM as readonly string[]).includes(r.seder) ? r.seder : undefined;
-  return { topics, count, seconds, ...(seder ? { seder } : {}), ...(masechet ? { masechet } : {}) };
+  return {
+    kinds, count, seconds, level,
+    ...(seder ? { seder } : {}), ...(masechet ? { masechet } : {}), ...(eras.length ? { eras } : {}),
+  };
 }
 
 /** Read time before the options open — longer prompts get longer to read. */

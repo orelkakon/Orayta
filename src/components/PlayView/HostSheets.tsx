@@ -7,11 +7,13 @@ import { HE } from '@/lib/hebrewTexts';
 import type { PlayRosterEntry } from '@/types/play';
 import PlaySheet from './PlaySheet';
 import QrCode from './QrCode';
+import InviteActions from './InviteActions';
+import { joinUrl } from './playClient';
 import { GhostButton, GoldButton, Sub } from './playStyles';
 
 /** The host's secondary panels: remote control, projector link, players, confirms. */
 export type HostSheet =
-  | { kind: 'remote' } | { kind: 'screen' } | { kind: 'players' } | { kind: 'end' }
+  | { kind: 'remote' } | { kind: 'screen' } | { kind: 'players' } | { kind: 'end' } | { kind: 'invite' }
   | { kind: 'kick'; id: string; name: string };
 
 const Col = styled.div`display: flex; flex-direction: column; align-items: center; gap: ${theme.spacing.md}; text-align: center;`;
@@ -31,6 +33,10 @@ const List = styled.ul`
   }
   li span:nth-child(2) { flex: 1; font-weight: 600; }
 `;
+const Pin = styled.div`
+  direction: ltr; font-size: 2.6rem; font-weight: 800; letter-spacing: 0.08em;
+  color: ${theme.game.gold}; font-variant-numeric: tabular-nums;
+`;
 const Danger = styled(GhostButton)`border-color: ${theme.game.wrong}; color: ${theme.game.ink};`;
 
 function CopyButton({ text }: { text: string }) {
@@ -47,14 +53,27 @@ interface Props {
   code: string;
   hostKey: string;
   roster: PlayRosterEntry[];
+  total: number;
+  seconds: number;
   onClose: () => void;
   onKick: (id: string) => void;
   onAskKick: (id: string, name: string) => void;
   onEnd: () => void;
 }
 
-export default function HostSheets({ sheet, code, hostKey, roster, onClose, onKick, onAskKick, onEnd }: Props) {
+export default function HostSheets({ sheet, code, hostKey, roster, total, seconds, onClose, onKick, onAskKick, onEnd }: Props) {
   const origin = window.location.origin;
+  if (sheet.kind === 'invite') {
+    return (
+      <PlaySheet title={HE.PLAY_INVITE_TITLE} onClose={onClose}>
+        <Col>
+          <Pin>{code.slice(0, 3)} {code.slice(3)}</Pin>
+          <QrCode value={joinUrl(code)} size={200} label={HE.PLAY_ARIA_QR} />
+          <InviteActions code={code} total={total} seconds={seconds} />
+        </Col>
+      </PlaySheet>
+    );
+  }
   if (sheet.kind === 'remote') {
     const url = `${origin}/play/host/${code}#k=${hostKey}`;
     return (

@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 import {
   generateCode, isCode, validateName, validateSettings, questionPoints, rankOf, nextPhase, leadMsFor, GRACE_MS,
 } from '@/lib/play/rules';
-import { buildQuestions, maskName, type PlaySource } from '@/lib/play/build';
+import { buildQuestions, type PlaySource } from '@/lib/play/build';
+import { dafToNumber } from '@/lib/hebrewData';
+import { calculateGematria } from '@/lib/gematria';
+import type { PlaySettings } from '@/types/play';
 import { buildState, shouldAutoReveal, type Snapshot } from '@/lib/play/state';
 
 function seeded(seed: number): () => number {
@@ -28,12 +31,12 @@ test('names: trimmed, bidi stripped, links and empties rejected', () => {
 });
 
 test('settings: only allowed values survive', () => {
-  assert.deepEqual(validateSettings({ topics: ['talmud', 'x'], count: 10, seconds: 20, masechet: 'ברכות' }),
-    { topics: ['talmud'], count: 10, seconds: 20, masechet: 'ברכות' });
-  assert.equal(validateSettings({ topics: [], count: 10, seconds: 20 }), null);
-  assert.equal(validateSettings({ topics: ['rabbis'], count: 7, seconds: 20 }), null);
-  assert.deepEqual(validateSettings({ topics: ['rabbis'], count: 5, seconds: 10, masechet: 'לא קיימת' }),
-    { topics: ['rabbis'], count: 5, seconds: 10 });
+  assert.deepEqual(validateSettings({ kinds: ['masechet', 'x'], count: 10, seconds: 20, masechet: 'ברכות', level: 'hard' }),
+    { kinds: ['masechet'], count: 10, seconds: 20, level: 'hard', masechet: 'ברכות' });
+  assert.equal(validateSettings({ kinds: [], count: 10, seconds: 20 }), null);
+  assert.equal(validateSettings({ kinds: ['era'], count: 7, seconds: 20 }), null);
+  assert.deepEqual(validateSettings({ kinds: ['era'], count: 5, seconds: 10, masechet: 'לא קיימת', level: '??', eras: ['tannaim', 'nope'] }),
+    { kinds: ['era'], count: 5, seconds: 10, level: 'normal', eras: ['tannaim'] });
 });
 
 test('points: fast beats slow, wrong is zero, streak bonus is capped', () => {
@@ -66,60 +69,101 @@ test('lead time scales with prompt length within bounds', () => {
   assert.equal(leadMsFor('א'.repeat(1000)), 7000);
 });
 
+const CATS = ['tannaim', 'amoraim', 'rishonim', 'acharonim', 'geonim'];
 const SRC: PlaySource = {
   citations: Array.from({ length: 12 }, (_, i) => ({
     id: `c${i}`,
     content: `ציטוט מספר ${i} שיש בו הרבה מילים כדי שיהיה אפשר לחתוך אותו לשני חלקים ברורים ${i}`,
-    locations: [{ masechet: i % 2 ? 'ברכות' : 'שבת', seder: i % 2 ? 'סדר זרעים' : 'סדר מועד', daf: 'ב', amud: null }],
+    locations: [{ masechet: i % 2 ? 'ברכות' : 'שבת', seder: i % 2 ? 'סדר זרעים' : 'סדר מועד', daf: ['ב', 'י', 'כ', 'ל'][i % 4], amud: null }],
   })),
   rabbis: Array.from({ length: 30 }, (_, i) => ({
     id: `r${i}`, name: `רבי פלוני ${i}`, fullName: null,
-    bio: `רבי פלוני ${i} היה גדול הדור ופעל רבות בהפצת תורה ברבים בעירו מספר ${i} ובסביבתה הקרובה`,
-    category: ['tannaim', 'amoraim', 'rishonim', 'acharonim', 'geonim'][i % 5], sortYear: 100 + i * 60, datePeriod: `שנה ${i}`,
+    bio: `היה גדול הדור ופעל רבות בהפצת תורה ברבים בעירו מספר ${i} ובסביבתה הקרובה`,
+    category: CATS[i % 5], sortYear: 100 + i * 60, datePeriod: `${100 + i * 60} - ${160 + i * 60}`,
+    deathDate: null, imageUrl: i % 3 ? `https://example.org/r${i}.jpg` : null,
   })),
-  books: Array.from({ length: 8 }, (_, i) => ({ id: `b${i}`, title: `ספר ${i}`, author: `מחבר ${i}` })),
-  gematria: [{ id: 'g1', word: 'שלום', value: 376 }, { id: 'g2', word: 'אמת', value: 441 }],
+  books: Array.from({ length: 8 }, (_, i) => ({ id: `b${i}`, title: `ספר ${i}`, author: `רבי פלוני ${i}`, rabbiId: `r${i}` })),
+  gematria: [
+    { id: 'g1', word: 'שלום', value: 376 }, { id: 'g2', word: 'אמת', value: 441 },
+    { id: 'g3', word: 'חסד', value: 72 }, { id: 'g4', word: 'יין', value: 70 }, { id: 'g5', word: 'אהבה', value: 13 },
+  ],
 };
+const ALL = ['masechet', 'daf', 'complete', 'seder', 'era', 'whoFirst', 'whoLast', 'bio', 'image', 'book', 'bookOf', 'gematria', 'gematriaWord'] as const;
+const opts = (over: Partial<PlaySettings> = {}): PlaySettings => ({ kinds: [...ALL], count: 10, seconds: 20, level: 'normal', ...over });
 
-test('questions: valid options, correct index, no repeats', () => {
+test('questions: valid options, correct index, no repeats, every chosen type shows up', () => {
   for (let seed = 1; seed < 30; seed++) {
-    const qs = buildQuestions(SRC, ['talmud', 'rabbis', 'gematria'], 10, seeded(seed));
-    assert.equal(qs.length, 10);
+    const qs = buildQuestions(SRC, opts({ count: 20 }), seeded(seed));
+    assert.equal(qs.length, 20);
     for (const q of qs) {
-      assert.equal(q.options.length, 4);
-      assert.equal(new Set(q.options).size, 4);
+      assert.equal(q.options.length, 4, q.kind);
+      assert.equal(new Set(q.options).size, 4, q.kind);
       assert.ok(q.correct >= 0 && q.correct < 4);
       assert.ok(q.leadMs >= 2500 && q.leadMs <= 7000);
     }
+    if (seed === 1) assert.ok(new Set(qs.map(q => q.kind)).size >= 11);
   }
+});
+
+test('only the chosen types are asked', () => {
+  const qs = buildQuestions(SRC, opts({ kinds: ['daf', 'gematriaWord'], count: 6 }), seeded(3));
+  assert.ok(qs.length >= 5);
+  assert.ok(qs.every(q => q.kind === 'daf' || q.kind === 'gematriaWord'));
+});
+
+test('eras filter keeps rabbi questions inside the chosen eras', () => {
+  const tannaim = new Set(SRC.rabbis.filter(r => r.category === 'tannaim').map(r => r.name));
+  for (let seed = 1; seed < 15; seed++) {
+    for (const q of buildQuestions(SRC, opts({ kinds: ['bio', 'image'], eras: ['tannaim'], count: 4 }), seeded(seed))) {
+      assert.ok(tannaim.has(q.options[q.correct]));
+    }
+  }
+});
+
+test('daf options are real pages of the masechet, ascending', () => {
+  for (const level of ['easy', 'normal', 'hard'] as const) {
+    for (const q of buildQuestions(SRC, opts({ kinds: ['daf'], count: 5, level }), seeded(9))) {
+      const nums = q.options.map(dafToNumber);
+      assert.deepEqual([...nums].sort((a, b) => a - b), nums);
+      assert.ok(nums.every(n => n >= 2 && n <= 157));
+    }
+  }
+});
+
+test('seder questions are dropped when the game is scoped to one seder', () => {
+  const qs = buildQuestions(SRC, opts({ kinds: ['seder', 'complete'], seder: 'סדר מועד', count: 5 }), seeded(2));
+  assert.ok(qs.every(q => q.kind !== 'seder'));
 });
 
 test('masechet questions never offer another location of the same citation', () => {
   const src = { ...SRC, citations: SRC.citations.map(c => ({ ...c, locations: [...c.locations, { masechet: 'יומא', seder: 'סדר מועד', daf: 'ג', amud: 'א' }] })) };
   for (let seed = 1; seed < 20; seed++) {
-    for (const q of buildQuestions(src, ['talmud'], 5, seeded(seed)).filter(x => x.kind === 'masechet')) {
+    for (const q of buildQuestions(src, opts({ kinds: ['masechet'], count: 5 }), seeded(seed))) {
       assert.ok(!q.options.includes('יומא'));
     }
   }
 });
 
-test('who-first: the right answer is the earliest', () => {
+test('who-first / who-last: the right answer is the earliest / latest', () => {
   for (let seed = 1; seed < 20; seed++) {
-    const qs = buildQuestions(SRC, ['rabbis'], 10, seeded(seed)).filter(q => q.kind === 'whoFirst');
-    for (const q of qs) {
+    for (const q of buildQuestions(SRC, opts({ kinds: ['whoFirst', 'whoLast'], count: 6 }), seeded(seed))) {
       const years = q.options.map(n => SRC.rabbis.find(r => r.name === n)!.sortYear);
-      assert.equal(years[q.correct], Math.min(...years));
+      assert.equal(years[q.correct], q.kind === 'whoFirst' ? Math.min(...years) : Math.max(...years));
     }
   }
 });
 
-test('bio masks the rabbi name', () => {
-  assert.equal(maskName('הרמב"ם כתב, ורבי משה היה רופא', { name: 'רבי משה', fullName: null }), 'הרמב"ם כתב, ו___ היה רופא');
+test('gematria word: exactly one option has the asked value', () => {
+  for (const q of buildQuestions(SRC, opts({ kinds: ['gematriaWord'], count: 5 }), seeded(4))) {
+    const n = Number(q.body);
+    assert.equal(q.options.filter(o => calculateGematria(o) === n).length, 1);
+    assert.equal(calculateGematria(q.options[q.correct]), n);
+  }
 });
 
 const snap = (over: Partial<Snapshot> = {}): Snapshot => ({
   id: 's', code: '123456', status: 'question', current: 0, phaseAt: 0, questionMs: 20000, version: 3,
-  settings: { topics: ['talmud'], count: 1, seconds: 20 },
+  settings: { kinds: ['masechet'], count: 1, seconds: 20, level: 'normal' },
   questions: [{ kind: 'masechet', prompt: 'p', options: ['א', 'ב', 'ג', 'ד'], correct: 2, leadMs: 3000 }],
   players: [
     { id: 'a', name: 'א', avatar: '🦁', score: 900, streak: 1, kicked: false },

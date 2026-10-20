@@ -5,6 +5,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import type { PlayState } from '@/types/play';
 import QrCode from '../QrCode';
+import InviteActions from '../InviteActions';
 import { Glass, Pill, popIn, pulse, reduced, rise } from '../playStyles';
 import { displayHost, joinUrl } from '../playClient';
 
@@ -112,6 +113,8 @@ export default function StageLobby({ state, onKick }: Props) {
         <Pin aria-label={`${HE.PLAY_PIN_LABEL} ${state.code}`}>{spaced}</Pin>
         <Small>{HE.PLAY_LOBBY_SCAN}</Small>
         <QrCode value={joinUrl(state.code)} size={190} label={HE.PLAY_ARIA_QR} />
+        <Pill>{HE.PLAY_LOBBY_SUMMARY(state.total, state.settings.seconds)}</Pill>
+        {state.isHost && <InviteActions code={state.code} total={state.total} seconds={state.settings.seconds} />}
       </JoinCard>
       <RosterCard>
         <RosterHead>
