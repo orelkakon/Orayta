@@ -8,6 +8,8 @@ export const dynamic = 'force-dynamic';
 
 /** One answer per player per question; scored on the server clock. */
 export async function POST(req: NextRequest, { params }: { params: { code: string } }) {
+  // Speed is measured from the moment the tap arrives, not after our own DB work.
+  const now = Date.now();
   let body: { qIndex?: unknown; choice?: unknown };
   try { body = await req.json(); } catch { return playError('bad_request', 400); }
 
@@ -24,7 +26,6 @@ export async function POST(req: NextRequest, { params }: { params: { code: strin
   if (snap.status !== 'question' || snap.current !== qIndex || !q) return playError('closed', 409);
   if (!Number.isInteger(choice) || choice < 0 || choice >= q.options.length) return playError('bad_request', 400);
 
-  const now = Date.now();
   const { opensAt, endsAt } = questionWindow(snap.phaseAt, q.leadMs, snap.questionMs);
   if (now < opensAt - 300 || now > endsAt + GRACE_MS) return playError('closed', 409);
 
