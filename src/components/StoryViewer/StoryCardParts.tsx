@@ -65,6 +65,12 @@ export const SourceChip = styled.span`
   padding: 4px 14px; border-radius: 999px;
 `;
 
+/* "מעשרה הרוגי מלכות" — a warm ember tone, set apart from the date chip. */
+export const MartyrChip = styled(SourceChip)`
+  font-weight: 700; color: rgba(255, 208, 188, 0.95);
+  background: rgba(225, 110, 80, 0.16); border-color: rgba(225, 110, 80, 0.4);
+`;
+
 export const GoldRule = styled.span`
   width: 58px; height: 1px;
   background: linear-gradient(90deg, transparent, rgba(243, 214, 146, 0.85), transparent);

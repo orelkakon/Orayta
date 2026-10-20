@@ -6,6 +6,8 @@ import { CATEGORY_LABELS } from '@/lib/rabbisData';
 import ClampText from './FeedClampText';
 import { FEED_TYPE_STYLES, FEED_GOLD } from './feedTypes';
 import { LineIcon } from '@/components/common/LineIcons';
+import { HE } from '@/lib/hebrewTexts';
+import { isMartyr } from '@/lib/martyrs';
 
 export const BigWord = styled.div`
   color: #FFFDF6; font-family: var(--font-frank, serif);
@@ -73,6 +75,11 @@ const YahrzeitTag = styled.div`
   display: inline-flex; align-items: center; gap: 5px;
 `;
 
+const MartyrTag = styled(YahrzeitTag)`
+  color: rgba(255,205,185,0.92);
+  background: rgba(225,110,80,0.13); border-color: rgba(225,110,80,0.32);
+`;
+
 export const RabbiImg = styled.img`
   width: 94px; height: 94px; border-radius: 50%; object-fit: cover;
   border: 2px solid rgba(${FEED_GOLD}, 0.55); margin-bottom: 4px; cursor: pointer;
@@ -125,6 +132,7 @@ export function renderContent(
         {item.isYahrzeit && <YahrzeitTag><LineIcon name="candle" size={13} /> יארצייט היום</YahrzeitTag>}
         <BigWord>{d.name}</BigWord>
         {d.fullName && d.fullName !== d.name && <SubText style={{ fontSize: '0.96rem', opacity: 0.75 }}>{d.fullName}</SubText>}
+        {isMartyr(d.name) && <MartyrTag><LineIcon name="flame" size={13} /> {HE.RABBI_MARTYR}</MartyrTag>}
         {d.deathDate && !item.isYahrzeit && <YahrzeitTag><LineIcon name="candle" size={13} /> יארצייט: {d.deathDate}</YahrzeitTag>}
         <SubText>{d.datePeriod}</SubText>
         <ClampText text={d.bio} onExpand={() => onExpand({ title: d.name, text: d.bio, href })} />

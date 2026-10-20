@@ -21,6 +21,7 @@ export const HE = {
   RABBIS_SEARCH_PLACEHOLDER: 'חיפוש לפי שם, כינוי או תיאור...',
   RABBIS_FILTER_ALL: 'הכל',
   RABBI_ADD_BTN: 'הוסף רב',
+  RABBI_MARTYR: 'מעשרה הרוגי מלכות',
   RABBI_FORM_EDIT_TITLE: 'עריכת רב',
   RABBI_FORM_ADD_TITLE: 'הוסף רב חדש',
   RABBI_FORM_NAME: 'שם',

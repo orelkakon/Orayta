@@ -4,6 +4,7 @@ import Link from 'next/link';
 import styled from 'styled-components';
 import { LineIcon } from '@/components/common/LineIcons';
 import { HE } from '@/lib/hebrewTexts';
+import { isMartyr } from '@/lib/martyrs';
 import { STORY_ART } from '@/lib/stories';
 import type { StoryContent } from '@/lib/storyImage';
 import type { DailyStory } from '@/types';
@@ -31,6 +32,7 @@ export function StoryCardBody({ story }: { story: DailyStory }) {
         <P.RabbiPortrait url={r.imageUrl} name={r.name} accent={accent} />
         <P.TitleText>{r.name}</P.TitleText>
         {r.fullName && <P.SubText>{r.fullName}</P.SubText>}
+        {isMartyr(r.name) && <P.MartyrChip><LineIcon name="flame" size={14} />{HE.RABBI_MARTYR}</P.MartyrChip>}
         <P.SourceChip>{r.datePeriod}</P.SourceChip>
         <ExpandableText text={r.bio} size="1.02rem" clamp={7} />
       </>);

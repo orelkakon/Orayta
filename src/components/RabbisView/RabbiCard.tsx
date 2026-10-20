@@ -7,6 +7,8 @@ import { HE } from '@/lib/hebrewTexts';
 import { Rabbi, RabbiCategory } from '@/types';
 import { CATEGORY_COLORS, CATEGORY_LABELS } from '@/lib/rabbisData';
 import SpeakButton from '@/components/common/SpeakButton';
+import { LineIcon } from '@/components/common/LineIcons';
+import { isMartyr } from '@/lib/martyrs';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(10px); }
@@ -62,6 +64,14 @@ const FullName = styled.div`
   font-size: 0.82rem;
   color: ${theme.colors.textMuted};
   font-style: italic;
+`;
+
+const MartyrLine = styled.div`
+  display: inline-flex; align-items: center; gap: 4px; align-self: flex-start;
+  margin-top: 3px; padding: 2px 9px; border-radius: 999px;
+  font-size: 0.72rem; font-weight: 700; color: ${theme.colors.accent};
+  background: color-mix(in srgb, ${theme.colors.accent} 10%, transparent);
+  border: 1px solid color-mix(in srgb, ${theme.colors.accent} 28%, transparent);
 `;
 
 const YahrzeitLine = styled.div`
@@ -261,6 +271,7 @@ export default function RabbiCard({ rabbi, index = 0, books, onEdit, onDelete }:
         <NameBlock>
           <Name>{rabbi.name}</Name>
           {rabbi.fullName && <FullName>{rabbi.fullName}</FullName>}
+          {isMartyr(rabbi.name) && <MartyrLine><LineIcon name="flame" size={12} strokeWidth={2} />{HE.RABBI_MARTYR}</MartyrLine>}
           {rabbi.deathDate && (
             <YahrzeitLine>
               <span>🕯</span>
