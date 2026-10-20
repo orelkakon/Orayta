@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import styled, { keyframes } from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { LineIcon } from '@/components/common/LineIcons';
@@ -36,7 +36,7 @@ const Card = styled(Link)<{ $now: boolean }>`
   padding: ${theme.spacing.lg}; border-radius: ${theme.radii.lg};
   background: ${theme.colors.surface}; box-shadow: ${theme.shadows.sm};
   border: 1.5px solid ${p => p.$now ? theme.colors.secondary : theme.colors.borderLight};
-  ${p => p.$now ? `animation: ${glow} 2.6s ease-in-out 2;` : ''}
+  ${p => p.$now && css`animation: ${glow} 2.6s ease-in-out 2;`}
   transition: transform ${theme.motion.base} ${theme.motion.out}, box-shadow ${theme.motion.base}, border-color ${theme.motion.fast};
   &:hover { transform: translateY(-2px); box-shadow: ${theme.shadows.md}; border-color: ${theme.colors.secondary}; }
   &:active { transform: scale(0.98); }
