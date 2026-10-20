@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { parseSubscription, pushIpHash, isPushRateLimited, pushConfigured } from '@/lib/push/server';
+import { pushIpHash, isPushRateLimited, pushConfigured } from '@/lib/push/server';
+import { parseSubscription } from '@/lib/push/validate';
 import { parsePrefs } from '@/lib/push/prefs';
 
 export const dynamic = 'force-dynamic';

@@ -91,3 +91,18 @@ test('hilula matching uses the Israel day (no network)', () => {
   const rabbis = [{ deathDate: 'י חשוון' }, { deathDate: 'י"א חשון' }, { deathDate: null }];
   assert.deepEqual(hilulaRabbisOn(rabbis, new Date('2026-10-21T09:00:00Z')), [rabbis[0]]);
 });
+
+import { isPushServiceUrl, parseSubscription } from '@/lib/push/validate';
+
+test('subscriptions: only real push services and well-formed keys', () => {
+  const keys = { p256dh: 'B'.repeat(87), auth: 'a'.repeat(22) };
+  assert.ok(parseSubscription({ endpoint: 'https://fcm.googleapis.com/fcm/send/abc', keys }));
+  assert.ok(parseSubscription({ endpoint: 'https://web.push.apple.com/QK', keys }));
+  assert.ok(parseSubscription({ endpoint: 'https://updates.push.services.mozilla.com/wpush/v2/x', keys }));
+  assert.ok(isPushServiceUrl('https://wns2-par02p.notify.windows.com/w/?token=x'));
+  assert.equal(parseSubscription({ endpoint: 'https://example.invalid/x', keys }), null);
+  assert.equal(parseSubscription({ endpoint: 'https://fcm.googleapis.com.evil.com/x', keys }), null);
+  assert.equal(parseSubscription({ endpoint: 'http://fcm.googleapis.com/x', keys }), null);
+  assert.equal(parseSubscription({ endpoint: 'https://fcm.googleapis.com:8443/x', keys }), null);
+  assert.equal(parseSubscription({ endpoint: 'https://fcm.googleapis.com/x', keys: { p256dh: 'a', auth: 'b' } }), null);
+});

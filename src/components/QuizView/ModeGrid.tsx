@@ -35,9 +35,12 @@ export const QUIZ_MODES: ModeDef[] = [
 
 export const usesCitationFilter = (m: QuizMode) => QUIZ_MODES.some(d => d.key === m && d.citation);
 
+// Flex, not grid, so an incomplete last row sits centered instead of hugging the right edge.
 const Grid = styled.div`
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: ${theme.spacing.sm};
-  ${theme.media.sm} { grid-template-columns: repeat(3, 1fr); }
+  --cols: 5;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: ${theme.spacing.sm};
+  ${theme.media.sm} { --cols: 3; }
+  > * { flex: 0 0 calc((100% - (var(--cols) - 1) * ${theme.spacing.sm}) / var(--cols)); }
 `;
 const Btn = styled.button<{ $active?: boolean }>`
   ${pressable};

@@ -34,21 +34,6 @@ export async function isPushRateLimited(ipHash: string): Promise<boolean> {
   return n >= SIGNUPS_PER_HOUR;
 }
 
-const B64URL = /^[A-Za-z0-9_-]+={0,2}$/;
-
-/** Validates a browser PushSubscription JSON; only https push-service endpoints. */
-export function parseSubscription(body: unknown): PushSubscriptionJSONBody | null {
-  if (typeof body !== 'object' || body === null) return null;
-  const b = body as { endpoint?: unknown; keys?: { p256dh?: unknown; auth?: unknown } };
-  const { endpoint } = b;
-  const p256dh = b.keys?.p256dh;
-  const auth = b.keys?.auth;
-  if (typeof endpoint !== 'string' || endpoint.length > 1000 || !endpoint.startsWith('https://')) return null;
-  if (typeof p256dh !== 'string' || p256dh.length > 200 || !B64URL.test(p256dh)) return null;
-  if (typeof auth !== 'string' || auth.length > 100 || !B64URL.test(auth)) return null;
-  try { new URL(endpoint); } catch { return null; }
-  return { endpoint, keys: { p256dh, auth } };
-}
 
 /** Finds a row by endpoint, but only if the caller also holds its auth secret. */
 export async function findOwnedSubscription(endpoint: unknown, auth: unknown) {

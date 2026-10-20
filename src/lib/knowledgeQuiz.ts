@@ -16,17 +16,19 @@ import { normalizeHebDate } from '@/lib/yahrzeit';
 export type KRabbi = Pick<Rabbi, 'id' | 'name' | 'fullName' | 'sortYear' | 'datePeriod' | 'bio' | 'category' | 'deathDate'>;
 type Rng = () => number;
 
-const pick = <T,>(arr: T[], rng: Rng): T => arr[Math.floor(rng() * arr.length)];
-function sample<T>(arr: T[], n: number, rng: Rng): T[] {
+// Distinct names on purpose: Next 13.5's minifier inlined these into components
+// whose own `pick` handler then shadowed them (prod-only crash).
+const randomOf = <T,>(arr: T[], rng: Rng): T => arr[Math.floor(rng() * arr.length)];
+function sampleOf<T>(arr: T[], n: number, rng: Rng): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
   return a.slice(0, n);
 }
 
 /** Correct answer + three distractors, shuffled. */
-function assemble(kind: KnowledgeKind, id: string, prompt: string, correct: string, wrong: string[], about: string, rng: Rng): KnowledgeQuestion | null {
+function assembleQuestion(kind: KnowledgeKind, id: string, prompt: string, correct: string, wrong: string[], about: string, rng: Rng): KnowledgeQuestion | null {
   if (wrong.length < 3 || new Set([correct, ...wrong]).size < 4) return null;
-  const options = sample([correct, ...wrong.slice(0, 3)], 4, rng);
+  const options = sampleOf([correct, ...wrong.slice(0, 3)], 4, rng);
   return { id, kind, prompt, options, answer: options.indexOf(correct), about };
 }
 
@@ -50,11 +52,11 @@ function eraQuestion(r: KRabbi, rng: Rng): KnowledgeQuestion | null {
   const cands = Array.from({ length: 15 }, (_, i) => lo - 7 + i)
     .filter(c => (c < lo - 1 || c > hi + 1) && c <= MAX_CENTURY_INDEX);
   const chosen: number[] = [];
-  for (const c of sample(cands, cands.length, rng)) {
+  for (const c of sampleOf(cands, cands.length, rng)) {
     if (chosen.every(x => Math.abs(x - c) >= 2)) chosen.push(c);
     if (chosen.length === 3) break;
   }
-  return assemble('era', `era:${r.id}`, HE.KQ_ERA(r.name), centuryLabel(lo), chosen.map(centuryLabel), r.name, rng);
+  return assembleQuestion('era', `era:${r.id}`, HE.KQ_ERA(r.name), centuryLabel(lo), chosen.map(centuryLabel), r.name, rng);
 }
 
 /** Day + month root, so "ט״ו באב" = "ט״ו אב" and "אדר" ≈ "אדר ב". */
@@ -68,13 +70,13 @@ function yahrzeitQuestion(r: KRabbi, pool: KRabbi[], rng: Rng): KnowledgeQuestio
   if (!r.deathDate) return null;
   const used = new Set([dateKey(r.deathDate)]);
   const wrong: string[] = [];
-  for (const o of sample(pool.filter(o => o.deathDate), pool.length, rng)) {
+  for (const o of sampleOf(pool.filter(o => o.deathDate), pool.length, rng)) {
     const k = dateKey(o.deathDate!);
     if (used.has(k)) continue;
     used.add(k); wrong.push(o.deathDate!);
     if (wrong.length === 3) break;
   }
-  return assemble('yahrzeit', `yz:${r.id}`, HE.KQ_YAHRZEIT(r.name), r.deathDate, wrong, r.name, rng);
+  return assembleQuestion('yahrzeit', `yz:${r.id}`, HE.KQ_YAHRZEIT(r.name), r.deathDate, wrong, r.name, rng);
 }
 
 const ASK: Record<RelKind, (n: string) => string> = {
@@ -98,28 +100,28 @@ function relationQuestion(rel: Relation, byId: Map<string, KRabbi>, all: Relatio
   if (rel.kind === 'teacher' && rng() < 0.4) {
     // Students: people born well before the teacher can't be the answer.
     const wrong = unrelated(elder, pool).filter(o => !linked.has(o.id) && o.sortYear < elder.sortYear - 30 && near(o, elder));
-    return assemble('relation', `rel:s:${elder.id}:${younger.id}`, HE.KQ_STUDENT_OF(elder.name), younger.name, sample(wrong, 3, rng).map(o => o.name), younger.name, rng);
+    return assembleQuestion('relation', `rel:s:${elder.id}:${younger.id}`, HE.KQ_STUDENT_OF(elder.name), younger.name, sampleOf(wrong, 3, rng).map(o => o.name), younger.name, rng);
   }
   // Teachers / fathers: people born after the younger one can't be the answer.
   const wrong = unrelated(younger, pool).filter(o => !linked.has(o.id) && o.sortYear > younger.sortYear + 15 && near(o, younger));
-  return assemble('relation', `rel:${rel.kind}:${younger.id}:${elder.id}`, ASK[rel.kind](younger.name), elder.name, sample(wrong, 3, rng).map(o => o.name), younger.name, rng);
+  return assembleQuestion('relation', `rel:${rel.kind}:${younger.id}:${elder.id}`, ASK[rel.kind](younger.name), elder.name, sampleOf(wrong, 3, rng).map(o => o.name), younger.name, rng);
 }
 
 function contemporaryQuestion(r: KRabbi, pool: KRabbi[], rng: Rng): KnowledgeQuestion | null {
   const peers = pool.filter(o => o.id !== r.id && o.category === r.category && Math.abs(o.sortYear - r.sortYear) <= 25);
   if (!peers.length) return null;
-  const peer = pick(peers, rng);
+  const peer = randomOf(peers, rng);
   const far = pool.filter(o => Math.abs(o.sortYear - r.sortYear) >= 200);
   const closeFar = far.filter(o => Math.abs(o.sortYear - r.sortYear) <= 800);
-  const wrong = sample(closeFar.length >= 3 ? closeFar : far, 3, rng).map(o => o.name);
-  return assemble('contemporary', `cont:${r.id}:${peer.id}`, HE.KQ_CONTEMPORARY(r.name), peer.name, wrong, peer.name, rng);
+  const wrong = sampleOf(closeFar.length >= 3 ? closeFar : far, 3, rng).map(o => o.name);
+  return assembleQuestion('contemporary', `cont:${r.id}:${peer.id}`, HE.KQ_CONTEMPORARY(r.name), peer.name, wrong, peer.name, rng);
 }
 
 function factQuestion(byName: Map<string, KRabbi>, rng: Rng, avoid: Set<string>): KnowledgeQuestion | null {
   const usable = FACT_BANK.map((f, i) => ({ f, id: `fact:${i}` })).filter(({ f, id }) => byName.has(f[0]) && !avoid.has(id));
   if (!usable.length) return null;
-  const { f: [name, q, a, wrong], id } = pick(usable, rng);
-  return assemble('fact', id, q, a, wrong, name, rng);
+  const { f: [name, q, a, wrong], id } = randomOf(usable, rng);
+  return assembleQuestion('fact', id, q, a, wrong, name, rng);
 }
 
 const KIND_WEIGHTS: [KnowledgeKind, number][] = [['fact', 3], ['relation', 2], ['era', 2], ['yahrzeit', 2], ['contemporary', 1]];
@@ -138,9 +140,9 @@ export function buildKnowledgeQuestion(rabbis: KRabbi[], rng: Rng = Math.random,
       let roll = rng() * total;
       kind = KIND_WEIGHTS.find(([, w]) => (roll -= w) < 0)?.[0] ?? 'fact';
     }
-    const r = pick(pool, rng);
+    const r = randomOf(pool, rng);
     const q = kind === 'fact' ? factQuestion(byName, rng, avoid)
-      : kind === 'relation' ? (relations.length ? relationQuestion(pick(relations, rng), byId, relations, pool, rng) : null)
+      : kind === 'relation' ? (relations.length ? relationQuestion(randomOf(relations, rng), byId, relations, pool, rng) : null)
       : kind === 'era' ? eraQuestion(r, rng)
       : kind === 'yahrzeit' ? yahrzeitQuestion(r, pool, rng)
       : contemporaryQuestion(r, pool, rng);
