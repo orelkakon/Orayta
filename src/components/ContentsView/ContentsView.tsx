@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -120,7 +121,10 @@ export default function ContentsView() {
           <GroupTitle><GroupIcon><LineIcon name={g.icon} size={18} /></GroupIcon>{g.title}</GroupTitle>
           <Grid>
             {SECTIONS.filter(s => s.group === g.key).map(s => (
-              <SectionCard key={s.id} onClick={() => setActive(s)}>
+              <SectionCard
+                key={s.id}
+                {...(s.href ? { as: Link, href: s.href } : { onClick: () => setActive(s) })}
+              >
                 <CardIcon><LineIcon name={s.icon} size={28} /></CardIcon>
                 <CardTitle>{s.title}</CardTitle>
                 <CardDesc>{s.desc}</CardDesc>

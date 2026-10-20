@@ -5,11 +5,10 @@ import { BRACHOT_REIYA_GROUPS } from './prayers/brachotReiya';
 import { BRACHOT_ACHARONOT_GROUPS } from './prayers/brachotAchronot';
 import { GENERAL_PRAYER_SECTIONS } from './prayers/generalPrayers';
 import { ASHER_YATZAR } from './staticPrayers';
-import { SIDDUR_SECTIONS } from './siddurContent';
 
 export interface SefariaBook { ref: string; name: string; chapters: number; }
 
-export type SectionType = 'sefaria-chapters' | 'sefaria-books' | 'static' | 'static-sections' | 'sefaria-prayer';
+export type SectionType = 'sefaria-chapters' | 'sefaria-books' | 'static' | 'static-sections' | 'sefaria-prayer' | 'link';
 
 export type ContentGroupKey = 'tefillot' | 'brachot' | 'tanakh';
 
@@ -26,6 +25,8 @@ export interface ContentSection {
   desc: string;
   group: ContentGroupKey;
   type: SectionType;
+  /** type 'link': the section is its own page. */
+  href?: string;
   ref?: string;
   sefariaRef?: string;
   totalChapters?: number;
@@ -83,10 +84,10 @@ export const SECTIONS: ContentSection[] = [
     id: 'siddur',
     icon: 'book',
     title: 'סידור',
-    desc: 'ברכות השחר, קריאת שמע, עמידה',
+    desc: 'שחרית, מנחה וערבית — נוסח עדות המזרח',
     group: 'tefillot',
-    type: 'static-sections',
-    staticSections: SIDDUR_SECTIONS,
+    type: 'link',
+    href: '/siddur',
   },
   {
     id: 'tehillim',

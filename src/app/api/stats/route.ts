@@ -2,13 +2,16 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { SECTIONS } from '@/lib/contentsSections';
 import { MASECHTOT } from '@/lib/hebrewData';
+import { SERVICES } from '@/lib/siddur';
+import { SIDDUR_EXTRAS } from '@/lib/siddurContent';
 
 export const dynamic = 'force-dynamic';
 
 // Every individual prayer counts: each ברכה in a static group, each part of a
 // split siddur section, each פרק תהילים. Tanakh reading content is not a prayer.
 function countPrayers(): number {
-  let total = 0;
+  // The siddur: every section of the three weekday services + its extras.
+  let total = SERVICES.reduce((a, s) => a + s.sections.length, 0) + SIDDUR_EXTRAS.length;
   for (const s of SECTIONS) {
     if (s.group === 'tanakh') continue;
     if (s.type === 'sefaria-chapters') total += s.totalChapters ?? 1;

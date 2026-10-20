@@ -4,9 +4,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import type { SiddurSection } from '@/lib/prayers/types';
-import StaticGroupsView from './StaticGroupsView';
-import SefariaPrayerView from './SefariaPrayerView';
-import MenorahPsalmView from './MenorahPsalmView';
+import SiddurSectionBody from './SiddurSectionBody';
 import { useSwipeNav } from '@/components/common/useSwipeNav';
 
 const Wrap = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
@@ -29,16 +27,6 @@ const NavBtn = styled.button`
   transition: all 0.15s;
   &:hover:not(:disabled) { border-color: ${theme.colors.primary}; color: ${theme.colors.primary}; }
   &:disabled { opacity: 0.3; }
-`;
-
-const PartBlock = styled.div`
-  display: flex; flex-direction: column; gap: ${theme.spacing.sm};
-`;
-
-const PartTitle = styled.h3`
-  font-family: ${theme.fonts.body}; font-size: 1.1rem; font-weight: 700;
-  color: ${theme.colors.primary};
-  padding-bottom: 4px; border-bottom: 2px solid ${theme.colors.border};
 `;
 
 interface Props { sections: SiddurSection[]; }
@@ -65,19 +53,7 @@ export default function SiddurSectionsView({ sections }: Props) {
         </Select>
         <NavBtn disabled={idx >= sections.length - 1} onClick={() => setIdx(i => i + 1)}>←</NavBtn>
       </Controls>
-      {current.isMenorah
-        ? <MenorahPsalmView />
-        : current.parts
-          ? current.parts.map(p => (
-              <PartBlock key={p.subtitle}>
-                <PartTitle>{p.subtitle}</PartTitle>
-                <SefariaPrayerView sefariaRef={p.sefariaRef} />
-              </PartBlock>
-            ))
-          : current.sefariaRef
-            ? <SefariaPrayerView sefariaRef={current.sefariaRef} jump={current.jump} />
-            : <StaticGroupsView groups={current.groups ?? []} />
-      }
+      <SiddurSectionBody section={current} />
     </Wrap>
   );
 }

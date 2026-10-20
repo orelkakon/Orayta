@@ -63,6 +63,14 @@ Map + distance-sorted list of synagogues near the visitor. **Fully automatic —
 - **Map tiles:** `src/lib/mapTiles.ts` (OSM standard tiles, keyless; CARTO now returns "API KEY REQUIRED" images). Override with `NEXT_PUBLIC_MAP_TILE_URL` / `NEXT_PUBLIC_MAP_TILE_ATTRIBUTION`. Leaflet path classes must be passed as the `className` prop, not inside `pathOptions` (setStyle ignores it).
 - **"חדש" badges:** `src/lib/newBadges.ts` — date-expiring, no follow-up commit needed.
 
+### 2f. סידור (Siddur) — `/siddur`, `/siddur/[shacharit|mincha|arvit]`
+Weekday services in נוסח עדות המזרח, read as one continuous text with section navigation. The "סידור" card in `/content` links here.
+
+- **Definitions** (`src/lib/siddur/`): each service is an ordered list of sections; each section is a list of parts = exact 1-based segment ranges of a Sefaria node under `Siddur_Edot_HaMizrach` (segment 1 of a node is its title and is skipped). A part may carry a `mark` (sub-anchor in the contents sheet), a `when` condition (`mon-thu` / `aseret` / `motzash` / `optional` → rendered collapsed unless it applies today) or a `weekday` (שיר של יום). Ranges were mapped against the live text — re-verify them if Sefaria's version changes.
+- **Text:** `GET /api/siddur/[service]` fetches each distinct node once (Next data cache, 7 days), sanitizes the HTML to presentational tags (`sanitize.ts`), and returns `{ nodes, failed }` with a 1-day CDN cache (no-store when a node failed).
+- **Calendar logic** (`calendar.ts`, pure, tested): Israel-time weekday, Tishrei 1–10 via `Intl` Hebrew calendar, Jerusalem sun times (NOAA equation) → `suggestService` drives the "עכשיו" badge on `/siddur`.
+- **UI** (`src/components/SiddurView/`): sticky `ReaderBar` (service switcher, section chips with scroll-spy, progress, font size remembered in `orayta_siddur_font`, contents sheet), deep links via `#section-id`. Standalone pieces (bedtime Shema, Kaddish, …) are `SIDDUR_EXTRAS` in `lib/siddurContent.ts`.
+
 ### 2e. Feed comments (רגע של תורה)
 Public, anonymous comments (text + optional name/nickname) on every feed post — content items and reels (`itemType` = feed type or `'reel'`, `itemId` = the item/reel id). Model `FeedComment`.
 
