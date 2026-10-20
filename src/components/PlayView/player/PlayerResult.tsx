@@ -5,6 +5,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import type { PlayMe, PlayState } from '@/types/play';
 import AnswerTile from '../AnswerTile';
+import { playerLayout } from '@/lib/play/scramble';
 import { Center, Pill, Sub, Title, popIn, reduced } from '../playStyles';
 
 /** The phone after a question: right/wrong, points, streak, and where you stand. */
@@ -63,7 +64,7 @@ export default function PlayerResult({ state, me }: { state: PlayState; me: Play
       {!ok && reveal && q && (
         <Correct>
           <Sub>{HE.PLAY_CORRECT_ANSWER}</Sub>
-          <AnswerTile index={reveal.correct} text={q.options[reveal.correct]} state="right" />
+          <AnswerTile index={playerLayout(me.id, q.index, q.options.length).look[reveal.correct]} text={q.options[reveal.correct]} state="right" />
         </Correct>
       )}
       <Standing me={me} />

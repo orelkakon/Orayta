@@ -203,3 +203,16 @@ test('auto reveal: after the buzzer or once every active player answered', () =>
   assert.equal(shouldAutoReveal(all, 10000), true);
   assert.equal(shouldAutoReveal(snap({ status: 'reveal' }), 99999), false);
 });
+
+import { playerLayout } from '@/lib/play/scramble';
+
+test('per-player layout: a stable permutation, different across players', () => {
+  const a = playerLayout('player-a', 3);
+  assert.deepEqual(playerLayout('player-a', 3), a);
+  assert.deepEqual([...a.order].sort(), [0, 1, 2, 3]);
+  assert.deepEqual([...a.look].sort(), [0, 1, 2, 3]);
+  const layouts = new Set(Array.from({ length: 40 }, (_, i) => JSON.stringify(playerLayout(`p${i}`, 3))));
+  assert.ok(layouts.size > 30);
+  const perQuestion = new Set(Array.from({ length: 20 }, (_, q) => JSON.stringify(playerLayout('player-a', q).order)));
+  assert.ok(perQuestion.size > 5);
+});

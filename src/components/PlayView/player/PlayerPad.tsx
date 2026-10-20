@@ -9,6 +9,7 @@ import LeadBar from '../LeadBar';
 import QuestionImage from '../QuestionImage';
 import TimerRing from '../TimerRing';
 import { useTicker } from '../usePlayState';
+import { playerLayout } from '@/lib/play/scramble';
 import { Center, Glass, Pill, Sub, Title, popIn, reduced } from '../playStyles';
 
 /** The phone during a question: read → tap one of four → locked in. */
@@ -67,11 +68,13 @@ export default function PlayerPad({ state, now, picked, onPick }: Props) {
   const t = now();
   const choice = picked ?? state.me?.choice ?? null;
   const open = t >= q.opensAt && t <= q.endsAt;
+  // Own order + colours per player, so a neighbour's screen gives nothing away.
+  const { order, look } = playerLayout(state.me?.id ?? '', q.index, q.options.length);
 
   if (choice !== null) {
     return (
       <Center>
-        <Locked $color={theme.game.answers[choice % 4]}><Shape index={choice} size={56} /></Locked>
+        <Locked $color={theme.game.answers[look[choice] % 4]}><Shape index={look[choice]} size={56} /></Locked>
         <Title>{HE.PLAY_LOCKED}</Title>
         <Sub role="status">{HE.PLAY_WAIT_OTHERS}</Sub>
         <Pill>{HE.PLAY_ANSWERED(state.answeredCount, state.playerCount)}</Pill>
@@ -94,7 +97,7 @@ export default function PlayerPad({ state, now, picked, onPick }: Props) {
         <LeadBar from={q.shownAt} to={q.opensAt} now={now} label={HE.PLAY_READ_Q} />
       ) : (
         <Grid>
-          {q.options.map((o, i) => <AnswerTile key={i} index={i} text={o} onPick={() => onPick(i)} />)}
+          {order.map(i => <AnswerTile key={i} index={look[i]} text={q.options[i]} onPick={() => onPick(i)} />)}
         </Grid>
       )}
     </Wrap>
