@@ -35,6 +35,7 @@ const ROUTES: Route[] = [
   { path: '/dedications', changeFrequency: 'weekly',  priority: 0.5 },
   { path: '/about',       changeFrequency: 'monthly', priority: 0.4 },
   { path: '/contact',     changeFrequency: 'yearly',  priority: 0.3 },
+  { path: '/legal',       changeFrequency: 'yearly',  priority: 0.2 },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

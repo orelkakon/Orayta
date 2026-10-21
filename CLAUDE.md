@@ -124,6 +124,13 @@ Kahoot-style live game for a shiur / Shabbat table. Anyone can host (no account)
 
 ---
 
+### 2k. תנאי שימוש, פרטיות ונגישות — `/legal`
+One page with three documents (anchors `#terms`, `#privacy`, `#accessibility`), linked from `Layout/SiteFooter.tsx` (every AppLayout page, not the nav) and from the accessibility widget. Written to Israeli law: Privacy Protection Law incl. Amendment 13 (§11 notice: voluntary, purposes, controller, recipients, §13/§14 rights) and accessibility regulation 35ה (statement + coordinator contact, ת״י 5568 AA).
+
+- **Content** is data in `src/lib/legal/` (`terms.ts`, `privacy.ts` = `privacyCollect.ts` + `privacyShare.ts`, `accessibility.ts`, shared owner/email/date in `meta.ts`); blocks support `**bold**` and `[label](href)` (`LegalView/RichText.tsx`). Section numbers are positional and cross-referenced in the text ("ראו סעיף 7") — renumber references when reordering.
+- **Keep it true:** the privacy policy describes what the code actually collects, stores and forwards (IP hashes, push rows, comments, dedications, contact messages, game data, localStorage, location → our server / Hebcal, third-party embeds, Vercel / Neon us-east-1 / Gmail). A feature that changes any of that must update the policy and bump `LEGAL_UPDATED`. Same for the accessibility statement's adjustments and known limitations.
+- YouTube embeds use `youtube-nocookie.com` everywhere (the policy says so).
+
 ### 3. תרגול (Quiz / Training)
 Modes are listed in `QuizView/ModeGrid.tsx` (one config array). Besides the table below: **חזרה חכמה** (flashcards with Leitner spaced repetition, `src/lib/srs.ts`, localStorage `orayta_srs`; the citation modes feed it too), **סדר כרונולוגי** (drag-to-order with Pointer Events, `QuizView/chrono/`), **שאלות ידע** (century, yahrzeit, teacher/student links parsed from bios, same era, and a curated bank in `src/lib/knowledge/bank.ts` — re-check it when bios change), plus the books/gematria/seder/bio/image/who-first modes. A card at the top links to the group quiz (`/play`).
 

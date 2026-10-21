@@ -6,9 +6,12 @@ import { AMBIENT_SONGS, shuffleSongs } from '@/lib/ambientSongs';
 import { HE } from '@/lib/hebrewTexts';
 
 const AMBIENT_KEY = 'orayta_feed_ambient';
+// Privacy-enhanced embed: no tracking cookies on load. postMessage targets and
+// incoming message checks must use this same origin.
+const YT_ORIGIN = 'https://www.youtube-nocookie.com';
 
 function ytCmd(iframe: HTMLIFrameElement, func: string, args: unknown[] = []) {
-  iframe.contentWindow?.postMessage(JSON.stringify({ event: 'command', func, args }), 'https://www.youtube.com');
+  iframe.contentWindow?.postMessage(JSON.stringify({ event: 'command', func, args }), YT_ORIGIN);
 }
 
 const HiddenFrame = styled.iframe`
@@ -91,7 +94,7 @@ export default function FeedAmbient({ suppressed = false }: { suppressed?: boole
       if (handshakeRef.current) { clearInterval(timer); return; }
       iframeRef.current?.contentWindow?.postMessage(
         JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }),
-        'https://www.youtube.com'
+        YT_ORIGIN
       );
     }, 1200);
     return () => clearInterval(timer);
@@ -132,7 +135,7 @@ export default function FeedAmbient({ suppressed = false }: { suppressed?: boole
 
   useEffect(() => {
     function handleMessage(e: MessageEvent) {
-      if (e.origin !== 'https://www.youtube.com') return;
+      if (e.origin !== YT_ORIGIN) return;
       handshakeRef.current = true;
       try {
         const data = JSON.parse(e.data as string) as { event?: string; info?: number };
@@ -193,7 +196,7 @@ export default function FeedAmbient({ suppressed = false }: { suppressed?: boole
 
   // src must never change — song advances happen via loadVideoById, not src updates
   const initialSrc = useRef(
-    `https://www.youtube.com/embed/${playlistRef.current[0].id}?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&enablejsapi=1&start=30`
+    `${YT_ORIGIN}/embed/${playlistRef.current[0].id}?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&enablejsapi=1&start=30`
   );
 
   return (

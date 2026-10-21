@@ -278,3 +278,4 @@ export interface AdminCommentStats {
    from '@/types'. */
 export * from './stories';
 export * from './live';
+export * from './legal';

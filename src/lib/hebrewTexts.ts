@@ -568,6 +568,17 @@ export const HE = {
   A11Y_LINKS: 'הדגשת קישורים',
   A11Y_MOTION: 'הפחתת אנימציות',
   A11Y_RESET: 'איפוס הגדרות נגישות',
+  A11Y_STATEMENT: 'הצהרת נגישות',
+
+  FOOTER_ARIA: 'מידע משפטי',
+  FOOTER_TERMS: 'תנאי שימוש',
+  FOOTER_PRIVACY: 'מדיניות פרטיות',
+  FOOTER_ACCESSIBILITY: 'הצהרת נגישות',
+  LEGAL_TITLE: 'תנאי שימוש, פרטיות ונגישות',
+  LEGAL_SUB: 'המסמכים שחלים על השימוש באורייתא, כתובים בשפה ברורה ומתארים בדיוק מה האתר עושה. בראש כל מסמך יש תקציר, ומתחתיו הנוסח המלא.',
+  LEGAL_UPDATED_LABEL: 'עודכן לאחרונה:',
+  LEGAL_JUMP_ARIA: 'מעבר בין המסמכים',
+  LEGAL_SUMMARY: 'בקצרה',
 
   ERROR_REQUIRED: 'שדה זה חובה',
   LOADING: 'טוען...',

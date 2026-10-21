@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -90,6 +91,12 @@ const ResetBtn = styled.button`
   &:hover { background: ${theme.colors.bgError}; }
 `;
 
+const StatementLink = styled(Link)`
+  font-size: 0.78rem; font-weight: 600; text-align: center;
+  color: ${theme.colors.primary}; text-decoration: underline; text-underline-offset: 3px;
+  padding: 4px;
+`;
+
 function A11yIcon() {
   return (
     <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -160,6 +167,9 @@ export default function AccessibilityWidget() {
             </ToggleRow>
           ))}
           <ResetBtn onClick={() => update(DEFAULT_A11Y)}>↺ {HE.A11Y_RESET}</ResetBtn>
+          <StatementLink href="/legal#accessibility" onClick={() => setOpen(false)}>
+            {HE.A11Y_STATEMENT}
+          </StatementLink>
         </Panel>
       )}
       <Fab

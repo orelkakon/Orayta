@@ -14,6 +14,7 @@ import NavDrawer from './NavDrawer';
 import BottomTabBar from './BottomTabBar';
 import { navItems } from './navItems';
 import DedicationsTicker from './DedicationsTicker';
+import SiteFooter from './SiteFooter';
 import AddToHomeScreen from '@/components/common/AddToHomeScreen';
 import VisitTracker from '@/components/common/VisitTracker';
 import { openNotifications } from '@/lib/push/client';
@@ -131,10 +132,7 @@ const Main = styled.main`
   margin: 0 auto; padding: ${theme.spacing.xl};
   animation: ${pageEnter} 0.3s ${theme.motion.out};
   @media (max-width: 600px) { padding: ${theme.spacing.md}; }
-  @media (max-width: 768px) {
-    /* Clear the fixed bottom tab bar. */
-    padding-bottom: calc(76px + env(safe-area-inset-bottom) + ${theme.spacing.lg});
-  }
+  /* The fixed bottom tab bar is cleared by SiteFooter, which sits below. */
 `;
 
 const SkipLink = styled.a.attrs({ className: 'skip-link' })``;
@@ -278,6 +276,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
       />
 
       <Main id="main" tabIndex={-1}>{children}</Main>
+      <SiteFooter />
       <BottomTabBar
         pathname={pathname}
         onMore={() => setMenuOpen(true)}
