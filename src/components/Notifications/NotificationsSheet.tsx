@@ -16,17 +16,21 @@ import {
 
 interface Props { onClose: () => void; }
 
-/** Admin only: a real push through the push service with today's content. */
-async function serverTest(kind: 'daily' | 'hilula') {
+/** Admin only: today's real daily reminder, end to end through the push service. */
+async function serverTest(): Promise<{ ok: boolean; reason?: string }> {
   const endpoint = await currentEndpoint();
-  if (!endpoint) return;
-  await fetch('/api/push/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint, kind }) });
+  if (!endpoint) return { ok: false, reason: 'no subscription on this device' };
+  const res = await fetch('/api/push/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint, kind: 'daily' }) }).catch(() => null);
+  const data = res ? await res.json().catch(() => null) as { outcome?: string; reason?: string; error?: string } | null : null;
+  return { ok: data?.outcome === 'sent', reason: data?.reason ?? data?.error ?? (res ? String(res.status) : 'network') };
 }
 
 export default function NotificationsSheet({ onClose }: Props) {
   const [out, setOut] = useState(false);
   const { view, prefs, busy, save, enable, update, disable, test } = usePushSettings(true);
   const role = useRole();
+  const [adminTest, setAdminTest] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
+  const [adminReason, setAdminReason] = useState('');
 
   const close = () => { setOut(true); window.setTimeout(onClose, EXIT_MS); };
 
@@ -77,8 +81,12 @@ export default function NotificationsSheet({ onClose }: Props) {
             </QuietBtn>
             {role === 'admin' && (
               <>
-                <QuietBtn type="button" onClick={() => void serverTest('daily')}>{HE.PUSH_ADMIN_TEST_DAILY}</QuietBtn>
-                <QuietBtn type="button" onClick={() => void serverTest('hilula')}>{HE.PUSH_ADMIN_TEST_HILULA}</QuietBtn>
+                <QuietBtn type="button" disabled={adminTest === 'sending'} onClick={() => {
+                  setAdminTest('sending');
+                  void serverTest().then(r => { setAdminReason(r.reason ?? ''); setAdminTest(r.ok ? 'sent' : 'failed'); });
+                }}>{adminTest === 'sending' ? HE.PUSH_ADMIN_TEST_SENDING : HE.PUSH_ADMIN_TEST}</QuietBtn>
+                {adminTest === 'sent' && <Sub role="status" style={{ textAlign: 'center' }}>{HE.PUSH_ADMIN_TEST_SENT}</Sub>}
+                {adminTest === 'failed' && <ErrorLine role="alert">{HE.PUSH_ADMIN_TEST_FAILED}{adminReason ? ` (${adminReason})` : ''}</ErrorLine>}
               </>
             )}
             <QuietBtn type="button" $danger disabled={busy} onClick={() => void disable()}>{HE.PUSH_DISABLE}</QuietBtn>

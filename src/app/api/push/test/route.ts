@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { isAdmin } from '@/lib/auth';
 import { HE } from '@/lib/hebrewTexts';
-import { sendPush } from '@/lib/push/server';
+import { lastPushError, sendPush } from '@/lib/push/server';
 import { localClock, DEFAULT_TIME_ZONE } from '@/lib/push/schedule';
 import { dailyPayload, hilulaPayload, omerPayload } from '@/lib/push/content';
 import type { PushPayload } from '@/types/push';
@@ -32,5 +32,5 @@ export async function POST(req: NextRequest) {
   if (!payload) return NextResponse.json({ error: 'nothing to send today' }, { status: 404 });
 
   const outcome = await sendPush(sub, payload);
-  return NextResponse.json({ outcome, payload });
+  return NextResponse.json({ outcome, payload, ...(outcome === 'sent' ? {} : { reason: lastPushError() }) });
 }

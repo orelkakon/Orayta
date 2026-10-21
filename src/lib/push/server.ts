@@ -46,19 +46,26 @@ export type SendOutcome = 'sent' | 'gone' | 'failed';
 
 interface Target { endpoint: string; p256dh: string; auth: string; }
 
+/** Last push-service rejection on this instance (status + body) — shown to the admin. */
+let lastError: string | null = null;
+export const lastPushError = () => lastError;
+
 export async function sendPush(sub: Target, payload: PushPayload): Promise<SendOutcome> {
-  if (!pushConfigured()) return 'failed';
+  if (!pushConfigured()) { lastError = 'push not configured'; return 'failed'; }
   try {
     await webpush.sendNotification(
       { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
       JSON.stringify(payload),
       // Daily content goes stale — don't let the push service hold it past a few hours.
-      { TTL: 4 * 3600, urgency: 'normal', topic: payload.kind.slice(0, 32) },
+      // No Topic header: it isn't needed, and Apple's service is strict about it.
+      { TTL: 4 * 3600, urgency: 'normal' },
     );
     return 'sent';
   } catch (err) {
-    const status = (err as { statusCode?: number }).statusCode;
-    return status === 404 || status === 410 ? 'gone' : 'failed';
+    const e = err as { statusCode?: number; body?: string; message?: string };
+    lastError = `${e.statusCode ?? '?'} ${(e.body || e.message || '').toString().slice(0, 200)}`.trim();
+    console.error(`[push] ${new URL(sub.endpoint).host} rejected: ${lastError}`);
+    return e.statusCode === 404 || e.statusCode === 410 ? 'gone' : 'failed';
   }
 }
 

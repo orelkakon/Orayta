@@ -13,6 +13,15 @@ export default function NotificationsHost() {
 
   useEffect(() => {
     if (readLocal().enabled) void registerServiceWorker();
+    // Visits double as a heartbeat for the reminder dispatcher (backup for
+    // GitHub's unreliable schedules); the server runs it at most once a minute.
+    try {
+      const last = Number(sessionStorage.getItem('orayta_push_tick') ?? 0);
+      if (Date.now() - last > 5 * 60_000) {
+        sessionStorage.setItem('orayta_push_tick', String(Date.now()));
+        void fetch('/api/push/tick', { method: 'POST', keepalive: true }).catch(() => undefined);
+      }
+    } catch { /* storage blocked — skip */ }
     return onOpenNotifications(() => setOpen(true));
   }, []);
 

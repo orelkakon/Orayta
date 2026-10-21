@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 import { isAdmin } from '@/lib/auth';
 import { HE } from '@/lib/hebrewTexts';
 import { normalizeCommentText } from '@/lib/feedComments';
-import { mapLimit, pushConfigured, sendPush } from '@/lib/push/server';
+import { lastPushError, mapLimit, pushConfigured, sendPush } from '@/lib/push/server';
 import type { PushBroadcastRecord, PushPayload } from '@/types/push';
 
 export const dynamic = 'force-dynamic';
@@ -64,5 +64,8 @@ export async function POST(req: NextRequest) {
 
   const done = { ...record, sent: outcomes.filter(o => o === 'sent').length, failed: failedIds.length };
   await prisma.appConfig.update({ where: { key: LAST_KEY }, data: { value: JSON.stringify(done) } });
-  return NextResponse.json({ total: subs.length, sent: done.sent, failed: done.failed, removed: gone.length });
+  return NextResponse.json({
+    total: subs.length, sent: done.sent, failed: done.failed, removed: gone.length,
+    ...(done.failed ? { reason: lastPushError() } : {}),
+  });
 }
