@@ -2,12 +2,22 @@ import type { PushKind } from '@/lib/push/schedule';
 
 /** What the service worker receives in a push event (JSON). */
 export interface PushPayload {
-  kind: PushKind | 'test';
+  kind: PushKind | 'test' | 'broadcast';
   title: string;
   body: string;
   /** Same-origin path opened on tap. */
   url: string;
   tag: string;
+}
+
+/** A message the admin broadcast to every subscriber (kept for the admin card). */
+export interface PushBroadcastRecord {
+  at: string;
+  title: string;
+  body: string;
+  url: string;
+  sent: number;
+  failed: number;
 }
 
 /** User-editable notification preferences. */

@@ -7,6 +7,7 @@ import { haptics } from '@/lib/haptics';
 import type { PlayCreateResponse, PlayHostAction } from '@/types/play';
 import { getHostKey, hostAction, playFetch, setHostKey } from './playClient';
 import { usePlayState, useWakeLock } from './usePlayState';
+import { useGameSounds } from './sound/useGameSounds';
 import Stage from './stage/Stage';
 import HostControls from './HostControls';
 import HostSheets, { type HostSheet } from './HostSheets';
@@ -41,6 +42,8 @@ function HostGame({ code, hostKey }: { code: string; hostKey: string }) {
   const [busy, setBusy] = useState(false);
   const [sheet, setSheet] = useState<HostSheet | null>(null);
   useWakeLock(true);
+  // A host on a phone is usually the remote next to a projector that plays the sound.
+  useGameSounds('stage', state, now, { defaultMuted: window.matchMedia('(pointer: coarse)').matches });
 
   const act = useCallback(async (action: PlayHostAction) => {
     setBusy(true);

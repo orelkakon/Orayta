@@ -13,7 +13,7 @@ export const Chip = styled.button<{ $on: boolean }>`
   padding: 6px 14px;
   border-radius: 999px;
   border: 1.5px solid ${({ $on }) => ($on ? theme.game.gold : theme.game.glassLine)};
-  background: ${({ $on }) => ($on ? 'rgba(232,203,118,0.16)' : 'rgba(0,0,0,0.2)')};
+  background: ${({ $on }) => ($on ? theme.game.goldGlow : 'rgba(0,0,0,0.2)')};
   color: ${({ $on }) => ($on ? theme.game.gold : theme.game.inkMuted)};
   font-family: ${theme.fonts.ui};
   font-size: ${theme.fontSizes.sm};

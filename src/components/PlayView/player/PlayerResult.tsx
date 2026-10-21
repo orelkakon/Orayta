@@ -6,6 +6,7 @@ import { HE } from '@/lib/hebrewTexts';
 import type { PlayMe, PlayState } from '@/types/play';
 import AnswerTile from '../AnswerTile';
 import { playerLayout } from '@/lib/play/scramble';
+import CountUp from '../CountUp';
 import { Center, Pill, Sub, Title, popIn, reduced } from '../playStyles';
 
 /** The phone after a question: right/wrong, points, streak, and where you stand. */
@@ -43,7 +44,7 @@ function Standing({ me }: { me: PlayMe }) {
     <>
       <Rank>{HE.PLAY_YOUR_RANK(me.rank)}</Rank>
       <Sub>{me.gapUp === null ? HE.PLAY_LEADING : HE.PLAY_GAP_UP(me.gapUp)}</Sub>
-      <Pill>{HE.PLAY_POINTS(me.score)}</Pill>
+      <Pill><CountUp value={me.score} from={me.score - (me.points ?? 0)} ms={1100} format={HE.PLAY_POINTS} /></Pill>
     </>
   );
 }
@@ -59,7 +60,7 @@ export default function PlayerResult({ state, me }: { state: PlayState; me: Play
     <Center>
       <Icon $ok={ok} aria-hidden>{ok ? '✓' : '✕'}</Icon>
       <Title role="status">{ok ? HE.PLAY_RIGHT : me.answered ? HE.PLAY_WRONG : HE.PLAY_NO_ANSWER}</Title>
-      {ok && <Points>{HE.PLAY_DELTA(me.points ?? 0)}</Points>}
+      {ok && <Points>+<CountUp value={me.points ?? 0} /></Points>}
       {ok && me.streak >= 2 && <Pill>🔥 {HE.PLAY_STREAK(me.streak)}</Pill>}
       {!ok && reveal && q && (
         <Correct>

@@ -6,6 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { LineIcon } from '@/components/common/LineIcons';
 import type { PushAdminStats } from '@/types/push';
+import AdminBroadcast from './AdminBroadcast';
 
 const Card = styled.section`
   background: ${theme.colors.surface}; border: 1px solid ${theme.colors.borderLight};
@@ -48,6 +49,7 @@ export default function AdminPushCard() {
           <Cell key={label}><Value>{value.toLocaleString('he-IL')}</Value><Label>{label}</Label></Cell>
         ))}
       </Grid>
+      <AdminBroadcast total={s.total} />
     </Card>
   );
 }

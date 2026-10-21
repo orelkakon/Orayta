@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 
@@ -9,7 +9,14 @@ import { HE } from '@/lib/hebrewTexts';
  * Countdown ring driven by requestAnimationFrame against the server clock,
  * so it never drifts between devices. Turns red in the last 5 seconds.
  */
-const Wrap = styled.div<{ $size: number }>`
+const shake = keyframes`
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-6deg) scale(1.06); }
+  75% { transform: rotate(6deg) scale(1.06); }
+`;
+const Wrap = styled.div<{ $size: number; $urgent: boolean }>`
+  animation: ${({ $urgent }) => ($urgent ? shake : 'none')} 0.5s ease-in-out infinite;
+  @media (prefers-reduced-motion: reduce) { animation: none; }
   position: relative;
   width: ${({ $size }) => $size}px;
   height: ${({ $size }) => $size}px;
@@ -53,7 +60,7 @@ export default function TimerRing({ opensAt, endsAt, now, size = 72 }: Props) {
   }, [opensAt, endsAt, now, len]);
 
   return (
-    <Wrap $size={size} role="timer" aria-label={HE.PLAY_ARIA_TIMER(secs)}>
+    <Wrap $size={size} $urgent={secs <= 5 && secs > 0} role="timer" aria-label={HE.PLAY_ARIA_TIMER(secs)}>
       <svg viewBox="0 0 100 100" width={size} height={size} style={{ transform: 'rotate(-90deg)' }} aria-hidden>
         <circle cx="50" cy="50" r={r} fill="none" stroke={theme.game.glassLine} strokeWidth="9" />
         <circle ref={circle} cx="50" cy="50" r={r} fill="none" strokeWidth="9" strokeLinecap="round"

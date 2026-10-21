@@ -8,6 +8,7 @@ import AnswerTile, { type TileState } from '../AnswerTile';
 import TimerRing from '../TimerRing';
 import LeadBar from '../LeadBar';
 import QuestionImage from '../QuestionImage';
+import UrgentGlow from '../UrgentGlow';
 import { useTicker } from '../usePlayState';
 import { Glass, Pill, reduced, rise } from '../playStyles';
 
@@ -100,12 +101,14 @@ export default function StageQuestion({ state, now }: Props) {
         <Tiles>
           {q.options.map((o, i) => (
             <TileIn key={`${q.index}-${i}`} $i={i}>
-              <AnswerTile index={i} text={o} big state={tileState(i)} count={reveal ? reveal.counts[i] : undefined} />
+              <AnswerTile index={i} text={o} big state={tileState(i)} count={reveal ? reveal.counts[i] : undefined}
+                share={reveal ? reveal.counts[i] / Math.max(1, reveal.counts.reduce((a, b) => a + b, 0)) : undefined} />
             </TileIn>
           ))}
         </Tiles>
       )}
       {reveal?.explain && <Explain>{reveal.explain}</Explain>}
+      {state.status === 'question' && <UrgentGlow opensAt={q.opensAt} endsAt={q.endsAt} now={now} />}
     </Wrap>
   );
 }

@@ -13,7 +13,21 @@ import PlayerResult, { resultBackground } from './player/PlayerResult';
 import PlayerFinal from './player/PlayerFinal';
 import PlayNotice from './PlayNotice';
 import ReconnectBadge from './ReconnectBadge';
+import SoundToggle from './SoundToggle';
+import { useGameSounds } from './sound/useGameSounds';
+import { play } from './sound/sfx';
+import styled from 'styled-components';
+import { theme } from '@/lib/theme';
 import { Stage } from './playStyles';
+
+const Corner = styled.div`
+  position: absolute;
+  top: max(${theme.spacing.sm}, env(safe-area-inset-top));
+  left: ${theme.spacing.sm};
+  display: flex;
+  gap: ${theme.spacing.xs};
+  z-index: ${theme.z.sticky};
+`;
 
 /** A participant's phone. Without a saved identity for this game → join flow. */
 export default function PlayerView({ code }: { code: string }) {
@@ -53,6 +67,7 @@ function PlayerGame({ code, me }: { code: string; me: PlayJoinResponse }) {
     const qIndex = state?.question?.index;
     if (qIndex === undefined || picked?.q === qIndex) return;
     haptics.tap();
+    play('lock');
     setPicked({ q: qIndex, choice });
     const res = await playFetch<{ ok: boolean }>(`/api/play/${code}/answer`, {
       method: 'POST', body: JSON.stringify({ qIndex, choice }), identity: { me },
@@ -61,6 +76,9 @@ function PlayerGame({ code, me }: { code: string; me: PlayJoinResponse }) {
     refresh();
   }, [state, picked, code, me, refresh]);
 
+  const mineNow = picked && state?.question && picked.q === state.question.index;
+  useGameSounds('player', state, now, { answered: !!mineNow || !!state?.me?.answered });
+
   if (fatal) return <PlayNotice title={HE.PLAY_GAME_GONE} />;
   if (!state || !state.me) return <Stage />;
   if (state.me.kicked) return <PlayNotice title={HE.PLAY_KICKED} />;
@@ -68,7 +86,7 @@ function PlayerGame({ code, me }: { code: string; me: PlayJoinResponse }) {
   const mine = picked && picked.q === state.question?.index ? picked.choice : null;
   return (
     <Stage style={{ background: resultBackground(state) }}>
-      <ReconnectBadge show={reconnecting} />
+      <Corner><SoundToggle /><ReconnectBadge show={reconnecting} /></Corner>
       {state.status === 'lobby' && <PlayerLobby state={state} me={state.me} />}
       {state.status === 'question' && <PlayerPad state={state} now={now} picked={mine} onPick={c => { void pick(c); }} />}
       {(state.status === 'reveal' || state.status === 'board') && <PlayerResult state={state} me={state.me} />}

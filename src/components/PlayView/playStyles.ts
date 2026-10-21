@@ -18,8 +18,8 @@ export const pulse = keyframes`
   50% { opacity: 1; transform: scale(1.04); }
 `;
 export const glow = keyframes`
-  0%, 100% { box-shadow: 0 0 0 0 rgba(232,203,118,0.0); }
-  50% { box-shadow: 0 0 28px 4px rgba(232,203,118,0.28); }
+  0%, 100% { box-shadow: 0 0 0 0 ${theme.game.goldGlow}; }
+  50% { box-shadow: 0 0 28px 4px ${theme.game.goldGlow}; }
 `;
 
 export const reduced = css`
@@ -74,7 +74,7 @@ export const GoldButton = styled.button`
   font-family: ${theme.fonts.ui};
   font-size: ${theme.fontSizes.lg};
   font-weight: 700;
-  box-shadow: 0 10px 30px rgba(232,203,118,0.22), inset 0 1px 0 rgba(255,255,255,0.45);
+  box-shadow: 0 10px 30px ${theme.game.goldGlow}, inset 0 1px 0 rgba(255,255,255,0.45);
 `;
 
 export const GhostButton = styled.button`

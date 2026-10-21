@@ -6,6 +6,7 @@ import { HE } from '@/lib/hebrewTexts';
 import type { PlayState } from '@/types/play';
 import { GhostButton, Pill } from './playStyles';
 import ReconnectBadge from './ReconnectBadge';
+import SoundToggle from './SoundToggle';
 
 /** Host header: game code, player count and the secondary tools. */
 const Bar = styled.header`
@@ -31,6 +32,7 @@ export default function HostTopBar({ state, reconnecting, onOpen }: { state: Pla
         <ReconnectBadge show={reconnecting} />
       </Side>
       <Side>
+        <SoundToggle />
         {state.status !== 'ended' && <GhostButton type="button" onClick={() => onOpen('invite')}>📤 {HE.PLAY_INVITE}</GhostButton>}
         <GhostButton type="button" onClick={() => onOpen('players')}>👥 {state.playerCount}</GhostButton>
         <GhostButton type="button" onClick={() => onOpen('screen')}>🖥️ {HE.PLAY_OPEN_SCREEN}</GhostButton>

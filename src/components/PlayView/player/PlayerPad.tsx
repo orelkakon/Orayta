@@ -7,6 +7,7 @@ import type { PlayState } from '@/types/play';
 import AnswerTile, { Shape } from '../AnswerTile';
 import LeadBar from '../LeadBar';
 import QuestionImage from '../QuestionImage';
+import UrgentGlow from '../UrgentGlow';
 import TimerRing from '../TimerRing';
 import { useTicker } from '../usePlayState';
 import { playerLayout } from '@/lib/play/scramble';
@@ -93,6 +94,7 @@ export default function PlayerPad({ state, now, picked, onPick }: Props) {
       <Prompt $small={open}>{q.prompt}</Prompt>
       {q.image && <QuestionImage src={q.image} height={open ? '18vh' : '30vh'} />}
       {q.body && <Body $word={q.kind === 'gematria' || q.kind === 'gematriaWord'}>{q.body}</Body>}
+      <UrgentGlow opensAt={q.opensAt} endsAt={q.endsAt} now={now} />
       {!open ? (
         <LeadBar from={q.shownAt} to={q.opensAt} now={now} label={HE.PLAY_READ_Q} />
       ) : (

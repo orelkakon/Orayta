@@ -46,7 +46,7 @@ const Pin = styled.div`
   font-variant-numeric: tabular-nums;
   color: ${theme.game.gold};
   line-height: 1;
-  text-shadow: 0 6px 30px rgba(232,203,118,0.25);
+  text-shadow: 0 6px 30px ${theme.game.goldGlow};
 `;
 const RosterCard = styled(Glass)`
   padding: ${theme.spacing.lg};

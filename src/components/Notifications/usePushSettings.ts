@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  pushSupport, readLocal, enablePush, savePrefs, disablePush, isSubscribed, localTest, DEFAULT_PREFS,
+  pushSupport, readLocal, enablePush, savePrefs, saveLocalPrefs, ensureRegistered, disablePush, isSubscribed, localTest, DEFAULT_PREFS,
   type PushSupport,
 } from '@/lib/push/client';
 import type { PushPrefs } from '@/types/push';
@@ -19,6 +19,8 @@ export function usePushSettings(active: boolean) {
   const [busy, setBusy] = useState(false);
   const [save, setSave] = useState<SaveState>('idle');
   const timer = useRef<number | undefined>(undefined);
+  const viewRef = useRef<PushView>('loading');
+  viewRef.current = view;
 
   const refresh = useCallback(async () => {
     const support = pushSupport();
@@ -26,7 +28,10 @@ export function usePushSettings(active: boolean) {
     setPrefs({ dailyMinutes: local.dailyMinutes, daily: local.daily, hilula: local.hilula, omer: local.omer });
     if (support !== 'supported') { setView(support); return; }
     if (Notification.permission === 'denied') { setView('denied'); return; }
-    setView(await isSubscribed() ? 'on' : 'off');
+    const on = await isSubscribed();
+    if (on) await ensureRegistered();
+    setSave('idle');
+    setView(on ? 'on' : 'off');
   }, []);
 
   useEffect(() => { if (active) void refresh(); }, [active, refresh]);
@@ -36,7 +41,7 @@ export function usePushSettings(active: boolean) {
     setBusy(true);
     const result = await enablePush(prefs);
     setBusy(false);
-    if (result === 'ok') setView('on');
+    if (result === 'ok') { setView('on'); setSave('idle'); }
     else if (result === 'denied') setView('denied');
     else setSave('error');
   }, [prefs]);
@@ -45,6 +50,8 @@ export function usePushSettings(active: boolean) {
     setPrefs(prev => {
       const next = { ...prev, ...patch };
       window.clearTimeout(timer.current);
+      // Not subscribed yet: just remember the choice — enable() sends it along.
+      if (viewRef.current !== 'on') { saveLocalPrefs(next); setSave('idle'); return next; }
       setSave('saving');
       timer.current = window.setTimeout(async () => {
         setSave(await savePrefs(next) ? 'saved' : 'error');

@@ -9,6 +9,19 @@ import Confetti from '../Confetti';
 
 /** Final podium: 2nd · 1st · 3rd rising in turn, then the rest of the top 10. */
 const grow = keyframes`from { transform: scaleY(0); } to { transform: scaleY(1); }`;
+const beam = keyframes`
+  0% { opacity: 0; }
+  60% { opacity: 0.9; }
+  100% { opacity: 0.65; }
+`;
+const Spotlight = styled.div`
+  position: absolute;
+  inset: -40% -30% 0;
+  background: radial-gradient(50% 60% at 50% 30%, ${theme.game.goldGlow}, transparent 70%);
+  animation: ${beam} 1.4s 1.6s ease-out both;
+  pointer-events: none;
+  ${reduced};
+`;
 
 const Wrap = styled.div`
   flex: 1;
@@ -29,6 +42,7 @@ const Podium = styled.div`
   min-height: 300px;
 `;
 const Col = styled.div<{ $delay: number }>`
+  position: relative;
   flex: 1;
   max-width: 220px;
   display: flex;
@@ -92,6 +106,7 @@ export default function StagePodium({ board }: { board: PlayBoardEntry[] }) {
           if (!p) return <Col key={place} $delay={delay} />;
           return (
             <Col key={place} $delay={delay}>
+              {place === 1 && <Spotlight aria-hidden />}
               <div className="who">
                 <div style={{ fontSize: '2.4rem' }} aria-hidden>{p.avatar}</div>
                 <Who>{MEDAL[place - 1]} {p.name}</Who>

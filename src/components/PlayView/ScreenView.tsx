@@ -7,6 +7,9 @@ import { usePlayState, useWakeLock } from './usePlayState';
 import Stage from './stage/Stage';
 import PlayNotice from './PlayNotice';
 import ReconnectBadge from './ReconnectBadge';
+import SoundToggle from './SoundToggle';
+import SoundHint from './SoundHint';
+import { useGameSounds } from './sound/useGameSounds';
 import { GhostButton, Pill, Stage as StageShell } from './playStyles';
 
 /**
@@ -35,6 +38,7 @@ function toggleFullscreen() {
 export default function ScreenView({ code }: { code: string }) {
   const { state, fatal, reconnecting, now } = usePlayState(code, {}, 800);
   useWakeLock(true);
+  useGameSounds('stage', state, now);
   if (fatal) return <PlayNotice title={HE.PLAY_GAME_GONE} />;
   if (!state) return <StageShell />;
   return (
@@ -43,6 +47,8 @@ export default function ScreenView({ code }: { code: string }) {
         <Brand>{HE.PLAY_TITLE}</Brand>
         <div style={{ display: 'flex', gap: theme.spacing.sm, alignItems: 'center' }}>
           <ReconnectBadge show={reconnecting} />
+          <SoundHint />
+          <SoundToggle />
           {state.status !== 'lobby' && <Code>{HE.PLAY_CODE_SHORT} {state.code}</Code>}
           <GhostButton type="button" onClick={toggleFullscreen}>⛶ {HE.PLAY_FULLSCREEN}</GhostButton>
         </div>

@@ -6,6 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import type { PlayBoardEntry } from '@/types/play';
 import { Glass, Title, reduced, rise } from '../playStyles';
+import CountUp from '../CountUp';
 
 /**
  * Leaderboard after a question. Rows start where they stood before this
@@ -41,7 +42,7 @@ const Row = styled(Glass).attrs({ as: 'li' })<{ $lead: boolean }>`
   gap: ${theme.spacing.ms};
   padding: 0 ${theme.spacing.lg};
   border-radius: ${theme.radii.lg};
-  background: ${({ $lead }) => ($lead ? `linear-gradient(90deg, rgba(232,203,118,0.22), ${theme.game.glass})` : theme.game.glass)};
+  background: ${({ $lead }) => ($lead ? `linear-gradient(90deg, ${theme.game.goldGlow}, ${theme.game.glass})` : theme.game.glass)};
   border-color: ${({ $lead }) => ($lead ? theme.game.gold : theme.game.glassLine)};
   transition: transform 0.8s ${theme.motion.out};
   ${reduced};
@@ -107,7 +108,7 @@ export default function StageBoard({ board }: { board: PlayBoardEntry[] }) {
             <span aria-hidden style={{ fontSize: '1.6rem' }}>{r.avatar}</span>
             <Name>{r.name}</Name>
             {r.delta > 0 && <Delta>{HE.PLAY_DELTA(r.delta)}</Delta>}
-            <Score>{r.score.toLocaleString('he-IL')}</Score>
+            <Score><CountUp value={r.score} from={r.score - r.delta} ms={1200} /></Score>
           </Row>
         ))}
       </List>

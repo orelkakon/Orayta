@@ -81,14 +81,43 @@ async function credentials(): Promise<{ endpoint: string; auth: string } | null>
   return sub && auth ? { endpoint: sub.endpoint, auth } : null;
 }
 
+/** Local only — used while notifications are off, so choosing a time first never errors. */
+export function saveLocalPrefs(prefs: PushPrefs): void {
+  writeLocal({ ...readLocal(), ...prefs });
+}
+
+/** (Re-)registers this browser's existing subscription with the server. */
+async function register(sub: PushSubscription, prefs: PushPrefs): Promise<boolean> {
+  const res = await fetch('/api/push/subscribe', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subscription: sub.toJSON(), prefs, timeZone: timeZone() }),
+  }).catch(() => null);
+  if (!res?.ok) return false;
+  writeLocal({ ...readLocal(), ...prefs, enabled: true, endpoint: sub.endpoint });
+  return true;
+}
+
+/**
+ * Self-heal: the browser holds a subscription the server may not know (e.g.
+ * created while push was still unconfigured, or the endpoint rotated).
+ */
+export async function ensureRegistered(): Promise<void> {
+  const sub = await currentSubscription();
+  const local = readLocal();
+  if (sub && (!local.enabled || local.endpoint !== sub.endpoint)) await register(sub, local);
+}
+
 export async function savePrefs(prefs: PushPrefs): Promise<boolean> {
   writeLocal({ ...readLocal(), ...prefs });
-  const cred = await credentials();
-  if (!cred) return false;
+  const sub = await currentSubscription();
+  const auth = sub?.toJSON().keys?.auth;
+  if (!sub || !auth) return false;
   const res = await fetch('/api/push/subscription', {
     method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...cred, prefs, timeZone: timeZone() }),
+    body: JSON.stringify({ endpoint: sub.endpoint, auth, prefs, timeZone: timeZone() }),
   }).catch(() => null);
+  // Unknown to the server → register it now instead of failing.
+  if (res?.status === 404) return register(sub, prefs);
   return !!res?.ok;
 }
 

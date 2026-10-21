@@ -93,26 +93,32 @@ export const theme = {
   // (like the feed), and the four answer colours, always paired with a shape
   // so colour is never the only cue.
   game: {
-    stage:      'linear-gradient(165deg, #0A0E22 0%, #141E48 52%, #0A0C1E 100%)',
-    stageSolid: '#0E1430',
-    ink:        '#F7F2E4',
-    inkMuted:   'rgba(247,242,228,0.68)',
-    inkFaint:   'rgba(247,242,228,0.38)',
-    glass:      'rgba(255,255,255,0.07)',
-    glassHi:    'rgba(255,255,255,0.13)',
-    glassLine:  'rgba(255,255,255,0.14)',
-    gold:       '#E8CB76',
-    goldDeep:   '#B8923A',
-    onGold:     '#241A05',
-    right:      '#2FB463',
-    rightBg:    'linear-gradient(165deg, #0E3B24 0%, #16603A 100%)',
-    wrong:      '#E0475B',
-    wrongBg:    'linear-gradient(165deg, #3E0E17 0%, #6B1A27 100%)',
-    answers:    ['#E0354B', '#2F6FD6', '#D9A21B', '#2E9A4A'] as string[],
+    // Warm espresso stage lit from the top — Orayta's browns and golds,
+    // not a generic game-show navy.
+    stage:      'radial-gradient(120% 85% at 50% 0%, #4A2F16 0%, #2A1A0C 46%, #150C05 100%)',
+    stageSolid: '#21150A',
+    ink:        '#FBF4E6',
+    inkMuted:   'rgba(251,244,230,0.70)',
+    inkFaint:   'rgba(251,244,230,0.40)',
+    glass:      'rgba(255,236,210,0.07)',
+    glassHi:    'rgba(255,236,210,0.13)',
+    glassLine:  'rgba(226,184,107,0.20)',
+    gold:       '#E2B86B',
+    goldDeep:   '#B8863F',
+    goldGlow:   'rgba(226,184,107,0.28)',
+    onGold:     '#2A1A08',
+    right:      '#3FA36B',
+    rightBg:    'radial-gradient(120% 90% at 50% 0%, #1F5A3B 0%, #10301F 70%)',
+    wrong:      '#D2485C',
+    wrongBg:    'radial-gradient(120% 90% at 50% 0%, #6E2230 0%, #3A0E15 70%)',
+    urgent:     'rgba(210,72,92,0.55)',
+    // Wine · slate · amber · forest — brand-derived; blue appears once, muted.
+    answers:    ['#A12A3C', '#3F5F86', '#A87420', '#2F6B4F'] as string[],
     // QR codes need maximum contrast regardless of theme.
-    qrDark:     '#0A0E22',
+    qrDark:     '#1A1008',
     qrLight:    '#FFFFFF',
   },
+
   // Motion vocabulary — one spring + one decel curve everywhere, so the whole
   // app shares a single physical "feel" instead of per-component ad-hoc eases.
   motion: {

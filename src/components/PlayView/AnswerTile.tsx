@@ -1,6 +1,6 @@
 'use client';
 
-import styled, { css } from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { popIn, press, reduced } from './playStyles';
@@ -59,6 +59,20 @@ const Tile = styled.button<{ $color: string; $state: TileState; $big: boolean }>
   ${reduced};
 `;
 
+const fill = keyframes`from { transform: scaleX(0); } to { transform: scaleX(1); }`;
+const Share = styled.span<{ $w: number }>`
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: ${({ $w }) => Math.round($w * 100)}%;
+  border-radius: inherit;
+  background: rgba(255,255,255,0.16);
+  transform-origin: right;
+  animation: ${fill} 0.9s ${theme.motion.out} both;
+  pointer-events: none;
+  ${reduced};
+`;
+
 const Glyph = styled.span`
   flex: none;
   display: inline-flex;
@@ -95,10 +109,12 @@ interface Props {
   state?: TileState;
   big?: boolean;
   count?: number;
+  /** Share of all answers (0..1) — drawn as a bar on the reveal. */
+  share?: number;
   onPick?: () => void;
 }
 
-export default function AnswerTile({ index, text, state = 'idle', big = false, count, onPick }: Props) {
+export default function AnswerTile({ index, text, state = 'idle', big = false, count, share, onPick }: Props) {
   const color = theme.game.answers[index % 4];
   return (
     <Tile
@@ -111,6 +127,7 @@ export default function AnswerTile({ index, text, state = 'idle', big = false, c
       aria-label={`${HE.PLAY_SHAPES[index % 4]}: ${text}`}
       aria-pressed={state === 'picked' || undefined}
     >
+      {share !== undefined && share > 0 && <Share $w={share} aria-hidden />}
       <Glyph><Shape index={index} size={big ? 26 : 22} /></Glyph>
       <span>{text}</span>
       {count !== undefined && <Count>{count}</Count>}
