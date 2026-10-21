@@ -19,7 +19,9 @@ export async function PATCH(req: NextRequest) {
   const row = await findOwnedSubscription(body.endpoint, body.auth);
   if (!row) return NextResponse.json({ error: 'not found' }, { status: 404 });
   const prefs = parsePrefs(body.prefs, body.timeZone);
-  const updated = await prisma.pushSubscription.update({ where: { id: row.id }, data: prefs });
+  // A new daily time counts from today, even if today's reminder already went out at the old one.
+  const reset = prefs.dailyMinutes !== undefined && prefs.dailyMinutes !== row.dailyMinutes ? { lastDailyDay: null } : {};
+  const updated = await prisma.pushSubscription.update({ where: { id: row.id }, data: { ...prefs, ...reset } });
   invalidateSchedule();
   return NextResponse.json({
     dailyMinutes: updated.dailyMinutes, daily: updated.daily, hilula: updated.hilula, omer: updated.omer,

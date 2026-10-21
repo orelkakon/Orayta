@@ -71,8 +71,12 @@ export interface SubscriptionPrefs {
 }
 
 export interface DayContext {
-  /** The Hebrew day that begins tonight has at least one hilula. */
-  hilulaTonight: boolean;
+  /**
+   * Civil date ('YYYY-MM-DD') of the Hebrew day that begins tonight, when it has
+   * at least one hilula (null otherwise). It is also the hilula "sent" marker, so
+   * one notification goes out per Hebrew day whenever it was last claimed.
+   */
+  hilulaDay: string | null;
   /** Tonight's omer count is defined (null outside the season). */
   omerTonight: number | null;
   /** Israel nightfall (צאת הכוכבים) in minutes after midnight — hilula and omer go out then. */
@@ -91,7 +95,8 @@ export function dueKinds(now: Date, sub: SubscriptionPrefs, ctx: DayContext): Pu
   const kinds: PushKind[] = [];
   if (sub.daily && isDue(clock, sub.dailyMinutes, sub.lastDailyDay)) kinds.push('daily');
   const il = localClock(now, DEFAULT_TIME_ZONE);
-  if (sub.hilula && ctx.hilulaTonight && isDue(il, ctx.nightfallMinutes, sub.lastHilulaDay)) kinds.push('hilula');
+  if (sub.hilula && ctx.hilulaDay !== null && sub.lastHilulaDay !== ctx.hilulaDay
+    && isDue(il, ctx.nightfallMinutes, null)) kinds.push('hilula');
   if (sub.omer && ctx.omerTonight !== null && isDue(il, ctx.nightfallMinutes, sub.lastOmerDay)) kinds.push('omer');
   return kinds;
 }

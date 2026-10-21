@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db';
 import { dueKinds, localClock, DEFAULT_TIME_ZONE, OMER_AFTER_SUNSET_MIN, type PushKind } from './schedule';
 import { sendPush, mapLimit } from './server';
-import { hebrewDayAnchor } from './hilula';
+import { hebrewDayAnchor, israelIso } from './hilula';
 import { dailyPayload, hilulaPayload, omerPayload } from './content';
 import { getOmerDay } from '@/lib/omer';
 import { jerusalemSunTimes } from '@/lib/siddur/calendar';
@@ -27,7 +27,7 @@ export async function runDispatch(): Promise<DispatchResult> {
   // After nightfall the Hebrew day of tomorrow's civil date has begun — that's whose hilula we announce.
   const tonight = hebrewDayAnchor(now);
   const hilula = tonight !== now ? await hilulaPayload(tonight, il.day) : null;
-  const ctx = { hilulaTonight: hilula !== null, omerTonight: omerDay, nightfallMinutes: nightfall };
+  const ctx = { hilulaDay: hilula ? israelIso(tonight) : null, omerTonight: omerDay, nightfallMinutes: nightfall };
 
   const subs = await prisma.pushSubscription.findMany();
   const plan = subs.flatMap(sub => dueKinds(now, sub, ctx).map(kind => ({ sub, kind })));
@@ -40,7 +40,8 @@ export async function runDispatch(): Promise<DispatchResult> {
   const results = await mapLimit(plan, 20, async ({ sub, kind }) => {
     const payload = payloads[kind];
     if (!payload) return 'skipped';
-    const day = kind === 'omer' ? il.day : localClock(now, sub.timeZone).day;
+    const day = kind === 'hilula' ? (ctx.hilulaDay ?? il.day)
+      : kind === 'omer' ? il.day : localClock(now, sub.timeZone).day;
     const field = LAST_FIELD[kind];
     const claimed = await prisma.pushSubscription.updateMany({
       where: { id: sub.id, [field]: sub[field] },
