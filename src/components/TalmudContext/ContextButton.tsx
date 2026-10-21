@@ -21,9 +21,10 @@ const Btn = styled.button<{ $v: ContextButtonVariant }>`
   &:focus-visible { outline: 2px solid ${theme.colors.primaryLight}; outline-offset: 2px; }
 
   ${p => p.$v === 'card' && css`
-    font-size: 0.8rem; padding: ${theme.spacing.xs} ${theme.spacing.md}; border-radius: ${theme.radii.sm};
-    color: ${theme.colors.primaryLight}; border: 1px solid ${theme.colors.border};
-    &:hover { background: ${theme.colors.surfaceAlt}; }
+    height: 34px; font-size: 0.82rem; padding: 0 14px; border-radius: 999px;
+    color: ${theme.colors.primary}; background: ${theme.colors.surfaceAlt};
+    border: 1px solid ${theme.colors.border};
+    &:hover { border-color: ${theme.colors.primaryLight}; background: ${theme.colors.background}; }
   `}
   ${p => p.$v === 'inline' && css`
     align-self: flex-start; font-size: ${theme.fontSizes.sm}; padding: 6px 14px; border-radius: 999px;

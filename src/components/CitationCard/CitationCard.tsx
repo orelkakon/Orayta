@@ -6,6 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Citation } from '@/types';
 import SpeakButton from '@/components/common/SpeakButton';
+import { LineIcon } from '@/components/common/LineIcons';
 import ContextButton from '@/components/TalmudContext/ContextButton';
 
 const fadeUp = keyframes`
@@ -58,36 +59,66 @@ const LocationTag = styled.span`
   font-family: ${theme.fonts.body};
 `;
 
-const Actions = styled.div`
+/* Footer: study actions (everyone) on the start side, admin tools on the end side. */
+const Footer = styled.div`
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: ${theme.spacing.sm};
-  justify-content: flex-end;
+  flex-wrap: wrap;
   border-top: 1px solid ${theme.colors.borderLight};
   padding-top: ${theme.spacing.sm};
 `;
 
-const ActionButton = styled.button<{ $variant?: 'danger' }>`
-  font-size: 0.8rem;
-  padding: ${theme.spacing.xs} ${theme.spacing.md};
-  border-radius: ${theme.radii.sm};
-  font-weight: 500;
-  transition: all 0.15s;
-  color: ${({ $variant }) => ($variant === 'danger' ? theme.colors.error : theme.colors.primaryLight)};
-  border: 1px solid ${({ $variant }) => ($variant === 'danger' ? theme.colors.error : theme.colors.border)};
-
-  &:hover {
-    background: ${({ $variant }) =>
-      $variant === 'danger' ? 'rgba(155,35,53,0.08)' : 'rgba(92,61,30,0.08)'};
-  }
+const Group = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.xs};
 `;
 
-const ConfirmOverlay = styled.div`
+const AdminGroup = styled(Group)`
+  margin-inline-start: auto;
+  padding-inline-start: ${theme.spacing.sm};
+  border-inline-start: 1px solid ${theme.colors.borderLight};
+`;
+
+const IconBtn = styled.button<{ $danger?: boolean }>`
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: ${theme.colors.textMuted};
+  transition: background ${theme.motion.fast}, color ${theme.motion.fast}, border-color ${theme.motion.fast};
+  &:hover {
+    color: ${({ $danger }) => ($danger ? theme.colors.error : theme.colors.primary)};
+    border-color: ${({ $danger }) => ($danger ? theme.colors.error : theme.colors.border)};
+    background: ${({ $danger }) => ($danger ? theme.colors.bgError : theme.colors.surfaceAlt)};
+  }
+  &:focus-visible { outline: 2px solid ${theme.colors.primaryLight}; outline-offset: 2px; }
+`;
+
+const Confirm = styled.div`
   display: flex;
   align-items: center;
   gap: ${theme.spacing.sm};
-  font-size: 0.85rem;
-  color: ${theme.colors.error};
   flex-wrap: wrap;
+  margin-inline-start: auto;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: ${theme.colors.error};
+`;
+
+const TextBtn = styled.button<{ $danger?: boolean }>`
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  color: ${({ $danger }) => ($danger ? theme.colors.onPrimary : theme.colors.textMuted)};
+  background: ${({ $danger }) => ($danger ? theme.colors.error : 'transparent')};
+  border: 1px solid ${({ $danger }) => ($danger ? theme.colors.error : theme.colors.border)};
 `;
 
 interface Props {
@@ -115,23 +146,29 @@ export default function CitationCard({ citation, index = 0, onEdit, onDelete, is
           <LocationTag key={loc.id}>{formatLocation(loc)}</LocationTag>
         ))}
       </Locations>
-      <Actions>
-        <ContextButton citation={citation} />
-        <SpeakButton text={`${citation.content}. ${citation.locations.map(formatLocation).join(', ')}`} />
+      <Footer>
+        <Group>
+          <ContextButton citation={citation} />
+          <SpeakButton variant="icon" text={`${citation.content}. ${citation.locations.map(formatLocation).join(', ')}`} />
+        </Group>
         {!isReadOnly && !confirming && (
-          <>
-            <ActionButton onClick={() => onEdit(citation)}>{HE.STUDY_EDIT}</ActionButton>
-            <ActionButton $variant="danger" onClick={() => setConfirming(true)}>{HE.STUDY_DELETE}</ActionButton>
-          </>
+          <AdminGroup>
+            <IconBtn type="button" onClick={() => onEdit(citation)} title={HE.STUDY_EDIT} aria-label={HE.STUDY_EDIT}>
+              <LineIcon name="pencil" size={16} strokeWidth={1.8} />
+            </IconBtn>
+            <IconBtn type="button" $danger onClick={() => setConfirming(true)} title={HE.STUDY_DELETE} aria-label={HE.STUDY_DELETE}>
+              <LineIcon name="trash" size={16} strokeWidth={1.8} />
+            </IconBtn>
+          </AdminGroup>
         )}
         {!isReadOnly && confirming && (
-          <ConfirmOverlay>
-            <span>{HE.DELETE_CONFIRM}</span>
-            <ActionButton $variant="danger" onClick={() => onDelete(citation.id)}>כן, מחק</ActionButton>
-            <ActionButton onClick={() => setConfirming(false)}>{HE.CANCEL}</ActionButton>
-          </ConfirmOverlay>
+          <Confirm role="alert">
+            <span>{HE.STUDY_DELETE_ASK}</span>
+            <TextBtn type="button" $danger onClick={() => onDelete(citation.id)}>{HE.STUDY_DELETE_YES}</TextBtn>
+            <TextBtn type="button" onClick={() => setConfirming(false)}>{HE.CANCEL}</TextBtn>
+          </Confirm>
         )}
-      </Actions>
+      </Footer>
     </Card>
   );
 }
