@@ -13,7 +13,7 @@ const scrollRight = keyframes`
 
 const Strip = styled.div`
   position: sticky;
-  top: 60px;
+  top: var(--header-h, 60px);
   z-index: 95;
   width: 100%;
   overflow: hidden;
@@ -22,7 +22,7 @@ const Strip = styled.div`
   border-bottom: 1px solid ${theme.colors.secondary}66;
   box-shadow: ${theme.shadows.sm};
   padding: 5px 0;
-  @media (max-width: 480px) { top: 52px; }
+  @media (max-width: 480px) { top: var(--header-h, 52px); }
 `;
 
 const Tape = styled.div.attrs({ className: 'anim-loop' })<{ $secs: number }>`

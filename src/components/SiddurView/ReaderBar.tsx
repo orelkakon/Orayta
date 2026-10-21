@@ -9,8 +9,8 @@ import type { PrayerService } from '@/lib/siddur';
 import { sectionApplies, PrayerDay } from '@/lib/siddur/calendar';
 
 const Bar = styled.div`
-  position: sticky; top: 60px; z-index: ${theme.z.sticky};
-  @media (max-width: 480px) { top: 52px; }
+  position: sticky; top: var(--header-h, 60px); z-index: ${theme.z.sticky};
+  @media (max-width: 480px) { top: var(--header-h, 52px); }
   /* Bleed to the edges of <main> (32px padding, 16px on phones). */
   margin: 0 -${theme.spacing.xl};
   padding: 0 ${theme.spacing.xl};

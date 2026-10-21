@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -142,6 +142,20 @@ const SkipLink = styled.a.attrs({ className: 'skip-link' })``;
 
 function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname   = usePathname();
+  // Sticky sub-bars sit exactly under the header. Its height isn't fixed (logo
+  // + subtitle, header buttons, font scaling), so publish the real height as
+  // --header-h instead of assuming 60px — a hard-coded offset let the bars
+  // slide partly under the header and look like they shrink while scrolling.
+  const headerRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const set = () => document.documentElement.style.setProperty('--header-h', `${el.offsetHeight}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const { isDark, toggle } = useDarkMode();
   const role = useRole();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -173,7 +187,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   return (
     <Wrapper>
       <SkipLink href="#main">{HE.ARIA_SKIP_TO_CONTENT}</SkipLink>
-      <Header>
+      <Header ref={headerRef}>
         <LogoGroup>
           <LogoArea href="/">
             <OraytaLogo size={34} />

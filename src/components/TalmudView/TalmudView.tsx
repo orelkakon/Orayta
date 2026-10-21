@@ -23,10 +23,10 @@ const SubNav = styled.div`
   border-bottom: 2px solid ${theme.colors.borderLight};
   padding-bottom: 0;
   position: sticky;
-  top: 60px;
+  top: var(--header-h, 60px);
   z-index: 51;
   background: ${theme.colors.background};
-  @media (max-width: 480px) { top: 52px; }
+  @media (max-width: 480px) { top: var(--header-h, 52px); }
 `;
 
 const TabBtn = styled.button<{ $active: boolean }>`

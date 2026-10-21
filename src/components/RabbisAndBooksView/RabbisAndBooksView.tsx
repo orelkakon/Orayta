@@ -15,10 +15,10 @@ const SubNav = styled.div`
   display: flex; align-items: center; gap: ${theme.spacing.xs};
   border-bottom: 2px solid ${theme.colors.borderLight};
   position: sticky;
-  top: 60px;
+  top: var(--header-h, 60px);
   z-index: 51;
   background: ${theme.colors.background};
-  @media (max-width: 480px) { top: 52px; }
+  @media (max-width: 480px) { top: var(--header-h, 52px); }
 `;
 
 const TabBtn = styled.button<{ $active: boolean }>`
