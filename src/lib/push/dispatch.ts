@@ -16,13 +16,15 @@ const LAST_FIELD = { daily: 'lastDailyDay', hilula: 'lastHilulaDay', omer: 'last
  * hilula and omer go out at Israel nightfall; outside those windows nothing
  * can be newly due, so the pinger doesn't wake the database for nothing.
  * Misses are harmless: the dispatcher's 3-hour late window catches up at the
- * next quarter-hour.
+ * next quarter-hour (nightfall gets its own 5-minute window, so one 5-minute ping always lands in it).
  */
 export function mightBeDue(now: Date): boolean {
-  if (now.getUTCMinutes() % 15 < 6) return true;
+  // One ping per quarter-hour (the 5-minute pinger lands on :00/:15/:30/:45),
+  // so Neon wakes at most every 15 minutes and can autosuspend in between.
+  if (now.getUTCMinutes() % 15 < 3) return true;
   const nightfall = jerusalemSunTimes(now).sunset.getTime() + OMER_AFTER_SUNSET_MIN * 60_000;
   const sinceNightfall = now.getTime() - nightfall;
-  return sinceNightfall >= 0 && sinceNightfall < 20 * 60_000;
+  return sinceNightfall >= 0 && sinceNightfall < 5 * 60_000;
 }
 
 export interface DispatchResult { subscribers: number; sent: number; gone: number; failed: number; skipped: number; }
