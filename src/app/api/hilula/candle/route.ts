@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { candleKey, israelIso } from '@/lib/push/hilula';
+import { candleKey, israelIso, hebrewDayAnchor } from '@/lib/push/hilula';
 import { pushIpHash } from '@/lib/push/server';
 
 export const dynamic = 'force-dynamic';
@@ -11,7 +11,7 @@ const MAX_PER_DAY = 5;
 const seen = new Map<string, number>();
 
 export async function POST(req: NextRequest) {
-  const day = israelIso(new Date());
+  const day = israelIso(hebrewDayAnchor(new Date()));
   const key = `${day}|${pushIpHash(req)}`;
   const n = seen.get(key) ?? 0;
   if (seen.size > 5000) seen.clear();

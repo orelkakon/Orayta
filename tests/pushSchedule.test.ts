@@ -11,7 +11,7 @@ const sub = (over: Partial<SubscriptionPrefs> = {}): SubscriptionPrefs => ({
   timeZone: 'Asia/Jerusalem', dailyMinutes: 480, daily: true, hilula: true, omer: true,
   lastDailyDay: null, lastHilulaDay: null, lastOmerDay: null, ...over,
 });
-const noHoliday = { hasHilula: false, omerTonight: null, omerMinutes: 19 * 60 };
+const noHoliday = { hilulaTonight: false, omerTonight: null, nightfallMinutes: 19 * 60 };
 
 test('localClock follows the zone, including DST', () => {
   // 2026-01-15 06:00Z = 08:00 Israel winter (UTC+2)
@@ -39,15 +39,17 @@ test('a delayed run (GitHub cron lag) still sends once', () => {
   assert.deepEqual(dueKinds(at, sub({ lastDailyDay: '2026-01-15' }), noHoliday), []);
 });
 
-test('hilula only on hilula days and only when enabled; omer follows Israel nightfall', () => {
-  const at = new Date('2026-01-15T06:10:00Z');
-  assert.deepEqual(dueKinds(at, sub(), { ...noHoliday, hasHilula: true }), ['daily', 'hilula']);
-  assert.deepEqual(dueKinds(at, sub({ hilula: false }), { ...noHoliday, hasHilula: true }), ['daily']);
+test('hilula goes out at Israel nightfall when its day begins; omer too; daily keeps its own time', () => {
+  const morning = new Date('2026-01-15T06:10:00Z'); // 08:10 Israel — daily time, not nightfall
+  assert.deepEqual(dueKinds(morning, sub(), { ...noHoliday, hilulaTonight: true }), ['daily']);
   const evening = new Date('2026-04-20T16:30:00Z'); // 19:30 Israel (UTC+3)
-  const omer = { hasHilula: false, omerTonight: 5, omerMinutes: 19 * 60 + 20 };
-  assert.deepEqual(dueKinds(evening, sub({ daily: false }), omer), ['omer']);
-  assert.deepEqual(dueKinds(evening, sub({ daily: false, omer: false }), omer), []);
-  assert.deepEqual(dueKinds(evening, sub({ daily: false }), { ...omer, omerTonight: null }), []);
+  const night = { hilulaTonight: true, omerTonight: 5, nightfallMinutes: 19 * 60 + 20 };
+  assert.deepEqual(dueKinds(evening, sub({ daily: false }), night), ['hilula', 'omer']);
+  assert.deepEqual(dueKinds(evening, sub({ daily: false, hilula: false }), night), ['omer']);
+  assert.deepEqual(dueKinds(evening, sub({ daily: false, omer: false }), { ...night, hilulaTonight: false }), []);
+  const beforeNightfall = new Date('2026-04-20T16:10:00Z'); // 19:10 Israel
+  assert.deepEqual(dueKinds(beforeNightfall, sub({ daily: false }), night), []);
+  assert.deepEqual(dueKinds(evening, sub({ daily: false }), { ...night, omerTonight: null }), ['hilula']);
 });
 
 test('respects the subscriber zone for the daily time', () => {
@@ -105,4 +107,17 @@ test('subscriptions: only real push services and well-formed keys', () => {
   assert.equal(parseSubscription({ endpoint: 'http://fcm.googleapis.com/x', keys }), null);
   assert.equal(parseSubscription({ endpoint: 'https://fcm.googleapis.com:8443/x', keys }), null);
   assert.equal(parseSubscription({ endpoint: 'https://fcm.googleapis.com/x', keys: { p256dh: 'a', auth: 'b' } }), null);
+});
+
+import { hebrewDayAnchor } from '@/lib/push/hilula';
+
+test('hilula day follows the Hebrew day: after nightfall it is already tomorrow', () => {
+  const afternoon = new Date('2026-10-21T12:00:00Z'); // 15:00 Israel
+  const night = new Date('2026-10-21T17:30:00Z');     // 20:30 Israel, after nightfall
+  assert.equal(hebrewDayAnchor(afternoon), afternoon);
+  assert.equal(hebrewDayAnchor(night).toISOString().slice(0, 10), '2026-10-22');
+  // 10 Cheshvan 5787 is civil 21 Oct (by day); its eve is the night of 20 Oct.
+  const gad = [{ deathDate: 'י׳ חשוון' }];
+  assert.equal(hilulaRabbisOn(gad, hebrewDayAnchor(new Date('2026-10-20T17:30:00Z'))).length, 1);
+  assert.equal(hilulaRabbisOn(gad, hebrewDayAnchor(night)).length, 0);
 });

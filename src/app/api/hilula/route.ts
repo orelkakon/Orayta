@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { hilulaCalendar, israelIso, candleKey } from '@/lib/push/hilula';
+import { hilulaCalendar, israelIso, candleKey, hebrewDayAnchor } from '@/lib/push/hilula';
 import type { HilulaResponse, HilulaRabbi } from '@/types/push';
 
 export const dynamic = 'force-dynamic';
 
 /** Today's hilulot, the next days that have one, and today's candle count. */
 export async function GET() {
-  const now = new Date();
+  // After nightfall the hilula of the Hebrew day that just began is "today".
+  const now = hebrewDayAnchor(new Date());
   const [rabbis, counter] = await Promise.all([
     prisma.rabbi.findMany({
       where: { deathDate: { not: null } },

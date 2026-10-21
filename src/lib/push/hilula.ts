@@ -2,6 +2,8 @@ import type { Rabbi } from '@/types';
 import { hebrewDate, type HebMonth } from '@/lib/siddur/occasions';
 import { matchYahrzeitRabbis, type HebDateParts } from '@/lib/yahrzeit';
 import { formatHebrewDate } from '@/lib/hebrewDate';
+import { jerusalemSunTimes } from '@/lib/siddur/calendar';
+import { OMER_AFTER_SUNSET_MIN } from './schedule';
 
 const DAY_MS = 86400000;
 const TZ = 'Asia/Jerusalem';
@@ -28,6 +30,15 @@ function israelNoon(d: Date): Date {
 export function hebDatePartsFor(d: Date): HebDateParts | null {
   const h = hebrewDate(israelNoon(d));
   return h ? { hd: h.day, hm: INTL_TO_HEBCAL[h.month] } : null;
+}
+
+/**
+ * A moment inside the Hebrew day that is current at `now` in Israel: from
+ * nightfall on, the next Hebrew day has begun, so its civil date is tomorrow's.
+ */
+export function hebrewDayAnchor(now: Date): Date {
+  const nightfall = jerusalemSunTimes(now).sunset.getTime() + OMER_AFTER_SUNSET_MIN * 60_000;
+  return now.getTime() >= nightfall ? new Date(now.getTime() + 86_400_000) : now;
 }
 
 /** Rabbis whose hilula falls on the Israel day containing `d`. */

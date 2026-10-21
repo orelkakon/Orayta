@@ -5,6 +5,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { lastPushError, sendPush } from '@/lib/push/server';
 import { localClock, DEFAULT_TIME_ZONE } from '@/lib/push/schedule';
 import { dailyPayload, hilulaPayload, omerPayload } from '@/lib/push/content';
+import { hebrewDayAnchor } from '@/lib/push/hilula';
 import type { PushPayload } from '@/types/push';
 
 export const dynamic = 'force-dynamic';
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
   const day = localClock(now, DEFAULT_TIME_ZONE).day;
   let payload: PushPayload | null;
   if (body.kind === 'daily') payload = await dailyPayload(now, day);
-  else if (body.kind === 'hilula') payload = await hilulaPayload(now, day);
+  else if (body.kind === 'hilula') payload = await hilulaPayload(hebrewDayAnchor(now), day);
   else if (body.kind === 'omer') payload = omerPayload(33, day);
   else payload = { kind: 'test', title: HE.PUSH_TEST_TITLE, body: HE.PUSH_TEST_BODY, url: '/', tag: 'test' };
   if (!payload) return NextResponse.json({ error: 'nothing to send today' }, { status: 404 });

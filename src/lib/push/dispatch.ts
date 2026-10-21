@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
 import { dueKinds, localClock, DEFAULT_TIME_ZONE, OMER_AFTER_SUNSET_MIN, type PushKind } from './schedule';
 import { sendPush, mapLimit } from './server';
+import { hebrewDayAnchor } from './hilula';
 import { dailyPayload, hilulaPayload, omerPayload } from './content';
 import { getOmerDay } from '@/lib/omer';
 import { jerusalemSunTimes } from '@/lib/siddur/calendar';
@@ -21,8 +22,11 @@ export async function runDispatch(): Promise<DispatchResult> {
   const il = localClock(now, DEFAULT_TIME_ZONE);
   const sunset = localClock(jerusalemSunTimes(now).sunset, DEFAULT_TIME_ZONE).minutes;
   const omerDay = getOmerDay(now);
-  const hilula = await hilulaPayload(now, il.day);
-  const ctx = { hasHilula: hilula !== null, omerTonight: omerDay, omerMinutes: sunset + OMER_AFTER_SUNSET_MIN };
+  const nightfall = sunset + OMER_AFTER_SUNSET_MIN;
+  // After nightfall the Hebrew day of tomorrow's civil date has begun — that's whose hilula we announce.
+  const tonight = hebrewDayAnchor(now);
+  const hilula = tonight !== now ? await hilulaPayload(tonight, il.day) : null;
+  const ctx = { hilulaTonight: hilula !== null, omerTonight: omerDay, nightfallMinutes: nightfall };
 
   const subs = await prisma.pushSubscription.findMany();
   const plan = subs.flatMap(sub => dueKinds(now, sub, ctx).map(kind => ({ sub, kind })));

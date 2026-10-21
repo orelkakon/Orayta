@@ -71,30 +71,28 @@ export interface SubscriptionPrefs {
 }
 
 export interface DayContext {
-  /** Today (Israel) has at least one hilula. */
-  hasHilula: boolean;
+  /** The Hebrew day that begins tonight has at least one hilula. */
+  hilulaTonight: boolean;
   /** Tonight's omer count is defined (null outside the season). */
   omerTonight: number | null;
-  /** Minutes after Israel midnight at which tonight's omer reminder goes out. */
-  omerMinutes: number;
+  /** Israel nightfall (צאת הכוכבים) in minutes after midnight — hilula and omer go out then. */
+  nightfallMinutes: number;
 }
 
 export type PushKind = 'daily' | 'hilula' | 'omer';
 
 /**
- * Which notifications one subscription should get right now. Daily and hilula
- * follow the subscriber's chosen time in their own zone; the omer reminder
- * follows Israel's nightfall (the count itself is Israel-based).
+ * Which notifications one subscription should get right now. The daily
+ * reminder follows the subscriber's chosen time in their own zone; hilula and
+ * omer follow Israel's nightfall, when the Hebrew day they belong to begins.
  */
 export function dueKinds(now: Date, sub: SubscriptionPrefs, ctx: DayContext): PushKind[] {
   const clock = localClock(now, sub.timeZone);
   const kinds: PushKind[] = [];
   if (sub.daily && isDue(clock, sub.dailyMinutes, sub.lastDailyDay)) kinds.push('daily');
-  if (sub.hilula && ctx.hasHilula && isDue(clock, sub.dailyMinutes, sub.lastHilulaDay)) kinds.push('hilula');
-  if (sub.omer && ctx.omerTonight !== null) {
-    const il = localClock(now, DEFAULT_TIME_ZONE);
-    if (isDue(il, ctx.omerMinutes, sub.lastOmerDay)) kinds.push('omer');
-  }
+  const il = localClock(now, DEFAULT_TIME_ZONE);
+  if (sub.hilula && ctx.hilulaTonight && isDue(il, ctx.nightfallMinutes, sub.lastHilulaDay)) kinds.push('hilula');
+  if (sub.omer && ctx.omerTonight !== null && isDue(il, ctx.nightfallMinutes, sub.lastOmerDay)) kinds.push('omer');
   return kinds;
 }
 
