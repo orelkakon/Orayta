@@ -169,6 +169,3 @@ export const SefariaLink = styled.a`
   &::after { content: ' ↗'; font-size: 0.8em; }
 `;
 
-export const Attribution = styled.small`
-  text-align: center; font-size: 0.68rem; line-height: 1.4; color: ${theme.colors.textLight};
-`;

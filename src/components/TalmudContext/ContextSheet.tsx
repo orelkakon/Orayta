@@ -12,7 +12,7 @@ import { useDialog } from './useDialog';
 import ContextBody, { type TextMode } from './ContextBody';
 import {
   EXIT_MS, Backdrop, Sheet, Grip, Head, TitleRow, Title, IconBtn, Quote, ToolRow,
-  Segmented, SegBtn, Spacer, Foot, NavRow, SefariaLink, Attribution,
+  Segmented, SegBtn, Spacer, Foot, NavRow, SefariaLink,
 } from './sheetStyles';
 
 const MODE_KEY = 'orayta_tc_mode';
@@ -99,10 +99,9 @@ export default function ContextSheet({ citation, onClose }: Props) {
         <Foot>
           <NavRow>
             <IconBtn onClick={() => page?.prev && ctx.setAt(page.prev)} disabled={!page?.prev} aria-label={HE.TC_PREV}>→ {HE.TC_PREV_SHORT}</IconBtn>
-            {page && <SefariaLink href={page.sefariaUrl} target="_blank" rel="noopener noreferrer">{HE.TC_SEFARIA}</SefariaLink>}
+            {page && <SefariaLink href={page.sefariaUrl} target="_blank" rel="noopener noreferrer" title={HE.TC_ATTRIBUTION}>{HE.TC_SEFARIA}</SefariaLink>}
             <IconBtn onClick={() => page?.next && ctx.setAt(page.next)} disabled={!page?.next} aria-label={HE.TC_NEXT}>{HE.TC_NEXT_SHORT} ←</IconBtn>
           </NavRow>
-          <Attribution>{HE.TC_ATTRIBUTION}</Attribution>
         </Foot>
       </Sheet>
     </div>,
