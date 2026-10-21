@@ -5,6 +5,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { normalizeCommentText } from '@/lib/feedComments';
 import { lastPushError, mapLimit, pushConfigured, sendPush } from '@/lib/push/server';
 import type { PushBroadcastRecord, PushPayload } from '@/types/push';
+import { invalidateSchedule } from '@/lib/push/scheduleCache';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,7 +60,10 @@ export async function POST(req: NextRequest) {
   const outcomes = await mapLimit(subs, 20, s => sendPush(s, payload));
   const gone = subs.filter((_, i) => outcomes[i] === 'gone').map(s => s.id);
   const failedIds = subs.filter((_, i) => outcomes[i] === 'failed').map(s => s.id);
-  if (gone.length) await prisma.pushSubscription.deleteMany({ where: { id: { in: gone } } });
+  if (gone.length) {
+    await prisma.pushSubscription.deleteMany({ where: { id: { in: gone } } });
+    invalidateSchedule();
+  }
   if (failedIds.length) await prisma.pushSubscription.updateMany({ where: { id: { in: failedIds } }, data: { failures: { increment: 1 } } });
 
   const done = { ...record, sent: outcomes.filter(o => o === 'sent').length, failed: failedIds.length };

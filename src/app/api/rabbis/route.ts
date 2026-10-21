@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { cachedJson } from '@/lib/apiCache';
+import { invalidateHilulaDates } from '@/lib/push/scheduleCache';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,5 +63,6 @@ export async function POST(request: NextRequest) {
     await prisma.book.createMany({ data: booksToCreate });
   }
 
+  invalidateHilulaDates();
   return NextResponse.json(rabbi, { status: 201 });
 }

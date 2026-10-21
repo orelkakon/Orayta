@@ -122,15 +122,31 @@ test('hilula day follows the Hebrew day: after nightfall it is already tomorrow'
   assert.equal(hilulaRabbisOn(gad, hebrewDayAnchor(night)).length, 0);
 });
 
-import { mightBeDue } from '@/lib/push/dispatch';
+import { needsDispatch, type ScheduleEntry } from '@/lib/push/wake';
 
-test('heartbeat pre-check: quarter-hour windows and Israel nightfall only', () => {
-  assert.equal(mightBeDue(new Date('2026-10-21T05:00:30Z')), true);  // 08:00 Israel
-  assert.equal(mightBeDue(new Date('2026-10-21T05:05:10Z')), false); // :05 ping — DB stays asleep
-  assert.equal(mightBeDue(new Date('2026-10-21T05:07:00Z')), false); // 08:07 — nothing can be due
-  assert.equal(mightBeDue(new Date('2026-10-21T05:15:00Z')), true);
-  // 21 Oct 2026: sunset 18:01 Israel (UTC+3) → nightfall 18:26. 18:28 is off-grid but inside
-  // the 5-minute nightfall window; 18:37 is past it.
-  assert.equal(mightBeDue(new Date('2026-10-21T15:28:00Z')), true);
-  assert.equal(mightBeDue(new Date('2026-10-21T15:37:00Z')), false);
+const entry = (over: Partial<ScheduleEntry> = {}): ScheduleEntry =>
+  ({ timeZone: 'Asia/Jerusalem', dailyMinutes: 8 * 60 + 15, daily: true, hilula: true, omer: true, ...over });
+const quiet = { hilula: false, omer: false };
+const NIGHTFALL = Date.parse('2026-10-21T15:26:00Z'); // 18:26 Israel
+
+test('heartbeat wakes the DB only when someone is due', () => {
+  // 08:15 Israel (UTC+3) chosen time: the ping on the minute and the backup 5 minutes later.
+  assert.equal(needsDispatch(new Date('2026-10-21T05:15:20Z'), [entry()], NIGHTFALL, quiet), true);
+  assert.equal(needsDispatch(new Date('2026-10-21T05:20:10Z'), [entry()], NIGHTFALL, quiet), true);
+  assert.equal(needsDispatch(new Date('2026-10-21T05:25:00Z'), [entry()], NIGHTFALL, quiet), false);
+  assert.equal(needsDispatch(new Date('2026-10-21T05:00:00Z'), [entry()], NIGHTFALL, quiet), false); // other quarter
+  assert.equal(needsDispatch(new Date('2026-10-21T05:15:20Z'), [entry({ daily: false })], NIGHTFALL, quiet), false);
+  // Another time zone: 08:15 in London (UTC+1 in October) is 07:15Z.
+  assert.equal(needsDispatch(new Date('2026-10-21T07:15:00Z'), [entry({ timeZone: 'Europe/London' })], NIGHTFALL, quiet), true);
+  // Midnight wrap: 23:55 chosen, ping at 00:00 is inside the window.
+  assert.equal(needsDispatch(new Date('2026-10-20T21:00:00Z'), [entry({ dailyMinutes: 23 * 60 + 55 })], NIGHTFALL, quiet), true);
+});
+
+test('nightfall wakes only on hilula / omer nights for subscribers who want them', () => {
+  const at = new Date(NIGHTFALL + 2 * 60_000);
+  assert.equal(needsDispatch(at, [entry({ dailyMinutes: 0 })], NIGHTFALL, quiet), false);
+  assert.equal(needsDispatch(at, [entry({ dailyMinutes: 0 })], NIGHTFALL, { hilula: true, omer: false }), true);
+  assert.equal(needsDispatch(at, [entry({ dailyMinutes: 0, hilula: false })], NIGHTFALL, { hilula: true, omer: false }), false);
+  assert.equal(needsDispatch(at, [entry({ dailyMinutes: 0 })], NIGHTFALL, { hilula: false, omer: true }), true);
+  assert.equal(needsDispatch(new Date(NIGHTFALL + 9 * 60_000), [entry({ dailyMinutes: 0 })], NIGHTFALL, { hilula: true, omer: true }), false);
 });

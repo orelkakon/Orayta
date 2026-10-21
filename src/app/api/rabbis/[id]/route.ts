@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { invalidateHilulaDates } from '@/lib/push/scheduleCache';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,11 +28,13 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     },
   });
 
+  invalidateHilulaDates();
   return NextResponse.json(rabbi);
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   if (!isAdmin(request)) return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   await prisma.rabbi.delete({ where: { id: params.id } });
+  invalidateHilulaDates();
   return NextResponse.json({ ok: true });
 }

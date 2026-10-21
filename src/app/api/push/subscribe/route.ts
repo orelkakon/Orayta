@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { pushIpHash, isPushRateLimited, pushConfigured } from '@/lib/push/server';
 import { parseSubscription } from '@/lib/push/validate';
 import { parsePrefs } from '@/lib/push/prefs';
+import { invalidateSchedule } from '@/lib/push/scheduleCache';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,5 +44,6 @@ export async function POST(req: NextRequest) {
   if (prev && prev.endpoint !== sub.endpoint) {
     await prisma.pushSubscription.deleteMany({ where: { id: prev.id } });
   }
+  invalidateSchedule();
   return NextResponse.json({ ok: true });
 }

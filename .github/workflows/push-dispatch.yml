@@ -1,12 +1,10 @@
-# Triggers the Web Push dispatcher (/api/push/dispatch). Vercel Hobby crons run
-# only once a day, so the 10-minute heartbeat lives here. GitHub may delay or
-# skip scheduled runs under load — the dispatcher is "send if due and not yet
-# sent today", so a late run still delivers and a doubled run sends nothing twice.
+# Manual trigger for the Web Push dispatcher (/api/push/dispatch). The regular
+# heartbeat is cron-job.org → /api/push/tick every 5 minutes, which wakes the
+# database only when someone is due. A GitHub schedule here would wake Neon
+# every run (and GitHub skipped/delayed it anyway), so it is manual-only.
 name: push-dispatch
 
 on:
-  schedule:
-    - cron: '3-59/10 * * * *'
   workflow_dispatch:
 
 concurrency:

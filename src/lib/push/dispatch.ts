@@ -6,26 +6,10 @@ import { dailyPayload, hilulaPayload, omerPayload } from './content';
 import { getOmerDay } from '@/lib/omer';
 import { jerusalemSunTimes } from '@/lib/siddur/calendar';
 import type { PushPayload } from '@/types/push';
+import { invalidateSchedule } from './scheduleCache';
 
 const MAX_FAILURES = 20;
 const LAST_FIELD = { daily: 'lastDailyDay', hilula: 'lastHilulaDay', omer: 'lastOmerDay' } as const;
-
-/**
- * Cheap pre-check for the public heartbeat — no DB. Chosen times sit on a
- * 15-minute grid (and every time zone's quarter-hours line up with UTC's),
- * hilula and omer go out at Israel nightfall; outside those windows nothing
- * can be newly due, so the pinger doesn't wake the database for nothing.
- * Misses are harmless: the dispatcher's 3-hour late window catches up at the
- * next quarter-hour (nightfall gets its own 5-minute window, so one 5-minute ping always lands in it).
- */
-export function mightBeDue(now: Date): boolean {
-  // One ping per quarter-hour (the 5-minute pinger lands on :00/:15/:30/:45),
-  // so Neon wakes at most every 15 minutes and can autosuspend in between.
-  if (now.getUTCMinutes() % 15 < 3) return true;
-  const nightfall = jerusalemSunTimes(now).sunset.getTime() + OMER_AFTER_SUNSET_MIN * 60_000;
-  const sinceNightfall = now.getTime() - nightfall;
-  return sinceNightfall >= 0 && sinceNightfall < 5 * 60_000;
-}
 
 export interface DispatchResult { subscribers: number; sent: number; gone: number; failed: number; skipped: number; }
 
@@ -80,5 +64,7 @@ export async function runDispatch(): Promise<DispatchResult> {
   });
 
   const count = (o: string) => results.filter(r => r === o).length;
+  // Rows were removed (gone / too many failures) — the heartbeat's cached schedule is stale.
+  if (count('gone') > 0 || count('failed') > 0) invalidateSchedule();
   return { subscribers: subs.length, sent: count('sent'), gone: count('gone'), failed: count('failed'), skipped: count('skipped') };
 }
