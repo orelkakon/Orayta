@@ -10,6 +10,21 @@ import type { PushPayload } from '@/types/push';
 const MAX_FAILURES = 20;
 const LAST_FIELD = { daily: 'lastDailyDay', hilula: 'lastHilulaDay', omer: 'lastOmerDay' } as const;
 
+/**
+ * Cheap pre-check for the public heartbeat — no DB. Chosen times sit on a
+ * 15-minute grid (and every time zone's quarter-hours line up with UTC's),
+ * hilula and omer go out at Israel nightfall; outside those windows nothing
+ * can be newly due, so the pinger doesn't wake the database for nothing.
+ * Misses are harmless: the dispatcher's 3-hour late window catches up at the
+ * next quarter-hour.
+ */
+export function mightBeDue(now: Date): boolean {
+  if (now.getUTCMinutes() % 15 < 6) return true;
+  const nightfall = jerusalemSunTimes(now).sunset.getTime() + OMER_AFTER_SUNSET_MIN * 60_000;
+  const sinceNightfall = now.getTime() - nightfall;
+  return sinceNightfall >= 0 && sinceNightfall < 20 * 60_000;
+}
+
 export interface DispatchResult { subscribers: number; sent: number; gone: number; failed: number; skipped: number; }
 
 /**

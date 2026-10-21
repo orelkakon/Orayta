@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { pushConfigured } from '@/lib/push/server';
-import { runDispatch } from '@/lib/push/dispatch';
+import { mightBeDue, runDispatch } from '@/lib/push/dispatch';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -27,6 +27,7 @@ async function claim(now: number): Promise<boolean> {
 
 async function tick() {
   if (!pushConfigured()) return NextResponse.json({ ok: false }, { status: 503 });
+  if (!mightBeDue(new Date())) return NextResponse.json({ ok: true, ran: false, idle: true }, { headers: { 'Cache-Control': 'no-store' } });
   if (!(await claim(Date.now()))) return NextResponse.json({ ok: true, ran: false }, { headers: { 'Cache-Control': 'no-store' } });
   const r = await runDispatch();
   return NextResponse.json({ ok: true, ran: true, sent: r.sent }, { headers: { 'Cache-Control': 'no-store' } });

@@ -121,3 +121,16 @@ test('hilula day follows the Hebrew day: after nightfall it is already tomorrow'
   assert.equal(hilulaRabbisOn(gad, hebrewDayAnchor(new Date('2026-10-20T17:30:00Z'))).length, 1);
   assert.equal(hilulaRabbisOn(gad, hebrewDayAnchor(night)).length, 0);
 });
+
+import { mightBeDue } from '@/lib/push/dispatch';
+
+test('heartbeat pre-check: quarter-hour windows and Israel nightfall only', () => {
+  assert.equal(mightBeDue(new Date('2026-10-21T05:00:30Z')), true);  // 08:00 Israel
+  assert.equal(mightBeDue(new Date('2026-10-21T05:05:10Z')), true);  // still inside the window
+  assert.equal(mightBeDue(new Date('2026-10-21T05:07:00Z')), false); // 08:07 — nothing can be due
+  assert.equal(mightBeDue(new Date('2026-10-21T05:15:00Z')), true);
+  // 21 Oct 2026: sunset 18:01 Israel (UTC+3) → nightfall 18:26. 18:37 is off-grid but inside
+  // the nightfall window; 18:52 is past it.
+  assert.equal(mightBeDue(new Date('2026-10-21T15:37:00Z')), true);
+  assert.equal(mightBeDue(new Date('2026-10-21T15:52:00Z')), false);
+});
