@@ -18,6 +18,7 @@ import SiteFooter from './SiteFooter';
 import AddToHomeScreen from '@/components/common/AddToHomeScreen';
 import VisitTracker from '@/components/common/VisitTracker';
 import { openNotifications } from '@/lib/push/client';
+import { usePublishHeight } from '@/components/common/usePublishHeight';
 
 const TICKER_KEY = 'orayta_dedications_strip';
 
@@ -145,15 +146,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   // --header-h instead of assuming 60px — a hard-coded offset let the bars
   // slide partly under the header and look like they shrink while scrolling.
   const headerRef = useRef<HTMLElement>(null);
-  useEffect(() => {
-    const el = headerRef.current;
-    if (!el) return;
-    const set = () => document.documentElement.style.setProperty('--header-h', `${el.offsetHeight}px`);
-    set();
-    const ro = new ResizeObserver(set);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
+  usePublishHeight(headerRef, '--header-h');
   const { isDark, toggle } = useDarkMode();
   const role = useRole();
   const [menuOpen, setMenuOpen] = useState(false);
