@@ -27,6 +27,8 @@ export const Sheet = styled.div<{ $out: boolean }>`
   border-radius: ${theme.radii.xl} ${theme.radii.xl} 0 0; box-shadow: ${theme.shadows.lg};
   padding: ${theme.spacing.sm} ${theme.spacing.lg} calc(${theme.spacing.lg} + env(safe-area-inset-bottom, 0px));
   display: flex; flex-direction: column; gap: ${theme.spacing.md};
+  /* Scroll instead of squeezing children (the toggle list clips its last row when shrunk). */
+  & > * { flex-shrink: 0; }
   ${p => (p.$out
     ? css`animation: ${slideDown} ${EXIT_MS}ms cubic-bezier(0.4, 0, 1, 1) forwards;`
     : css`animation: ${slideUp} 0.36s ${theme.motion.out};`)}
