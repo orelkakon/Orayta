@@ -363,6 +363,9 @@ The entire site is RTL (Hebrew). Use `direction: rtl` in styled components where
 ### Styled components
 Use Styled Components for all styling. Theme tokens from `src/lib/theme.ts` only — no hardcoded colors or spacing values. The `StyledComponentsRegistry` in the root layout is required for SSR to work correctly.
 
+### Sticky bars
+The header publishes its live height as `--header-h`; page sticky bars use `top: var(--header-h)`. A page's tab row goes through `common/StickyTabs.tsx`, which portals it into the header (`Layout/HeaderSlot.tsx`) so header + tabs stick as one element — two stacked sticky elements drift apart while scrolling in the iOS home-screen app.
+
 ### File size
 Keep all files under 200 lines. Split into smaller components if needed.
 

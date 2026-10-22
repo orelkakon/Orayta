@@ -19,6 +19,7 @@ import AddToHomeScreen from '@/components/common/AddToHomeScreen';
 import VisitTracker from '@/components/common/VisitTracker';
 import { openNotifications } from '@/lib/push/client';
 import { usePublishHeight } from '@/components/common/usePublishHeight';
+import { HeaderSlotContext, TopBar, SlotRow } from './HeaderSlot';
 
 const TICKER_KEY = 'orayta_dedications_strip';
 
@@ -32,11 +33,7 @@ const Header = styled.header`
   align-items: center;
   justify-content: space-between;
   gap: ${theme.spacing.sm};
-  box-shadow: ${theme.shadows.md};
   border-bottom: 2px solid ${theme.colors.secondary}55;
-  position: sticky;
-  top: 0;
-  z-index: 100;
   min-height: 60px;
   @media (max-width: 480px) { padding: 0 ${theme.spacing.sm}; min-height: 52px; }
 `;
@@ -141,11 +138,11 @@ const SkipLink = styled.a.attrs({ className: 'skip-link' })``;
 
 function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname   = usePathname();
-  // Sticky sub-bars sit exactly under the header. Its height isn't fixed (logo
-  // + subtitle, header buttons, font scaling), so publish the real height as
-  // --header-h instead of assuming 60px — a hard-coded offset let the bars
-  // slide partly under the header and look like they shrink while scrolling.
-  const headerRef = useRef<HTMLElement>(null);
+  // Sticky sub-bars sit exactly under the header (+ a page's tab row, see
+  // HeaderSlot). Its height isn't fixed (header buttons, font scaling, tabs),
+  // so publish the real height as --header-h instead of assuming 60px.
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [slot, setSlot] = useState<HTMLDivElement | null>(null);
   usePublishHeight(headerRef, '--header-h');
   const { isDark, toggle } = useDarkMode();
   const role = useRole();
@@ -176,9 +173,11 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const isHome = pathname === '/';
 
   return (
+    <HeaderSlotContext.Provider value={slot}>
     <Wrapper>
       <SkipLink href="#main">{HE.ARIA_SKIP_TO_CONTENT}</SkipLink>
-      <Header ref={headerRef}>
+      <TopBar ref={headerRef}>
+      <Header>
         <LogoGroup>
           <LogoArea href="/">
             <OraytaLogo size={34} />
@@ -257,6 +256,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           {menuOpen ? '✕' : '☰'}
         </HamBtn>
       </Header>
+      <SlotRow><div ref={setSlot} /></SlotRow>
+      </TopBar>
 
       {isHome && tickerOn && <DedicationsTicker />}
 
@@ -278,6 +279,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
       <AddToHomeScreen />
       <VisitTracker />
     </Wrapper>
+    </HeaderSlotContext.Provider>
   );
 }
 

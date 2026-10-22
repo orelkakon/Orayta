@@ -1,34 +1,29 @@
 'use client';
 
-import { useRef } from 'react';
+import { useContext } from 'react';
+import { createPortal } from 'react-dom';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
-import { usePublishHeight } from './usePublishHeight';
+import { HeaderSlotContext } from '@/components/Layout/HeaderSlot';
 
-/* The tab row sticks under the header; each tab's own sticky bar (title,
-   search, filters) sticks under the tab row at --subbar-top. That offset must
-   equal the bar's natural distance from the tab row — row height + the gap
-   below it + the bar's negative margin-top — or the bar shifts while the page
-   scrolls and looks like it grows and shrinks. The row's height isn't fixed
-   (font scaling, wrapping), so it is measured into --subnav-h. The offset is
-   never positive: a gap there would let the list show through once stuck. */
+/* The tab row is portalled into the header's slot (see HeaderSlot), so the
+   header and the tabs stick as one element. Until the slot exists (server
+   render, before hydration) it renders inline, pulled up under the header
+   with the same spacing, so nothing shifts when it moves. */
 const Wrapper = styled.div`
-  display: flex; flex-direction: column; gap: ${theme.spacing.lg};
-  --subbar-top: calc(var(--header-h, 60px) + var(--subnav-h, 41px) + ${theme.spacing.lg} - ${theme.spacing.xl});
-  @media (max-width: 600px) {
-    gap: ${theme.spacing.md};
-    --subbar-top: calc(var(--header-h, 52px) + var(--subnav-h, 41px));
-  }
+  display: flex; flex-direction: column; gap: ${theme.spacing.xl};
+  @media (max-width: 600px) { gap: ${theme.spacing.md}; }
 `;
 
-const SubNav = styled.div`
+const SubNav = styled.div<{ $inline: boolean }>`
   display: flex; align-items: center; gap: ${theme.spacing.xs};
   border-bottom: 2px solid ${theme.colors.borderLight};
-  position: sticky;
-  top: var(--header-h, 60px);
-  z-index: 51;
   background: ${theme.colors.background};
-  @media (max-width: 480px) { top: var(--header-h, 52px); }
+  ${({ $inline }) => $inline && `
+    position: sticky; top: var(--header-h, 60px); z-index: 51;
+    margin-top: -${theme.spacing.xl};
+    @media (max-width: 600px) { margin-top: -${theme.spacing.md}; }
+  `}
 `;
 
 export const TabBtn = styled.button<{ $active: boolean }>`
@@ -45,13 +40,10 @@ export const TabBtn = styled.button<{ $active: boolean }>`
 interface Props { tabs: React.ReactNode; children: React.ReactNode; }
 
 export default function StickyTabs({ tabs, children }: Props) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const navRef = useRef<HTMLDivElement>(null);
-  usePublishHeight(navRef, '--subnav-h', wrapRef);
-
+  const slot = useContext(HeaderSlotContext);
   return (
-    <Wrapper ref={wrapRef}>
-      <SubNav ref={navRef}>{tabs}</SubNav>
+    <Wrapper>
+      {slot ? createPortal(<SubNav $inline={false}>{tabs}</SubNav>, slot) : <SubNav $inline>{tabs}</SubNav>}
       {children}
     </Wrapper>
   );

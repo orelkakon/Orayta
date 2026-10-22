@@ -34,7 +34,7 @@ const Container = styled.div`
 
 const StickyBar = styled.div`
   position: sticky;
-  top: var(--subbar-top, var(--header-h, 60px));
+  top: var(--header-h, 60px);
   z-index: 50;
   background: ${theme.colors.background};
   margin-top: -${theme.spacing.xl};
@@ -42,6 +42,7 @@ const StickyBar = styled.div`
   padding-bottom: 2px;
   display: flex; flex-direction: column; gap: ${theme.spacing.sm};
   @media (max-width: 600px) { margin-top: -${theme.spacing.md}; padding-top: ${theme.spacing.md}; }
+  @media (max-width: 480px) { top: var(--header-h, 52px); }
 `;
 
 const TitleRow = styled.div`
