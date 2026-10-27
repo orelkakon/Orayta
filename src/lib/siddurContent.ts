@@ -12,6 +12,8 @@ export const SIDDUR_EXTRAS: (SiddurSection & { id: string; icon: string })[] = [
     sefariaRef: 'Siddur_Edot_HaMizrach, Bedtime_Shema',
     jump: { label: 'ברכת המפיל', match: 'המפיל חבלי שנה' },
   },
+  // Shabbat shacharit's Nishmat, from the kavana note through "ובכן" (before ישתבח).
+  { id: 'nishmat', icon: 'sunrise', name: 'נשמת כל חי', sefariaRef: "Siddur_Edot_HaMizrach, Shabbat_Shacharit, Pesukei_D'Zimra.19-28" },
   { id: 'kaddish', icon: 'candle', name: 'קדיש', groups: KADDISH_GROUPS },
   { id: 'chafetz-chaim', icon: 'sparkle', name: 'תפילת החפץ חיים', groups: CHAFETZ_CHAIM_GROUPS },
   { id: 'menorah', icon: 'flame', name: 'למנצח בצורת המנורה', isMenorah: true },
