@@ -77,14 +77,17 @@ export async function fetchLinks(ref: string): Promise<{ ref: string; book: stri
 
 interface SearchHit { _id?: string; _source?: { ref?: string } }
 
-/** Full-text search (lemmatized, with slop) inside one category path. Returns refs. */
-export async function searchRefs(query: string, path: string, size: number): Promise<string[]> {
+/**
+ * Full-text search inside one category path (null = the whole library).
+ * 'lemma' tolerates inflections and word gaps; 'exact' finds a quote as written.
+ */
+export async function searchRefs(query: string, path: string | null, size: number, mode: 'lemma' | 'exact' = 'lemma'): Promise<string[]> {
   const d = await getJson<{ hits?: { hits?: SearchHit[] } }>(`${BASE}/api/search-wrapper`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      query, type: 'text', field: 'naive_lemmatizer', size, slop: 6,
-      filters: [path], filter_fields: ['path'], source_proj: ['ref'],
+      query, type: 'text', field: mode === 'exact' ? 'exact' : 'naive_lemmatizer', size, slop: mode === 'exact' ? 0 : 6,
+      filters: path ? [path] : [], filter_fields: path ? ['path'] : [], source_proj: ['ref'],
     }),
   });
   // _id is "<ref> (<version title> [he])"

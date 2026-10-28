@@ -3,8 +3,8 @@
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
-import { LineIcon } from '@/components/common/LineIcons';
-import { Medallion, TitleBox, Title, Sub } from '@/components/Notifications/sheetStyles';
+import { TitleBox, Title, Sub } from '@/components/Notifications/sheetStyles';
+import RabbiBotAvatar from './RabbiBotAvatar';
 import RabbiBotPanel from './RabbiBotPanel';
 
 const Page = styled.div`
@@ -25,7 +25,7 @@ export default function RabbiBotPage() {
   return (
     <Page>
       <Head>
-        <Medallion><span><LineIcon name="ask" size={24} /></span></Medallion>
+        <RabbiBotAvatar size={64} />
         <TitleBox>
           <Title as="h1">{HE.RB_NAME}</Title>
           <Sub>{HE.RB_TAGLINE}</Sub>

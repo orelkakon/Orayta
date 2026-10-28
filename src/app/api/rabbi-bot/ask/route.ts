@@ -12,6 +12,9 @@ import {
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
+/** Every model call must be over by then — leaves time to save under maxDuration. */
+const BUDGET_MS = 52_000;
+
 const json = (body: RabbiBotEvent, status: number) => NextResponse.json(body, { status });
 
 /**
@@ -50,7 +53,8 @@ export async function POST(req: NextRequest) {
           await finish(cached, null, true);
         } else {
           const skip = await loadExhausted();
-          const result = await askRabbiBot(v.text, { skip, onExhausted: m => markExhausted(m) }, (step, count) => send({ type: 'step', step, count }));
+          const hooks = { skip, onExhausted: (m: string) => markExhausted(m), deadline: started + BUDGET_MS };
+          const result = await askRabbiBot(v.text, hooks, (step, extra) => send({ type: 'step', step, ...extra }));
           await finish(result.answer, result.model, false);
         }
       } catch (e) {

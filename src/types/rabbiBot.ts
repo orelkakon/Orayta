@@ -2,7 +2,11 @@
 
 export type RabbiBotTopic =
   | 'shabbat' | 'tefila' | 'brachot' | 'kashrut' | 'moadim'
-  | 'family' | 'avelut' | 'mitzvot' | 'bein_adam' | 'other';
+  | 'family' | 'avelut' | 'mitzvot' | 'bein_adam'
+  | 'tanakh' | 'talmud' | 'machshava' | 'other';
+
+/** A practical-law question, or general Torah knowledge (Tanakh, Talmud, who said, where it's written). */
+export type RabbiBotKind = 'halacha' | 'torah';
 
 /** Main ruling (Sephardi default: Maran + Sephardi poskim), the Ashkenazi view, or a side note. */
 export type RabbiBotView = 'main' | 'ashkenaz' | 'note';
@@ -15,7 +19,7 @@ export interface RabbiBotPassage {
   book: string;
   text: string;
   url: string;
-  origin: 'sefaria' | 'wikisource';
+  origin: 'sefaria' | 'wikisource' | 'sikum';
 }
 
 export interface RabbiBotCite {
@@ -48,6 +52,8 @@ export interface RabbiBotAnswer {
   sources: RabbiBotSource[];
   dispute: boolean;
   topic: RabbiBotTopic;
+  /** Missing on answers cached before Torah questions existed — treat as halacha. */
+  kind?: RabbiBotKind;
   /** Points the model wrote vs. points whose quotes were found in the sources. */
   total: number;
   verified: number;
@@ -57,7 +63,7 @@ export type RabbiBotStep = 'plan' | 'search' | 'read' | 'answer' | 'verify';
 
 /** NDJSON lines streamed by POST /api/rabbi-bot/ask. */
 export type RabbiBotEvent =
-  | { type: 'step'; step: RabbiBotStep; count?: number }
+  | { type: 'step'; step: RabbiBotStep; count?: number; books?: string[] }
   | { type: 'done'; id: string; token: string; answer: RabbiBotAnswer }
   | { type: 'error'; error: RabbiBotError; resetAt?: string };
 

@@ -119,6 +119,26 @@ export const theme = {
     qrLight:    '#FFFFFF',
   },
 
+  // רבי־בוט's face — fixed in both themes so the character keeps one look.
+  bot: {
+    face:       '#FBEEDB',
+    faceShade:  '#E2C39A',
+    line:       '#3B2614',
+    kippah:     '#1E130A',
+    kippahHi:   '#4B3522',
+    rim:        '#E2B86B',
+    visor:      '#1E130A',
+    visorHi:    '#5A4128',
+    led:        '#FFD98A',
+    ledCore:    '#FFF4D6',
+    beard:      '#7A5434',
+    beardHi:    '#A9805A',
+    beardShade: '#5A3B22',
+    bolt:       '#D2A660',
+    boltDark:   '#8A6428',
+    cheek:      'rgba(214,110,90,0.30)',
+  },
+
   // Motion vocabulary — one spring + one decel curve everywhere, so the whole
   // app shares a single physical "feel" instead of per-component ad-hoc eases.
   motion: {

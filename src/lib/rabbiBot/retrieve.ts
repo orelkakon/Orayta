@@ -1,11 +1,15 @@
-import type { RabbiBotPassage } from '@/types/rabbiBot';
+import type { RabbiBotKind, RabbiBotPassage } from '@/types/rabbiBot';
 import { fetchText, fetchLinks, searchRefs, sefariaUrl, SefariaText } from './sefaria';
 import { searchTitles, fetchPage } from './wikisource';
+import { searchSikumim } from './sikumim';
 import { excerpt, keywords, overlap } from './text';
 
 export interface RetrievalPlan {
+  kind: RabbiBotKind;
   refs: string[];
   searches: string[];
+  /** A saying the user wants located ("where is it written / who said"). */
+  quote: string;
 }
 
 const MAX_PASSAGES = 16;
@@ -25,6 +29,12 @@ const LINKED_BOOKS: { match: (book: string, category: string) => boolean; keep: 
   { match: b => b.startsWith('Mishneh Torah'), keep: 1 },
   { match: (_b, c) => c === 'Talmud', keep: 1 },
 ];
+
+/** Where full-text search looks, by question kind. */
+const SEARCH_PATHS: Record<RabbiBotKind, { path: string; size: number }[]> = {
+  halacha: [{ path: 'Halakhah', size: 4 }],
+  torah: [{ path: 'Tanakh', size: 3 }, { path: 'Mishnah', size: 2 }, { path: 'Talmud', size: 3 }, { path: 'Midrash', size: 2 }],
+};
 
 interface Candidate { ref: string; heRef: string; book: string; text: string; url: string; origin: RabbiBotPassage['origin'] }
 
@@ -75,20 +85,24 @@ async function wikisource(queries: string[], words: string[]): Promise<Candidate
 
 /**
  * Gathers the passages the answer may draw on: the refs the planner named
- * (dropped when they don't exist), their linked commentaries, Sefaria
- * full-text hits for the planner's phrases, and Hebrew Wikisource.
+ * (dropped when they don't exist), their linked commentaries, the site's own
+ * summaries, Sefaria full-text hits (exact for a quote being located), and
+ * Hebrew Wikisource.
  */
 export async function retrieve(question: string, plan: RetrievalPlan): Promise<RabbiBotPassage[]> {
-  const words = keywords(`${question} ${plan.searches.join(' ')}`);
+  const words = keywords(`${question} ${plan.searches.join(' ')} ${plan.quote}`);
   const phrases = plan.searches.slice(0, 3);
+  const searches = [
+    ...(plan.quote ? [searchRefs(plan.quote, null, 5, 'exact')] : []),
+    ...phrases.flatMap(q => SEARCH_PATHS[plan.kind].map(s => searchRefs(q, s.path, s.size))),
+    ...(plan.kind === 'halacha' ? [searchRefs(phrases[0] ?? question, 'Talmud', 2)] : []),
+  ];
 
-  const [planned, searchHits, wiki] = await Promise.all([
+  const [planned, searchHits, wiki, sikumim] = await Promise.all([
     Promise.all(plan.refs.slice(0, 4).map(fetchText)),
-    Promise.all([
-      ...phrases.map(q => searchRefs(q, 'Halakhah', 4)),
-      searchRefs(phrases[0] ?? question, 'Talmud', 2),
-    ]),
-    wikisource([question, ...phrases.slice(0, 1)], words),
+    Promise.all(searches),
+    wikisource([plan.quote || question, ...phrases.slice(0, 1)], words),
+    searchSikumim(words, 2),
   ]);
 
   const valid = planned.filter((t): t is SefariaText => t !== null);
@@ -102,6 +116,7 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
 
   const ordered: Candidate[] = [
     ...valid.flatMap(t => best(fromSefaria(t), words, 3)),
+    ...sikumim.map(s => ({ ref: `sikum:${s.id}`, heRef: s.heRef, book: s.book, text: s.text, url: s.url, origin: 'sikum' as const })),
     ...linked.flat(),
     ...hits.flatMap(t => (t ? best(fromSefaria(t), words, 1) : [])),
     ...wiki,

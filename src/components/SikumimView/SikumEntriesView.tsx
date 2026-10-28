@@ -7,6 +7,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { SikumBook, SikumEntry } from '@/types';
 import { getJson, isAbort } from '@/lib/apiClient';
 import { deleteWithPasscode } from '@/lib/sikumDelete';
+import { useOpenOnce } from './useOpenOnce';
 import { useRole } from '@/components/common/RoleContext';
 import SikumEntryCard from './SikumEntryCard';
 import SikumEntryForm from './SikumEntryForm';
@@ -67,10 +68,11 @@ type ViewMode = 'list' | 'grid';
 
 interface Props {
   book: SikumBook;
+  initialEntryId?: string;
   onBack: () => void;
 }
 
-export default function SikumEntriesView({ book, onBack }: Props) {
+export default function SikumEntriesView({ book, initialEntryId, onBack }: Props) {
   const [entries, setEntries] = useState<SikumEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -82,6 +84,7 @@ export default function SikumEntriesView({ book, onBack }: Props) {
   const [editEntry, setEditEntry] = useState<SikumEntry | null>(null);
   const [viewEntry, setViewEntry] = useState<SikumEntry | null>(null);
   const role = useRole();
+  useOpenOnce(entries, initialEntryId, setViewEntry);
 
   // Only the first load blanks the list for a spinner; refreshes after a
   // save or delete keep the current rows on screen.

@@ -10,7 +10,7 @@ export interface BotState {
   phase: BotPhase;
   welcomed: boolean;
   question: string;
-  steps: { step: RabbiBotStep; count?: number }[];
+  steps: { step: RabbiBotStep; count?: number; books?: string[] }[];
   last: LastAnswer | null;
   error: RabbiBotError | null;
   resetAt: string | null;
@@ -40,7 +40,7 @@ export function useRabbiBot() {
     try {
       await streamAsk(question, e => {
         if (e.type === 'step') {
-          setS(prev => ({ ...prev, steps: [...prev.steps.filter(x => x.step !== e.step), { step: e.step, count: e.count }] }));
+          setS(prev => ({ ...prev, steps: [...prev.steps.filter(x => x.step !== e.step), { step: e.step, count: e.count, books: e.books }] }));
         } else if (e.type === 'done') {
           const last: LastAnswer = { question, id: e.id, token: e.token, answer: e.answer, rating: null, reported: false };
           writeBotLocal({ last });

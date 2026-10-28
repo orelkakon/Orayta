@@ -1,15 +1,30 @@
 import { classifyFailure } from './rules';
 
 // Server-only: Gemini REST (Google AI Studio free tier, key in GEMINI_API_KEY).
-// Each model has its own free daily quota, so the backup model is a second,
-// independent allowance — no extra account needed.
+// The free quota is counted per model *name* (the flash models allow ~20
+// requests a day each, the lite models far more), so each step walks a chain
+// of models: the cheap planning step runs on the high-quota lite models, the
+// answer on the strongest model that still has quota today.
 const API = 'https://generativelanguage.googleapis.com/v1beta/models';
-const DEFAULT_MODELS = ['gemini-3.5-flash', 'gemini-3.5-flash-lite'];
 
-export function botModels(): string[] {
-  const env = process.env.RABBI_BOT_MODELS?.split(',').map(s => s.trim()).filter(Boolean);
-  return env?.length ? env : DEFAULT_MODELS;
-}
+const DEFAULT_PLAN = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-flash-lite-latest', 'gemini-3-flash-preview'];
+// 3.8-flash (and flash-latest, which points at it) is strong but often slow — tried last among the flash models.
+const DEFAULT_ANSWER = [
+  'gemini-3.5-flash', 'gemini-3-flash-preview', 'gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-flash-latest',
+  'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-flash-lite-latest',
+];
+
+const fromEnv = (v: string | undefined, fallback: string[]) => {
+  const list = v?.split(',').map(s => s.trim()).filter(Boolean);
+  return list?.length ? list : fallback;
+};
+
+export const planModels = () => fromEnv(process.env.RABBI_BOT_PLAN_MODELS, DEFAULT_PLAN);
+export const answerModels = () => fromEnv(process.env.RABBI_BOT_ANSWER_MODELS, DEFAULT_ANSWER);
+/** Every model in use, answer chain order first (admin display, quota bookkeeping). */
+export const botModels = () => Array.from(new Set([...answerModels(), ...planModels()]));
+/** Lite models are the backup tier: fine for planning, a notch weaker at answering. */
+export const isBackupModel = (m: string) => m.includes('lite');
 
 export interface JsonCall {
   system: string;
@@ -23,6 +38,8 @@ export interface ModelHooks {
   skip: Set<string>;
   /** Called when a model reports its daily quota is used up. */
   onExhausted: (model: string) => Promise<void>;
+  /** Absolute time (ms) by which every model call must be over. */
+  deadline: number;
 }
 
 export class NoModelError extends Error {
@@ -33,11 +50,15 @@ interface GenResponse {
   candidates?: { content?: { parts?: { text?: string; thought?: boolean }[] } }[];
 }
 
-async function callOnce(model: string, key: string, call: JsonCall): Promise<{ ok: true; value: unknown } | { ok: false; status: number; body: unknown }> {
+type CallResult = { ok: true; value: unknown } | { ok: false; status: number; body: unknown };
+
+const MIN_CALL_MS = 6000;
+
+async function callOnce(model: string, key: string, call: JsonCall, timeoutMs: number): Promise<CallResult> {
   const res = await fetch(`${API}/${model}:generateContent`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-    signal: AbortSignal.timeout(call.timeoutMs),
+    signal: AbortSignal.timeout(timeoutMs),
     cache: 'no-store',
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: call.system }] },
@@ -61,21 +82,25 @@ async function callOnce(model: string, key: string, call: JsonCall): Promise<{ o
 }
 
 /**
- * Runs one JSON-producing call on the first model that can take it. A daily
- * quota hit marks that model (onExhausted) and falls through to the backup;
- * rate limits, timeouts and server errors fall through without marking.
+ * Runs one JSON-producing call on the first model in `models` that can take
+ * it, within the request's deadline. A daily-quota hit marks that model
+ * (onExhausted) and moves on; rate limits, timeouts and server errors move on
+ * without marking.
  */
-export async function generateJson(call: JsonCall, hooks: ModelHooks): Promise<{ value: unknown; model: string }> {
+export async function generateJson(models: string[], call: JsonCall, hooks: ModelHooks): Promise<{ value: unknown; model: string }> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new NoModelError(false);
-  const models = botModels();
   let anyLive = false;
   for (const model of models) {
     if (hooks.skip.has(model)) continue;
+    const budget = Math.min(call.timeoutMs, hooks.deadline - Date.now());
+    if (budget < MIN_CALL_MS) { anyLive = true; break; }
     try {
-      let r = await callOnce(model, key, call);
-      // "Model overloaded" is usually momentary — one quick retry before the backup.
-      if (!r.ok && r.status === 503) r = await callOnce(model, key, call);
+      let r = await callOnce(model, key, call, budget);
+      // "Model overloaded" is usually momentary — one quick retry if time allows.
+      if (!r.ok && r.status === 503 && hooks.deadline - Date.now() > MIN_CALL_MS * 2) {
+        r = await callOnce(model, key, call, Math.min(call.timeoutMs, hooks.deadline - Date.now()));
+      }
       if (r.ok) return { value: r.value, model };
       const failure = classifyFailure(r.status, r.body);
       console.warn('[rabbi-bot] model failed', model, r.status, failure);

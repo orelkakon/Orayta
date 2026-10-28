@@ -22,6 +22,10 @@ const Num = styled.span`
   font-size: ${theme.fontSizes.xs}; font-weight: 800;
   background: ${theme.colors.primary}; color: ${theme.colors.onPrimary};
 `;
+const Tag = styled.span`
+  margin-inline-start: auto; flex-shrink: 0; font-size: ${theme.fontSizes.xs}; font-weight: 700;
+  padding: 1px 8px; border-radius: 999px; background: ${theme.colors.bgSuccess}; color: ${theme.colors.success};
+`;
 const Ref = styled.h4`margin: 0; font-size: ${theme.fontSizes.sm}; font-weight: 800; color: ${theme.colors.primary};`;
 
 const Body = styled.p`
@@ -69,16 +73,23 @@ export default function SourceCard({ index, source, quotes, domId }: Props) {
 
   return (
     <Wrap id={domId}>
-      <Head><Num>{index + 1}</Num><Ref>{source.heRef}</Ref></Head>
+      <Head>
+        <Num>{index + 1}</Num><Ref>{source.heRef}</Ref>
+        {source.origin === 'sikum' && <Tag>{HE.RB_SIKUM_TAG}</Tag>}
+      </Head>
       <Body>
         {from > 0 && '… '}
         {marks(shown, quotes).map((r, i) => (r.on ? <mark key={i}>{r.t}</mark> : <span key={i}>{r.t}</span>))}
         {to < flat.length && ' …'}
       </Body>
       <Foot>
-        <Open href={source.url} target="_blank" rel="noopener noreferrer">
-          {source.origin === 'wikisource' ? HE.RB_OPEN_WIKISOURCE : HE.RB_OPEN_SEFARIA} ↗
-        </Open>
+        {source.origin === 'sikum'
+          ? <Open href={source.url}>{HE.RB_OPEN_SIKUM} ←</Open>
+          : (
+            <Open href={source.url} target="_blank" rel="noopener noreferrer">
+              {source.origin === 'wikisource' ? HE.RB_OPEN_WIKISOURCE : HE.RB_OPEN_SEFARIA} ↗
+            </Open>
+          )}
         {long && <LinkBtn type="button" onClick={() => setOpen(o => !o)}>{open ? HE.RB_SHOW_LESS : HE.RB_SHOW_MORE}</LinkBtn>}
       </Foot>
     </Wrap>

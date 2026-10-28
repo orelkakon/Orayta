@@ -14,13 +14,13 @@ export const metadata: Metadata = {
   openGraph: { title: TITLE, description: DESC, url: PATH },
 };
 
-interface Props { searchParams: { q?: string } }
+interface Props { searchParams: { q?: string; book?: string; entry?: string } }
 
 export default function SikumimPage({ searchParams }: Props) {
   return (
     <AppLayout>
       <SectionPing metric="sikumim" />
-      <SikumimView initialSearch={searchParams.q ?? ''} />
+      <SikumimView initialSearch={searchParams.q ?? ''} initialBookId={searchParams.book} initialEntryId={searchParams.entry} />
     </AppLayout>
   );
 }

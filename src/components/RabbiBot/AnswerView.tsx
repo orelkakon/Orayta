@@ -47,6 +47,7 @@ export default function AnswerView({ answer, idPrefix }: Props) {
   }
 
   const domId = (i: number) => `${idPrefix}-src-${i}`;
+  const viewLabels = answer.kind === 'torah' ? HE.RB_VIEW_TORAH : HE.RB_VIEW;
   const jump = (i: number) => (e: React.MouseEvent) => {
     e.preventDefault();
     const el = document.getElementById(domId(i));
@@ -69,7 +70,7 @@ export default function AnswerView({ answer, idPrefix }: Props) {
         if (pts.length === 0) return null;
         return (
           <Group key={view}>
-            <GroupTitle $view={view}>{HE.RB_VIEW[view]}</GroupTitle>
+            <GroupTitle $view={view}>{viewLabels[view]}</GroupTitle>
             <Points>
               {pts.map((p, i) => (
                 <Point key={i}>

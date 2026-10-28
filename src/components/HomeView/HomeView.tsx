@@ -9,6 +9,7 @@ import FeedBannerBlock from './FeedBannerBlock';
 import LiveBannerBlock from './LiveBannerBlock';
 import SectionIcon from './HomeIcons';
 import HomeActionCards from './HomeActionCards';
+import HomeRabbiBotCard from './HomeRabbiBotCard';
 import HomeBackground from './HomeBackground';
 import StoriesRow from './StoriesRow';
 import PushOptInCard from '@/components/Notifications/PushOptInCard';
@@ -126,6 +127,8 @@ export default function HomeView() {
         <AppTitle>{HE.APP_NAME}</AppTitle>
         <Tagline>{HE.HOME_TAGLINE}</Tagline>
       </Hero>
+
+      <HomeRabbiBotCard />
 
       <LiveBannerBlock />
 

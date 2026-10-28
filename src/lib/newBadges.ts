@@ -5,6 +5,7 @@
  */
 export const NEW_FEATURE_UNTIL: Record<string, string> = {
   '/minyan': '2026-12-31',
+  '/ask': '2026-12-31',
 };
 
 export function isNewFeature(key: string, now: Date = new Date()): boolean {

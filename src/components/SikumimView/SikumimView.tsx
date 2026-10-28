@@ -7,6 +7,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { SikumBook } from '@/types';
 import { getJson, freshUrl, isAbort } from '@/lib/apiClient';
 import { deleteWithPasscode } from '@/lib/sikumDelete';
+import { useOpenOnce } from './useOpenOnce';
 import { useRole } from '@/components/common/RoleContext';
 import SearchField from '@/components/common/SearchField';
 import ListState, { InlineError } from '@/components/common/ListState';
@@ -73,7 +74,9 @@ const Grid = styled.div`
 
 type BookSort = 'default' | 'count' | 'alpha' | 'icon';
 
-export default function SikumimView({ initialSearch = '' }: { initialSearch?: string }) {
+interface Props { initialSearch?: string; initialBookId?: string; initialEntryId?: string }
+
+export default function SikumimView({ initialSearch = '', initialBookId, initialEntryId }: Props) {
   const [books, setBooks] = useState<SikumBook[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -84,6 +87,7 @@ export default function SikumimView({ initialSearch = '' }: { initialSearch?: st
   const [editBook, setEditBook] = useState<SikumBook | null>(null);
   const [selectedBook, setSelectedBook] = useState<SikumBook | null>(null);
   const role = useRole();
+  useOpenOnce(books, initialBookId, setSelectedBook);
 
   // Only the first load blanks the list for a spinner; refreshes after a
   // save or delete keep the current rows on screen.
@@ -132,6 +136,7 @@ export default function SikumimView({ initialSearch = '' }: { initialSearch?: st
     return (
       <SikumEntriesView
         book={selectedBook}
+        initialEntryId={selectedBook.id === initialBookId ? initialEntryId : undefined}
         onBack={() => { setSelectedBook(null); load(undefined, true); }}
       />
     );

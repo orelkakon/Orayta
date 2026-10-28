@@ -9,7 +9,7 @@ export const QUESTION_MAX = 300;
 export const RETENTION_DAYS = 10;
 
 export const TOPICS: readonly RabbiBotTopic[] =
-  ['shabbat', 'tefila', 'brachot', 'kashrut', 'moadim', 'family', 'avelut', 'mitzvot', 'bein_adam', 'other'];
+  ['shabbat', 'tefila', 'brachot', 'kashrut', 'moadim', 'family', 'avelut', 'mitzvot', 'bein_adam', 'tanakh', 'talmud', 'machshava', 'other'];
 
 export function isTopic(t: unknown): t is RabbiBotTopic {
   return typeof t === 'string' && (TOPICS as readonly string[]).includes(t);

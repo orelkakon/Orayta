@@ -6,10 +6,11 @@ import { LineIcon } from '@/components/common/LineIcons';
 import { useRabbiBot } from './useRabbiBot';
 import WelcomeCard from './WelcomeCard';
 import Composer from './Composer';
-import Progress from './Progress';
+import ThinkingStage from './ThinkingStage';
 import AnswerView from './AnswerView';
 import Feedback from './Feedback';
-import { Card, Chip, ChipRow, Muted, Question, Stack } from './styles';
+import RabbiBotAvatar from './RabbiBotAvatar';
+import { Card, Greeting, Question, Stack } from './styles';
 
 function quotaTime(iso: string | null): string {
   if (!iso) return '';
@@ -27,9 +28,10 @@ export default function RabbiBotPanel({ idPrefix }: { idPrefix: string }) {
 
   return (
     <Stack>
+      {state.phase === 'idle' && <Greeting><RabbiBotAvatar size={44} mood="happy" /><p>{HE.RB_GREETING}</p></Greeting>}
       {state.phase !== 'idle' && state.question && <Question>{state.question}</Question>}
 
-      {asking && <Progress steps={state.steps} />}
+      {asking && <ThinkingStage steps={state.steps} />}
 
       {state.phase === 'done' && state.last && (
         <>
@@ -52,15 +54,6 @@ export default function RabbiBotPanel({ idPrefix }: { idPrefix: string }) {
           initial={state.phase === 'error' ? state.question : ''}
           onAsk={(q, website) => void ask(q, website)}
         />
-      )}
-
-      {state.phase === 'idle' && (
-        <Stack>
-          <Muted>{HE.RB_EXAMPLES_TITLE}</Muted>
-          <ChipRow>
-            {HE.RB_EXAMPLES.map(q => <Chip key={q} type="button" onClick={() => void ask(q)}>{q}</Chip>)}
-          </ChipRow>
-        </Stack>
       )}
     </Stack>
   );
