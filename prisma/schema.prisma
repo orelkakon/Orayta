@@ -304,3 +304,29 @@ model GameAnswer {
   @@unique([playerId, qIndex])
   @@index([sessionId, qIndex])
 }
+
+// רבי־בוט questions. The text fields (question, answer, qHash, ipHash, note)
+// are erased after 10 days (lib/rabbiBot/store.ts); the counts stay for stats.
+model RabbiBotQuestion {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  question  String?
+  answer    Json?
+  qHash     String?
+  ipHash    String?
+  note      String?
+  status    String
+  topic     String?
+  model     String?
+  cached    Boolean  @default(false)
+  points    Int      @default(0)
+  verified  Int      @default(0)
+  books     String[]
+  latencyMs Int      @default(0)
+  rating    Int?
+  reported  Boolean  @default(false)
+
+  @@index([createdAt])
+  @@index([ipHash, createdAt])
+  @@index([qHash])
+}

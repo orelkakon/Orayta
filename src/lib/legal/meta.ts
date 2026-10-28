@@ -7,7 +7,7 @@ export const LEGAL_OWNER = 'אוראל קקון';
 export const LEGAL_EMAIL = HE.ABOUT_CREATOR_EMAIL;
 
 /** Bump on every material change to any of the three documents. */
-export const LEGAL_UPDATED = '21 באוקטובר 2026 (י׳ בחשוון התשפ״ז)';
+export const LEGAL_UPDATED = '29 באוקטובר 2026 (י״ח בחשוון התשפ״ז)';
 
 /** Inline-link snippets (see LegalBlock) reused across the documents. */
 export const MAIL_LINK = `[${LEGAL_EMAIL}](mailto:${LEGAL_EMAIL})`;

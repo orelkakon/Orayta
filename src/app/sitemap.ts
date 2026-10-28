@@ -20,6 +20,7 @@ const ROUTES: Route[] = [
   { path: '/today/learn/rambam',   changeFrequency: 'daily', priority: 0.7 },
   { path: '/omer',        changeFrequency: 'daily',   priority: 0.6 },
   { path: '/hilula',      changeFrequency: 'daily',   priority: 0.6 },
+  { path: '/ask',         changeFrequency: 'monthly', priority: 0.6 },
   { path: '/study',       changeFrequency: 'weekly',  priority: 0.9 },
   { path: '/rabbis',      changeFrequency: 'weekly',  priority: 0.8 },
   { path: '/content',     changeFrequency: 'monthly', priority: 0.8 },

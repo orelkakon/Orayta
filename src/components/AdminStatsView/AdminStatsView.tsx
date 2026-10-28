@@ -11,6 +11,7 @@ import AdminUsersChart from './AdminUsersChart';
 import AdminBreakdown from './AdminBreakdown';
 import AdminCommentsCard from './AdminCommentsCard';
 import AdminPushCard from './AdminPushCard';
+import AdminRabbiBotCard from './rabbiBot/AdminRabbiBotCard';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(14px); }
@@ -71,6 +72,7 @@ export default function AdminStatsView() {
       <AdminUsersChart daily={stats.daily} />
       <AdminBreakdown stats={stats} />
       <AdminCommentsCard comments={stats.comments} />
+      <AdminRabbiBotCard />
       <AdminPushCard />
     </Page>
   );

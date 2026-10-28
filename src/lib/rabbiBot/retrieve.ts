@@ -1,0 +1,119 @@
+import type { RabbiBotPassage } from '@/types/rabbiBot';
+import { fetchText, fetchLinks, searchRefs, sefariaUrl, SefariaText } from './sefaria';
+import { searchTitles, fetchPage } from './wikisource';
+import { excerpt, keywords, overlap } from './text';
+
+export interface RetrievalPlan {
+  refs: string[];
+  searches: string[];
+}
+
+const MAX_PASSAGES = 16;
+const PASSAGE_CHARS = 1100;
+
+/**
+ * Commentaries pulled in through Sefaria's links when the plan names a seif of
+ * the Shulchan Arukh — Sephardi poskim first, then the Ashkenazi view, then
+ * the Rambam / Gemara behind the ruling. Value = how many segments to keep.
+ */
+const LINKED_BOOKS: { match: (book: string, category: string) => boolean; keep: number }[] = [
+  { match: b => b.startsWith('Kaf HaChayim'), keep: 2 },
+  { match: b => b === 'Ben Ish Hai', keep: 1 },
+  { match: b => b === 'Mishnah Berurah', keep: 2 },
+  { match: b => b.startsWith('Siftei Kohen'), keep: 1 },
+  { match: b => b.startsWith('Peninei Halakhah'), keep: 1 },
+  { match: b => b.startsWith('Mishneh Torah'), keep: 1 },
+  { match: (_b, c) => c === 'Talmud', keep: 1 },
+];
+
+interface Candidate { ref: string; heRef: string; book: string; text: string; url: string; origin: RabbiBotPassage['origin'] }
+
+const fromSefaria = (t: SefariaText): Candidate[] =>
+  t.segments.map(s => ({ ref: s.ref, heRef: s.heRef, book: t.book, text: s.text, url: sefariaUrl(s.ref), origin: 'sefaria' }));
+
+const best = (cands: Candidate[], words: string[], n: number) =>
+  [...cands].sort((a, b) => overlap(b.text, words) - overlap(a.text, words)).slice(0, n);
+
+/** Collapse linked refs of one book into as few range requests as possible. */
+function rangeRefs(refs: string[]): string[] {
+  const groups = new Map<string, number[]>();
+  const singles: string[] = [];
+  refs.forEach(r => {
+    // "<book> 671:31" or "<book> 671:55:1" → group "<book> 671", item 31 / 55
+    const m = r.match(/^(.*\d):(\d+)(?::\d+)?$/);
+    if (!m) { singles.push(r); return; }
+    groups.set(m[1], [...(groups.get(m[1]) ?? []), Number(m[2])]);
+  });
+  const ranged = Array.from(groups, ([base, ns]) => {
+    const lo = Math.min(...ns);
+    const hi = Math.min(Math.max(...ns), lo + 30);
+    return lo === hi ? `${base}:${lo}` : `${base}:${lo}-${hi}`;
+  });
+  return [...ranged, ...singles].slice(0, 2);
+}
+
+async function linkedCommentaries(ref: string, words: string[]): Promise<Candidate[]> {
+  const links = await fetchLinks(ref);
+  const picked = await Promise.all(LINKED_BOOKS.map(async def => {
+    const refs = links.filter(l => def.match(l.book, l.category)).map(l => l.ref);
+    if (refs.length === 0) return [];
+    const texts = await Promise.all(rangeRefs(refs).map(fetchText));
+    return best(texts.flatMap(t => (t ? fromSefaria(t) : [])), words, def.keep);
+  }));
+  return picked.flat();
+}
+
+async function wikisource(queries: string[], words: string[]): Promise<Candidate[]> {
+  const titles = Array.from(new Set((await Promise.all(queries.map(q => searchTitles(q, 3)))).flat())).slice(0, 4);
+  const pages = await Promise.all(titles.map(fetchPage));
+  return pages.flatMap(p => {
+    if (!p) return [];
+    const para = best(p.paragraphs.map(text => ({ ref: p.title, heRef: p.title, book: p.title.split('/')[0], text, url: p.url, origin: 'wikisource' as const })), words, 1);
+    return para.filter(c => overlap(c.text, words) >= 2);
+  });
+}
+
+/**
+ * Gathers the passages the answer may draw on: the refs the planner named
+ * (dropped when they don't exist), their linked commentaries, Sefaria
+ * full-text hits for the planner's phrases, and Hebrew Wikisource.
+ */
+export async function retrieve(question: string, plan: RetrievalPlan): Promise<RabbiBotPassage[]> {
+  const words = keywords(`${question} ${plan.searches.join(' ')}`);
+  const phrases = plan.searches.slice(0, 3);
+
+  const [planned, searchHits, wiki] = await Promise.all([
+    Promise.all(plan.refs.slice(0, 4).map(fetchText)),
+    Promise.all([
+      ...phrases.map(q => searchRefs(q, 'Halakhah', 4)),
+      searchRefs(phrases[0] ?? question, 'Talmud', 2),
+    ]),
+    wikisource([question, ...phrases.slice(0, 1)], words),
+  ]);
+
+  const valid = planned.filter((t): t is SefariaText => t !== null);
+  const anchors = valid.filter(t => t.ref.startsWith('Shulchan Arukh')).slice(0, 2);
+  const hitRefs = Array.from(new Set(searchHits.flat())).slice(0, 8);
+
+  const [linked, hits] = await Promise.all([
+    Promise.all(anchors.map(t => linkedCommentaries(t.segments.length === 1 ? t.ref : best(fromSefaria(t), words, 1)[0].ref, words))),
+    Promise.all(hitRefs.map(fetchText)),
+  ]);
+
+  const ordered: Candidate[] = [
+    ...valid.flatMap(t => best(fromSefaria(t), words, 3)),
+    ...linked.flat(),
+    ...hits.flatMap(t => (t ? best(fromSefaria(t), words, 1) : [])),
+    ...wiki,
+  ];
+
+  const seen = new Set<string>();
+  const out: RabbiBotPassage[] = [];
+  for (const c of ordered) {
+    if (seen.has(c.ref) || !c.text) continue;
+    seen.add(c.ref);
+    out.push({ id: `S${out.length + 1}`, ref: c.ref, heRef: c.heRef, book: c.book, url: c.url, origin: c.origin, text: excerpt(c.text, words, PASSAGE_CHARS) });
+    if (out.length >= MAX_PASSAGES) break;
+  }
+  return out;
+}
