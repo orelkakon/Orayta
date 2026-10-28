@@ -33,6 +33,8 @@ export interface RabbiBotPoint {
   text: string;
   view: RabbiBotView;
   cites: RabbiBotCite[];
+  /** A conclusion reasoned from the cited sources (counting, ordering, combining) rather than stated in them. */
+  derived?: boolean;
 }
 
 export interface RabbiBotSource {

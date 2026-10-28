@@ -33,6 +33,12 @@ const Cite = styled.a`
   background: ${theme.colors.surfaceAlt}; color: ${theme.colors.primary}; border: 1px solid ${theme.colors.border};
 `;
 
+const Derived = styled.span`
+  display: inline-block; margin-inline-end: 6px; padding: 0 8px; border-radius: 999px; vertical-align: 1px;
+  font-size: ${theme.fontSizes.xs}; font-weight: 800; line-height: 1.7;
+  color: ${theme.colors.text}; background: ${theme.colors.bgWarning}; border: 1px dashed ${theme.colors.secondary};
+`;
+
 const VIEWS: RabbiBotView[] = ['main', 'ashkenaz', 'note'];
 
 interface Props { answer: RabbiBotAnswer; idPrefix: string }
@@ -63,6 +69,7 @@ export default function AnswerView({ answer, idPrefix }: Props) {
       {answer.short && <Short>{answer.short}</Short>}
       <Badges>
         <Badge>✓ {HE.RB_VERIFIED_BADGE}</Badge>
+        {answer.points.some(p => p.derived) && <Badge $warn>🧩 {HE.RB_DERIVED_BADGE}</Badge>}
         {answer.dispute && <Badge $warn>⚖ {HE.RB_DISPUTE}</Badge>}
       </Badges>
       {VIEWS.map(view => {
@@ -74,6 +81,7 @@ export default function AnswerView({ answer, idPrefix }: Props) {
             <Points>
               {pts.map((p, i) => (
                 <Point key={i}>
+                  {p.derived && <Derived title={HE.RB_DERIVED_HINT}>{HE.RB_DERIVED_TAG}</Derived>}
                   {p.text}
                   {Array.from(new Set(p.cites.map(c => c.source))).map(s => (
                     <Cite key={s} href={`#${domId(s)}`} onClick={jump(s)} aria-label={HE.RB_CITE_ARIA(s + 1)}>{s + 1}</Cite>

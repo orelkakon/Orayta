@@ -99,7 +99,7 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
   ];
 
   const [planned, searchHits, wiki, sikumim] = await Promise.all([
-    Promise.all(plan.refs.slice(0, 4).map(fetchText)),
+    Promise.all(plan.refs.slice(0, 6).map(fetchText)),
     Promise.all(searches),
     wikisource([plan.quote || question, ...phrases.slice(0, 1)], words),
     searchSikumim(words, 2),
@@ -115,7 +115,7 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
   ]);
 
   const ordered: Candidate[] = [
-    ...valid.flatMap(t => best(fromSefaria(t), words, 3)),
+    ...valid.flatMap(t => best(fromSefaria(t), words, valid.length > 4 ? 2 : 3)),
     ...sikumim.map(s => ({ ref: `sikum:${s.id}`, heRef: s.heRef, book: s.book, text: s.text, url: s.url, origin: 'sikum' as const })),
     ...linked.flat(),
     ...hits.flatMap(t => (t ? best(fromSefaria(t), words, 1) : [])),

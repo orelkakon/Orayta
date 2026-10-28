@@ -12,17 +12,18 @@ export interface RawAnswer {
 }
 
 interface RawCite { id?: unknown; quote?: unknown }
-interface RawPoint { text?: unknown; view?: unknown; cites?: unknown }
+interface RawPoint { text?: unknown; view?: unknown; cites?: unknown; derived?: unknown }
 
 const VIEWS: RabbiBotView[] = ['main', 'ashkenaz', 'note'];
 const MAX_POINTS = 8;
-const MAX_CITES = 3;
+const MAX_CITES = 4;
 const MIN_POINT_CHARS = 15;
 const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
 /**
  * The accuracy gate. Every point must cite at least one retrieved passage with
- * a quote that is really in it (see findQuote); points that don't are dropped,
+ * a quote that is really in it (see findQuote); points that don't are dropped —
+ * a derived conclusion is dropped if any one of its premises fails —
  * and the quotes shown are the source's own words. With nothing left, the
  * answer becomes "not found" — the model's prose never stands on its own.
  */
@@ -47,7 +48,11 @@ export function verifyAnswer(raw: RawAnswer, passages: RabbiBotPassage[], topic:
       }
       return [{ source: sourceIndex.get(p.id) as number, quote }];
     });
-    if (cites.length > 0) points.push({ text, view, cites });
+    // A derived conclusion stands on its premises, so it needs every one of them verified.
+    const derived = rp.derived === true;
+    const wanted = Array.isArray(rp.cites) ? Math.min(rp.cites.length, MAX_CITES) : 0;
+    if (cites.length === 0 || (derived && cites.length < wanted)) continue;
+    points.push(derived ? { text, view, cites, derived } : { text, view, cites });
   }
 
   const found = raw.status !== 'not_found' && points.length > 0;

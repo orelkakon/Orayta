@@ -38,7 +38,7 @@ export async function askRabbiBot(question: string, hooks: ModelHooks, onStep: S
   onStep('search');
   const passages = await retrieve(question, {
     kind,
-    refs: strings(p.refs, 4, 120),
+    refs: strings(p.refs, 6, 120),
     searches: strings(p.searches, 3, 80),
     quote: typeof p.quote === 'string' ? p.quote.trim().slice(0, 120) : '',
   });

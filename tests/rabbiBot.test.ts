@@ -95,3 +95,25 @@ test('quota day and reset follow Pacific midnight', () => {
   assert.equal(quotaDay(now), '2026-10-29');
   assert.equal(quotaResetAt(now).toISOString(), '2026-10-30T07:00:00.000Z');
 });
+
+test('a derived conclusion survives only when every premise is verified', () => {
+  const ps = [
+    passage('S1', 'וַיָּקֶם יְהוָה מוֹשִׁיעַ לִבְנֵי יִשְׂרָאֵל וַיּוֹשִׁיעֵם אֵת עָתְנִיאֵל בֶּן קְנַז'),
+    passage('S2', 'וַיָּקֶם יְהוָה לָהֶם מוֹשִׁיעַ אֶת אֵהוּד בֶּן גֵּרָא בֶּן הַיְמִינִי'),
+    passage('S3', 'וְאַחֲרָיו הָיָה שַׁמְגַּר בֶּן עֲנָת וַיַּךְ אֶת פְּלִשְׁתִּים'),
+  ];
+  const premises = [
+    { id: 'S1', quote: 'וַיּוֹשִׁיעֵם אֵת עָתְנִיאֵל בֶּן קְנַז' },
+    { id: 'S2', quote: 'מוֹשִׁיעַ אֶת אֵהוּד בֶּן גֵּרָא' },
+    { id: 'S3', quote: 'וְאַחֲרָיו הָיָה שַׁמְגַּר בֶּן עֲנָת' },
+  ];
+  const text = 'השופט השלישי הוא שמגר בן ענת, לפי סדר הפסוקים בספר שופטים';
+  const ok = verifyAnswer({ status: 'answered', short: 'שמגר', points: [{ text, view: 'main', derived: true, cites: premises }] }, ps, 'tanakh');
+  assert.equal(ok.status, 'answered');
+  assert.equal(ok.points[0].derived, true);
+  assert.equal(ok.points[0].cites.length, 3);
+
+  const broken = [...premises.slice(0, 2), { id: 'S3', quote: 'והשלישי היה שמגר השופט' }];
+  const bad = verifyAnswer({ status: 'answered', short: 'שמגר', points: [{ text, view: 'main', derived: true, cites: broken }] }, ps, 'tanakh');
+  assert.equal(bad.status, 'not_found');
+});

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { RabbiBotEvent, RabbiBotAnswer } from '@/types/rabbiBot';
-import { validateQuestion, quotaResetAt } from '@/lib/rabbiBot/rules';
+import { validateQuestion, quotaResetAt, ANSWER_VERSION } from '@/lib/rabbiBot/rules';
 import { questionKey } from '@/lib/rabbiBot/text';
 import { askRabbiBot } from '@/lib/rabbiBot/pipeline';
 import { NoModelError } from '@/lib/rabbiBot/gemini';
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   await purgeOld();
   if (await isRateLimited(ipHash)) return json({ type: 'error', error: 'rate_limited' }, 429);
 
-  const qHash = questionKey(v.text);
+  const qHash = `v${ANSWER_VERSION}:${questionKey(v.text)}`;
   const started = Date.now();
   const cached = await findCached(qHash);
   const encoder = new TextEncoder();
