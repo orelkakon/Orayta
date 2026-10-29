@@ -48,7 +48,7 @@ export default function AnswerView({ answer, idPrefix }: Props) {
   if (answer.status !== 'answered') {
     const [title, text] = answer.status === 'sensitive' ? [HE.RB_SENSITIVE_TITLE, HE.RB_SENSITIVE_TEXT]
       : answer.status === 'other' ? [HE.RB_OTHER_TITLE, HE.RB_OTHER_TEXT]
-      : [HE.RB_NOT_FOUND_TITLE, HE.RB_NOT_FOUND_TEXT];
+      : [HE.RB_NOT_FOUND_TITLE, answer.searched ? HE.RB_NOT_FOUND_SEARCHED(answer.searched) : HE.RB_NOT_FOUND_TEXT];
     return <Card><CardTitle>{title}</CardTitle>{text}</Card>;
   }
 

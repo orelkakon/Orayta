@@ -1,11 +1,11 @@
 import type { RabbiBotAnswer, RabbiBotKind, RabbiBotStep } from '@/types/rabbiBot';
-import { generateJson, ModelHooks, planModels, answerModels } from './gemini';
+import { generateJson, generateJsonHedged, ModelHooks, planModels, answerModels } from './gemini';
 import { PLAN_SYSTEM, PLAN_SCHEMA, ANSWER_SYSTEM, ANSWER_SCHEMA, answerPrompt } from './prompts';
 import { retrieve } from './retrieve';
 import { verifyAnswer, fixedAnswer, RawAnswer } from './verify';
 import { isTopic } from './rules';
 
-interface RawPlan { kind?: unknown; topic?: unknown; refs?: unknown; searches?: unknown; quote?: unknown }
+interface RawPlan { kind?: unknown; topic?: unknown; refs?: unknown; searches?: unknown; terms?: unknown; quote?: unknown }
 
 const strings = (v: unknown, max: number, len: number) =>
   (Array.isArray(v) ? v : []).filter((s): s is string => typeof s === 'string' && s.trim().length > 0)
@@ -20,6 +20,8 @@ export interface AskResult {
 export type StepFn = (step: RabbiBotStep, extra?: { count?: number; books?: string[] }) => void;
 
 const MAX_SHOWN_BOOKS = 10;
+/** A plan slower than this gets a second model racing it. */
+const PLAN_HEDGE_MS = 7000;
 
 /**
  * Question → plan (lite model) → sources (Sefaria, Wikisource, the site's
@@ -28,7 +30,7 @@ const MAX_SHOWN_BOOKS = 10;
  */
 export async function askRabbiBot(question: string, hooks: ModelHooks, onStep: StepFn): Promise<AskResult> {
   onStep('plan');
-  const plan = await generateJson(planModels(), { system: PLAN_SYSTEM, user: question, schema: PLAN_SCHEMA, timeoutMs: 15_000 }, hooks);
+  const plan = await generateJsonHedged(planModels(), { system: PLAN_SYSTEM, user: question, schema: PLAN_SCHEMA, timeoutMs: 15_000 }, hooks, PLAN_HEDGE_MS);
   const p = plan.value as RawPlan;
   const topic = isTopic(p.topic) ? p.topic : 'other';
   if (p.kind === 'sensitive') return { answer: fixedAnswer('sensitive', topic), model: plan.model };
@@ -40,6 +42,7 @@ export async function askRabbiBot(question: string, hooks: ModelHooks, onStep: S
     kind,
     refs: strings(p.refs, 6, 120),
     searches: strings(p.searches, 3, 80),
+    terms: strings(p.terms, 3, 40),
     quote: typeof p.quote === 'string' ? p.quote.trim().slice(0, 120) : '',
   });
   const books = Array.from(new Set(passages.map(x => x.book))).slice(0, MAX_SHOWN_BOOKS);
@@ -58,5 +61,5 @@ export async function askRabbiBot(question: string, hooks: ModelHooks, onStep: S
     verified.points = verified.points.map(pt => (pt.view === 'ashkenaz' ? { ...pt, view: 'note' } : pt));
     verified.dispute = false;
   }
-  return { answer: { ...verified, kind }, model: answer.model };
+  return { answer: { ...verified, kind, searched: passages.length }, model: answer.model };
 }

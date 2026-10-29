@@ -8,7 +8,7 @@ export const QUESTION_MAX = 300;
 /** Question/answer text and IP hashes are erased after this; counts stay. */
 export const RETENTION_DAYS = 10;
 /** Bumped when answering changes, so cached answers from an older pipeline aren't reused. */
-export const ANSWER_VERSION = 2;
+export const ANSWER_VERSION = 3;
 
 export const TOPICS: readonly RabbiBotTopic[] =
   ['shabbat', 'tefila', 'brachot', 'kashrut', 'moadim', 'family', 'avelut', 'mitzvot', 'bein_adam', 'tanakh', 'talmud', 'machshava', 'other'];

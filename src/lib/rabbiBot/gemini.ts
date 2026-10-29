@@ -3,11 +3,15 @@ import { classifyFailure } from './rules';
 // Server-only: Gemini REST (Google AI Studio free tier, key in GEMINI_API_KEY).
 // The free quota is counted per model *name* (the flash models allow ~20
 // requests a day each, the lite models far more), so each step walks a chain
-// of models: the cheap planning step runs on the high-quota lite models, the
-// answer on the strongest model that still has quota today.
+// of models. Planning needs real knowledge of where a law is written (the lite
+// models name the wrong siman and the modern word instead of the sources'
+// term), so it starts on the fast flash models and falls back to lite; the
+// answer runs on the strongest model that still has quota today.
 const API = 'https://generativelanguage.googleapis.com/v1beta/models';
 
-const DEFAULT_PLAN = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-flash-lite-latest', 'gemini-3-flash-preview'];
+const DEFAULT_PLAN = [
+  'gemini-3-flash-preview', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest',
+];
 // 3.8-flash (and flash-latest, which points at it) is strong but often slow — tried last among the flash models.
 const DEFAULT_ANSWER = [
   'gemini-3.5-flash', 'gemini-3-flash-preview', 'gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-flash-latest',
@@ -116,4 +120,23 @@ export async function generateJson(models: string[], call: JsonCall, hooks: Mode
     }
   }
   throw new NoModelError(!anyLive && models.every(m => hooks.skip.has(m)));
+}
+
+/**
+ * generateJson with a hedge: if the first model hasn't answered after
+ * `hedgeMs`, the rest of the chain starts in parallel and the first success
+ * wins — a slow free-tier model then costs seconds, not its whole timeout.
+ */
+export async function generateJsonHedged(models: string[], call: JsonCall, hooks: ModelHooks, hedgeMs: number): Promise<{ value: unknown; model: string }> {
+  let settled = false;
+  const first = generateJson(models, call, hooks).finally(() => { settled = true; });
+  const second = new Promise(r => setTimeout(r, hedgeMs)).then(() => {
+    if (settled) throw new NoModelError(false);
+    return generateJson(models.slice(1), call, hooks);
+  });
+  try {
+    return await Promise.any([first, second]);
+  } catch {
+    return first; // both failed — surface the main chain's error
+  }
 }

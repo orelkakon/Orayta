@@ -59,6 +59,8 @@ export interface RabbiBotAnswer {
   /** Points the model wrote vs. points whose quotes were found in the sources. */
   total: number;
   verified: number;
+  /** How many retrieved passages the answer was checked against (missing on older answers). */
+  searched?: number;
 }
 
 export type RabbiBotStep = 'plan' | 'search' | 'read' | 'answer' | 'verify';

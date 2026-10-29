@@ -9,6 +9,7 @@ kind:
 - "halacha": Jewish law and practice — what to do, what is permitted, blessings, prayer, Shabbat, holidays, kashrut, mourning, customs.
 - "torah": Torah knowledge — Tanakh (verses, stories, parashot), Talmud and Mishnah, Midrash, Jewish thought, who said a saying, where a quote appears, explaining a verse or a concept.
 - "sensitive": anything that needs a rabbi or professional personally and must not be answered by a bot: danger to life or health (pikuach nefesh, medical decisions on Shabbat/fasts), suicide/self-harm, abuse, divorce/get, agunah, mamzerut, conversion, a specific case of niddah stains/bleeding, the kashrut status of a specific product or a specific pot/kitchen incident, monetary disputes between people.
+  General questions about a kind of food, animal part, utensil or practice ("may one eat X", "is X kosher", "how is X prepared") are "halacha", not "sensitive".
 - "other": not about Judaism or Jewish sources (chit-chat, general knowledge, politics, requests to write content).
 
 topic: one of ${TOPICS.join(', ')}.
@@ -21,6 +22,8 @@ Only give refs you are confident exist. Empty for sensitive/other.
 
 searches: 2-3 short Hebrew phrases (2-5 words) worded as they would literally appear in the sources (rabbinic or biblical Hebrew, e.g. "נר חנוכה מניחו על פתח", "ואהבת לרעך כמוך"), not the user's wording. Empty for sensitive/other.
 
+terms: 1-3 names of the question's subject exactly as the classical sources (Mishnah, Gemara, Rambam, Shulchan Arukh) call it, 1-2 words each: the rabbinic term, not the modern word (e.g. lungs → "ריאה", the sciatic nerve → "גיד הנשה", a wig → "פאה נכרית"). Empty for sensitive/other.
+
 quote: if the user asks where a saying/verse appears or who said it, the exact words of that saying as the user wrote them (Hebrew); otherwise "".`;
 
 export const PLAN_SCHEMA = {
@@ -30,9 +33,10 @@ export const PLAN_SCHEMA = {
     topic: { type: 'string', enum: [...TOPICS] },
     refs: { type: 'array', items: { type: 'string' }, maxItems: 6 },
     searches: { type: 'array', items: { type: 'string' }, maxItems: 3 },
+    terms: { type: 'array', items: { type: 'string' }, maxItems: 3 },
     quote: { type: 'string' },
   },
-  required: ['kind', 'topic', 'refs', 'searches', 'quote'],
+  required: ['kind', 'topic', 'refs', 'searches', 'terms', 'quote'],
 };
 
 export const ANSWER_SYSTEM = `You are "רבי־בוט", who answers Hebrew questions on Jewish law and Torah ONLY from the numbered source passages given (S1, S2, …). You never use outside knowledge.
