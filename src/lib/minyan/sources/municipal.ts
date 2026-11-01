@@ -12,7 +12,7 @@
  */
 import { haversineM } from '../geo';
 import { blankRecord, PlaceRecord, SourceResult, USER_AGENT } from './types';
-import { ttlCache } from './cache';
+import { ttlCache, errorDetail } from './cache';
 
 interface MuniDataset {
   provider: 'muni-beersheva';
@@ -85,7 +85,7 @@ export async function beershevaSource(lat: number, lng: number, radiusM: number)
       return { records: parseBeersheva(data.records, updatedAt), updatedAt };
     });
     return { records: hit.records, state: 'ok', datasetUpdatedAt: hit.updatedAt };
-  } catch {
-    return { records: [], state: 'error', datasetUpdatedAt: null };
+  } catch (err) {
+    return { records: [], state: 'error', datasetUpdatedAt: null, detail: errorDetail(err) };
   }
 }

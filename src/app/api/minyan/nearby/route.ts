@@ -6,18 +6,24 @@ import { osmSource } from '@/lib/minyan/sources/osm';
 import { wikidataSource } from '@/lib/minyan/sources/wikidata';
 import { beershevaSource } from '@/lib/minyan/sources/municipal';
 import { telAvivSource } from '@/lib/minyan/sources/telaviv';
+import { withDeadline } from '@/lib/minyan/sources/cache';
+import type { SourceResult } from '@/lib/minyan/sources/types';
 import type { NearbyResponse, ProviderId, ProviderStatus } from '@/types/minyan';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
+
+/** Every source answers (or is given up on) within this — well under maxDuration. */
+const SOURCE_DEADLINE_MS = 12_000;
+const TIMED_OUT: SourceResult = { records: [], state: 'error', datasetUpdatedAt: null, detail: 'deadline' };
 
 const limited = makeRateLimiter(30, 60_000);
 
 /**
  * Public: synagogues near a point, merged from every external source that
  * covers the area, with automatic reliability per entry. Sources are queried
- * in parallel and cached server-side; a failing source is reported in
- * `providers` and simply contributes nothing.
+ * in parallel and cached server-side; a failing or slow source is reported in
+ * `providers` and simply contributes nothing — the others are still shown.
  * GET ?lat=31.78&lng=35.21&r=2000
  */
 export async function GET(req: NextRequest) {
@@ -37,9 +43,12 @@ export async function GET(req: NextRequest) {
     wikidataSource(lat, lng, radiusM),
     beershevaSource(lat, lng, radiusM),
     telAvivSource(lat, lng, radiusM),
-  ]);
+  ].map(p => withDeadline(p, SOURCE_DEADLINE_MS, TIMED_OUT)));
 
-  const providers: ProviderStatus[] = results.map((r, i) => ({ provider: ids[i], state: r.state, datasetUpdatedAt: r.datasetUpdatedAt }));
+  const providers: ProviderStatus[] = results.map((r, i) => ({
+    provider: ids[i], state: r.state, datasetUpdatedAt: r.datasetUpdatedAt, ...(r.detail ? { detail: r.detail } : {}),
+  }));
+  results.forEach((r, i) => { if (r.detail) console.warn(`[minyan] ${ids[i]} failed: ${r.detail}`); });
   // Every source that covers this area failed — that's an error, not "no synagogues".
   if (results.every(r => r.state !== 'ok')) {
     return NextResponse.json({ error: 'sources unavailable', providers }, { status: 502 });

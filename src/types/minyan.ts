@@ -70,6 +70,8 @@ export interface ProviderStatus {
   /** 'ok' | 'error' (source unavailable now) | 'out-of-area' (not queried). */
   state: 'ok' | 'error' | 'out-of-area';
   datasetUpdatedAt: string | null;
+  /** Short failure reason when state = 'error' (e.g. "timeout", "HTTP 429"). */
+  detail?: string;
 }
 
 export interface NearbyResponse {

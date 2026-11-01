@@ -7,7 +7,7 @@
  * each ~1km cell for a day and give up quietly after a short timeout.
  */
 import { blankRecord, PlaceRecord, SourceResult, USER_AGENT } from './types';
-import { ttlCache, snap, SNAP_SLACK_M } from './cache';
+import { ttlCache, snap, SNAP_SLACK_M, errorDetail } from './cache';
 
 interface Binding { item: { value: string }; itemLabel?: { value: string }; coord: { value: string }; mod?: { value: string } }
 
@@ -57,7 +57,7 @@ export async function wikidataSource(lat: number, lng: number, radiusM: number):
       return parseWikidata(json.results?.bindings ?? []);
     });
     return { records, state: 'ok', datasetUpdatedAt: null };
-  } catch {
-    return { records: [], state: 'error', datasetUpdatedAt: null };
+  } catch (err) {
+    return { records: [], state: 'error', datasetUpdatedAt: null, detail: errorDetail(err) };
   }
 }

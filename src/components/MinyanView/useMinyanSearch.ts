@@ -24,7 +24,11 @@ export function useMinyanSearch() {
     const id = ++reqId.current;
     setPhase('loading');
     try {
-      const res = await fetch(`/api/minyan/nearby?lat=${o.lat.toFixed(5)}&lng=${o.lng.toFixed(5)}&r=${r}`);
+      // The server gives up on slow sources by itself; this only guards a hung connection.
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 25_000);
+      const res = await fetch(`/api/minyan/nearby?lat=${o.lat.toFixed(5)}&lng=${o.lng.toFixed(5)}&r=${r}`, { signal: ctrl.signal })
+        .finally(() => clearTimeout(timer));
       if (id !== reqId.current) return;
       if (res.status === 429) { setPhase('rate-limited'); return; }
       if (!res.ok) { setPhase('error'); return; }

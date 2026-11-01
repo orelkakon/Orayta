@@ -7,8 +7,9 @@
  * its `check_date` (survey date). We request `out meta` for the edit date.
  */
 import type { ProviderId } from '@/types/minyan';
-import { blankRecord, PlaceRecord, SourceResult, USER_AGENT } from './types';
-import { ttlCache, snap, SNAP_SLACK_M } from './cache';
+import { blankRecord, PlaceRecord, SourceResult } from './types';
+import { ttlCache, snap, SNAP_SLACK_M, errorDetail } from './cache';
+import { queryOverpass } from './overpass';
 
 interface OverpassElement {
   type: 'node' | 'way' | 'relation';
@@ -20,11 +21,6 @@ interface OverpassElement {
   tags?: Record<string, string>;
 }
 
-export const OVERPASS_ENDPOINTS = [
-  'https://overpass-api.de/api/interpreter',
-  'https://overpass.private.coffee/api/interpreter',
-  'https://overpass.kumi.systems/api/interpreter',
-];
 export const OVERPASS_RESULT_CAP = 200;
 
 export function buildOverpassQuery(lat: number, lng: number, radiusM: number): string {
@@ -95,27 +91,6 @@ export function parseOverpass(elements: OverpassElement[]): PlaceRecord[] {
   return out;
 }
 
-async function queryOverpass(query: string): Promise<OverpassElement[]> {
-  let lastErr: unknown = null;
-  for (const url of OVERPASS_ENDPOINTS) {
-    try {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': USER_AGENT },
-        body: `data=${encodeURIComponent(query)}`,
-        cache: 'no-store',
-        signal: AbortSignal.timeout(12000),
-      });
-      if (!res.ok) { lastErr = new Error(`overpass HTTP ${res.status}`); continue; }
-      const json = await res.json() as { elements?: OverpassElement[] };
-      return json.elements ?? [];
-    } catch (err) {
-      lastErr = err;
-    }
-  }
-  throw lastErr instanceof Error ? lastErr : new Error('overpass unavailable');
-}
-
 const cache = ttlCache<{ records: PlaceRecord[]; capped: boolean }>(6 * 60 * 60 * 1000);
 
 /** Records within the snapped cell + slack; the caller filters by exact distance. */
@@ -123,11 +98,11 @@ export async function osmSource(lat: number, lng: number, radiusM: number): Prom
   const cLat = snap(lat), cLng = snap(lng);
   try {
     const hit = await cache(`${cLat.toFixed(2)},${cLng.toFixed(2)},${radiusM}`, async () => {
-      const elements = await queryOverpass(buildOverpassQuery(cLat, cLng, radiusM + SNAP_SLACK_M));
+      const elements = await queryOverpass<OverpassElement>(buildOverpassQuery(cLat, cLng, radiusM + SNAP_SLACK_M));
       return { records: parseOverpass(elements), capped: elements.length >= OVERPASS_RESULT_CAP };
     });
     return { records: hit.records, state: 'ok', datasetUpdatedAt: null, truncated: hit.capped };
-  } catch {
-    return { records: [], state: 'error', datasetUpdatedAt: null };
+  } catch (err) {
+    return { records: [], state: 'error', datasetUpdatedAt: null, detail: errorDetail(err) };
   }
 }

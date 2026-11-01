@@ -10,7 +10,7 @@
  */
 import { haversineM } from '../geo';
 import { blankRecord, PlaceRecord, SourceResult, USER_AGENT } from './types';
-import { ttlCache, snap, SNAP_SLACK_M } from './cache';
+import { ttlCache, snap, SNAP_SLACK_M, errorDetail } from './cache';
 
 export const TLV_LAYER = 'https://gisn.tel-aviv.gov.il/arcgis/rest/services/IView2/MapServer/568';
 export const TLV_DATASET_URL = 'https://opendata.tel-aviv.gov.il/he/dataItem/96/Info';
@@ -76,7 +76,7 @@ export async function telAvivSource(lat: number, lng: number, radiusM: number): 
       return parseTelAviv(json.features ?? []);
     });
     return { records, state: 'ok', datasetUpdatedAt: null };
-  } catch {
-    return { records: [], state: 'error', datasetUpdatedAt: null };
+  } catch (err) {
+    return { records: [], state: 'error', datasetUpdatedAt: null, detail: errorDetail(err) };
   }
 }
