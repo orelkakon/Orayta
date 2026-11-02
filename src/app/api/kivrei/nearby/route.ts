@@ -3,6 +3,7 @@ import { isValidCoord } from '@/lib/minyan/geo';
 import { clientIp, makeRateLimiter } from '@/lib/minyan/server';
 import { clampKivreiRadius } from '@/lib/kivrei/radius';
 import { kivreiNear, KIVREI_DATASET_DATE } from '@/lib/kivrei/server';
+import { recordNearbySearch, searchVia, warmNearbyStats } from '@/lib/nearbyStats/server';
 import type { KivreiNearbyResponse } from '@/lib/kivrei/types';
 
 export const dynamic = 'force-dynamic';
@@ -24,13 +25,21 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'invalid coordinates' }, { status: 400 });
   }
   const radiusM = clampKivreiRadius(Number(sp.get('r')));
+  const started = Date.now();
+  warmNearbyStats();
 
+  const kivrei = await kivreiNear(lat, lng, radiusM);
   const body: KivreiNearbyResponse = {
     center: { lat, lng },
     radiusM,
-    kivrei: await kivreiNear(lat, lng, radiusM),
+    kivrei,
     datasetDate: KIVREI_DATASET_DATE,
     fetchedAt: new Date().toISOString(),
   };
+  await recordNearbySearch(req, {
+    feature: 'kivrei', lat, lng, via: searchVia(req), radiusM,
+    results: kivrei.length, nearestM: kivrei[0]?.distanceM ?? null,
+    status: 'ok', degraded: [], latencyMs: Date.now() - started,
+  });
   return NextResponse.json(body, { headers: { 'Cache-Control': 'no-store' } });
 }

@@ -23,6 +23,9 @@ export const theme = {
     bgSuccess:    'var(--color-bg-success)',
     bgError:      'var(--color-bg-error)',
     bgWarning:    'var(--color-bg-warning)',
+    chart1:       'var(--color-chart-1)',
+    chart2:       'var(--color-chart-2)',
+    chart3:       'var(--color-chart-3)',
   },
   fonts: {
     body: "var(--font-frank, 'Frank Ruhl Libre', Georgia, serif)",

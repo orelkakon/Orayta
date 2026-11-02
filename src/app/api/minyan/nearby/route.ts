@@ -7,6 +7,7 @@ import { wikidataSource } from '@/lib/minyan/sources/wikidata';
 import { beershevaSource } from '@/lib/minyan/sources/municipal';
 import { telAvivSource } from '@/lib/minyan/sources/telaviv';
 import { withDeadline } from '@/lib/minyan/sources/cache';
+import { recordNearbySearch, searchVia, warmNearbyStats } from '@/lib/nearbyStats/server';
 import type { SourceResult } from '@/lib/minyan/sources/types';
 import type { NearbyResponse, ProviderId, ProviderStatus } from '@/types/minyan';
 
@@ -36,6 +37,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'invalid coordinates' }, { status: 400 });
   }
   const radiusM = clampRadius(Number(sp.get('r')));
+  const started = Date.now();
+  warmNearbyStats();
 
   const ids: ProviderId[] = ['osm', 'wikidata', 'muni-beersheva', 'muni-telaviv'];
   const results = await Promise.all([
@@ -50,19 +53,28 @@ export async function GET(req: NextRequest) {
     ...(r.detail ? { detail: r.detail } : {}), ...(r.snapshot ? { snapshot: true } : {}),
   }));
   results.forEach((r, i) => { if (r.detail) console.warn(`[minyan] ${ids[i]} failed: ${r.detail}`); });
+  // The snapshot is listed (live Overpass was down) but isn't a missing source.
+  const degraded = results.flatMap((r, i) => r.state === 'error' ? [`${ids[i]}:error`] : r.snapshot ? [`${ids[i]}:snapshot`] : []);
+  const stat = { feature: 'minyan' as const, lat, lng, via: searchVia(req), radiusM, degraded };
   // Every source that covers this area failed — that's an error, not "no synagogues".
   if (results.every(r => r.state !== 'ok')) {
+    await recordNearbySearch(req, { ...stat, results: 0, nearestM: null, status: 'error', latencyMs: Date.now() - started });
     return NextResponse.json({ error: 'sources unavailable', providers }, { status: 502 });
   }
 
   const now = new Date();
+  const synagogues = mergeRecords(results.flatMap(r => r.records), { lat, lng }, radiusM, now);
   const body: NearbyResponse = {
     center: { lat, lng },
     radiusM,
-    synagogues: mergeRecords(results.flatMap(r => r.records), { lat, lng }, radiusM, now),
+    synagogues,
     providers,
     truncated: results.some(r => r.truncated),
     fetchedAt: now.toISOString(),
   };
+  await recordNearbySearch(req, {
+    ...stat, results: synagogues.length, nearestM: synagogues[0]?.distanceM ?? null,
+    status: results.some(r => r.state === 'error') ? 'partial' : 'ok', latencyMs: Date.now() - started,
+  });
   return NextResponse.json(body, { headers: { 'Cache-Control': 'no-store' } });
 }

@@ -2,6 +2,7 @@ import { MIKVEH_HE } from './texts/mikveh';
 import { KIVREI_HE } from './texts/kivrei';
 import { WHATS_NEW_HE } from './texts/whatsNew';
 import { NEARBY_HE } from './texts/nearby';
+import { NEARBY_STATS_HE } from './texts/nearbyStats';
 
 export const HE = {
   APP_NAME: 'אורייתא',
@@ -1658,4 +1659,5 @@ export const HE = {
   ...KIVREI_HE,
   ...WHATS_NEW_HE,
   ...NEARBY_HE,
+  ...NEARBY_STATS_HE,
 };

@@ -5,6 +5,7 @@ import { withDeadline } from '@/lib/minyan/sources/cache';
 import { clampMikvehRadius } from '@/lib/mikveh/radius';
 import { mergeMikvaot } from '@/lib/mikveh/merge';
 import { govMikvaot, osmMikvaot, SourceOut } from '@/lib/mikveh/sources';
+import { recordNearbySearch, searchVia, warmNearbyStats } from '@/lib/nearbyStats/server';
 import type { MikvehNearbyResponse } from '@/types/mikveh';
 
 export const dynamic = 'force-dynamic';
@@ -29,18 +30,27 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'invalid coordinates' }, { status: 400 });
   }
   const radiusM = clampMikvehRadius(Number(sp.get('r')));
+  const started = Date.now();
+  warmNearbyStats();
 
   const gov = await withDeadline(govMikvaot(), 15_000, GOV_TIMED_OUT);
   const osm = osmMikvaot(lat, lng, radiusM);
   if (gov.status.detail) console.warn(`[mikveh] gov failed: ${gov.status.detail}`);
 
   const now = new Date();
+  const mikvaot = mergeMikvaot(gov.records, osm.records, { lat, lng }, radiusM);
   const body: MikvehNearbyResponse = {
     center: { lat, lng },
     radiusM,
-    mikvaot: mergeMikvaot(gov.records, osm.records, { lat, lng }, radiusM),
+    mikvaot,
     providers: [gov.status, osm.status],
     fetchedAt: now.toISOString(),
   };
+  const govDown = gov.status.state === 'error';
+  await recordNearbySearch(req, {
+    feature: 'mikveh', lat, lng, via: searchVia(req), radiusM,
+    results: mikvaot.length, nearestM: mikvaot[0]?.distanceM ?? null,
+    status: govDown ? 'partial' : 'ok', degraded: govDown ? ['gov:error'] : [], latencyMs: Date.now() - started,
+  });
   return NextResponse.json(body, { headers: { 'Cache-Control': 'no-store' } });
 }

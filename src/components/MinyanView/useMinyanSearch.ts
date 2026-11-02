@@ -28,7 +28,7 @@ export function useNearbySearch<T>(endpoint: string, defaultRadius: number) {
       // The server gives up on slow sources by itself; this only guards a hung connection.
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), 25_000);
-      const res = await fetch(`${endpoint}?lat=${o.lat.toFixed(5)}&lng=${o.lng.toFixed(5)}&r=${r}`, { signal: ctrl.signal })
+      const res = await fetch(`${endpoint}?lat=${o.lat.toFixed(5)}&lng=${o.lng.toFixed(5)}&r=${r}&via=${o.label ? 'place' : 'gps'}`, { signal: ctrl.signal })
         .finally(() => clearTimeout(timer));
       if (id !== reqId.current) return;
       if (res.status === 429) { setPhase('rate-limited'); return; }

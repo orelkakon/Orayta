@@ -31,6 +31,10 @@ const GlobalStylesheet = createGlobalStyle`
     --color-bg-success:   #E8F5E9;
     --color-bg-error:     #FDECEA;
     --color-bg-warning:   #FFF8E1;
+    /* Categorical chart series (validated for colour-blind separation). */
+    --color-chart-1:      #2a78d6;
+    --color-chart-2:      #eb6834;
+    --color-chart-3:      #1baf7a;
     --shadow-sm: 0 1px 3px rgba(44, 24, 16, 0.08);
     --shadow-md: 0 4px 12px rgba(44, 24, 16, 0.10);
     --shadow-lg: 0 8px 24px rgba(44, 24, 16, 0.12);
@@ -60,6 +64,9 @@ const GlobalStylesheet = createGlobalStyle`
     --color-bg-success:   #1A2E20;
     --color-bg-error:     #2E1A1C;
     --color-bg-warning:   #2A2410;
+    --color-chart-1:      #3987e5;
+    --color-chart-2:      #d95926;
+    --color-chart-3:      #199e70;
     --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.35);
     --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
     --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.55);

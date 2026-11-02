@@ -78,6 +78,9 @@ Same flow as מניין קרוב (shared `useNearbySearch`, `LocatePanel`, `Loca
 ### 2o. "חדש באורייתא" — one-time announcement
 `components/WhatsNew/` mounted in `ClientProviders`: shown once per device (marked seen the moment it appears, `orayta_whats_new`), 1.4s after load, never on `/play`, `/login`, `/ask`, `/feed`, admin pages. Currently רבי־בוט (dark stage, live typed demo, CTA opens the bot). **To announce something new:** write a hero + texts (`lib/texts/whatsNew.ts`), point `CURRENT_FEATURE` (`features.tsx`) at it and change `WHATS_NEW_ID` (`lib/whatsNew.ts`). The bot's teaser bubble holds back for 20h after an announcement.
 
+### Nearby search statistics (admin)
+Each search on `/api/minyan|mikveh|kivrei/nearby` writes one `NearbySearch` row (`lib/nearbyStats/server.ts`): feature, **area = nearest city/town name only, never coordinates** (`area.ts` + `data/towns.json`, OSM place=city|town built by `scripts/osm-towns.py`, none beyond 20 km), via gps/place (client sends `via`), radius, result count, nearest distance, status ok/partial/error, degraded sources (`osm:snapshot`, `<provider>:error`), latency, ipHash (erased after 10 days when stats load). The DB is woken (`$connect`) while sources run and the write is capped at 1.5s, so recording never slows a search. `GET /api/admin/nearby-stats` → `compute.ts` (pure, tested: 30-day window, unique/returning searchers, zero-result %, median nearest distance, hours in Israel time, top areas, coverage gaps = area+feature with empty searches, source failures) → `AdminStatsView/nearby/`. Chart series colours are the `chart1–3` theme tokens. The privacy policy describes this — keep it true.
+
 ### Home "בסביבתך" hub
 `HomeView/HomeNearbyHub.tsx` — one gold-framed card with the three location features (מניין · מקווה · קברי צדיקים) on a dashed "route"; tiles come from `HE.NB_TILES`. Strings for these newer features live in `src/lib/texts/*.ts` and are spread into `HE` (still used as `HE.KEY`).
 

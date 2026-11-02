@@ -12,6 +12,7 @@ import AdminBreakdown from './AdminBreakdown';
 import AdminCommentsCard from './AdminCommentsCard';
 import AdminPushCard from './AdminPushCard';
 import AdminRabbiBotCard from './rabbiBot/AdminRabbiBotCard';
+import AdminNearbyCard from './nearby/AdminNearbyCard';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(14px); }
@@ -73,6 +74,7 @@ export default function AdminStatsView() {
       <AdminBreakdown stats={stats} />
       <AdminCommentsCard comments={stats.comments} />
       <AdminRabbiBotCard />
+      <AdminNearbyCard />
       <AdminPushCard />
     </Page>
   );

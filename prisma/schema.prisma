@@ -330,3 +330,23 @@ model RabbiBotQuestion {
   @@index([ipHash, createdAt])
   @@index([qHash])
 }
+
+// One row per nearby search (מניין קרוב / מקווה בסביבה / קברי צדיקים) for the
+// admin statistics. Never the coordinates: only the nearest city/town name.
+// ipHash (unique searchers) is erased after 10 days (lib/nearbyStats/server.ts).
+model NearbySearch {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  feature   String // 'minyan' | 'mikveh' | 'kivrei'
+  area      String?
+  via       String // 'gps' | 'place'
+  radiusM   Int
+  results   Int      @default(0)
+  nearestM  Int?
+  status    String // 'ok' | 'partial' | 'error'
+  degraded  String[] // e.g. 'osm:snapshot', 'wikidata:error', 'gov:error'
+  latencyMs Int      @default(0)
+  ipHash    String?
+
+  @@index([createdAt])
+}
