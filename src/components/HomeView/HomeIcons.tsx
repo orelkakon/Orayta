@@ -16,6 +16,8 @@ const SECTION_ICONS: Record<string, string> = {
   '/live': 'live',
   '/about': 'info',
   '/minyan': 'synagogue',
+  '/mikveh': 'droplet',
+  '/kivrei': 'tomb',
 };
 
 export default function SectionIcon({ href, size = 32 }: { href: string; size?: number }) {

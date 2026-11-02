@@ -58,7 +58,7 @@ export function parseBeersheva(rows: BsRow[], datasetUpdatedAt: string | null): 
 
 const cache = ttlCache<{ records: PlaceRecord[]; updatedAt: string | null }>(24 * 60 * 60 * 1000, 5);
 
-async function ckan<T>(action: string, params: string): Promise<T> {
+export async function ckan<T>(action: string, params: string): Promise<T> {
   const res = await fetch(`https://data.gov.il/api/3/action/${action}?${params}`, {
     headers: { 'User-Agent': USER_AGENT },
     cache: 'no-store',

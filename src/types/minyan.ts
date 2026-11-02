@@ -72,6 +72,8 @@ export interface ProviderStatus {
   datasetUpdatedAt: string | null;
   /** Short failure reason when state = 'error' (e.g. "timeout", "HTTP 429"). */
   detail?: string;
+  /** Data came from the offline snapshot (dated `datasetUpdatedAt`), not live. */
+  snapshot?: boolean;
 }
 
 export interface NearbyResponse {

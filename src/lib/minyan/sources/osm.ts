@@ -9,7 +9,11 @@
 import type { ProviderId } from '@/types/minyan';
 import { blankRecord, PlaceRecord, SourceResult } from './types';
 import { ttlCache, snap, SNAP_SLACK_M, errorDetail } from './cache';
-import { queryOverpass } from './overpass';
+import { queryOverpass, overpassCoolingDown } from './overpass';
+import { SNAPSHOT_SYNAGOGUES, OSM_SNAPSHOT_DATE, snapshotNear } from './osmSnapshot';
+
+/** Short — the snapshot answers instantly if live Overpass doesn't. */
+const LIVE_DEADLINE_MS = 4500;
 
 interface OverpassElement {
   type: 'node' | 'way' | 'relation';
@@ -93,16 +97,22 @@ export function parseOverpass(elements: OverpassElement[]): PlaceRecord[] {
 
 const cache = ttlCache<{ records: PlaceRecord[]; capped: boolean }>(6 * 60 * 60 * 1000);
 
-/** Records within the snapped cell + slack; the caller filters by exact distance. */
+/**
+ * Live Overpass when it answers (freshest), otherwise the offline snapshot —
+ * same OSM data, a few weeks older at most. Records within the snapped cell +
+ * slack; the caller filters by exact distance.
+ */
 export async function osmSource(lat: number, lng: number, radiusM: number): Promise<SourceResult> {
   const cLat = snap(lat), cLng = snap(lng);
   try {
     const hit = await cache(`${cLat.toFixed(2)},${cLng.toFixed(2)},${radiusM}`, async () => {
-      const elements = await queryOverpass<OverpassElement>(buildOverpassQuery(cLat, cLng, radiusM + SNAP_SLACK_M));
+      if (overpassCoolingDown()) throw new Error('all instances cooling down');
+      const elements = await queryOverpass<OverpassElement>(buildOverpassQuery(cLat, cLng, radiusM + SNAP_SLACK_M), LIVE_DEADLINE_MS);
       return { records: parseOverpass(elements), capped: elements.length >= OVERPASS_RESULT_CAP };
     });
     return { records: hit.records, state: 'ok', datasetUpdatedAt: null, truncated: hit.capped };
   } catch (err) {
-    return { records: [], state: 'error', datasetUpdatedAt: null, detail: errorDetail(err) };
+    const records = parseOverpass(snapshotNear(SNAPSHOT_SYNAGOGUES, lat, lng, radiusM + SNAP_SLACK_M));
+    return { records, state: 'ok', datasetUpdatedAt: OSM_SNAPSHOT_DATE, snapshot: true, detail: `live: ${errorDetail(err)}` };
   }
 }

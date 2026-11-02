@@ -28,6 +28,8 @@ export const navItems: NavItem[] = [
   { href: '/quiz',        label: HE.NAV_LEARN,             icon: 'target' },
   { href: '/today',       label: HE.NAV_TODAY,             icon: 'calendar' },
   { href: '/minyan',      label: HE.NAV_MINYAN,            icon: 'synagogue' },
+  { href: '/mikveh',      label: HE.NAV_MIKVEH,            icon: 'droplet' },
+  { href: '/kivrei',      label: HE.NAV_KIVREI,            icon: 'tomb' },
   { href: '/dedications', label: HE.NAV_DEDICATIONS,       icon: 'candle' },
   { href: '/contact',     label: HE.NAV_CONTACT,           icon: 'phone' },
   { href: '/about',       label: HE.NAV_ABOUT,             icon: 'info' },

@@ -9,15 +9,16 @@ export type Phase = 'idle' | 'locating' | 'loading' | 'ready' | 'denied' | 'unav
 export interface Origin { lat: number; lng: number; label: string | null; }
 
 /**
- * Location + results state for מניין קרוב. Never prompts for location on its
- * own: the browser prompt only appears after the user taps "use my location",
- * except when permission was already granted earlier (then we locate at once).
+ * Location + results state for a "near me" page (מניין קרוב, מקווה בסביבה).
+ * Never prompts for location on its own: the browser prompt only appears
+ * after the user taps "use my location", except when permission was already
+ * granted earlier (then we locate at once).
  */
-export function useMinyanSearch() {
+export function useNearbySearch<T>(endpoint: string, defaultRadius: number) {
   const [phase, setPhase] = useState<Phase>('idle');
   const [origin, setOrigin] = useState<Origin | null>(null);
-  const [radius, setRadius] = useState<number>(DEFAULT_RADIUS_M);
-  const [data, setData] = useState<NearbyResponse | null>(null);
+  const [radius, setRadius] = useState<number>(defaultRadius);
+  const [data, setData] = useState<T | null>(null);
   const reqId = useRef(0);
 
   const load = useCallback(async (o: Origin, r: number) => {
@@ -27,17 +28,17 @@ export function useMinyanSearch() {
       // The server gives up on slow sources by itself; this only guards a hung connection.
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), 25_000);
-      const res = await fetch(`/api/minyan/nearby?lat=${o.lat.toFixed(5)}&lng=${o.lng.toFixed(5)}&r=${r}`, { signal: ctrl.signal })
+      const res = await fetch(`${endpoint}?lat=${o.lat.toFixed(5)}&lng=${o.lng.toFixed(5)}&r=${r}`, { signal: ctrl.signal })
         .finally(() => clearTimeout(timer));
       if (id !== reqId.current) return;
       if (res.status === 429) { setPhase('rate-limited'); return; }
       if (!res.ok) { setPhase('error'); return; }
-      setData(await res.json() as NearbyResponse);
+      setData(await res.json() as T);
       setPhase('ready');
     } catch {
       if (id === reqId.current) setPhase('error');
     }
-  }, []);
+  }, [endpoint]);
 
   const searchAt = useCallback((o: Origin) => {
     setOrigin(o);
@@ -75,3 +76,5 @@ export function useMinyanSearch() {
 
   return { phase, origin, radius, data, locate, searchAt, changeRadius, retry };
 }
+
+export const useMinyanSearch = () => useNearbySearch<NearbyResponse>('/api/minyan/nearby', DEFAULT_RADIUS_M);

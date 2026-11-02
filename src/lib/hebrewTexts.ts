@@ -1,3 +1,8 @@
+import { MIKVEH_HE } from './texts/mikveh';
+import { KIVREI_HE } from './texts/kivrei';
+import { WHATS_NEW_HE } from './texts/whatsNew';
+import { NEARBY_HE } from './texts/nearby';
+
 export const HE = {
   APP_NAME: 'אורייתא',
   APP_SUBTITLE: 'תלמוד · רבנים · סיכומים · גימטריות · חידושים · תרגול · תכנים ועוד',
@@ -273,6 +278,7 @@ export const HE = {
   TODAY_SUNSET: 'שקיעת החמה',
   TODAY_TZEIT: 'צאת הכוכבים',
   TODAY_TZEIT_RT: 'צאת הכוכבים (ר״ת)',
+  TODAY_CHATZOT_NIGHT: 'חצות הלילה',
   TODAY_SHABBAT_TLV: 'תל אביב',
   TODAY_SHABBAT_JLM: 'ירושלים',
   TODAY_SHABBAT_IN: 'כניסה',
@@ -996,8 +1002,6 @@ export const HE = {
   MN_TITLE: 'מניין קרוב',
   MN_SUBTITLE: 'בתי כנסת וזמני תפילה בסביבתכם',
   MN_HONESTY: 'כל המידע נאסף אוטומטית ממקורות ציבוריים — מאגרי נתונים פתוחים של עיריות, OpenStreetMap ו-Wikidata. זמני תפילה מוצגים רק כשמקור מפרסם אותם — מומלץ תמיד לוודא מול בית הכנסת.',
-  MN_HOME_TITLE: 'מניין קרוב',
-  MN_HOME_SUB: 'בתי כנסת סביבך על המפה',
   NEW_BADGE: 'חדש',
   MN_LOCATE_BTN: 'המיקום שלי',
   MN_LOCATE_CTA_TITLE: 'מצאו מניין קרוב אליכם',
@@ -1074,6 +1078,7 @@ export const HE = {
   ],
   MN_ATTRIBUTION: 'מקורות: © תורמי OpenStreetMap (ODbL) · Wikidata (CC0) · data.gov.il — "בתי כנסת בעיר באר-שבע", עיריית באר שבע',
   MN_ATTRIBUTION_DATE: (date: string) => ` (עודכן ${date})`,
+  MN_OSM_SNAPSHOT: (date: string) => `נתוני OpenStreetMap מעותק מתאריך ${date} — השרת החי לא הגיב כרגע.`,
   MN_MAP_YOU: 'אתם כאן',
   MN_ARIA_MAP: 'מפת בתי כנסת סמוכים',
 
@@ -1648,4 +1653,9 @@ export const HE = {
   RB_TEASER: 'שאלה בהלכה או בתורה? שאלו אותי — אענה עם מקורות.',
   RB_TEASER_CLOSE: 'סגירת ההודעה',
 
+  /* New-feature strings live in their own modules (src/lib/texts/). */
+  ...MIKVEH_HE,
+  ...KIVREI_HE,
+  ...WHATS_NEW_HE,
+  ...NEARBY_HE,
 };

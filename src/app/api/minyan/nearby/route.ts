@@ -46,7 +46,8 @@ export async function GET(req: NextRequest) {
   ].map(p => withDeadline(p, SOURCE_DEADLINE_MS, TIMED_OUT)));
 
   const providers: ProviderStatus[] = results.map((r, i) => ({
-    provider: ids[i], state: r.state, datasetUpdatedAt: r.datasetUpdatedAt, ...(r.detail ? { detail: r.detail } : {}),
+    provider: ids[i], state: r.state, datasetUpdatedAt: r.datasetUpdatedAt,
+    ...(r.detail ? { detail: r.detail } : {}), ...(r.snapshot ? { snapshot: true } : {}),
   }));
   results.forEach((r, i) => { if (r.detail) console.warn(`[minyan] ${ids[i]} failed: ${r.detail}`); });
   // Every source that covers this area failed — that's an error, not "no synagogues".

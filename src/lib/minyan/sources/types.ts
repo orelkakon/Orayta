@@ -32,8 +32,10 @@ export interface SourceResult {
   state: 'ok' | 'error' | 'out-of-area';
   datasetUpdatedAt: string | null;
   truncated?: boolean;
-  /** Why the source failed (status / timeout), for diagnostics. */
+  /** Why the source (or its live part) failed (status / timeout), for diagnostics. */
   detail?: string;
+  /** Served from the offline snapshot because the live service didn't answer. */
+  snapshot?: boolean;
 }
 
 export const USER_AGENT = 'Orayta/1.0 (+https://orayta-eight.vercel.app)';

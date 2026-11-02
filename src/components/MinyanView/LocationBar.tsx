@@ -35,9 +35,11 @@ interface Props {
   onLocate: () => void;
   onPick: (o: Origin) => void;
   onRadius: (r: number) => void;
+  /** Radius choices (defaults to the minyan ones). */
+  radii?: readonly number[];
 }
 
-export default function LocationBar({ origin, phase, radius, onLocate, onPick, onRadius }: Props) {
+export default function LocationBar({ origin, phase, radius, onLocate, onPick, onRadius, radii = RADIUS_OPTIONS_M }: Props) {
   const [searchOpen, setSearchOpen] = useState(false);
   const busy = phase === 'locating' || phase === 'loading';
 
@@ -62,7 +64,7 @@ export default function LocationBar({ origin, phase, radius, onLocate, onPick, o
       {searchOpen && <PlaceSearch onPick={o => { setSearchOpen(false); onPick(o); }} />}
       <Chips role="group" aria-label={HE.MN_RADIUS_LABEL}>
         <Muted>{HE.MN_RADIUS_LABEL}</Muted>
-        {RADIUS_OPTIONS_M.map(r => (
+        {radii.map(r => (
           <Chip key={r} $active={r === radius} aria-pressed={r === radius} onClick={() => onRadius(r)} disabled={busy}>
             {HE.MN_KM(r)}
           </Chip>

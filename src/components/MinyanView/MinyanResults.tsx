@@ -59,7 +59,14 @@ export default function MinyanResults({ data, origin, radius }: Props) {
     requestAnimationFrame(() => cardRefs.current.get(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   };
 
-  const footer = <Attribution>{HE.MN_ATTRIBUTION}{bsDate ? HE.MN_ATTRIBUTION_DATE(bsDate) : ''}</Attribution>;
+  const osmSnapshot = data.providers.find(p => p.provider === 'osm' && p.snapshot);
+  const snapDate = formatSourceDate(osmSnapshot?.datasetUpdatedAt ?? null);
+  const footer = (
+    <Attribution>
+      {HE.MN_ATTRIBUTION}{bsDate ? HE.MN_ATTRIBUTION_DATE(bsDate) : ''}
+      {snapDate && <><br />{HE.MN_OSM_SNAPSHOT(snapDate)}</>}
+    </Attribution>
+  );
   const nedarim = (
     <External href={nedarimAreaUrl(origin.lat, origin.lng, radius)} target="_blank" rel="noopener noreferrer">
       {HE.MN_NEDARIM_LINK}

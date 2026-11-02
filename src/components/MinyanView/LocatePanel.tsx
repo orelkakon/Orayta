@@ -41,15 +41,21 @@ const OrRow = styled.div`
   margin-top: ${theme.spacing.sm}; text-align: right;
 `;
 
-interface Props { phase: Phase; onLocate: () => void; onPick: (o: Origin) => void; }
+interface Props {
+  phase: Phase;
+  onLocate: () => void;
+  onPick: (o: Origin) => void;
+  /** First-screen title / subtitle (defaults to the minyan ones). */
+  cta?: [title: string, sub: string];
+}
 
 /** First screen + the "no location" states: denied, unavailable, locating. */
-export default function LocatePanel({ phase, onLocate, onPick }: Props) {
+export default function LocatePanel({ phase, onLocate, onPick, cta = [HE.MN_LOCATE_CTA_TITLE, HE.MN_LOCATE_CTA_SUB] }: Props) {
   const locating = phase === 'locating';
   const [title, sub] =
     phase === 'denied' ? [HE.MN_DENIED_TITLE, HE.MN_DENIED_SUB]
       : phase === 'unavailable' ? [HE.MN_UNAVAILABLE_TITLE, HE.MN_UNAVAILABLE_SUB]
-        : [HE.MN_LOCATE_CTA_TITLE, HE.MN_LOCATE_CTA_SUB];
+        : cta;
 
   return (
     <Wrap role={phase === 'denied' || phase === 'unavailable' ? 'alert' : undefined}>

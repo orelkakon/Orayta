@@ -17,7 +17,7 @@ export const OVERPASS_ENDPOINTS = [
   'https://overpass.kumi.systems/api/interpreter',
 ];
 
-const HEDGE_MS = 3500;
+const HEDGE_MS = 1500;
 const COOLDOWN_MS = 3 * 60_000;
 const downUntil = new Map<string, number>();
 
@@ -26,6 +26,9 @@ export function endpointOrder(now = Date.now()): string[] {
   const isDown = (u: string) => (downUntil.get(u) ?? 0) > now;
   return [...OVERPASS_ENDPOINTS.filter(u => !isDown(u)), ...OVERPASS_ENDPOINTS.filter(isDown)];
 }
+
+/** Every instance failed within the cooldown — skip live Overpass for now. */
+export const overpassCoolingDown = (now = Date.now()) => OVERPASS_ENDPOINTS.every(u => (downUntil.get(u) ?? 0) > now);
 
 const host = (url: string) => new URL(url).host;
 

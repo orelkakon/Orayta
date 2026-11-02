@@ -6,14 +6,14 @@ import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { CandleIcon } from './HomeIcons';
-import HomeMinyanCard from './HomeMinyanCard';
+import HomeNearbyHub from './HomeNearbyHub';
 
 const shine = keyframes`
   from { transform: translateX(160%) skewX(-20deg); }
   to   { transform: translateX(-260%) skewX(-20deg); }
 `;
 
-/* Minyan map-tile row, then the dedications card — contact lives in the navbar only. */
+/* The "near you" hub (minyan · mikveh · kivrei), then the dedications card — contact lives in the navbar only. */
 const Row = styled.div`
   display: grid; grid-template-columns: 1fr; gap: ${theme.spacing.ms};
   width: 100%; max-width: 520px; margin: 0 auto;
@@ -120,7 +120,7 @@ const CARDS: CardDef[] = [
 export default function HomeActionCards() {
   return (
     <Row>
-      <HomeMinyanCard />
+      <HomeNearbyHub />
       {CARDS.map(c => (
         <Frame key={c.href} href={c.href}>
           <Card>

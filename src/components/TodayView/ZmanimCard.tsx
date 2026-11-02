@@ -5,40 +5,7 @@ import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { GeoLocation, LocState } from './TodayView';
-
-interface ZmanimTimes {
-  alotHaShachar?: string;
-  sunrise?: string;
-  sofZmanShmaMGA?: string;
-  sofZmanShma?: string;      // גר״א
-  sofZmanTfillaMGA?: string;
-  sofZmanTfilla?: string;    // גר״א
-  chatzot?: string;
-  minchaGedola?: string;
-  plagHaMincha?: string;
-  sunset?: string;
-  tzeit7083deg?: string;
-  tzeit72min?: string;
-  dusk?: string;
-}
-interface HebcalZmanim { times: ZmanimTimes; }
-
-/* hebcal: sofZmanShma/sofZmanTfilla are per the גר״א; the מג״א values
-   carry an explicit MGA suffix — do not swap them. */
-const ENTRIES: { key: keyof ZmanimTimes; label: string }[] = [
-  { key: 'alotHaShachar',   label: HE.TODAY_ALOT },
-  { key: 'sunrise',         label: HE.TODAY_SUNRISE },
-  { key: 'sofZmanShmaMGA',  label: HE.TODAY_SHMA },
-  { key: 'sofZmanShma',     label: HE.TODAY_SHMA_GRA },
-  { key: 'sofZmanTfillaMGA',label: HE.TODAY_TFILLA },
-  { key: 'sofZmanTfilla',   label: HE.TODAY_TFILLA_GRA },
-  { key: 'chatzot',         label: HE.TODAY_CHATZOT },
-  { key: 'minchaGedola',    label: HE.TODAY_MINCHA_GEDOLA },
-  { key: 'plagHaMincha',    label: HE.TODAY_PLAG },
-  { key: 'sunset',          label: HE.TODAY_SUNSET },
-  { key: 'tzeit7083deg',    label: HE.TODAY_TZEIT },
-  { key: 'tzeit72min',      label: HE.TODAY_TZEIT_RT },
-];
+import { ENTRIES, fmt, nextDay, HebcalZmanim, ZmanimTimes } from './zmanimEntries';
 
 const Card = styled.div`
   background: ${theme.colors.surface};
@@ -124,10 +91,6 @@ const LoadingBox = styled.div`
   display: flex; align-items: center; justify-content: center;
 `;
 
-function fmt(iso: string): string {
-  return new Date(iso).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false });
-}
-
 interface Props { location: GeoLocation | null; locState: LocState; date: string; onRetry: () => void; }
 
 export default function ZmanimCard({ location, locState, date, onRetry }: Props) {
@@ -143,9 +106,14 @@ export default function ZmanimCard({ location, locState, date, onRetry }: Props)
   useEffect(() => {
     if (!location) return;
     const { lat, lon, tz } = location;
-    fetch(`https://www.hebcal.com/zmanim?cfg=json&date=${date}&latitude=${lat}&longitude=${lon}&tzid=${encodeURIComponent(tz)}`)
-      .then(r => r.json())
-      .then((d: HebcalZmanim) => setTimes(d.times))
+    const get = (d: string) =>
+      fetch(`https://www.hebcal.com/zmanim?cfg=json&date=${d}&latitude=${lat}&longitude=${lon}&tzid=${encodeURIComponent(tz)}`)
+        .then(r => r.json() as Promise<HebcalZmanim>);
+    /* hebcal's chatzotNight for a date is the night *before* it — tonight's
+       חצות הלילה (between today's sunset and tomorrow's sunrise) comes from
+       tomorrow's response. Without it the card still shows the day's zmanim. */
+    Promise.all([get(date), get(nextDay(date)).catch(() => null)])
+      .then(([today, tomorrow]) => setTimes({ ...today.times, chatzotNight: tomorrow?.times.chatzotNight }))
       .catch(() => setError(true));
   }, [location, date]);
 

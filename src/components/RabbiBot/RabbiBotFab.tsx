@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
+import { whatsNewDue, whatsNewShownWithin } from '@/lib/whatsNew';
 import { HE } from '@/lib/hebrewTexts';
 import { readBotLocal } from '@/lib/rabbiBot/client';
 import RabbiBotAvatar from './RabbiBotAvatar';
@@ -89,7 +90,12 @@ export default function RabbiBotFab({ onOpen }: { onOpen: () => void }) {
 
   useEffect(() => {
     if (!teaserDue()) return;
-    const show = window.setTimeout(() => { setTeaser(true); teaserSeen(false); }, 3500);
+    // Re-checked at show time: the one-time "חדש באורייתא" announcement introduces the bot first.
+    const show = window.setTimeout(() => {
+      if (!teaserDue() || whatsNewDue() || whatsNewShownWithin(TEASER_GAP_MS)) return;
+      setTeaser(true);
+      teaserSeen(false);
+    }, 3500);
     const hide = window.setTimeout(() => setTeaser(false), 14_000);
     return () => { window.clearTimeout(show); window.clearTimeout(hide); };
   }, []);

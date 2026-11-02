@@ -33,6 +33,8 @@ const ROUTES: Route[] = [
   { path: '/chidushim',   changeFrequency: 'weekly',  priority: 0.7 },
   { path: '/gematria',    changeFrequency: 'weekly',  priority: 0.6 },
   { path: '/minyan',      changeFrequency: 'weekly',  priority: 0.6 },
+  { path: '/mikveh',      changeFrequency: 'weekly',  priority: 0.6 },
+  { path: '/kivrei',      changeFrequency: 'monthly', priority: 0.6 },
   { path: '/dedications', changeFrequency: 'weekly',  priority: 0.5 },
   { path: '/about',       changeFrequency: 'monthly', priority: 0.4 },
   { path: '/contact',     changeFrequency: 'yearly',  priority: 0.3 },
