@@ -58,8 +58,9 @@ const KBadge = styled.div<{ $accent: string }>`
 const ContentArea = styled.div`
   flex: 1; display: flex; flex-direction: column;
   justify-content: center; align-items: center; text-align: center;
-  /* Right side clears the action rail; the rest keeps a comfortable measure. */
-  padding: calc(104px + ${theme.safe.top}) 68px calc(112px + ${theme.safe.bottom}) 20px; gap: 13px;
+  /* Both sides clear the action rail, so the text centres on the whole screen
+     rather than on the space beside the buttons. */
+  padding: calc(104px + ${theme.safe.top}) 68px calc(112px + ${theme.safe.bottom}); gap: 13px;
   position: relative; z-index: 3;
 `;
 
