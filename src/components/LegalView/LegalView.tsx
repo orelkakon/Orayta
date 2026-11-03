@@ -8,6 +8,7 @@ import { PRIVACY } from '@/lib/legal/privacy';
 import { ACCESSIBILITY } from '@/lib/legal/accessibility';
 import { LEGAL_UPDATED } from '@/lib/legal/meta';
 import LegalDocument from './LegalDocument';
+import PageHeader from '@/components/ui/PageHeader';
 
 const DOCS = [TERMS, PRIVACY, ACCESSIBILITY];
 
@@ -16,19 +17,8 @@ const Page = styled.div`
   display: flex; flex-direction: column; gap: ${theme.spacing.lg};
 `;
 
-const Hero = styled.header`
-  display: flex; flex-direction: column; gap: ${theme.spacing.sm};
-  padding-top: ${theme.spacing.md};
-`;
 
-const Title = styled.h1`
-  font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.h1};
-  color: ${theme.colors.primary}; line-height: 1.3;
-`;
 
-const Sub = styled.p`
-  font-size: ${theme.fontSizes.md}; line-height: 1.7; color: ${theme.colors.textMuted};
-`;
 
 const Updated = styled.p`
   font-size: ${theme.fontSizes.sm}; color: ${theme.colors.textMuted};
@@ -59,11 +49,7 @@ const Chip = styled.a`
 export default function LegalView() {
   return (
     <Page>
-      <Hero>
-        <Title>{HE.LEGAL_TITLE}</Title>
-        <Sub>{HE.LEGAL_SUB}</Sub>
-        <Updated>{HE.LEGAL_UPDATED_LABEL} <strong>{LEGAL_UPDATED}</strong></Updated>
-      </Hero>
+      <PageHeader icon="info" title={HE.LEGAL_TITLE} subtitle={<>{HE.LEGAL_SUB}<br /><Updated>{HE.LEGAL_UPDATED_LABEL} <strong>{LEGAL_UPDATED}</strong></Updated></>} />
       <Jump aria-label={HE.LEGAL_JUMP_ARIA}>
         {DOCS.map(d => <Chip key={d.id} href={`#${d.id}`}>{d.title}</Chip>)}
       </Jump>

@@ -13,6 +13,7 @@ import AdminCommentsCard from './AdminCommentsCard';
 import AdminPushCard from './AdminPushCard';
 import AdminRabbiBotCard from './rabbiBot/AdminRabbiBotCard';
 import AdminNearbyCard from './nearby/AdminNearbyCard';
+import PageHeader from '@/components/ui/PageHeader';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(14px); }
@@ -25,18 +26,8 @@ const Page = styled.div`
   animation: ${fadeUp} 0.4s ease;
 `;
 
-const Head = styled.header`
-  display: flex; flex-direction: column; gap: ${theme.spacing.xs};
-`;
 
-const Title = styled.h1`
-  font-family: ${theme.fonts.body}; font-size: 1.6rem; font-weight: 700;
-  color: ${theme.colors.primary};
-`;
 
-const Subtitle = styled.p`
-  font-size: 0.85rem; color: ${theme.colors.textMuted};
-`;
 
 const Notice = styled.div`
   background: ${theme.colors.surface}; border: 1px solid ${theme.colors.borderLight};
@@ -65,10 +56,7 @@ export default function AdminStatsView() {
 
   return (
     <Page>
-      <Head>
-        <Title>📊 {HE.ADMIN_STATS_TITLE}</Title>
-        <Subtitle>{HE.ADMIN_STATS_SUBTITLE}</Subtitle>
-      </Head>
+      <PageHeader icon="chart" title={HE.ADMIN_STATS_TITLE} subtitle={HE.ADMIN_STATS_SUBTITLE} />
       <AdminKpiRow stats={stats} />
       <AdminUsersChart daily={stats.daily} />
       <AdminBreakdown stats={stats} />

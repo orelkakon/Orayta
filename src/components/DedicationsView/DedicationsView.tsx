@@ -6,6 +6,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { useRole } from '@/components/common/RoleContext';
 import DedicationRequestForm from './DedicationRequestForm';
 import DedicationsAdmin from './DedicationsAdmin';
+import PageHeader from '@/components/ui/PageHeader';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(18px); }
@@ -19,19 +20,8 @@ const Page = styled.div`
   animation: ${fadeUp} 0.45s ease;
 `;
 
-const Hero = styled.div`
-  display: flex; flex-direction: column; align-items: center;
-  gap: 4px; text-align: center;
-`;
 
-const Title = styled.h1`
-  font-family: ${theme.fonts.body};
-  font-size: 1.7rem; font-weight: 700; color: ${theme.colors.primary};
-`;
 
-const Subtitle = styled.p`
-  font-size: 0.9rem; color: ${theme.colors.textMuted};
-`;
 
 const Divider = styled.div`
   width: 140px; height: 2px;
@@ -55,10 +45,7 @@ export default function DedicationsView() {
 
   return (
     <Page>
-      <Hero>
-        <Title>🕯️ {HE.DEDICATIONS_PAGE_TITLE}</Title>
-        <Subtitle>{HE.DEDICATIONS_PAGE_SUBTITLE}</Subtitle>
-      </Hero>
+      <PageHeader icon="candle" title={HE.DEDICATIONS_PAGE_TITLE} subtitle={HE.DEDICATIONS_PAGE_SUBTITLE} />
 
       <Divider />
 

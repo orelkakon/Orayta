@@ -4,6 +4,7 @@ import { useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
+import PageHeader from '@/components/ui/PageHeader';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(16px); }
@@ -16,12 +17,6 @@ const Page = styled.div`
   animation: ${fadeUp} 0.4s ease;
 `;
 
-const Hero = styled.div`
-  text-align: center; display: flex; flex-direction: column; align-items: center; gap: ${theme.spacing.sm};
-`;
-const Icon = styled.div`font-size: 3rem; line-height: 1;`;
-const Title = styled.h1`font-size: 1.9rem; font-weight: 700; color: ${theme.colors.primary};`;
-const Sub = styled.p`font-size: 0.95rem; color: ${theme.colors.textMuted}; max-width: 380px; line-height: 1.6;`;
 
 const Card = styled.div`
   background: ${theme.colors.surface}; border-radius: ${theme.radii.lg};
@@ -147,11 +142,7 @@ export default function ContactView() {
 
   return (
     <Page>
-      <Hero>
-        <Icon>📞</Icon>
-        <Title>{HE.CONTACT_PAGE_TITLE}</Title>
-        <Sub>{HE.CONTACT_PAGE_SUBTITLE}</Sub>
-      </Hero>
+      <PageHeader icon="phone" title={HE.CONTACT_PAGE_TITLE} subtitle={HE.CONTACT_PAGE_SUBTITLE} />
 
       <Card>
         {sent ? (
