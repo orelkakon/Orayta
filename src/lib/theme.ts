@@ -244,8 +244,9 @@ export const theme = {
     drawer: 160,
     popover: 200,
     modal: 300,
-    sheet: 320,
     feed: 900,
+    // Sheets open from anywhere, including the full-screen feed and stories.
+    sheet: 950,
     toast: 1000,
   },
 };

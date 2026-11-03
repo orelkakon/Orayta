@@ -38,7 +38,7 @@ const Kind = styled.span`font-size: ${theme.fontSizes.xs}; font-weight: 600; col
 
 const Value = styled.span`
   font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.lg}; font-weight: 700; color: ${theme.colors.text};
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  line-height: 1.35; overflow-wrap: anywhere;
 `;
 
 const End = styled.span`flex-shrink: 0; color: ${theme.colors.textLight};`;

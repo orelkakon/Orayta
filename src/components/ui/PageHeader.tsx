@@ -11,7 +11,7 @@ import { LineIcon } from '@/components/common/LineIcons';
  * Frank Ruhl, an optional one-line subtitle and an actions slot (end side).
  */
 const Wrap = styled.header`
-  display: flex; align-items: flex-start; gap: ${theme.spacing.ms};
+  display: flex; align-items: center; gap: ${theme.spacing.ms};
   margin: ${theme.spacing.xs} 0 ${theme.spacing.lg};
   ${theme.up.md} { margin: ${theme.spacing.sm} 0 ${theme.spacing.xl}; gap: ${theme.spacing.md}; }
 `;

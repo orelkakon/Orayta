@@ -63,8 +63,30 @@ const Board = styled.div`
 export default function ContentStatsCard() {
   const [stats, setStats] = useState<ContentStats | null>(null);
 
+  const [failed, setFailed] = useState(false);
+
+  // A cold database can be slow or fail once: time each try out and retry
+  // with backoff instead of leaving the counters on "…" forever.
   useEffect(() => {
-    void fetch('/api/stats').then(r => r.json()).then(setStats as (v: unknown) => void);
+    let alive = true;
+    const attempt = async (n: number): Promise<void> => {
+      const ctrl = new AbortController();
+      const timer = window.setTimeout(() => ctrl.abort(), 12000);
+      try {
+        const r = await fetch('/api/stats', { signal: ctrl.signal });
+        if (!r.ok) throw new Error(String(r.status));
+        const data = await r.json() as ContentStats;
+        if (alive) setStats(data);
+      } catch {
+        if (!alive) return;
+        if (n < 3) { window.setTimeout(() => void attempt(n + 1), 1500 * 2 ** n); return; }
+        setFailed(true);
+      } finally {
+        window.clearTimeout(timer);
+      }
+    };
+    void attempt(0);
+    return () => { alive = false; };
   }, []);
 
   return (
@@ -76,7 +98,7 @@ export default function ContentStatsCard() {
       </Head>
       <Board>
         {STAT_TILES.map((tile, i) => (
-          <StatTile key={tile.key} config={tile} value={stats ? stats[tile.key] : null} index={i} />
+          <StatTile key={tile.key} config={tile} value={stats ? stats[tile.key] : null} failed={failed} index={i} />
         ))}
       </Board>
     </Section>

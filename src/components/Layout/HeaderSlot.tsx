@@ -24,5 +24,6 @@ export const SlotRow = styled.div`
     padding-left: max(${theme.layout.gutter}, ${theme.safe.left});
     padding-right: max(${theme.layout.gutter}, ${theme.safe.right});
   }
+  & > div:not(:empty) { padding-top: 8px; padding-bottom: 8px; }
   & > div:empty { display: none; }
 `;

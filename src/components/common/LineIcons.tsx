@@ -81,6 +81,7 @@ const GLYPHS: Record<string, React.ReactNode> = {
   sliders: <><path d="M4 7h10M18 7h2M4 17h4M12 17h8" /><circle cx="16" cy="7" r="2" /><circle cx="10" cy="17" r="2" /></>,
   type: <><path d="M4 7V5h12v2" /><path d="M10 5v14" /><path d="M8 19h4" /><path d="M14 13v-1.5h7V13" /><path d="M17.5 11.5V19" /><path d="M16 19h3" /></>,
   plus: <><path d="M12 5v14" /><path d="M5 12h14" /></>,
+  instagram: <><rect x="3" y="3" width="18" height="18" rx="5.5" /><circle cx="12" cy="12" r="4.2" /><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" stroke="none" /></>,
   shuffle: <><path d="M16 3h5v5" /><path d="M4 20L21 3" /><path d="M21 16v5h-5" /><path d="M15 15l6 6" /><path d="M4 4l5 5" /></>,
   download: <><path d="M12 3v12" /><path d="M7.5 10.5L12 15l4.5-4.5" /><path d="M5 19h14" /></>,
   wine: <><path d="M8 3h8l-.6 5.2a3.4 3.4 0 0 1-6.8 0z" /><path d="M12 11.6V20" /><path d="M8.5 20.5h7" /></>,

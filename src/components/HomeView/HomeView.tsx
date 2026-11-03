@@ -10,14 +10,13 @@ import TodayHero from './TodayHero';
 import LiveBannerBlock from './LiveBannerBlock';
 import FeedTeaser from './FeedTeaser';
 import QuickAccess from './QuickAccess';
-import HomeLearnCard from './HomeLearnCard';
 import HomeNearbyHub from './HomeNearbyHub';
 import DedicateCard from './DedicateCard';
 
 /**
  * Home = "today in Orayta". Phones: one calm column in order of daily use —
- * stories, today (date · prayer now), a taste of the feed, quick tools, the
- * day's learning, nearby, dedications. Tablets put the side cards in pairs;
+ * stories, today (date · prayer now), a taste of the feed, quick tools,
+ * nearby, dedications. Tablets put the side cards in pairs;
  * desktop splits into a main column and a side column under the stories.
  */
 const Layout = styled.div`
@@ -65,7 +64,6 @@ export default function HomeView() {
         <QuickAccess />
       </Column>
       <Side>
-        <HomeLearnCard load={load} />
         <HomeNearbyHub />
         <PushOptInCard />
         <DedicateCard />

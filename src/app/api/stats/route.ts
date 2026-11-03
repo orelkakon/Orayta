@@ -55,8 +55,10 @@ export async function GET() {
     rabbiPools.filter(r => r.bio.length >= 40).length +
     rabbiPools.filter(r => r.imageUrl).length;
 
+  // Content counts change rarely: serve them from the CDN for 10 minutes and
+  // keep a stale copy for a day, so the about page never waits on a cold DB.
   return NextResponse.json({
     citations, rabbis, books, summaries, gematrias, chidushim,
     videos, dedications, prayers: countPrayers(), questions,
-  });
+  }, { headers: { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=86400' } });
 }

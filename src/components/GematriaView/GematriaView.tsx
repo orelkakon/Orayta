@@ -27,8 +27,7 @@ const StickyBar = styled.div`
   margin: 0 calc(-1 * ${theme.layout.gutter});
   padding: ${theme.spacing.sm} ${theme.layout.gutter};
   background: ${theme.colors.background};
-  background: color-mix(in srgb, ${theme.colors.background} 92%, transparent);
-  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  box-shadow: 0 1px 0 ${theme.colors.borderLight};
   display: flex; flex-direction: column; gap: ${theme.spacing.sm};
 `;
 

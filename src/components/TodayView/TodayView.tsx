@@ -20,9 +20,9 @@ export interface GeoLocation { lat: number; lon: number; tz: string; }
 export type LocState = 'loading' | 'granted' | 'denied';
 
 /**
- * "יומי": the day at a glance. Phones read top-down in order of urgency —
- * zmanim, today's learning, the omer in season, today in Orayta, then the
- * calendar tools. From tablet width the cards flow into two columns.
+ * "יומי": the day at a glance — zmanim, events, the omer in season, the
+ * Hebrew calendar and the direction to Jerusalem, then today in Orayta
+ * (#daily, linked from home), and the external learning cycles last.
  */
 const Container = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
 
@@ -91,16 +91,16 @@ export default function TodayView() {
         <Col>
           <ZmanimCard location={location} locState={locState} date={dateStr} onRetry={requestLocation} />
           <EventsCard date={dateStr} />
-          <CompassCard location={location} locState={locState} onRetry={requestLocation} />
+          <OmerTodayCard />
         </Col>
         <Col>
-          <OmerTodayCard />
-          <DafYomiCard />
-          <PushOptInCard />
           <HebrewCalendarCard date={dateStr} />
+          <CompassCard location={location} locState={locState} onRetry={requestLocation} />
+          <PushOptInCard />
         </Col>
       </Grid>
       <DailySection />
+      <DafYomiCard />
     </Container>
   );
 }

@@ -136,7 +136,7 @@ export default function TodayHero({ parasha }: { parasha: string | null }) {
             <LineIcon name={day.service === 'arvit' ? 'moon' : 'sunrise'} size={18} strokeWidth={1.9} />
             {HE.HOME_NOW_PRAY(service)}
           </ButtonLink>
-          <GhostOnNight href="/today" $variant="secondary">{HE.HOME_TODAY_CTA}</GhostOnNight>
+          <GhostOnNight href="/today#daily" $variant="secondary">{HE.HOME_TODAY_CTA}</GhostOnNight>
         </Actions>
       </Bottom>
     </Card>

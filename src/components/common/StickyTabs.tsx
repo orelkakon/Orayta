@@ -17,7 +17,7 @@ const Wrapper = styled.div`
 
 const SubNav = styled.div<{ $inline: boolean }>`
   display: flex; align-items: center; gap: 2px;
-  margin: 8px 0; padding: 3px;
+  padding: 3px;
   border-radius: ${theme.radii.pill};
   background: color-mix(in srgb, ${theme.colors.text} 6%, ${theme.colors.background});
   overflow-x: auto; scrollbar-width: none;

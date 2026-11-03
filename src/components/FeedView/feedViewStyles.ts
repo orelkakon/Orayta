@@ -13,6 +13,9 @@ export const Scroll = styled.div`
      pull-to-refresh) hijacks the flick chain and the feed feels stuck. */
   overscroll-behavior-y: contain;
   &::-webkit-scrollbar { display: none; }
+  /* Long-press is a gesture here (hold to react), never text selection or
+     the iOS copy callout. Copy lives in the share sheet. */
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
 `;
 
 const hintBob = keyframes`

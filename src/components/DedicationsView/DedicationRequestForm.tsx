@@ -5,65 +5,53 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { TYPE_OPTIONS } from './DedicationsView';
+import { Input } from '@/components/MinyanView/minyanStyles';
+import { Button } from '@/components/ui/Button';
+import { LineIcon } from '@/components/common/LineIcons';
 
 const Card = styled.div`
   background: ${theme.colors.surface}; border: 1px solid ${theme.colors.borderLight};
-  border-top: 3px solid ${theme.colors.secondary};
-  border-radius: ${theme.radii.lg}; padding: ${theme.spacing.xl};
-  box-shadow: ${theme.shadows.sm}; width: 100%; max-width: 480px;
+  border-radius: 20px; padding: ${theme.spacing.lg};
+  box-shadow: ${theme.shadows.sm}; width: 100%;
   display: flex; flex-direction: column; gap: ${theme.spacing.md};
+  ${theme.media.sm} { padding: ${theme.spacing.md}; }
 `;
 
-const CardTitle = styled.h3`
-  font-size: 1.05rem; font-weight: 700; color: ${theme.colors.primary};
-  display: flex; align-items: center; gap: ${theme.spacing.sm};
+const CardTitle = styled.h2`
+  font-size: ${theme.fontSizes.xl}; line-height: 1.25; color: ${theme.colors.text};
 `;
 
 const Hint = styled.p`
-  font-size: 0.82rem; color: ${theme.colors.textMuted}; line-height: 1.6;
+  font-size: ${theme.fontSizes.sm}; color: ${theme.colors.textMuted}; line-height: 1.6;
 `;
 
-const Select = styled.select`
-  padding: ${theme.spacing.sm} ${theme.spacing.md}; border: 2px solid ${theme.colors.border};
-  border-radius: ${theme.radii.md}; font-size: 0.92rem; background: ${theme.colors.background};
-  color: ${theme.colors.text}; outline: none;
-  &:focus { border-color: ${theme.colors.primaryLight}; }
+const TypeGrid = styled.div`
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: ${theme.spacing.sm};
 `;
 
-const Input = styled.input`
-  padding: ${theme.spacing.sm} ${theme.spacing.md}; border: 2px solid ${theme.colors.border};
-  border-radius: ${theme.radii.md}; font-size: 0.95rem; background: ${theme.colors.background};
-  color: ${theme.colors.text}; outline: none;
-  &:focus { border-color: ${theme.colors.primaryLight}; }
-`;
-
-const SubmitBtn = styled.button`
-  padding: ${theme.spacing.md}; background: ${theme.colors.primary};
-  color: ${theme.colors.onPrimary}; border-radius: ${theme.radii.md}; font-weight: 700; font-size: 0.95rem;
-  transition: opacity 0.15s;
-  &:hover { opacity: 0.9; }
-  &:disabled { opacity: 0.55; }
+const TypeOption = styled.button<{ $on: boolean }>`
+  min-height: 52px; padding: 0 ${theme.spacing.sm};
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  border-radius: 14px; font-weight: 700; font-size: ${theme.fontSizes.sm}; line-height: 1.3;
+  border: 1px solid ${p => (p.$on ? theme.colors.primary : theme.colors.border)};
+  background: ${p => (p.$on ? theme.colors.primary : theme.colors.surface)};
+  color: ${p => (p.$on ? theme.colors.onPrimary : theme.colors.text)};
+  transition: transform 0.16s ${theme.motion.outStrong}, background-color 0.15s ease, color 0.15s ease;
+  &:active { transform: scale(0.97); }
 `;
 
 const ErrorMsg = styled.p`
-  font-size: 0.85rem; color: ${theme.colors.error}; text-align: center;
+  font-size: ${theme.fontSizes.sm}; color: ${theme.colors.error}; text-align: center;
 `;
 
 const SuccessCard = styled(Card)`
   align-items: center; text-align: center; gap: ${theme.spacing.sm};
 `;
 
-const SuccessTitle = styled.h3`
-  font-size: 1.15rem; font-weight: 700; color: ${theme.colors.primary};
-`;
-
-const AgainBtn = styled.button`
-  margin-top: ${theme.spacing.sm};
-  padding: ${theme.spacing.sm} ${theme.spacing.lg};
-  border: 2px solid ${theme.colors.primary}; color: ${theme.colors.primary};
-  border-radius: ${theme.radii.md}; font-weight: 600; font-size: 0.9rem;
-  transition: all 0.15s;
-  &:hover { background: ${theme.colors.primary}; color: ${theme.colors.onPrimary}; }
+const Done = styled.span`
+  width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: ${theme.colors.onPrimary}; background: ${theme.colors.success};
 `;
 
 export default function DedicationRequestForm() {
@@ -97,31 +85,37 @@ export default function DedicationRequestForm() {
   if (sent) {
     return (
       <SuccessCard>
-        <SuccessTitle>{HE.DEDICATION_REQUEST_SUCCESS_TITLE}</SuccessTitle>
+        <Done aria-hidden="true"><LineIcon name="check" size={28} strokeWidth={2.4} /></Done>
+        <CardTitle>{HE.DEDICATION_REQUEST_SUCCESS_TITLE}</CardTitle>
         <Hint>{HE.DEDICATION_REQUEST_SUCCESS_MSG}</Hint>
-        <AgainBtn onClick={() => setSent(false)}>{HE.DEDICATION_REQUEST_NEW}</AgainBtn>
+        <Button $variant="secondary" onClick={() => setSent(false)}>{HE.DEDICATION_REQUEST_NEW}</Button>
       </SuccessCard>
     );
   }
 
   return (
     <Card>
-      <CardTitle>🕯️ {HE.DEDICATION_REQUEST_TITLE}</CardTitle>
+      <CardTitle>{HE.DEDICATION_REQUEST_TITLE}</CardTitle>
       <Hint>{HE.DEDICATION_REQUEST_HINT}</Hint>
-      <Select value={type} onChange={e => setType(e.target.value)}>
-        {TYPE_OPTIONS.map(t => <option key={t.key} value={t.key}>{t.label}</option>)}
-      </Select>
+      <TypeGrid role="radiogroup" aria-label={HE.DEDICATION_REQUEST_TITLE}>
+        {TYPE_OPTIONS.map(t => (
+          <TypeOption key={t.key} type="button" role="radio" aria-checked={type === t.key} $on={type === t.key} onClick={() => setType(t.key)}>
+            {t.label}
+          </TypeOption>
+        ))}
+      </TypeGrid>
       <Input
         value={name}
         onChange={e => setName(e.target.value)}
         placeholder={HE.DEDICATION_FORM_NAME_PLACEHOLDER}
+        aria-label={HE.DEDICATION_FORM_NAME_PLACEHOLDER}
         maxLength={100}
         onKeyDown={e => e.key === 'Enter' && void handleSubmit()}
       />
       {error && <ErrorMsg role="alert">{error}</ErrorMsg>}
-      <SubmitBtn onClick={handleSubmit} disabled={sending || !name.trim()}>
-        {sending ? '...' : HE.DEDICATION_REQUEST_SUBMIT}
-      </SubmitBtn>
+      <Button $variant="gold" $size="lg" $block onClick={handleSubmit} disabled={sending || !name.trim()} aria-busy={sending}>
+        <LineIcon name="candle" size={18} strokeWidth={1.9} />{HE.DEDICATION_REQUEST_SUBMIT}
+      </Button>
     </Card>
   );
 }

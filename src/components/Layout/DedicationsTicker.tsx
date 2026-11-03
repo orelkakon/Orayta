@@ -18,20 +18,21 @@ const Strip = styled.div`
   direction: ltr;
   background: ${theme.colors.goldSoft};
   border-bottom: 1px solid color-mix(in srgb, ${theme.colors.gold} 30%, transparent);
-  padding: 7px 0;
+  /* Fixed height + flex centring: the text sits exactly mid-strip. */
+  height: 38px; display: flex; align-items: center;
   -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
   mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
 `;
 
 const Tape = styled.div.attrs({ className: 'anim-loop' })<{ $secs: number }>`
-  display: inline-flex; white-space: nowrap; will-change: transform;
+  display: inline-flex; align-items: center; white-space: nowrap; will-change: transform;
   animation: ${scrollRight} ${p => p.$secs}s linear infinite;
 `;
 
 const Item = styled.span`
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 0 26px;
-  font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.sm}; font-weight: 500;
+  padding: 0 26px; line-height: 1;
+  font-family: ${theme.fonts.ui}; font-size: ${theme.fontSizes.sm}; font-weight: 500;
   color: ${theme.colors.text}; white-space: nowrap; direction: rtl;
 `;
 
@@ -39,7 +40,7 @@ const TypeLabel = styled.span`
   font-size: ${theme.fontSizes.xs}; color: ${theme.colors.secondaryText}; font-weight: 700;
 `;
 
-const TypeIcon = styled.span`display: inline-flex; color: ${theme.colors.gold};`;
+const TypeIcon = styled.span`display: inline-flex; align-items: center; color: ${theme.colors.gold};`;
 
 const TYPES: Record<string, { icon: string; label: string }> = {
   iluy:     { icon: 'candle', label: HE.DEDICATION_TYPE_ILUY },

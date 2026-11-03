@@ -5,6 +5,8 @@ export const TODAY_HE = {
   TODAY_WEEKDAY: (day: string) => `יום ${day}`,
   TODAY_DAYS: ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'] as string[],
   TODAY_SECTION_ORAYTA: 'היום באורייתא',
+  LEARN_MORE_TEXT: 'להמשך קריאה',
+  LEARN_LESS_TEXT: 'הצג פחות',
   TODAY_COMPASS_DIRS: { n: 'צ', e: 'מז', s: 'ד', w: 'מע' } as Record<string, string>,
   TODAY_COMPASS_JERUSALEM: 'ירושלים',
 };

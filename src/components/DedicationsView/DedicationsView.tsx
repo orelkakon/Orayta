@@ -1,6 +1,6 @@
 'use client';
 
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { useRole } from '@/components/common/RoleContext';
@@ -8,25 +8,9 @@ import DedicationRequestForm from './DedicationRequestForm';
 import DedicationsAdmin from './DedicationsAdmin';
 import PageHeader from '@/components/ui/PageHeader';
 
-const fadeUp = keyframes`
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
-`;
-
 const Page = styled.div`
-  display: flex; flex-direction: column; align-items: center;
-  gap: ${theme.spacing.lg};
-  padding: ${theme.spacing.md} 0 ${theme.spacing.xl};
-  animation: ${fadeUp} 0.45s ease;
-`;
-
-
-
-
-const Divider = styled.div`
-  width: 140px; height: 2px;
-  background: linear-gradient(90deg, transparent, ${theme.colors.secondary}, transparent);
-  border-radius: 2px;
+  display: flex; flex-direction: column; gap: ${theme.spacing.md};
+  max-width: 560px; width: 100%; margin: 0 auto;
 `;
 
 export const TYPE_OPTIONS = [
@@ -46,8 +30,6 @@ export default function DedicationsView() {
   return (
     <Page>
       <PageHeader icon="candle" title={HE.DEDICATIONS_PAGE_TITLE} subtitle={HE.DEDICATIONS_PAGE_SUBTITLE} />
-
-      <Divider />
 
       {role === 'admin' ? <DedicationsAdmin /> : <DedicationRequestForm />}
     </Page>

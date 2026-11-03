@@ -116,9 +116,9 @@ const SubLabel = styled.div`
   color: color-mix(in srgb, var(--tile-ink) 52%, transparent);
 `;
 
-interface Props { config: StatTileConfig; value: number | null; index: number; }
+interface Props { config: StatTileConfig; value: number | null; index: number; failed?: boolean; }
 
-export default function StatTile({ config, value, index }: Props) {
+export default function StatTile({ config, value, index, failed = false }: Props) {
   const displayed = useAnimatedCount(value);
   return (
     <Tile $tint={config.tint} $size={config.size} $variant={config.variant} $index={index}>
@@ -126,7 +126,7 @@ export default function StatTile({ config, value, index }: Props) {
         <LineIcon name={config.icon} size={config.size === 'hero' ? 32 : 26} strokeWidth={1.7} />
       </Chip>
       <Body>
-        <Num $size={config.size}>{value === null ? '…' : displayed.toLocaleString('he-IL')}</Num>
+        <Num $size={config.size}>{value === null ? (failed ? '—' : '…') : displayed.toLocaleString('he-IL')}</Num>
         <Label>{config.label}</Label>
         {config.sub && <SubLabel>{config.sub}</SubLabel>}
       </Body>

@@ -150,7 +150,7 @@ export default function FeedReel({ slide, onVisible, commentCount, onComments }:
         extra={(
           <RailItem>
             <RailButton onClick={e => { e.stopPropagation(); openReelInInstagram(slide.code); }} aria-label={HE.FEED_REEL_OPEN_IG}>
-              <LineIcon name="camera" size={22} strokeWidth={1.9} />
+              <LineIcon name="instagram" size={22} strokeWidth={1.9} />
             </RailButton>
           </RailItem>
         )}

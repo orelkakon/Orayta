@@ -102,7 +102,8 @@ The page is "today in Orayta", in order of daily use:
 - `TodayHero`: a dark "night" card with the greeting, the Hebrew date and year, the parasha and occasions, and a `SunArc` showing where the sun is in Jerusalem. Its CTA is the prayer that fits now (`/siddur/<service>`).
 - Live strip, shown only while live.
 - `FeedTeaser`: today's first feed items (a per-day seed) as portrait cards. Tapping one hands the item to `/feed` via sessionStorage (`stashFeedStart` / `takeFeedStart` in `lib/feedExcerpt.ts`), so the feed opens on it.
-- `QuickAccess` (the `HE.HOME_QUICK` tiles), `HomeLearnCard` (shared `LearnView/LearnTodayList`), the nearby hub, the push card and `DedicateCard`.
+- `QuickAccess` (the `HE.HOME_QUICK` tiles), the nearby hub, the push card and `DedicateCard`.
+- No daily-cycle learning card on home: the hero's "הלימוד היומי" button links to `/today#daily` (today's רב / ציטוט / סיכום / חידוש, Orayta's own content).
 
 Layout: one column on phones, side cards in pairs on tablets, main + side columns at ≥1100px (`isWideRoute`).
 

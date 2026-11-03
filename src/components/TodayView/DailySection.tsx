@@ -11,6 +11,7 @@ import { matchYahrzeitRabbis, HebDateParts } from '@/lib/yahrzeit';
 import { formatHebrewDate } from '@/lib/hebrewDate';
 import { shareDailyToWhatsApp, shareDailyToStory, DailySikum } from '@/lib/dailyShare';
 import { LineIcon } from '@/components/common/LineIcons';
+import ExpandableSnippet from './ExpandableSnippet';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 
@@ -19,7 +20,7 @@ const pick = <T,>(arr: T[]): T | null => arr.length ? arr[DAY % arr.length] : nu
 
 type HebConverterResp = HebDateParts;
 
-const Wrapper = styled.section`width: 100%; display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
+const Wrapper = styled.section`scroll-margin-top: calc(var(--header-h, 56px) + 12px); width: 100%; display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
 
 const Header = styled.div`
   display: flex; align-items: center; gap: ${theme.spacing.sm}; flex-wrap: wrap;
@@ -51,10 +52,6 @@ const Badge = styled.span<{ $color: string }>`
 
 const CardTitle = styled.div`font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.lg}; font-weight: 700; color: ${theme.colors.text}; line-height: 1.3;`;
 const CardSub = styled.div`font-size: ${theme.fontSizes.xs}; color: ${theme.colors.textMuted}; font-weight: 500;`;
-const Snippet = styled.div`
-  font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.md}; color: ${theme.colors.text}; line-height: 1.7; margin-top: 2px;
-  display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
-`;
 
 const Divider = styled.div`
   height: 1px; background: ${theme.colors.borderLight}; margin: 4px 0;
@@ -99,9 +96,17 @@ export default function DailySection() {
     });
   }, []);
 
+  // Linked from home (/today#daily): land on this section once it has its
+  // real height (the cards above load in parallel and shift the page).
+  useEffect(() => {
+    if (!ready || window.location.hash !== '#daily') return;
+    const t = window.setTimeout(() => document.getElementById('daily')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 350);
+    return () => window.clearTimeout(t);
+  }, [ready]);
+
   if (!ready) {
     return (
-      <Wrapper aria-busy="true" aria-label={HE.LOADING}>
+      <Wrapper id="daily" aria-busy="true" aria-label={HE.LOADING}>
         <SkelGrid>{[0, 1, 2, 3].map(i => <Skeleton key={i} $h="150px" />)}</SkelGrid>
       </Wrapper>
     );
@@ -119,7 +124,7 @@ export default function DailySection() {
   });
 
   return (
-    <Wrapper>
+    <Wrapper id="daily">
       <Header>
         <Title>{HE.DAILY_TITLE}</Title>
         <Button $variant="secondary" $size="sm" onClick={handleShare}>
@@ -137,7 +142,7 @@ export default function DailySection() {
             <Badge $color={catColor}>{catLabel}</Badge>
             <CardTitle>{rabbi.name}</CardTitle>
             <CardSub>{rabbi.datePeriod}</CardSub>
-            <Snippet>{rabbi.bio}</Snippet>
+            <ExpandableSnippet text={rabbi.bio} />
           </DayCard>
         )}
 
@@ -145,7 +150,7 @@ export default function DailySection() {
           <DayCard>
             <Label>{HE.DAILY_CITATION}</Label>
             <CardSub>{loc.masechet} · {loc.daf}{loc.amud ? ` ${loc.amud}` : ''}</CardSub>
-            <Snippet>{citation.content}</Snippet>
+            <ExpandableSnippet text={citation.content} />
           </DayCard>
         )}
 
@@ -156,7 +161,7 @@ export default function DailySection() {
             {sikum.book.author && <CardSub>{sikum.book.author}</CardSub>}
             <Divider />
             {sikum.title && <CardSub>{sikum.title}</CardSub>}
-            <Snippet>{sikum.text}</Snippet>
+            <ExpandableSnippet text={sikum.text} />
           </DayCard>
         )}
 
@@ -165,7 +170,7 @@ export default function DailySection() {
             <Label>{HE.DAILY_CHIDUSH}</Label>
             {chidush.author && <CardTitle>{chidush.author}</CardTitle>}
             {chidush.source && <CardSub>{chidush.source}</CardSub>}
-            <Snippet>{chidush.text}</Snippet>
+            <ExpandableSnippet text={chidush.text} />
           </DayCard>
         )}
       </Cards>
