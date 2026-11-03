@@ -100,13 +100,24 @@ Layout: one column on phones, side cards in pairs on tablets, main + side column
 `HomeView/HomeNearbyHub.tsx` — one gold-framed card with the three location features (מניין · מקווה · קברי צדיקים) on a dashed "route"; tiles come from `HE.NB_TILES`. Strings for these newer features live in `src/lib/texts/*.ts` and are spread into `HE` (still used as `HE.KEY`).
 
 ### 2f. סידור (Siddur) — `/siddur`, `/siddur/[shacharit|mincha|arvit]`
-Weekday services in נוסח עדות המזרח, read as one continuous text with section navigation. The "סידור" card in `/content` links here.
+Weekday services in נוסח עדות המזרח, read as one continuous text with section navigation.
+
+**Prayers hub (`/content`, the "תפילות" tab, `ContentsView/`):**
+- `PrayersHub` shows `NowServiceCard`, then `HE.PRAYERS_QUICK` (ברכת המזון, ברכות הנהנין, אשר יצר, תפילת הדרך, ק״ש על המיטה, …), more of the siddur, then Tehillim / Tanakh.
+- `?open=<SECTIONS id | SIDDUR_EXTRAS id>[&chapter=N]` opens `HubReader` (sticky back · title · text settings bar), so the back gesture returns to the hub.
 
 - **Definitions** (`src/lib/siddur/`): each service is an ordered list of sections; each section is a list of parts = exact 1-based segment ranges of a Sefaria node under `Siddur_Edot_HaMizrach` (segment 1 of a node is its title and is skipped). `fill()` (`parts.ts`) builds a node's parts from just its special slices — used for the three Amidot and Hallel (`amida.ts`). A part may carry a `mark` (sub-anchor), a `when` condition, `only` (hide instead of fold — e.g. one of eight Chanukah readings) or a `weekday` (שיר של יום); a section may carry `when` (הלל, מוסף, תחנון, קריאת התורה). Ranges were mapped against the live text — re-verify them if Sefaria's version changes.
 - **Calendar engine** (`occasions.ts` + `calendar.ts`, pure, tested): per service, the Hebrew day via `Intl` (arvit from midday = tomorrow) → occasions (ראש חודש, חנוכה + day, פורים, תעניות with Shabbat postponement, חול המועד, עשי״ת, מוצ״ש, winter = ותן טל ומטר from 7 Cheshvan to Pesach) and tachanun with its reason (Edot HaMizrach: Nisan, 1–12 Sivan, Erev YK–end of Tishrei, Friday mincha, …). `CONDITIONS` in `calendar.ts` is the single table mapping each `when` to a rule; `EVERYDAY` conditions read inline when they apply, others show a "נאמר היום" box. `today.ts` lists what's special for the banner. Not modelled: Yom HaAtzmaut/Yerushalayim, Shushan Purim in Jerusalem, Chol HaMoed mussaf, fast-day selichot.
 - **Text:** `GET /api/siddur/[service]` fetches each distinct node once (Next data cache, 7 days), sanitizes the HTML to presentational tags (`sanitize.ts`), and returns `{ nodes, failed }` with a 1-day CDN cache (no-store when a node failed).
 - **Time of day:** Jerusalem sun times (NOAA equation, `calendar.ts`) → `suggestService` drives the "עכשיו" badge on `/siddur`.
-- **UI** (`src/components/SiddurView/`): `TodayStrip` (Hebrew date, occasions, tachanun, jumps to today's inserts), sticky `ReaderBar` (service switcher, section chips with scroll-spy, progress, font size remembered in `orayta_siddur_font`, contents sheet), deep links via `#section-id`. Standalone pieces (bedtime Shema, Kaddish, …) are `SIDDUR_EXTRAS` in `lib/siddurContent.ts`.
+- **UI** (`src/components/SiddurView/`):
+  - `/siddur` landing: the shared `Prayers/NowServiceCard` (the service that fits now, lit by the time of day, with today's inserts), then the three services, then `SIDDUR_EXTRAS` (opened in the hub reader at `/content?open=<id>`).
+  - Reader: `TodayStrip`; a sticky `ReaderBar` (section chips with scroll-spy, progress, text-settings button, contents as a bottom `Sheet`); deep links via `#section-id`.
+  - Resume: the reader offers to continue from today's last section (`lib/siddur/position.ts` + `Reader/ResumeChip`).
+- **Shared reader (`components/Reader/`):**
+  - `ReadingText` is the prayer typography for the siddur and every hub reader. It scales with `--siddur-scale`, caps the measure at `layout.reading`, and gives instructions a gold note style.
+  - `useReaderPrefs` holds text size (`orayta_siddur_font`), reading mode (regular/sepia/night via `html[data-reading]`, `orayta_reader_mode`) and keep-awake (`orayta_reader_awake`, `useWakeLock`). `ReaderSettingsSheet` edits them.
+  - All Sefaria HTML rendered client-side goes through `sanitizeSiddurHtml`.
 
 ### 2g. ספירת העומר — `/omer`
 - **Logic** (`src/lib/omer.ts`, pure, tested in `tests/omer.test.ts`): `omerDayOf(hebDate)` lives in `siddur/occasions.ts` (16 Nisan … 5 Sivan → 1–49; `PrayerDay.omerDay`). `omerStatus(now)` uses Jerusalem sunset/dawn: after sunset the count is tonight's (next Hebrew day); by day `today` = last night's count (forgot → count without bracha) and `tonight` = the coming one. `getOmerDay(date)` = tonight's count (push reminders use it). `omerCount(n)` builds the Edot HaMizrach wording + sefira (verified against Sefaria's 49 lines; Sefaria has a nikud typo on day 15).

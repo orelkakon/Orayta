@@ -1,149 +1,31 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import styled from 'styled-components';
-import { theme } from '@/lib/theme';
-import { HE } from '@/lib/hebrewTexts';
-import { SECTIONS, CONTENT_GROUPS, ContentSection } from '@/lib/contentsSections';
-import { LineIcon } from '@/components/common/LineIcons';
-import ContentReader from './ContentReader';
+import { useSearchParams } from 'next/navigation';
+import { SECTIONS } from '@/lib/contentsSections';
+import { SIDDUR_EXTRAS } from '@/lib/siddurContent';
+import PrayersHub from './PrayersHub';
+import HubReader from './HubReader';
 
-const Page = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
-
-const Header = styled.div`display: flex; align-items: center; gap: ${theme.spacing.md};`;
-
-const BackBtn = styled.button`
-  font-size: 0.88rem; color: ${theme.colors.textMuted};
-  display: flex; align-items: center; gap: 4px;
-  padding: 4px ${theme.spacing.sm}; border-radius: ${theme.radii.sm};
-  border: 1px solid ${theme.colors.border};
-  transition: all 0.15s;
-  &:hover { color: ${theme.colors.primary}; border-color: ${theme.colors.primary}; }
-`;
-
-const Title = styled.h1`
-  font-size: 1.8rem; color: ${theme.colors.primary};
-  display: flex; align-items: center; gap: ${theme.spacing.sm};
-`;
-const Subtitle = styled.p`font-size: 0.95rem; color: ${theme.colors.textMuted};`;
-
-const GroupBlock = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.sm};`;
-
-const GroupTitle = styled.h2`
-  display: flex; align-items: center; gap: ${theme.spacing.sm};
-  font-family: ${theme.fonts.body}; font-size: 1.1rem; font-weight: 700;
-  color: ${theme.colors.primary};
-  padding-bottom: 6px;
-  border-bottom: 2px solid ${theme.colors.borderLight};
-`;
-
-const GroupIcon = styled.span`
-  display: inline-flex; line-height: 1; color: ${theme.colors.secondary};
-`;
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: ${theme.spacing.sm};
-  @media (max-width: 700px) { grid-template-columns: repeat(3, 1fr); }
-  @media (max-width: 480px) { grid-template-columns: repeat(2, 1fr); }
-`;
-
-const SectionCard = styled.button`
-  background: ${theme.colors.surface};
-  border: 1.5px solid ${theme.colors.borderLight};
-  border-radius: ${theme.radii.md};
-  padding: ${theme.spacing.md} ${theme.spacing.xs};
-  box-shadow: ${theme.shadows.sm};
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 6px; text-align: center; cursor: pointer;
-  transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
-  &:hover {
-    box-shadow: ${theme.shadows.md}; transform: translateY(-2px);
-    border-color: ${theme.colors.secondary};
-  }
-`;
-
-const CardIcon = styled.div`
-  display: flex; line-height: 1; color: ${theme.colors.secondary};
-  transition: color 0.15s;
-  ${SectionCard}:hover & { color: ${theme.colors.primary}; }
-`;
-
-const CardTitle = styled.div`
-  font-family: ${theme.fonts.body}; font-size: 0.95rem; font-weight: 700;
-  color: ${theme.colors.primary}; line-height: 1.3;
-`;
-
-const CardDesc = styled.div`font-size: 0.74rem; color: ${theme.colors.textMuted}; line-height: 1.3;`;
-
-const ReaderHeader = styled.div`
-  display: flex; align-items: center; gap: ${theme.spacing.md};
-  padding-bottom: ${theme.spacing.md};
-  border-bottom: 2px solid ${theme.colors.borderLight};
-`;
-
-const SectionTitle = styled.div`
-  display: flex; align-items: center; gap: ${theme.spacing.sm};
-  font-family: ${theme.fonts.body}; font-size: 1.4rem; font-weight: 700;
-  color: ${theme.colors.primary};
-`;
-
+/**
+ * /content — the prayers hub, or one item open in the reader:
+ * /content?open=<section or siddur-extra id>[&chapter=N] (deep links from
+ * home, the siddur page and the hilula page use the same URL).
+ */
 export default function ContentsView() {
-  const [active, setActive] = useState<ContentSection | null>(null);
-  const [initialChapter, setInitialChapter] = useState(1);
+  const params = useSearchParams();
+  const id = params?.get('open') ?? '';
 
-  // Deep link: /content?open=tehillim&chapter=16 (used by the hilula page).
-  useEffect(() => {
-    const q = new URLSearchParams(window.location.search);
-    const target = SECTIONS.find(s => s.id === q.get('open') && !s.href);
-    if (!target) return;
-    const ch = Number(q.get('chapter'));
-    if (Number.isInteger(ch) && ch >= 1 && ch <= (target.totalChapters ?? 1)) setInitialChapter(ch);
-    setActive(target);
-  }, []);
-
-  if (active) {
-    return (
-      <Page>
-        <ReaderHeader>
-          <BackBtn onClick={() => { setActive(null); setInitialChapter(1); }}>← {HE.CLOSE}</BackBtn>
-          <SectionTitle>
-            <LineIcon name={active.icon} size={22} />
-            <span>{active.title}</span>
-          </SectionTitle>
-        </ReaderHeader>
-        <ContentReader section={active} initialChapter={initialChapter} />
-      </Page>
-    );
+  const section = SECTIONS.find(s => s.id === id && !s.href);
+  if (section) {
+    const ch = Number(params?.get('chapter'));
+    const chapter = Number.isInteger(ch) && ch >= 1 && ch <= (section.totalChapters ?? 1) ? ch : 1;
+    return <HubReader key={id} title={section.title} icon={section.icon} section={section} initialChapter={chapter} />;
   }
 
-  return (
-    <Page>
-      <Header>
-        <div>
-          <Title><LineIcon name="book" size={26} /> {HE.CONTENTS_TITLE}</Title>
-          <Subtitle>{HE.CONTENTS_SUBTITLE}</Subtitle>
-        </div>
-      </Header>
-      {CONTENT_GROUPS.map(g => (
-        <GroupBlock key={g.key}>
-          <GroupTitle><GroupIcon><LineIcon name={g.icon} size={18} /></GroupIcon>{g.title}</GroupTitle>
-          <Grid>
-            {SECTIONS.filter(s => s.group === g.key).map(s => (
-              <SectionCard
-                key={s.id}
-                {...(s.href ? { as: Link, href: s.href } : { onClick: () => setActive(s) })}
-              >
-                <CardIcon><LineIcon name={s.icon} size={28} /></CardIcon>
-                <CardTitle>{s.title}</CardTitle>
-                <CardDesc>{s.desc}</CardDesc>
-              </SectionCard>
-            ))}
-          </Grid>
-        </GroupBlock>
-      ))}
-    </Page>
-  );
+  const extra = SIDDUR_EXTRAS.find(x => x.id === id);
+  if (extra) {
+    return <HubReader key={id} title={extra.name} icon={extra.icon} extra={extra} initialChapter={1} />;
+  }
+
+  return <PrayersHub />;
 }

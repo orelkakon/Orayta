@@ -1,133 +1,97 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
+import { HE } from '@/lib/hebrewTexts';
+import { sanitizeSiddurHtml } from '@/lib/siddur/sanitize';
 import type { SiddurJump } from '@/lib/prayers/types';
+import { LineIcon } from '@/components/common/LineIcons';
+import { Button } from '@/components/ui/Button';
+import { SkeletonText } from '@/components/ui/Skeleton';
+import ReadingText from '@/components/Reader/ReadingText';
 
-interface SefariaResp { he: string[]; }
+/**
+ * A prayer fetched from Sefaria and read in the shared prayer typography.
+ * Sefaria's HTML is sanitized to presentational tags before it is rendered
+ * (same rules as the siddur API).
+ */
+interface SefariaResp { he?: string[] }
 
-const Wrap = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.sm};`;
+const Wrap = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
 
-const JumpRow = styled.div`display: flex; justify-content: flex-start;`;
+const Jump = styled(Button)`align-self: flex-start;`;
 
-const JumpBtn = styled.button`
-  padding: 6px 14px; border-radius: ${theme.radii.sm};
-  border: 1.5px solid ${theme.colors.secondary};
-  font-size: 0.82rem; font-weight: 600; color: ${theme.colors.secondary};
-  transition: all 0.15s;
-  &:hover { background: color-mix(in srgb, ${theme.colors.secondary} 8%, transparent); }
+const State = styled.div`
+  display: flex; flex-direction: column; align-items: center; gap: ${theme.spacing.sm};
+  padding: ${theme.spacing.xl} ${theme.spacing.md}; text-align: center; color: ${theme.colors.textMuted};
 `;
 
-const Card = styled.div`
-  background: ${theme.colors.surface};
-  border: 1px solid ${theme.colors.borderLight};
-  border-radius: ${theme.radii.lg};
-  padding: ${theme.spacing.xl};
-  box-shadow: ${theme.shadows.sm};
-`;
-
-const HeadingPara = styled.p`
-  font-family: ${theme.fonts.body};
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: ${theme.colors.primary};
-  padding: ${theme.spacing.sm} 0 4px;
-  border-bottom: 2px solid ${theme.colors.borderLight};
-  margin-bottom: ${theme.spacing.xs};
-  big { font-size: 1em; }
-  b   { font-weight: 800; }
-`;
-
-const Para = styled.p`
-  font-family: ${theme.fonts.body};
-  font-size: 1.05rem;
-  line-height: 2.1;
-  color: ${theme.colors.text};
-  padding: ${theme.spacing.sm} 0;
-  border-bottom: 1px solid ${theme.colors.borderLight};
-  &:last-child { border-bottom: none; }
-
-  big  { font-size: 1.35em; font-weight: 700; }
-  small {
-    display: block;
-    font-size: 0.8rem;
-    color: ${theme.colors.textMuted};
-    line-height: 1.5;
-  }
-  b { color: ${theme.colors.primary}; }
-`;
-
-const Loading = styled.div`
-  text-align: center; color: ${theme.colors.textMuted};
-  padding: ${theme.spacing.xxl}; font-size: 0.95rem;
-`;
-
-const ErrorMsg = styled.div`
-  text-align: center; color: ${theme.colors.textMuted};
-  padding: ${theme.spacing.xl}; font-size: 0.9rem;
-`;
+const Loading = styled.div`display: flex; flex-direction: column; gap: 22px; padding-top: ${theme.spacing.sm};`;
 
 function toUrl(ref: string): string {
   return ref.replace(/, /g, '%2C_');
 }
 
-// Strip HTML tags + nikud/cantillation marks so jump matching works on plain letters
+// Strip tags + nikud/cantillation so jump matching works on plain letters.
 function toPlainLetters(html: string): string {
   return html.replace(/<[^>]+>/g, '').replace(/[֑-ׇ]/g, '');
 }
 
-interface Props { sefariaRef: string; jump?: SiddurJump; }
+interface Props { sefariaRef: string; jump?: SiddurJump }
 
 export default function SefariaPrayerView({ sefariaRef, jump }: Props) {
-  const [paragraphs, setParagraphs] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [paragraphs, setParagraphs] = useState<string[] | null>(null);
   const [error, setError] = useState(false);
-  const paraRefs = useRef<(HTMLParagraphElement | null)[]>([]);
+  const rootRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setLoading(true);
+  const load = useCallback(() => {
     setError(false);
-    // context=0: for segment-range refs (e.g. The_Shema.2-9) return only the
-    // requested range instead of the whole surrounding node
+    setParagraphs(null);
+    // context=0: a segment-range ref returns only the requested range.
     fetch(`https://www.sefaria.org/api/texts/${toUrl(sefariaRef)}?lang=he&context=0`)
-      .then(r => r.json())
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((d: SefariaResp) => {
-        const items = d.he ?? [];
-        setParagraphs(items);
+        const items = (d.he ?? []).map(sanitizeSiddurHtml).filter(Boolean);
         if (items.length === 0) setError(true);
+        setParagraphs(items);
       })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+      .catch(() => setError(true));
   }, [sefariaRef]);
 
-  if (loading) return <Loading>טוען...</Loading>;
-  if (error) return <ErrorMsg>לא ניתן לטעון את הטקסט. נסה שוב מאוחר יותר.</ErrorMsg>;
+  useEffect(() => { load(); }, [load]);
+
+  if (error) {
+    return (
+      <State role="alert">
+        <span>{HE.SIDDUR_LOAD_ERROR}</span>
+        <Button $size="sm" onClick={load}>{HE.SIDDUR_RETRY}</Button>
+      </State>
+    );
+  }
+
+  if (!paragraphs) {
+    return (
+      <Loading aria-busy="true" aria-label={HE.LOADING}>
+        <SkeletonText lines={4} lineHeight="18px" />
+        <SkeletonText lines={5} lineHeight="18px" />
+      </Loading>
+    );
+  }
 
   const jumpIdx = jump ? paragraphs.findIndex(p => toPlainLetters(p).includes(jump.match)) : -1;
+  const doJump = () => {
+    rootRef.current?.querySelector(`[data-para="${jumpIdx}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
-    <Wrap>
+    <Wrap ref={rootRef}>
       {jump && jumpIdx >= 0 && (
-        <JumpRow>
-          <JumpBtn onClick={() => paraRefs.current[jumpIdx]?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
-            {jump.label} ⬇
-          </JumpBtn>
-        </JumpRow>
+        <Jump $variant="tonal" $size="sm" onClick={doJump}>
+          {jump.label}<LineIcon name="chevronDown" size={16} strokeWidth={2.2} />
+        </Jump>
       )}
-      <Card>
-        {paragraphs.map((p, i) => {
-          const isHeading = p.trim().startsWith('<big>');
-          const Comp = isHeading ? HeadingPara : Para;
-          return (
-            <Comp
-              key={i}
-              ref={(el: HTMLParagraphElement | null) => { paraRefs.current[i] = el; }}
-              dangerouslySetInnerHTML={{ __html: p }}
-            />
-          );
-        })}
-      </Card>
+      <div><ReadingText paragraphs={paragraphs} /></div>
     </Wrap>
   );
 }

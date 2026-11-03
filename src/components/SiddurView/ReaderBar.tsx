@@ -45,18 +45,19 @@ const Chip = styled.button<{ $on: boolean }>`
 `;
 
 const ContentsBtn = styled.button`
-  flex-shrink: 0; height: 38px; min-width: 38px; padding: 0 12px; border-radius: 999px;
+  flex-shrink: 0; height: 40px; min-width: 40px; padding: 0 12px; border-radius: 999px;
   display: flex; align-items: center; justify-content: center; gap: 6px;
   font-size: ${theme.fontSizes.sm}; font-weight: 700; color: ${theme.colors.primary};
   border: 1px solid ${theme.colors.borderLight}; background: ${theme.colors.surface};
-  transition: border-color ${theme.motion.fast};
-  &:hover { border-color: ${theme.colors.secondary}; }
+  &:hover { border-color: ${theme.colors.gold}; }
+  &:active { transform: scale(0.94); }
+  transition: transform 0.16s ${theme.motion.outStrong}, border-color 0.15s ease;
   ${theme.media.sm} { padding: 0; span { display: none; } }
 `;
 
 const Progress = styled.div`
   height: 2px; margin: 0 calc(-1 * ${theme.layout.gutter});
-  background: ${theme.colors.secondary};
+  background: ${theme.colors.gold};
   transform-origin: right; transition: transform 0.1s linear;
 `;
 
@@ -67,6 +68,7 @@ interface Props {
   progress: number;
   onJump: (id: string) => void;
   onContents: () => void;
+  onSettings: () => void;
 }
 
 /** Sticky strip while reading: section chips with scroll-spy, contents, progress. */
@@ -89,6 +91,9 @@ const ReaderBar = forwardRef<HTMLDivElement, Props>(function ReaderBar(p, ref) {
             </Chip>
           ))}
         </Chips>
+        <ContentsBtn onClick={p.onSettings} aria-label={HE.READER_SETTINGS_OPEN} title={HE.READER_SETTINGS}>
+          <LineIcon name="type" size={19} strokeWidth={1.9} />
+        </ContentsBtn>
         <ContentsBtn onClick={p.onContents} aria-label={HE.SIDDUR_CONTENTS_OPEN} title={HE.SIDDUR_CONTENTS}>
           <LineIcon name="list" size={19} strokeWidth={1.9} /><span>{HE.SIDDUR_CONTENTS}</span>
         </ContentsBtn>

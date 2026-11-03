@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { LineIcon } from '@/components/common/LineIcons';
+import { Button } from '@/components/ui/Button';
 import { getService, SERVICES } from '@/lib/siddur';
 import type { ServiceId } from '@/lib/siddur';
 import ReaderBar from './ReaderBar';
@@ -14,12 +15,21 @@ import PrayerSectionView from './PrayerSectionView';
 import ReaderHeader from './ReaderHeader';
 import { useServiceText } from './useServiceText';
 import { useScrollSpy, jumpTo } from './useScrollSpy';
-import { useSiddurFont } from './useSiddurFont';
+import { useReaderPrefs } from '@/components/Reader/useReaderPrefs';
+import { useWakeLock } from '@/components/Reader/useWakeLock';
+import ReaderSettingsSheet from '@/components/Reader/ReaderSettingsSheet';
+import ResumeChip from '@/components/Reader/ResumeChip';
+import { loadPosition, savePosition } from '@/lib/siddur/position';
+import { israelDateKey } from '@/lib/dailyLearning/kinds';
 import { usePrayerDay } from './usePrayerDay';
 
 const Page = styled.div`display: flex; flex-direction: column;`;
 
-const Body = styled.article`padding-top: ${theme.spacing.sm};`;
+/* The prayer text keeps a comfortable reading measure on wide screens. */
+const Body = styled.article`
+  padding-top: ${theme.spacing.sm};
+  max-width: ${theme.layout.reading}; width: 100%; margin-inline: auto;
+`;
 
 const ErrorBox = styled.div`
   margin: ${theme.spacing.xl} 0; padding: ${theme.spacing.lg}; text-align: center;
@@ -27,10 +37,7 @@ const ErrorBox = styled.div`
   color: ${theme.colors.textMuted}; display: flex; flex-direction: column; gap: ${theme.spacing.sm}; align-items: center;
 `;
 
-const Retry = styled.button`
-  min-height: 40px; padding: 0 18px; border-radius: 999px; font-weight: 700;
-  color: ${theme.colors.onPrimary}; background: ${theme.colors.primary};
-`;
+
 
 const End = styled.footer`
   margin-top: ${theme.spacing.xl}; padding: ${theme.spacing.lg} 0; text-align: center;
@@ -51,7 +58,10 @@ const Source = styled.p`font-size: ${theme.fontSizes.xs}; color: ${theme.colors.
 export default function ServiceReader({ id }: { id: ServiceId }) {
   const service = getService(id);
   const { nodes, status, reload } = useServiceText(id);
-  const font = useSiddurFont();
+  const prefs = useReaderPrefs();
+  useWakeLock(prefs.awake);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [resumeTo, setResumeTo] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const ids = useMemo(() => service.sections.map(s => s.id), [service]);
@@ -60,37 +70,41 @@ export default function ServiceReader({ id }: { id: ServiceId }) {
   // Client-only: the server has no idea what day it is for the reader.
   const day = usePrayerDay(id);
 
-  // Deep link (#shema): jump once the text is laid out.
+  // Deep link (#shema): jump once the text is laid out. Without one, offer
+  // to continue from where the reader was in this service earlier today.
   const linkedRef = useRef(false);
   useEffect(() => {
     if (status !== 'ready' || linkedRef.current) return;
     linkedRef.current = true;
     const hash = decodeURIComponent(window.location.hash.slice(1));
-    if (hash) requestAnimationFrame(() => jumpTo(hash, false));
-  }, [status]);
+    if (hash) { requestAnimationFrame(() => jumpTo(hash, false)); return; }
+    const saved = loadPosition(id, israelDateKey(new Date()));
+    if (saved && saved !== ids[0] && ids.includes(saved)) setResumeTo(saved);
+  }, [status, id, ids]);
+
+  useEffect(() => {
+    if (status === 'ready' && active) savePosition(id, israelDateKey(new Date()), active);
+  }, [status, active, id]);
 
   const jumpFromSheet = useCallback((target: string) => {
     setContentsOpen(false);
-    // Let the modal release the body scroll lock before scrolling.
-    requestAnimationFrame(() => requestAnimationFrame(() => jumpTo(target)));
+    // Let the sheet release the body scroll lock (after its exit) before scrolling.
+    window.setTimeout(() => jumpTo(target), 300);
   }, []);
 
   const others = SERVICES.filter(s => s.id !== id);
 
   return (
-    <Page ref={rootRef} style={{ ['--siddur-scale' as string]: font.scale }}>
-      <ReaderHeader
-        service={service} day={day} onJump={jumpTo}
-        canShrink={font.canShrink} canGrow={font.canGrow} onSmaller={font.smaller} onLarger={font.larger}
-      />
+    <Page ref={rootRef} style={{ ['--siddur-scale' as string]: prefs.scale }}>
+      <ReaderHeader service={service} day={day} onJump={jumpTo} />
       <ReaderBar
         ref={barRef} service={service} day={day} active={active} progress={progress}
-        onJump={jumpTo} onContents={() => setContentsOpen(true)}
+        onJump={jumpTo} onContents={() => setContentsOpen(true)} onSettings={() => setSettingsOpen(true)}
       />
       {status === 'error' ? (
         <ErrorBox role="alert">
           <span>{HE.SIDDUR_LOAD_ERROR}</span>
-          <Retry onClick={() => void reload()}>{HE.SIDDUR_RETRY}</Retry>
+          <Button $size="sm" onClick={() => void reload()}>{HE.SIDDUR_RETRY}</Button>
         </ErrorBox>
       ) : (
         <Body aria-busy={status === 'loading'}>
@@ -105,8 +119,15 @@ export default function ServiceReader({ id }: { id: ServiceId }) {
         </EndLinks>
         <Source>{HE.SIDDUR_SOURCE}</Source>
       </End>
-      {contentsOpen && day && (
-        <ContentsSheet service={service} active={active} day={day} onJump={jumpFromSheet} onClose={() => setContentsOpen(false)} />
+      {day && (
+        <ContentsSheet open={contentsOpen} service={service} active={active} day={day} onJump={jumpFromSheet} onClose={() => setContentsOpen(false)} />
+      )}
+      <ReaderSettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} prefs={prefs} />
+      {resumeTo && (
+        <ResumeChip
+          title={service.sections.find(x => x.id === resumeTo)?.title ?? ''}
+          onGo={() => jumpTo(resumeTo)}
+        />
       )}
     </Page>
   );

@@ -147,6 +147,40 @@ const GlobalStylesheet = createGlobalStyle`
     &:focus { top: ${theme.spacing.md}; }
   }
 
+  /* Reading modes (siddur / prayer readers set html[data-reading] while
+     open). Declared before the a11y contrast override so contrast wins. */
+  html[data-reading="sepia"] {
+    --color-background:   #F3EAD3;
+    --color-surface:      #F9F2E1;
+    --color-surface-alt:  #EDE2C8;
+    --color-text:         #3A2814;
+    --color-text-muted:   #6E5638;
+    --color-text-light:   #8A7254;
+    --color-primary:      #5A3A16;
+    --color-border:       #DCCDAE;
+    --color-border-light: #E6DABF;
+    --color-gold-soft:    #EADCB8;
+    --color-elevated:     #FBF5E6;
+    color-scheme: light;
+  }
+  html[data-reading="night"] {
+    --color-background:   #000000;
+    --color-surface:      #0B0907;
+    --color-surface-alt:  #14110D;
+    --color-text:         #D8C9B0;
+    --color-text-muted:   #8D7F6B;
+    --color-text-light:   #73685A;
+    --color-primary:      #C9A06A;
+    --color-on-primary:   #1B1408;
+    --color-secondary-text: #C9A06A;
+    --color-border:       #2A241D;
+    --color-border-light: #1C1814;
+    --color-gold-soft:    #1E1910;
+    --color-elevated:     #14110D;
+    --color-chrome:       #000000;
+    color-scheme: dark;
+  }
+
   html[data-acc-contrast="on"] {
     --color-background:   #FFFFFF;
     --color-chrome:       #1A0D00;

@@ -8,6 +8,7 @@ import { ContentSection, SefariaBook } from '@/lib/contentsSections';
 import type { StaticGroup } from '@/lib/prayers/types';
 import { toHebrewNumeral } from '@/lib/hebrewNumerals';
 import SpeakButton from '@/components/common/SpeakButton';
+import { LineIcon } from '@/components/common/LineIcons';
 import StaticGroupsView from './StaticGroupsView';
 import SefariaPrayerView from './SefariaPrayerView';
 import SiddurSectionsView from './SiddurSectionsView';
@@ -25,7 +26,7 @@ const BlessingRow = styled.div`
 `;
 
 const BlessingText = styled.p`
-  font-family: ${theme.fonts.body}; font-size: 1.05rem; line-height: 2;
+  font-family: ${theme.fonts.body}; font-size: calc(1.05rem * var(--siddur-scale, 1.22)); line-height: 2;
   color: ${theme.colors.text};
 `;
 
@@ -92,19 +93,23 @@ export default function ContentReader({ section, initialChapter = 1 }: Props) {
     <Wrap {...swipe}>
       <Controls>
         {section.books && (
-          <Select value={book?.ref ?? ''} onChange={e => handleBookChange(e.target.value)}>
+          <Select value={book?.ref ?? ''} onChange={e => handleBookChange(e.target.value)} aria-label={HE.READER_BOOK}>
             {section.books.map(b => <option key={b.ref} value={b.ref}>{b.name}</option>)}
           </Select>
         )}
         {maxChapters > 1 && (
           <>
-            <NavBtn disabled={chapter <= 1} onClick={() => setChapter(c => c - 1)}>→</NavBtn>
-            <Select value={chapter} onChange={e => setChapter(Number(e.target.value))}>
+            <NavBtn disabled={chapter <= 1} onClick={() => setChapter(c => c - 1)} aria-label={HE.READER_PREV_CHAPTER}>
+              <LineIcon name="chevronBack" size={20} strokeWidth={2.2} />
+            </NavBtn>
+            <Select value={chapter} onChange={e => setChapter(Number(e.target.value))} aria-label={HE.READER_CHAPTER('')}>
               {Array.from({ length: maxChapters }, (_, i) => (
-                <option key={i + 1} value={i + 1}>פרק {toHebrewNumeral(i + 1)}</option>
+                <option key={i + 1} value={i + 1}>{HE.READER_CHAPTER(toHebrewNumeral(i + 1))}</option>
               ))}
             </Select>
-            <NavBtn disabled={chapter >= maxChapters} onClick={() => setChapter(c => c + 1)}>←</NavBtn>
+            <NavBtn disabled={chapter >= maxChapters} onClick={() => setChapter(c => c + 1)} aria-label={HE.READER_NEXT_CHAPTER}>
+              <LineIcon name="chevron" size={20} strokeWidth={2.2} />
+            </NavBtn>
           </>
         )}
         <Spacer />

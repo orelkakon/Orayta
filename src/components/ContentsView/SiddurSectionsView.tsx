@@ -5,29 +5,10 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import type { SiddurSection } from '@/lib/prayers/types';
 import SiddurSectionBody from './SiddurSectionBody';
+import { Chip, ChipRow } from '@/components/ui/Chip';
 import { useSwipeNav } from '@/components/common/useSwipeNav';
 
 const Wrap = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
-
-const Controls = styled.div`
-  display: flex; align-items: center; gap: ${theme.spacing.sm}; flex-wrap: wrap;
-`;
-
-const Select = styled.select`
-  padding: 6px ${theme.spacing.sm}; border-radius: ${theme.radii.sm};
-  border: 1.5px solid ${theme.colors.border}; background: ${theme.colors.surface};
-  color: ${theme.colors.text}; font-size: 0.88rem; font-family: ${theme.fonts.body};
-  &:focus { outline: none; border-color: ${theme.colors.primary}; }
-`;
-
-const NavBtn = styled.button`
-  padding: 6px 14px; border-radius: ${theme.radii.sm};
-  border: 1.5px solid ${theme.colors.border};
-  font-size: 0.88rem; color: ${theme.colors.textMuted};
-  transition: all 0.15s;
-  &:hover:not(:disabled) { border-color: ${theme.colors.primary}; color: ${theme.colors.primary}; }
-  &:disabled { opacity: 0.3; }
-`;
 
 interface Props { sections: SiddurSection[]; }
 
@@ -44,15 +25,13 @@ export default function SiddurSectionsView({ sections }: Props) {
 
   return (
     <Wrap {...swipe}>
-      <Controls>
-        <NavBtn disabled={idx <= 0} onClick={() => setIdx(i => i - 1)}>→</NavBtn>
-        <Select value={idx} onChange={e => setIdx(Number(e.target.value))}>
-          {sections.map((s, i) => (
-            <option key={i} value={i}>{s.name}</option>
-          ))}
-        </Select>
-        <NavBtn disabled={idx >= sections.length - 1} onClick={() => setIdx(i => i + 1)}>←</NavBtn>
-      </Controls>
+      <ChipRow role="tablist">
+        {sections.map((s, i) => (
+          <Chip key={i} role="tab" aria-selected={i === idx} $selected={i === idx} onClick={() => setIdx(i)}>
+            {s.name}
+          </Chip>
+        ))}
+      </ChipRow>
       <SiddurSectionBody section={current} />
     </Wrap>
   );

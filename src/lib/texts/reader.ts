@@ -1,0 +1,22 @@
+/* Shared prayer/text reader (siddur, prayers hub) — spread into HE. */
+export const READER_HE = {
+  READER_SETTINGS: 'הגדרות קריאה',
+  READER_SETTINGS_OPEN: 'הגדרות קריאה — גודל טקסט ותצוגה',
+  READER_SIZE: 'גודל הטקסט',
+  READER_SMALLER: 'הקטנת הטקסט',
+  READER_LARGER: 'הגדלת הטקסט',
+  READER_PREVIEW: 'בָּרוּךְ אַתָּה ה׳ אֱלֹהֵינוּ מֶלֶךְ הָעוֹלָם',
+  READER_MODE: 'מצב קריאה',
+  READER_MODE_REGULAR: 'רגיל',
+  READER_MODE_SEPIA: 'ספיה',
+  READER_MODE_NIGHT: 'לילה',
+  READER_AWAKE: 'המסך יישאר דולק',
+  READER_RESUME: (title: string) => `להמשיך מ״${title}״`,
+  READER_RESUME_DISMISS: 'לא תודה',
+  READER_BACK: 'חזרה',
+  READER_GLYPH: 'א',
+  READER_PREV_CHAPTER: 'הפרק הקודם',
+  READER_NEXT_CHAPTER: 'הפרק הבא',
+  READER_CHAPTER: (n: string) => `פרק ${n}`,
+  READER_BOOK: 'ספר',
+};

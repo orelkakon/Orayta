@@ -4,51 +4,43 @@ import { Fragment } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import type { StaticGroup } from '@/lib/prayers/types';
+import { TextCard } from './readerStyles';
 
-const TextCard = styled.div`
-  background: ${theme.colors.surface};
-  border: 1px solid ${theme.colors.borderLight};
-  border-radius: ${theme.radii.lg};
-  padding: ${theme.spacing.xl};
-  box-shadow: ${theme.shadows.sm};
-`;
-
-const GroupTitle = styled.div`
-  font-family: ${theme.fonts.body}; font-size: 1.05rem; font-weight: 700;
+const GroupTitle = styled.h3`
+  font-family: ${theme.fonts.body}; font-size: calc(1rem * var(--siddur-scale, 1.22)); font-weight: 700;
   color: ${theme.colors.primary};
-  padding: ${theme.spacing.sm} 0 4px;
-  border-bottom: 2px solid ${theme.colors.borderLight};
-  margin-bottom: 4px;
-  margin-top: ${theme.spacing.md};
+  padding: ${theme.spacing.sm} 0 6px;
+  border-bottom: 1px solid color-mix(in srgb, ${theme.colors.gold} 40%, transparent);
+  margin: ${theme.spacing.lg} 0 4px;
   &:first-child { margin-top: 0; }
 `;
 
 const GroupExplanation = styled.div`
-  font-size: 0.78rem; color: ${theme.colors.textMuted};
-  font-style: italic; margin-bottom: ${theme.spacing.sm};
-  line-height: 1.5;
+  font-size: ${theme.fontSizes.sm}; color: ${theme.colors.secondaryText};
+  margin: 6px 0 ${theme.spacing.sm}; line-height: 1.55;
+  padding: 0.4em 0.75em; border-radius: 10px;
+  background: color-mix(in srgb, ${theme.colors.goldSoft} 70%, transparent);
 `;
 
 const BlessingRow = styled.div`
-  display: flex; gap: ${theme.spacing.sm}; align-items: flex-start;
-  padding: ${theme.spacing.sm} 0;
-  border-bottom: 1px solid ${theme.colors.borderLight};
-  &:last-child { border-bottom: none; }
+  display: flex; gap: ${theme.spacing.ms}; align-items: flex-start;
+  padding: ${theme.spacing.ms} 0;
+  & + & { border-top: 1px solid ${theme.colors.borderLight}; }
 `;
 
 const BlessingIcon = styled.span`
-  font-size: 1.4rem; flex-shrink: 0; line-height: 1; padding-top: 2px;
+  font-size: 1.4rem; flex-shrink: 0; line-height: 1; padding-top: 0.35em;
 `;
 
-const BlessingMeta = styled.div`display: flex; flex-direction: column; gap: 3px;`;
+const BlessingMeta = styled.div`display: flex; flex-direction: column; gap: 3px; min-width: 0;`;
 
 const BlessingLabel = styled.div`
-  font-size: 0.8rem; font-weight: 700; color: ${theme.colors.secondary};
+  font-size: ${theme.fontSizes.sm}; font-weight: 700; color: ${theme.colors.secondaryText};
 `;
 
 const BlessingText = styled.p`
-  font-family: ${theme.fonts.body}; font-size: 1.05rem; line-height: 2;
-  color: ${theme.colors.text}; white-space: pre-line;
+  font-family: ${theme.fonts.body}; font-size: calc(1.05rem * var(--siddur-scale, 1.22)); line-height: 2;
+  color: ${theme.colors.text}; white-space: pre-line; text-wrap: pretty;
 `;
 
 export default function StaticGroupsView({ groups }: { groups: StaticGroup[] }) {

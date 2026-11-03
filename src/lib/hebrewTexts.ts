@@ -7,6 +7,8 @@ import { SHELL_HE } from './texts/shell';
 import { HOME_HE } from './texts/home';
 import { STORIES_HE } from './texts/stories';
 import { FEED_HE } from './texts/feed';
+import { READER_HE } from './texts/reader';
+import { PRAYERS_HE } from './texts/prayers';
 
 export const HE = {
   APP_NAME: 'אורייתא',
@@ -1645,4 +1647,6 @@ export const HE = {
   ...HOME_HE,
   ...STORIES_HE,
   ...FEED_HE,
+  ...READER_HE,
+  ...PRAYERS_HE,
 };

@@ -145,6 +145,10 @@ export const theme = {
     nightGhost: 'rgba(251, 244, 230, 0.08)',
     nightGhostHi: 'rgba(251, 244, 230, 0.14)',
     nightSkeleton: 'rgba(251, 244, 230, 0.1)',
+    // Time-of-day light over the night surface (prayer "now" cards).
+    dawnGlow: 'radial-gradient(110% 70% at 80% -10%, rgba(255, 196, 120, 0.34), transparent 62%)',
+    duskGlow: 'radial-gradient(110% 70% at 20% -10%, rgba(226, 140, 80, 0.3), transparent 62%)',
+    nightGlowCool: 'radial-gradient(110% 70% at 50% -20%, rgba(130, 150, 230, 0.2), transparent 62%)',
   },
   // Controls laid over photos/video/dark stages (feed, stories, players).
   onMedia: {

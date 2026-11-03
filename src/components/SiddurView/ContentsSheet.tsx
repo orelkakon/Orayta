@@ -3,7 +3,7 @@
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
-import Modal from '@/components/common/Modal';
+import Sheet from '@/components/ui/Sheet';
 import { markAnchor } from '@/lib/siddur';
 import type { PrayerService } from '@/lib/siddur';
 import { partApplies, sectionApplies, PrayerDay } from '@/lib/siddur/calendar';
@@ -26,19 +26,21 @@ const Num = styled.span<{ $on: boolean }>`
   display: flex; align-items: center; justify-content: center;
   font-family: ${theme.fonts.ui}; font-size: ${theme.fontSizes.xs}; font-weight: 700;
   color: ${p => p.$on ? theme.colors.onPrimary : theme.colors.textMuted};
-  background: ${p => p.$on ? theme.colors.secondary : theme.colors.surfaceAlt};
+  background: ${p => p.$on ? theme.colors.primary : theme.colors.surfaceAlt};
 `;
 
 const Marks = styled.div`display: flex; flex-wrap: wrap; gap: 6px; padding: 0 36px ${theme.spacing.sm} 0;`;
 
 const MarkBtn = styled.button<{ $dim: boolean }>`
-  min-height: 32px; padding: 0 12px; border-radius: 999px;
+  position: relative; min-height: 34px; padding: 0 12px; border-radius: 999px;
   font-size: ${theme.fontSizes.sm}; color: ${p => p.$dim ? theme.colors.textLight : theme.colors.textMuted};
   border: 1px ${p => p.$dim ? 'dashed' : 'solid'} ${theme.colors.borderLight};
-  &:hover { color: ${theme.colors.primary}; border-color: ${theme.colors.secondary}; }
+  &:hover { color: ${theme.colors.primary}; border-color: ${theme.colors.gold}; }
+  &::after { content: ''; position: absolute; inset: -5px 0; }
 `;
 
 interface Props {
+  open: boolean;
   service: PrayerService;
   active: string;
   day: PrayerDay;
@@ -47,9 +49,9 @@ interface Props {
 }
 
 /** Full outline of the service: every section and its inner jump points. */
-export default function ContentsSheet({ service, active, day, onJump, onClose }: Props) {
+export default function ContentsSheet({ open, service, active, day, onJump, onClose }: Props) {
   return (
-    <Modal title={`${HE.SIDDUR_CONTENTS} · ${service.title}`} onClose={onClose}>
+    <Sheet open={open} title={`${HE.SIDDUR_CONTENTS} · ${service.title}`} onClose={onClose} tall maxWidth={520}>
       <List>
         {service.sections.map((s, i) => {
           const marks = s.parts.map((p, pi) => ({ p, pi }))
@@ -72,6 +74,6 @@ export default function ContentsSheet({ service, active, day, onJump, onClose }:
           );
         })}
       </List>
-    </Modal>
+    </Sheet>
   );
 }

@@ -1,5 +1,7 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import ContentsView from '@/components/ContentsView/ContentsView';
+import PrayersHub from '@/components/ContentsView/PrayersHub';
 import SectionPing from '@/components/common/SectionPing';
 
 const TITLE = 'תפילות ותנ״ך';
@@ -17,7 +19,9 @@ export default function ContentPage() {
   return (
     <>
       <SectionPing metric="content" />
-      <ContentsView />
+      <Suspense fallback={<PrayersHub />}>
+        <ContentsView />
+      </Suspense>
     </>
   );
 }

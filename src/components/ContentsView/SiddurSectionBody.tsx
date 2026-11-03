@@ -12,9 +12,9 @@ const PartBlock = styled.div`
 `;
 
 const PartTitle = styled.h3`
-  font-family: ${theme.fonts.body}; font-size: 1.1rem; font-weight: 700;
+  font-family: ${theme.fonts.body}; font-size: calc(1.05rem * var(--siddur-scale, 1.22)); font-weight: 700;
   color: ${theme.colors.primary};
-  padding-bottom: 4px; border-bottom: 2px solid ${theme.colors.border};
+  padding-bottom: 6px; border-bottom: 1px solid color-mix(in srgb, ${theme.colors.gold} 40%, transparent);
 `;
 
 /** Renders one SiddurSection by its kind: menorah, multi-part, Sefaria or static. */

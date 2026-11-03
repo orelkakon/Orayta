@@ -19,7 +19,7 @@ const Hero = styled.header`
   /* Gold hairline along the top edge. */
   &::before {
     content: ''; position: absolute; inset: 0 0 auto; height: 3px;
-    background: linear-gradient(90deg, transparent, ${theme.colors.secondary}, transparent);
+    background: linear-gradient(90deg, transparent, ${theme.colors.gold}, transparent);
   }
 `;
 
@@ -37,22 +37,6 @@ const Back = styled(Link)`
   font-size: ${theme.fontSizes.sm}; font-weight: 600; color: ${theme.colors.textMuted};
   transition: color ${theme.motion.fast}, background ${theme.motion.fast};
   &:hover { color: ${theme.colors.primary}; background: ${theme.colors.surfaceAlt}; }
-`;
-
-const FontCtl = styled.div`
-  display: inline-flex; border-radius: 999px; overflow: hidden;
-  border: 1px solid ${theme.colors.borderLight}; background: ${theme.colors.background};
-`;
-
-const FontBtn = styled.button<{ $big?: boolean }>`
-  min-width: 42px; height: 36px; display: flex; align-items: center; justify-content: center;
-  font-family: ${theme.fonts.body}; font-weight: 700; line-height: 1;
-  font-size: ${p => p.$big ? theme.fontSizes.xl : theme.fontSizes.sm};
-  color: ${theme.colors.text};
-  transition: color ${theme.motion.fast}, background ${theme.motion.fast};
-  & + & { border-inline-start: 1px solid ${theme.colors.borderLight}; }
-  &:hover:not(:disabled) { color: ${theme.colors.primary}; background: ${theme.colors.surfaceAlt}; }
-  &:disabled { opacity: 0.35; }
 `;
 
 const TitleRow = styled.div`display: flex; align-items: center; gap: ${theme.spacing.ms};`;
@@ -80,24 +64,16 @@ const Divider = styled.hr`border: none; height: 1px; margin: 0; background: ${th
 interface Props {
   service: PrayerService;
   day: PrayerDay | null;
-  canShrink: boolean;
-  canGrow: boolean;
-  onSmaller: () => void;
-  onLarger: () => void;
   onJump: (anchor: string) => void;
 }
 
-/** Top of a service: back link, text size, title, and what today changes. */
-export default function ReaderHeader({ service, day, canShrink, canGrow, onSmaller, onLarger, onJump }: Props) {
+/** Top of a service: back link, title, and what today changes. */
+export default function ReaderHeader({ service, day, onJump }: Props) {
   return (
     <Hero>
       <Watermark aria-hidden><LineIcon name={service.icon} size={150} strokeWidth={1.2} /></Watermark>
       <TopRow>
         <Back href="/siddur">{HE.SIDDUR_BACK}</Back>
-        <FontCtl role="group" aria-label={HE.SIDDUR_FONT_ARIA}>
-          <FontBtn onClick={onSmaller} disabled={!canShrink} aria-label={HE.SIDDUR_FONT_SMALLER} title={HE.SIDDUR_FONT_SMALLER}>{HE.SIDDUR_FONT_GLYPH}</FontBtn>
-          <FontBtn $big onClick={onLarger} disabled={!canGrow} aria-label={HE.SIDDUR_FONT_LARGER} title={HE.SIDDUR_FONT_LARGER}>{HE.SIDDUR_FONT_GLYPH}</FontBtn>
-        </FontCtl>
       </TopRow>
       <TitleRow>
         <Emblem><LineIcon name={service.icon} size={28} strokeWidth={1.7} /></Emblem>
