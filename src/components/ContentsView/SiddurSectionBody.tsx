@@ -5,7 +5,6 @@ import { theme } from '@/lib/theme';
 import type { SiddurSection } from '@/lib/prayers/types';
 import StaticGroupsView from './StaticGroupsView';
 import SefariaPrayerView from './SefariaPrayerView';
-import MenorahPsalmView from './MenorahPsalmView';
 
 const PartBlock = styled.div`
   display: flex; flex-direction: column; gap: ${theme.spacing.sm};
@@ -17,9 +16,8 @@ const PartTitle = styled.h3`
   padding-bottom: 6px; border-bottom: 1px solid color-mix(in srgb, ${theme.colors.gold} 40%, transparent);
 `;
 
-/** Renders one SiddurSection by its kind: menorah, multi-part, Sefaria or static. */
+/** Renders one SiddurSection by its kind: multi-part, Sefaria or static. */
 export default function SiddurSectionBody({ section }: { section: SiddurSection }) {
-  if (section.isMenorah) return <MenorahPsalmView />;
   if (section.parts) {
     return (
       <>

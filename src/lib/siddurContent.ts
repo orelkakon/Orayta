@@ -16,6 +16,13 @@ export const SIDDUR_EXTRAS: (SiddurSection & { id: string; icon: string })[] = [
   { id: 'nishmat', icon: 'sunrise', name: 'נשמת כל חי', sefariaRef: "Siddur_Edot_HaMizrach, Shabbat_Shacharit, Pesukei_D'Zimra.19-30" },
   { id: 'kaddish', icon: 'candle', name: 'קדיש', groups: KADDISH_GROUPS },
   { id: 'chafetz-chaim', icon: 'sparkle', name: 'תפילת החפץ חיים', groups: CHAFETZ_CHAIM_GROUPS },
-  { id: 'menorah', icon: 'flame', name: 'למנצח בצורת המנורה', isMenorah: true },
+  // Wedding blessings: the betrothal (ארוסין) and the seven blessings (שבע ברכות).
+  {
+    id: 'sheva-brachot', icon: 'heart', name: 'ברכות נישואין · שבע ברכות',
+    parts: [
+      { subtitle: 'סדר ארוסין', sefariaRef: 'Siddur_Edot_HaMizrach, Assorted_Blessings_and_Prayers, Marriage.3-8' },
+      { subtitle: 'שבע ברכות לחתן וכלה', sefariaRef: 'Siddur_Edot_HaMizrach, Assorted_Blessings_and_Prayers, Sheva_Berachot.2-13' },
+    ],
+  },
   { id: 'tefillin', icon: 'scroll', name: 'ברכות התפילין', groups: TEFILLIN_GROUPS },
 ];
