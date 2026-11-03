@@ -30,6 +30,7 @@ import { RabbiCategory } from '@/types';
 
 import StatsPanel from './StatsPanel';
 import AllDoneCard from './AllDoneCard';
+import PageHeader from '@/components/ui/PageHeader';
 import {
   Top, QuestionLabel, Streak, HintBtn, popIn, pressable, answerFeedback, isMilestone,
 } from './quizChrome';
@@ -45,18 +46,7 @@ const Page = styled.div`
   gap: ${theme.spacing.xl};
 `;
 
-const TitleRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: ${theme.spacing.md};
-`;
 
-const Title = styled.h1`
-  font-size: 1.8rem;
-  color: ${theme.colors.primary};
-`;
 
 const FilterBar = styled.div`
   background: ${theme.colors.surface};
@@ -375,9 +365,7 @@ export default function QuizView() {
 
   return (
     <Page>
-      <TitleRow>
-        <Title>{HE.QUIZ_TITLE}</Title>
-      </TitleRow>
+      <PageHeader icon="target" title={HE.QUIZ_TITLE} />
 
       <GroupEntryCard />
       <ModeGrid mode={quizMode} onSelect={handleModeSwitch} />
