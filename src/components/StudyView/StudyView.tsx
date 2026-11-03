@@ -11,6 +11,7 @@ import Modal from '@/components/common/Modal';
 import CitationForm from '@/components/CitationForm/CitationForm';
 import RandomCitationModal from '@/components/StudyView/RandomCitationModal';
 import { useRole } from '@/components/common/RoleContext';
+import PageHeader from '@/components/ui/PageHeader';
 import SearchField from '@/components/common/SearchField';
 import ListState from '@/components/common/ListState';
 
@@ -21,30 +22,16 @@ const Container = styled.div`
 `;
 
 const StickyBar = styled.div`
-  position: sticky;
-  top: var(--header-h, 60px);
-  z-index: 50;
+  position: sticky; top: var(--header-h, 56px); z-index: ${theme.z.sticky};
+  margin: 0 calc(-1 * ${theme.layout.gutter});
+  padding: ${theme.spacing.sm} ${theme.layout.gutter};
   background: ${theme.colors.background};
-  margin-top: -${theme.spacing.xl};
-  padding-top: ${theme.spacing.xl};
-  padding-bottom: 2px;
-  display: flex; flex-direction: column; gap: ${theme.spacing.sm};
-  @media (max-width: 600px) { margin-top: -${theme.spacing.md}; padding-top: ${theme.spacing.md}; }
-  @media (max-width: 480px) { top: var(--header-h, 52px); }
+  background: color-mix(in srgb, ${theme.colors.background} 92%, transparent);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  display: flex; flex-direction: column; gap: 6px;
 `;
 
-const TitleRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: ${theme.spacing.md};
-`;
 
-const Title = styled.h1`
-  font-size: 1.8rem;
-  color: ${theme.colors.primary};
-`;
 
 const FilterSection = styled.div`
   display: flex;
@@ -87,10 +74,6 @@ const Select = styled.select`
   }
 `;
 
-const SearchWrap = styled.div`
-  flex: 2;
-  min-width: 200px;
-`;
 
 const CountBadge = styled.div`
   font-size: 0.82rem;
@@ -179,13 +162,12 @@ export default function StudyView({ initialMasechet = '' }: { initialMasechet?: 
 
   return (
     <Container>
-      <StickyBar>
-        <TitleRow>
-          <Title>{HE.STUDY_TITLE}</Title>
-          <RandomCitationModal masechet={masechet} seder={seder} search={search} />
-        </TitleRow>
-
-        <FilterSection>
+      <PageHeader
+        icon="openbook"
+        title={HE.STUDY_TITLE}
+        actions={<RandomCitationModal masechet={masechet} seder={seder} search={search} />}
+      />
+      <FilterSection>
           <FilterRow>
             <FilterField>
               <FilterLabel>{HE.STUDY_FILTER_SEDER}</FilterLabel>
@@ -203,16 +185,15 @@ export default function StudyView({ initialMasechet = '' }: { initialMasechet?: 
               </Select>
             </FilterField>
 
-            <SearchWrap>
-              <SearchField
-                value={search}
-                onChange={setSearch}
-                placeholder={HE.STUDY_SEARCH_PLACEHOLDER}
-              />
-            </SearchWrap>
           </FilterRow>
-          {hasLoaded.current && !loadError && <CountBadge>{HE.STUDY_COUNT(citations.length)}</CountBadge>}
-        </FilterSection>
+      </FilterSection>
+      <StickyBar>
+        <SearchField
+          value={search}
+          onChange={setSearch}
+          placeholder={HE.STUDY_SEARCH_PLACEHOLDER}
+        />
+        {hasLoaded.current && !loadError && <CountBadge>{HE.STUDY_COUNT(citations.length)}</CountBadge>}
       </StickyBar>
 
       <CitationList $stale={loading && hasLoaded.current}>

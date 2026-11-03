@@ -16,9 +16,12 @@ const Wrapper = styled.div`
 `;
 
 const SubNav = styled.div<{ $inline: boolean }>`
-  display: flex; align-items: center; gap: ${theme.spacing.xs};
-  border-bottom: 2px solid ${theme.colors.borderLight};
-  background: ${theme.colors.background};
+  display: flex; align-items: center; gap: 2px;
+  margin: 8px 0; padding: 3px;
+  border-radius: ${theme.radii.pill};
+  background: color-mix(in srgb, ${theme.colors.text} 6%, ${theme.colors.background});
+  overflow-x: auto; scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
   ${({ $inline }) => $inline && `
     position: sticky; top: var(--header-h, 60px); z-index: 51;
     margin-top: -${theme.spacing.xl};
@@ -27,14 +30,14 @@ const SubNav = styled.div<{ $inline: boolean }>`
 `;
 
 export const TabBtn = styled.button<{ $active: boolean }>`
-  padding: ${theme.spacing.sm} ${theme.spacing.lg};
-  font-size: 0.95rem; font-weight: 600;
-  color: ${({ $active }) => ($active ? theme.colors.primary : theme.colors.textMuted)};
-  border-bottom: 2px solid ${({ $active }) => ($active ? theme.colors.primary : 'transparent')};
-  margin-bottom: -2px;
-  transition: color 0.15s, border-color 0.15s;
-  border-radius: ${theme.radii.sm} ${theme.radii.sm} 0 0;
-  &:hover { color: ${theme.colors.primary}; }
+  flex: 1 0 auto; min-height: 38px; padding: 0 ${theme.spacing.md};
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border-radius: ${theme.radii.pill};
+  font-size: ${theme.fontSizes.sm}; font-weight: ${({ $active }) => ($active ? 700 : 500)}; white-space: nowrap;
+  color: ${({ $active }) => ($active ? theme.colors.text : theme.colors.textMuted)};
+  background: ${({ $active }) => ($active ? theme.colors.surface : 'transparent')};
+  box-shadow: ${({ $active }) => ($active ? theme.shadows.sm : 'none')};
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 `;
 
 interface Props { tabs: React.ReactNode; children: React.ReactNode; }

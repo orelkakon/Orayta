@@ -1,8 +1,11 @@
 'use client';
 
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
+import { LineIcon } from './LineIcons';
+import { Button } from '@/components/ui/Button';
+import { Skeleton, SkeletonText } from '@/components/ui/Skeleton';
 
 /* `grid-column` is ignored inside flex parents, so one block works for both
    the grid views and the list views. */
@@ -18,37 +21,30 @@ const Block = styled.div`
   font-size: ${theme.fontSizes.sm};
 `;
 
-const spin = keyframes`to { transform: rotate(360deg); }`;
-
-const Spinner = styled.span`
-  width: ${theme.spacing.lg};
-  height: ${theme.spacing.lg};
-  border-radius: 50%;
-  border: 2px solid ${theme.colors.borderLight};
-  border-top-color: ${theme.colors.primary};
-  animation: ${spin} 0.8s linear infinite;
-  @media (prefers-reduced-motion: reduce) { animation-duration: 2.4s; }
+const Skels = styled.div`
+  grid-column: 1 / -1; width: 100%;
+  display: flex; flex-direction: column; gap: ${theme.spacing.ms};
 `;
 
-const ErrorText = styled.span`color: ${theme.colors.error}; font-weight: 600;`;
-
-const RetryBtn = styled.button`
-  padding: ${theme.spacing.xs} ${theme.spacing.lg};
-  border: 1px solid ${theme.colors.primary};
-  border-radius: ${theme.radii.md};
-  background: transparent;
-  color: ${theme.colors.primary};
-  font-size: ${theme.fontSizes.sm};
-  font-weight: 600;
-  &:hover { background: ${theme.colors.surfaceAlt}; }
+const SkelCard = styled.div`
+  display: flex; flex-direction: column; gap: 10px; padding: ${theme.spacing.md};
+  border-radius: 18px; background: ${theme.colors.surface}; border: 1px solid ${theme.colors.borderLight};
 `;
+
+const StateIcon = styled.span`
+  width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: ${theme.colors.textLight}; background: ${theme.colors.surfaceAlt};
+`;
+
+const ErrorText = styled.span`color: ${theme.colors.text}; font-weight: 600; font-size: ${theme.fontSizes.md};`;
 
 export const InlineError = styled.div`
   grid-column: 1 / -1;
   text-align: center;
   padding: ${theme.spacing.sm} ${theme.spacing.md};
-  border: 1px solid ${theme.colors.error};
-  border-radius: ${theme.radii.md};
+  border: 1px solid color-mix(in srgb, ${theme.colors.error} 40%, transparent);
+  border-radius: 14px;
   background: ${theme.colors.bgError};
   color: ${theme.colors.error};
   font-size: ${theme.fontSizes.sm};
@@ -70,19 +66,29 @@ interface Props {
 export default function ListState({ loading, error, emptyText, onRetry }: Props) {
   if (loading) {
     return (
-      <Block role="status" aria-live="polite">
-        <Spinner aria-hidden="true" />
-        {HE.LOADING}
-      </Block>
+      <Skels role="status" aria-busy="true" aria-label={HE.LOADING}>
+        {[0, 1, 2].map(i => (
+          <SkelCard key={i}>
+            <Skeleton $w="45%" $h="18px" />
+            <SkeletonText lines={2} />
+          </SkelCard>
+        ))}
+      </Skels>
     );
   }
   if (error) {
     return (
       <Block role="alert">
+        <StateIcon aria-hidden="true"><LineIcon name="refresh" size={26} strokeWidth={1.7} /></StateIcon>
         <ErrorText>{HE.LOAD_ERROR}</ErrorText>
-        <RetryBtn onClick={onRetry}>{HE.LOAD_ERROR_RETRY}</RetryBtn>
+        <Button $variant="secondary" $size="sm" onClick={onRetry}>{HE.LOAD_ERROR_RETRY}</Button>
       </Block>
     );
   }
-  return <Block>{emptyText}</Block>;
+  return (
+    <Block role="status">
+      <StateIcon aria-hidden="true"><LineIcon name="search" size={24} strokeWidth={1.7} /></StateIcon>
+      {emptyText}
+    </Block>
+  );
 }

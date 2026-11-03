@@ -7,6 +7,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { LineIcon } from '@/components/common/LineIcons';
 import { Rabbi } from '@/types';
 import { matchYahrzeitRabbis, HebDateParts } from '@/lib/yahrzeit';
+import { Card, CardHeader } from './todayCardStyles';
 
 interface HebItem { title: string; date: string; category: string; hebrew?: string; memo?: string; }
 interface HebResp { items: HebItem[]; }
@@ -30,20 +31,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   yahrzeit:   HE.YAHRZEIT_BADGE,
 };
 
-const Card = styled.div`
-  background: ${theme.colors.surface};
-  border-radius: ${theme.radii.lg};
-  box-shadow: ${theme.shadows.md};
-  overflow: hidden;
-`;
-const CardHeader = styled.div`
-  background: ${theme.colors.primary};
-  color: ${theme.colors.onPrimary};
-  padding: ${theme.spacing.md} ${theme.spacing.lg};
-  font-weight: 700;
-  font-size: 1rem;
-  font-family: ${theme.fonts.body};
-`;
 const Body = styled.div`display: flex; flex-direction: column;`;
 const EventRow = styled.div`
   display: flex;

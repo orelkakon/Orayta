@@ -11,38 +11,24 @@ import ChidushCard from './ChidushCard';
 import ChidushForm from './ChidushForm';
 import SearchField from '@/components/common/SearchField';
 import ListState, { InlineError } from '@/components/common/ListState';
+import PageHeader from '@/components/ui/PageHeader';
+import { Button } from '@/components/ui/Button';
+import { LineIcon } from '@/components/common/LineIcons';
 
 const Container = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
 
 const StickyBar = styled.div`
-  position: sticky;
-  top: var(--header-h, 60px);
-  z-index: 50;
+  position: sticky; top: var(--header-h, 56px); z-index: ${theme.z.sticky};
+  margin: 0 calc(-1 * ${theme.layout.gutter});
+  padding: ${theme.spacing.sm} ${theme.layout.gutter};
   background: ${theme.colors.background};
-  margin-top: -${theme.spacing.xl};
-  padding-top: ${theme.spacing.xl};
-  padding-bottom: 2px;
+  background: color-mix(in srgb, ${theme.colors.background} 92%, transparent);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
   display: flex; flex-direction: column; gap: ${theme.spacing.sm};
-  @media (max-width: 600px) { margin-top: -${theme.spacing.md}; padding-top: ${theme.spacing.md}; }
-  @media (max-width: 480px) { top: var(--header-h, 52px); }
 `;
 
-const TitleRow = styled.div`
-  display: flex; align-items: flex-start;
-  justify-content: space-between; flex-wrap: wrap; gap: ${theme.spacing.md};
-`;
-const TitleGroup = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.xs};`;
-const Title = styled.h1`font-size: 1.8rem; color: ${theme.colors.primary};`;
-const Subtitle = styled.p`font-size: 0.95rem; color: ${theme.colors.textMuted};`;
 const CountBadge = styled.span`font-size: 0.82rem; color: ${theme.colors.textLight};`;
 
-const AddBtn = styled.button`
-  padding: ${theme.spacing.sm} ${theme.spacing.lg};
-  background: ${theme.colors.primary}; color: ${theme.colors.onPrimary};
-  border-radius: ${theme.radii.md}; font-size: 0.9rem; font-weight: 600;
-  flex-shrink: 0; align-self: flex-start;
-  &:hover { background: ${theme.colors.primaryLight}; }
-`;
 
 
 const List = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
@@ -107,19 +93,17 @@ export default function ChidushimView({ initialSearch = '' }: { initialSearch?: 
         />
       )}
 
+      <PageHeader
+          icon="bulb"
+          title={HE.CHIDUSHIM_TITLE}
+          subtitle={<>{HE.CHIDUSHIM_SUBTITLE}
+              {filtered.length > 0 && <CountBadge> {HE.CHIDUSHIM_COUNT(filtered.length)}</CountBadge>}</>}
+          actions={<>{role === 'admin' && (
+            <Button $size="sm" onClick={() => setAddOpen(true)}><LineIcon name="plus" size={17} strokeWidth={2.2} />{HE.CHIDUSHIM_ADD_BTN}</Button>
+          )}</>}
+        />
+
       <StickyBar>
-        <TitleRow>
-          <TitleGroup>
-            <Title>{HE.CHIDUSHIM_TITLE}</Title>
-            <Subtitle>
-              {HE.CHIDUSHIM_SUBTITLE}
-              {filtered.length > 0 && <CountBadge> {HE.CHIDUSHIM_COUNT(filtered.length)}</CountBadge>}
-            </Subtitle>
-          </TitleGroup>
-          {role === 'admin' && (
-            <AddBtn onClick={() => setAddOpen(true)}>{HE.CHIDUSHIM_ADD_BTN}</AddBtn>
-          )}
-        </TitleRow>
 
         <SearchField
           value={search}

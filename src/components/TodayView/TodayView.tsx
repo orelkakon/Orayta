@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { formatHebrewDate } from '@/lib/hebrewDate';
+import PageHeader from '@/components/ui/PageHeader';
 import ZmanimCard from './ZmanimCard';
 import HebrewCalendarCard from './HebrewCalendarCard';
 import CompassCard from './CompassCard';
@@ -18,43 +19,22 @@ import ShabbatTimes from './ShabbatTimes';
 export interface GeoLocation { lat: number; lon: number; tz: string; }
 export type LocState = 'loading' | 'granted' | 'denied';
 
+/**
+ * "יומי": the day at a glance. Phones read top-down in order of urgency —
+ * zmanim, today's learning, the omer in season, today in Orayta, then the
+ * calendar tools. From tablet width the cards flow into two columns.
+ */
 const Container = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
 
-const Header = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.xs};`;
-
-const Title = styled.h1`font-size: 1.8rem; color: ${theme.colors.primary};`;
-
-const HebrewDate = styled.div`
-  font-family: ${theme.fonts.body};
-  font-size: 1.5rem;
-  color: ${theme.colors.secondary};
-  font-weight: 600;
-  line-height: 1.3;
-`;
-
-const DayLine = styled.div`
-  font-family: ${theme.fonts.body};
-  font-size: 1rem;
-  color: ${theme.colors.text};
-  font-weight: 500;
-`;
-
-const Subtitle = styled.p`font-size: 0.95rem; color: ${theme.colors.textMuted};`;
-
 const Grid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: ${theme.spacing.lg};
-  align-items: start;
-  @media (max-width: 700px) { grid-template-columns: 1fr; }
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: ${theme.spacing.lg}; align-items: start;
+  ${theme.up.md} { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 `;
 
-const Col = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
+const Col = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg}; min-width: 0;`;
 
 interface ShabbatItem { title: string; category: string; }
 interface ShabbatResp { items?: ShabbatItem[]; }
-
-const DAYS_HE = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 
 export default function TodayView() {
   const [location, setLocation] = useState<GeoLocation | null>(null);
@@ -78,9 +58,8 @@ export default function TodayView() {
   }, [dateStr]);
 
   const dayIdx = today.getDay();
-  const isShabbat = dayIdx === 6;
-  const dayStr = isShabbat ? 'שבת קודש' : `יום ${DAYS_HE[dayIdx]} בשבת קודש`;
-  const dayLine = parasha ? `היום ${dayStr} (${parasha})` : '';
+  const weekday = dayIdx === 6 ? HE.TODAY_SHABBAT : HE.TODAY_WEEKDAY(HE.TODAY_DAYS[dayIdx]);
+  const subtitle = hebrewDate ? `${hebrewDate} · ${HE.TODAY_DAY_LINE(weekday, parasha)}` : HE.TODAY_SUBTITLE;
 
   const requestLocation = () => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
@@ -106,27 +85,22 @@ export default function TodayView() {
 
   return (
     <Container>
-      <Header>
-        <Title>{HE.TODAY_TITLE}</Title>
-        {hebrewDate && <HebrewDate>{hebrewDate}</HebrewDate>}
-        {dayLine && <DayLine>{dayLine}</DayLine>}
-        {dayIdx === 5 && <ShabbatTimes date={dateStr} />}
-        <Subtitle>{HE.TODAY_SUBTITLE}</Subtitle>
-      </Header>
-      <DailySection />
-      <PushOptInCard />
-      <EventsCard date={dateStr} />
+      <PageHeader icon="calendar" title={HE.TODAY_TITLE} subtitle={subtitle} />
+      {dayIdx === 5 && <ShabbatTimes date={dateStr} />}
       <Grid>
         <Col>
           <ZmanimCard location={location} locState={locState} date={dateStr} onRetry={requestLocation} />
-          <HebrewCalendarCard date={dateStr} />
+          <EventsCard date={dateStr} />
           <CompassCard location={location} locState={locState} onRetry={requestLocation} />
         </Col>
         <Col>
           <OmerTodayCard />
           <DafYomiCard />
+          <PushOptInCard />
+          <HebrewCalendarCard date={dateStr} />
         </Col>
       </Grid>
+      <DailySection />
     </Container>
   );
 }

@@ -5,6 +5,7 @@ import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { GeoLocation, LocState } from './TodayView';
+import { Card, CardHeader } from './todayCardStyles';
 
 const JLM = { lat: 31.7767, lon: 35.2345 };
 
@@ -22,22 +23,9 @@ function calcDistance(lat1: number, lon1: number, lat2: number, lon2: number): n
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
-const Card = styled.div`
-  background: ${theme.colors.surface};
-  border-radius: ${theme.radii.lg};
-  box-shadow: ${theme.shadows.md};
+const Body = styled.div`
   padding: ${theme.spacing.lg};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: ${theme.spacing.md};
-`;
-const CardTitle = styled.div`
-  font-weight: 700;
-  font-size: 1rem;
-  font-family: ${theme.fonts.body};
-  color: ${theme.colors.primary};
-  align-self: flex-start;
+  display: flex; flex-direction: column; align-items: center; gap: ${theme.spacing.md};
 `;
 const CompassWrap = styled.div`position: relative; width: 190px; height: 190px;`;
 const InfoRow = styled.div`
@@ -135,13 +123,14 @@ export default function CompassCard({ location, locState, onRetry }: Props) {
   const c = 95; // center
   const r = 82; // ring radius
   const cardinals = [
-    { label: 'צ', x: c, y: 12 }, { label: 'מז', x: 188, y: c + 4 },
-    { label: 'ד', x: c, y: 188 }, { label: 'מע', x: 6, y: c + 4 },
+    { label: HE.TODAY_COMPASS_DIRS.n, x: c, y: 12 }, { label: HE.TODAY_COMPASS_DIRS.e, x: 188, y: c + 4 },
+    { label: HE.TODAY_COMPASS_DIRS.s, x: c, y: 188 }, { label: HE.TODAY_COMPASS_DIRS.w, x: 6, y: c + 4 },
   ];
 
   return (
     <Card>
-      <CardTitle>{HE.TODAY_COMPASS_TITLE}</CardTitle>
+      <CardHeader>{HE.TODAY_COMPASS_TITLE}</CardHeader>
+      <Body>
       {locState !== 'granted' || bearing === null ? (
         locState === 'denied' ? (
           <Placeholder>
@@ -180,7 +169,7 @@ export default function CompassCard({ location, locState, onRetry }: Props) {
                 <circle cx={c} cy={c} r="5" fill="var(--color-text)" />
                 <circle cx={c} cy={c} r="2.5" fill="var(--color-surface)" />
               </g>
-              <text x={c} y={c - 66} textAnchor="middle" fontSize="8.5" fontWeight="700" fill="var(--color-primary)">ירושלים</text>
+              <text x={c} y={c - 66} textAnchor="middle" fontSize="8.5" fontWeight="700" fill="var(--color-primary)">{HE.TODAY_COMPASS_JERUSALEM}</text>
             </svg>
           </CompassWrap>
           <InfoRow>
@@ -200,6 +189,7 @@ export default function CompassCard({ location, locState, onRetry }: Props) {
           )}
         </>
       )}
+      </Body>
     </Card>
   );
 }

@@ -6,6 +6,8 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Citation } from '@/types';
 import Modal from '@/components/common/Modal';
+import { Button } from '@/components/ui/Button';
+import { LineIcon } from '@/components/common/LineIcons';
 
 const spin = keyframes`
   from { transform: rotate(0deg); }
@@ -50,20 +52,6 @@ const ButtonRow = styled.div`
   justify-content: flex-end;
 `;
 
-const NextBtn = styled.button`
-  padding: ${theme.spacing.sm} ${theme.spacing.xl};
-  background: ${theme.colors.primary};
-  color: ${theme.colors.onPrimary};
-  border-radius: ${theme.radii.md};
-  font-size: 0.95rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: ${theme.spacing.sm};
-  transition: background 0.15s;
-  &:hover { background: ${theme.colors.primaryLight}; }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
-`;
 
 const Spinner = styled.span`
   display: inline-block;
@@ -77,20 +65,6 @@ const Spinner = styled.span`
   animation: ${spin} 0.6s linear infinite;
 `;
 
-const RandomBtn = styled.button`
-  padding: ${theme.spacing.xs} ${theme.spacing.md};
-  background: ${theme.colors.surfaceAlt};
-  border: 2px solid ${theme.colors.border};
-  border-radius: ${theme.radii.md};
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: ${theme.colors.primary};
-  display: flex;
-  align-items: center;
-  gap: ${theme.spacing.xs};
-  transition: all 0.15s;
-  &:hover { background: ${theme.colors.borderLight}; border-color: ${theme.colors.primaryLight}; }
-`;
 
 interface Props {
   masechet: string;
@@ -130,9 +104,9 @@ export default function RandomCitationModal({ masechet, seder, search }: Props) 
 
   return (
     <>
-      <RandomBtn onClick={handleOpen}>
-        🎲 {HE.STUDY_RANDOM_BUTTON}
-      </RandomBtn>
+      <Button $variant="secondary" $size="sm" onClick={handleOpen}>
+        <LineIcon name="shuffle" size={16} strokeWidth={2} />{HE.STUDY_RANDOM_BUTTON}
+      </Button>
 
       {open && (
         <Modal title={HE.STUDY_RANDOM_TITLE} onClose={() => setOpen(false)}>
@@ -149,10 +123,10 @@ export default function RandomCitationModal({ masechet, seder, search }: Props) 
             </>
           )}
           <ButtonRow>
-            <NextBtn onClick={handleNext} disabled={loadingRandom}>
-              {loadingRandom ? <Spinner /> : null}
-              {HE.STUDY_RANDOM_NEXT} 🎲
-            </NextBtn>
+            <Button onClick={handleNext} disabled={loadingRandom}>
+              {loadingRandom ? <Spinner /> : <LineIcon name="shuffle" size={16} strokeWidth={2} />}
+              {HE.STUDY_RANDOM_NEXT}
+            </Button>
           </ButtonRow>
         </Modal>
       )}

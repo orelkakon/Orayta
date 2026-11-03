@@ -6,21 +6,8 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { GeoLocation, LocState } from './TodayView';
 import { ENTRIES, fmt, nextDay, HebcalZmanim, ZmanimTimes } from './zmanimEntries';
+import { Card, CardHeader } from './todayCardStyles';
 
-const Card = styled.div`
-  background: ${theme.colors.surface};
-  border-radius: ${theme.radii.lg};
-  box-shadow: ${theme.shadows.md};
-  overflow: hidden;
-`;
-const CardHeader = styled.div`
-  background: ${theme.colors.primary};
-  color: ${theme.colors.onPrimary};
-  padding: ${theme.spacing.md} ${theme.spacing.lg};
-  font-weight: 700;
-  font-size: 1rem;
-  font-family: ${theme.fonts.body};
-`;
 const List = styled.div`display: flex; flex-direction: column;`;
 const Row = styled.div<{ $past: boolean; $next: boolean }>`
   display: flex;

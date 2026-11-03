@@ -9,6 +9,7 @@ import { STORIES_HE } from './texts/stories';
 import { FEED_HE } from './texts/feed';
 import { READER_HE } from './texts/reader';
 import { PRAYERS_HE } from './texts/prayers';
+import { TODAY_HE } from './texts/today';
 
 export const HE = {
   APP_NAME: 'אורייתא',
@@ -220,6 +221,7 @@ export const HE = {
   RABBIS_TIMELINE_VIEW: 'ציר זמן',
   RABBIS_LIST_VIEW: 'רשימה',
   RABBIS_MAP_VIEW: 'מפה',
+  RABBIS_VIEW_ARIA: 'תצוגת הרבנים',
 
   ABOUT_SHARE_TITLE: 'שתף את אורייתא',
   ABOUT_SHARE_SUBTITLE: 'הפצה לחברים ובני משפחה',
@@ -265,7 +267,7 @@ export const HE = {
   DUPLICATE_RABBI: 'רב בשם זה כבר קיים במאגר',
 
   NAV_TODAY: 'לימוד יומי',
-  TODAY_TITLE: 'לוח יומי',
+  TODAY_TITLE: 'יומי',
   TODAY_SUBTITLE: 'זמנים, לימוד ואירועי היום',
   TODAY_LOCATION_REQUEST: 'אפשר גישה למיקום לקבלת זמני יום מדויקים',
   TODAY_LOCATION_BTN: 'אפשר מיקום',
@@ -411,7 +413,7 @@ export const HE = {
   SIKUMIM_SEARCH_PLACEHOLDER: 'חיפוש לפי שם ספר או סופר...',
   SIKUMIM_SEARCH_ENTRIES_PLACEHOLDER: 'חיפוש לפי כותרת...',
   SIKUMIM_BOOKS_EMPTY: 'עדיין אין ספרים — הוסף ספר כדי להתחיל',
-  SIKUMIM_ADD_BOOK_BTN: '+ ספר חדש',
+  SIKUMIM_ADD_BOOK_BTN: 'ספר חדש',
   SIKUMIM_BOOK_FORM_ADD_TITLE: 'הוסף ספר חדש',
   SIKUMIM_BOOK_FORM_EDIT_TITLE: 'עריכת ספר',
   SIKUMIM_BOOK_FORM_NAME: 'שם הספר',
@@ -1649,4 +1651,5 @@ export const HE = {
   ...FEED_HE,
   ...READER_HE,
   ...PRAYERS_HE,
+  ...TODAY_HE,
 };

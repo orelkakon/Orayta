@@ -9,26 +9,14 @@ import { buildHebMonth, addDays, fromISO, toISO } from '@/lib/hebrewMonth';
 import { buildYahrzeitEvents } from '@/lib/yahrzeit';
 import type { Rabbi } from '@/types';
 import CalendarGrid, { CalEvent, EVENT_COLORS } from './CalendarGrid';
+import { Card, CardHeader } from './todayCardStyles';
 
 interface HebItem { title: string; date: string; category: string; hebrew?: string; }
 interface HebResp { items?: HebItem[]; }
 
 const SHOWN = new Set(Object.keys(HE.TODAY_CAL_CATEGORIES));
 
-const Card = styled.div`
-  background: ${theme.colors.surface};
-  border-radius: ${theme.radii.lg};
-  box-shadow: ${theme.shadows.md};
-  overflow: hidden;
-`;
 
-const CardHeader = styled.div`
-  background: ${theme.colors.primary};
-  color: ${theme.colors.onPrimary};
-  padding: ${theme.spacing.md} ${theme.spacing.lg};
-  font-weight: 700; font-size: 1rem;
-  font-family: ${theme.fonts.body};
-`;
 
 const Toolbar = styled.div`
   display: flex; align-items: center; gap: ${theme.spacing.xs};

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Rabbi, Citation, Chidush } from '@/types';
@@ -10,53 +10,37 @@ import type { RabbiCategory } from '@/types';
 import { matchYahrzeitRabbis, HebDateParts } from '@/lib/yahrzeit';
 import { formatHebrewDate } from '@/lib/hebrewDate';
 import { shareDailyToWhatsApp, shareDailyToStory, DailySikum } from '@/lib/dailyShare';
+import { LineIcon } from '@/components/common/LineIcons';
+import { Button } from '@/components/ui/Button';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 const DAY = Math.floor(Date.now() / 86400000);
 const pick = <T,>(arr: T[]): T | null => arr.length ? arr[DAY % arr.length] : null;
 
 type HebConverterResp = HebDateParts;
 
-const Wrapper = styled.div`width: 100%; display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
+const Wrapper = styled.section`width: 100%; display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
 
 const Header = styled.div`
-  display: flex; align-items: center; gap: ${theme.spacing.xs};
-  border-bottom: 2px solid ${theme.colors.borderLight}; padding-bottom: ${theme.spacing.sm};
+  display: flex; align-items: center; gap: ${theme.spacing.sm}; flex-wrap: wrap;
 `;
 
-const Title = styled.h2`font-size: 1rem; font-weight: 600; color: ${theme.colors.textMuted};`;
-
-const ShareBtn = styled.button`
-  margin-inline-start: auto;
-  display: inline-flex; align-items: center; gap: 6px;
-  background: linear-gradient(135deg, #25D366 0%, #1DA851 100%);
-  color: white; font-size: 0.8rem; font-weight: 700;
-  padding: 6px 14px; border-radius: 20px;
-  box-shadow: ${theme.shadows.sm};
-  transition: transform 0.15s, box-shadow 0.15s;
-  &:hover { transform: translateY(-1px); box-shadow: ${theme.shadows.md}; }
-  &:active { transform: scale(0.96); }
-`;
-
-const StoryBtn = styled(ShareBtn)`
-  margin-inline-start: ${theme.spacing.sm};
-  background: linear-gradient(45deg, #f09433, #dc2743, #bc1888);
-`;
+const Title = styled.h2`flex: 1; font-size: ${theme.fontSizes.xl}; color: ${theme.colors.text};`;
 
 const Cards = styled.div`
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: ${theme.spacing.sm};
-  @media (max-width: 800px) { grid-template-columns: repeat(2, 1fr); }
-  @media (max-width: 400px) { grid-template-columns: 1fr; }
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: ${theme.spacing.sm};
+  ${theme.up.sm} { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 `;
 
 const DayCard = styled.div`
-  background: ${theme.colors.surfaceAlt}; border-radius: ${theme.radii.md};
-  border: 1px solid ${theme.colors.borderLight};
+  background: ${theme.colors.surface}; border-radius: 18px;
+  border: 1px solid ${theme.colors.borderLight}; box-shadow: ${theme.shadows.sm};
   padding: ${theme.spacing.md}; display: flex; flex-direction: column; gap: 5px;
 `;
 
 const Label = styled.div`
-  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em;
-  color: ${theme.colors.textLight}; margin-bottom: 2px;
+  font-size: ${theme.fontSizes.xs}; font-weight: 700;
+  color: ${theme.colors.secondaryText}; margin-bottom: 2px;
 `;
 
 const Badge = styled.span<{ $color: string }>`
@@ -65,28 +49,18 @@ const Badge = styled.span<{ $color: string }>`
   border-radius: ${theme.radii.sm}; padding: 1px 6px; align-self: flex-start;
 `;
 
-const CardTitle = styled.div`font-size: 0.9rem; font-weight: 700; color: ${theme.colors.text}; line-height: 1.3;`;
-const CardSub = styled.div`font-size: 0.75rem; color: ${theme.colors.secondary}; font-weight: 500;`;
-const Snippet = styled.div`font-size: 0.8rem; color: ${theme.colors.textMuted}; line-height: 1.55; margin-top: 2px;`;
+const CardTitle = styled.div`font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.lg}; font-weight: 700; color: ${theme.colors.text}; line-height: 1.3;`;
+const CardSub = styled.div`font-size: ${theme.fontSizes.xs}; color: ${theme.colors.textMuted}; font-weight: 500;`;
+const Snippet = styled.div`
+  font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.md}; color: ${theme.colors.text}; line-height: 1.7; margin-top: 2px;
+  display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
+`;
 
 const Divider = styled.div`
   height: 1px; background: ${theme.colors.borderLight}; margin: 4px 0;
 `;
 
-const spin = keyframes`to { transform: rotate(360deg); }`;
-
-const Spinner = styled.span`
-  width: 24px; height: 24px; border-radius: 50%;
-  border: 2px solid ${theme.colors.borderLight};
-  border-top-color: ${theme.colors.primary};
-  animation: ${spin} 0.8s linear infinite;
-  @media (prefers-reduced-motion: reduce) { animation-duration: 2.4s; }
-`;
-
-const LoadingBox = styled.div`
-  min-height: 140px; width: 100%;
-  display: flex; align-items: center; justify-content: center;
-`;
+const SkelGrid = styled(Cards)`& > span { border-radius: 18px; }`;
 
 export default function DailySection() {
   const [rabbi, setRabbi] = useState<Rabbi | null>(null);
@@ -127,10 +101,8 @@ export default function DailySection() {
 
   if (!ready) {
     return (
-      <Wrapper>
-        <LoadingBox role="status" aria-label={HE.LOADING}>
-          <Spinner aria-hidden="true" />
-        </LoadingBox>
+      <Wrapper aria-busy="true" aria-label={HE.LOADING}>
+        <SkelGrid>{[0, 1, 2, 3].map(i => <Skeleton key={i} $h="150px" />)}</SkelGrid>
       </Wrapper>
     );
   }
@@ -149,12 +121,13 @@ export default function DailySection() {
   return (
     <Wrapper>
       <Header>
-        <span>📅</span>
         <Title>{HE.DAILY_TITLE}</Title>
-        <ShareBtn onClick={handleShare}>💬 {HE.DAILY_SHARE_WA}</ShareBtn>
-        <StoryBtn onClick={() => void shareDailyToStory({ hebrewDate, rabbi, citation, sikum, chidush, yahrzeitNames })}>
-          📸 {HE.STORY_SHARE_IG}
-        </StoryBtn>
+        <Button $variant="secondary" $size="sm" onClick={handleShare}>
+          <LineIcon name="send" size={16} strokeWidth={1.9} />{HE.DAILY_SHARE_WA}
+        </Button>
+        <Button $variant="secondary" $size="sm" onClick={() => void shareDailyToStory({ hebrewDate, rabbi, citation, sikum, chidush, yahrzeitNames })}>
+          <LineIcon name="camera" size={16} strokeWidth={1.9} />{HE.STORY_SHARE_IG}
+        </Button>
       </Header>
       <Cards>
         {/* Combined rabbi + book card */}
@@ -182,7 +155,7 @@ export default function DailySection() {
             <CardTitle>{sikum.book.name}</CardTitle>
             {sikum.book.author && <CardSub>{sikum.book.author}</CardSub>}
             <Divider />
-            {sikum.title && <CardTitle style={{ fontSize: '0.82rem' }}>{sikum.title}</CardTitle>}
+            {sikum.title && <CardSub>{sikum.title}</CardSub>}
             <Snippet>{sikum.text}</Snippet>
           </DayCard>
         )}

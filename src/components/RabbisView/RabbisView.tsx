@@ -14,6 +14,10 @@ import RabbiForm from './RabbiForm';
 import RabbisTimeline from './RabbisTimeline';
 import SearchField from '@/components/common/SearchField';
 import ListState, { InlineError } from '@/components/common/ListState';
+import PageHeader from '@/components/ui/PageHeader';
+import SegmentedControl from '@/components/ui/SegmentedControl';
+import { Button } from '@/components/ui/Button';
+import { LineIcon } from '@/components/common/LineIcons';
 
 const RabbisMap = dynamic(() => import('./RabbisMapInner'), {
   ssr: false,
@@ -33,47 +37,19 @@ const Container = styled.div`
 `;
 
 const StickyBar = styled.div`
-  position: sticky;
-  top: var(--header-h, 60px);
-  z-index: 50;
+  position: sticky; top: var(--header-h, 56px); z-index: ${theme.z.sticky};
+  margin: 0 calc(-1 * ${theme.layout.gutter});
+  padding: ${theme.spacing.sm} ${theme.layout.gutter};
   background: ${theme.colors.background};
-  margin-top: -${theme.spacing.xl};
-  padding-top: ${theme.spacing.xl};
-  padding-bottom: 2px;
+  background: color-mix(in srgb, ${theme.colors.background} 92%, transparent);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
   display: flex; flex-direction: column; gap: ${theme.spacing.sm};
-  @media (max-width: 600px) { margin-top: -${theme.spacing.md}; padding-top: ${theme.spacing.md}; }
-  @media (max-width: 480px) { top: var(--header-h, 52px); }
 `;
 
-const TitleRow = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: ${theme.spacing.md};
-  @media (max-width: 520px) {
-    flex-direction: column;
-  }
-`;
 
-const TitleGroup = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.xs};`;
 
-const AddBtn = styled.button`
-  padding: ${theme.spacing.sm} ${theme.spacing.lg};
-  background: ${theme.colors.primary}; color: ${theme.colors.onPrimary};
-  border-radius: ${theme.radii.md}; font-size: 0.9rem; font-weight: 600;
-  flex-shrink: 0; align-self: flex-start;
-  &:hover { background: ${theme.colors.primaryLight}; }
-`;
 
-const Title = styled.h1`
-  font-size: 1.8rem;
-  color: ${theme.colors.primary};
-`;
 
-const Subtitle = styled.p`
-  font-size: 0.95rem;
-  color: ${theme.colors.textMuted};
-`;
 
 const CountBadge = styled.span`
   font-size: 0.82rem;
@@ -99,7 +75,7 @@ const Tab = styled.button<{ $active: boolean; $color?: string }>`
   border: 2px solid ${({ $active, $color }) =>
     $active ? ($color ?? theme.colors.primary) : theme.colors.borderLight};
   background: ${({ $active, $color }) =>
-    $active ? ($color ?? theme.colors.primary) + '18' : 'transparent'};
+    $active ? `color-mix(in srgb, ${$color ?? theme.colors.primary} 10%, transparent)` : 'transparent'};
   color: ${({ $active, $color }) =>
     $active ? ($color ?? theme.colors.primary) : theme.colors.textMuted};
   transition: all 0.15s;
@@ -119,21 +95,11 @@ const Grid = styled.div`
 `;
 
 /* Segment toggle — pill style, visually distinct from action buttons */
-const SegmentRow = styled.div`
-  display: flex;
-  border: 1.5px solid ${theme.colors.border};
-  border-radius: ${theme.radii.md};
-  overflow: hidden;
-`;
-const SegBtn = styled.button<{ $active: boolean }>`
-  padding: ${theme.spacing.xs} ${theme.spacing.md};
-  font-size: 0.82rem; font-weight: 600;
-  border-left: 1.5px solid ${theme.colors.border};
-  background: ${({ $active }) => $active ? theme.colors.primary : 'transparent'};
-  color: ${({ $active }) => $active ? theme.colors.onPrimary : theme.colors.textMuted};
-  transition: all 0.15s;
-  &:first-child { border-left: none; }
-  &:hover { background: ${({ $active }) => $active ? theme.colors.primary : theme.colors.surfaceAlt}; }
+type RabbisViewMode = 'list' | 'timeline' | 'map';
+
+const ViewSwitch = styled.div`
+  margin: -${theme.spacing.sm} 0 ${theme.spacing.xs};
+  ${theme.up.md} { max-width: 420px; }
 `;
 
 interface Props { initialSearch?: string; }
@@ -148,7 +114,7 @@ export default function RabbisView({ initialSearch = '' }: Props) {
   const [search, setSearch] = useState(initialSearch);
   const [editRabbi, setEditRabbi] = useState<Rabbi | null>(null);
   const [addOpen, setAddOpen] = useState(false);
-  const [view, setView] = useState<'list' | 'timeline' | 'map'>('list');
+  const [view, setView] = useState<RabbisViewMode>('list');
   const role = useRole();
 
   // Only the first load blanks the list for a spinner; refreshes after a
@@ -212,26 +178,15 @@ export default function RabbisView({ initialSearch = '' }: Props) {
         />
       )}
 
+      <PageHeader
+          icon="users"
+          title={HE.RABBIS_TITLE}
+          subtitle={<>{HE.RABBIS_SUBTITLE}
+              {filtered.length > 0 && <CountBadge> {HE.RABBIS_COUNT(filtered.length)}</CountBadge>}</>}
+          actions={role === 'admin' ? <Button $size="sm" onClick={() => setAddOpen(true)}><LineIcon name="plus" size={17} strokeWidth={2.2} />{HE.RABBI_ADD_BTN}</Button> : undefined}
+        />
+
       <StickyBar>
-        <TitleRow>
-          <TitleGroup>
-            <Title>{HE.RABBIS_TITLE}</Title>
-            <Subtitle>
-              {HE.RABBIS_SUBTITLE}
-              {filtered.length > 0 && <CountBadge> {HE.RABBIS_COUNT(filtered.length)}</CountBadge>}
-            </Subtitle>
-          </TitleGroup>
-          <div style={{ display: 'flex', flexDirection: 'row', gap: theme.spacing.sm, alignItems: 'center' }}>
-            {role === 'admin' && (
-              <AddBtn onClick={() => setAddOpen(true)}>{HE.RABBI_ADD_BTN}</AddBtn>
-            )}
-            <SegmentRow>
-              <SegBtn $active={view === 'list'}     onClick={() => setView('list')}>📋 {HE.RABBIS_LIST_VIEW}</SegBtn>
-              <SegBtn $active={view === 'timeline'} onClick={() => setView('timeline')}>📅 {HE.RABBIS_TIMELINE_VIEW}</SegBtn>
-              <SegBtn $active={view === 'map'}      onClick={() => setView('map')}>🗺️ {HE.RABBIS_MAP_VIEW}</SegBtn>
-            </SegmentRow>
-          </div>
-        </TitleRow>
 
         <SearchField
           value={search}
