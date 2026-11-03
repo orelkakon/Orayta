@@ -8,7 +8,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { readBotLocal } from '@/lib/rabbiBot/client';
 import RabbiBotAvatar from './RabbiBotAvatar';
 
-/* Bottom-left, above the tab bar (its live --tabbar-h) and the home
+/* Bottom-left, above the tab bar (theme.layout.tabbarClear) and the home
    indicator; sheets, the feed overlay and modals all cover it. */
 
 const ring = keyframes`
@@ -22,7 +22,8 @@ const Corner = styled.div`
   bottom: calc(max(var(--tabbar-h, 0px), ${theme.safe.bottom}) + 16px);
   left: calc(16px + ${theme.safe.left});
   display: flex; align-items: flex-end; gap: ${theme.spacing.sm}; direction: ltr;
-  ${theme.media.compact} { bottom: calc(max(var(--tabbar-h, 0px), ${theme.safe.bottom}) + 12px); left: calc(12px + ${theme.safe.left}); }
+  /* Well clear of the tab bar (and its "עוד" tab under this corner). */
+  ${theme.media.compact} { bottom: calc(${theme.layout.tabbarClear} + 20px); left: calc(12px + ${theme.safe.left}); }
 `;
 
 const Button = styled.button`

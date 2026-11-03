@@ -106,6 +106,8 @@ export const theme = {
     right:  'env(safe-area-inset-right, 0px)',
   },
   layout: {
+    /** Bottom clearance above the tab bar (compact screens only). */
+    tabbarClear: 'max(var(--tabbar-h, 0px), calc(58px + env(safe-area-inset-bottom, 0px)))',
     content: '1000px',
     wide:    '1180px',
     // Comfortable line length for long Hebrew reading (siddur, texts).

@@ -14,7 +14,7 @@ const Foot = styled.footer`
   ${theme.media.compact} {
     /* Clear the fixed bottom tab bar (its live height) and the floating
        רבי־בוט button on the left edge. */
-    padding: ${theme.spacing.md} 72px calc(var(--tabbar-h, 0px) + ${theme.spacing.md});
+    padding: ${theme.spacing.md} 72px calc(${theme.layout.tabbarClear} + ${theme.spacing.md});
   }
 `;
 

@@ -11,7 +11,8 @@ const rise = keyframes`from { opacity: 0; transform: translate(-50%, 12px); } to
 
 const Wrap = styled.div`
   position: fixed; left: 50%; z-index: ${theme.z.toast};
-  bottom: calc(max(var(--tabbar-h, 0px), ${theme.safe.bottom}) + 16px);
+  bottom: calc(${theme.safe.bottom} + 16px);
+  ${theme.media.compact} { bottom: calc(${theme.layout.tabbarClear} + 16px); }
   transform: translateX(-50%);
   display: flex; align-items: center; gap: 4px; padding: 4px;
   max-width: calc(100vw - 32px);
