@@ -1,6 +1,7 @@
 import { createHash } from 'crypto';
 import type { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
+import { isAdmin } from '@/lib/auth';
 import { clientIp } from '@/lib/minyan/server';
 import { withDeadline } from '@/lib/minyan/sources/cache';
 import type { NearbySearchInput, NearbyAdminStats } from '@/types/nearbyStats';
@@ -21,6 +22,8 @@ export function warmNearbyStats(): void {
 
 /** Records a search; never throws and never delays the answer by more than ~1.5s. */
 export async function recordNearbySearch(req: NextRequest, s: NearbySearchInput): Promise<void> {
+  // The admin's own searches never count toward the stats.
+  if (isAdmin(req)) return;
   const ipHash = createHash('sha256').update(`${clientIp(req)}|orayta_nearby_v1`).digest('hex');
   const write = prisma.nearbySearch.create({
     data: {

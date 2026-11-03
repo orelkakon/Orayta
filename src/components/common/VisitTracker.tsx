@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
-import { trackDaily, trackOnce } from '@/lib/track';
+import { trackDaily, trackOnce, isAdminBrowser } from '@/lib/track';
 
 export default function VisitTracker() {
   useEffect(() => {
+    // The admin's own visits never count (the server also refuses them).
+    if (isAdminBrowser()) return;
     void fetch('/api/visits', { method: 'POST' });
     trackDaily('users');
 

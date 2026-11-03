@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { isAdmin } from '@/lib/auth';
 import { candleKey, israelIso, hebrewDayAnchor } from '@/lib/push/hilula';
 import { pushIpHash } from '@/lib/push/server';
 
@@ -12,6 +13,11 @@ const seen = new Map<string, number>();
 
 export async function POST(req: NextRequest) {
   const day = israelIso(hebrewDayAnchor(new Date()));
+  // The admin's own candles don't add to the public counter.
+  if (isAdmin(req)) {
+    const row = await prisma.globalCounter.findUnique({ where: { key: candleKey(day) } });
+    return NextResponse.json({ candles: row?.value ?? 0 });
+  }
   const key = `${day}|${pushIpHash(req)}`;
   const n = seen.get(key) ?? 0;
   if (seen.size > 5000) seen.clear();

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdmin } from '@/lib/auth';
 import type { RabbiBotEvent, RabbiBotAnswer } from '@/types/rabbiBot';
 import { validateQuestion, quotaResetAt, ANSWER_VERSION } from '@/lib/rabbiBot/rules';
 import { questionKey } from '@/lib/rabbiBot/text';
@@ -31,8 +32,11 @@ export async function POST(req: NextRequest) {
   if (!v.ok) return json({ type: 'error', error: v.error }, 400);
 
   const ipHash = botIpHash(req);
+  // The admin's questions are answered but never logged, so they don't
+  // count in the bot's statistics.
+  const admin = isAdmin(req);
   await purgeOld();
-  if (await isRateLimited(ipHash)) return json({ type: 'error', error: 'rate_limited' }, 429);
+  if (!admin && await isRateLimited(ipHash)) return json({ type: 'error', error: 'rate_limited' }, 429);
 
   const qHash = `v${ANSWER_VERSION}:${questionKey(v.text)}`;
   const started = Date.now();
@@ -43,6 +47,7 @@ export async function POST(req: NextRequest) {
     async start(controller) {
       const send = (e: RabbiBotEvent) => controller.enqueue(encoder.encode(`${JSON.stringify(e)}\n`));
       const finish = async (answer: RabbiBotAnswer, model: string | null, fromCache: boolean) => {
+        if (admin) { send({ type: 'done', id: '', token: '', answer }); return; }
         const id = await saveQuestion({
           question: v.text, qHash, ipHash, answer, model, cached: fromCache, latencyMs: Date.now() - started,
         });

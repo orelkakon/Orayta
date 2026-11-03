@@ -241,6 +241,8 @@ On login, the API sets **two cookies**:
 
 `RoleProvider` (in root layout) reads the `role` cookie in `useEffect`. **Critical:** Login uses `window.location.href` (not `router.push`) so `RoleProvider` re-mounts and picks up the new cookie. On logout, `clearStats()` is called before redirecting.
 
+**The admin is never counted.** Every statistic skips an admin request on the server via `isAdmin(req)`: visits, `/api/track`, shares, quiz answers, feed saves and likes, hilula candles, nearby-search rows, and רבי־בוט questions (answered but not logged; feedback is a no-op). The client also sends no tracking pings while the `role=admin` cookie is set (`isAdminBrowser()` in `lib/track.ts`). New counters must follow the same rule.
+
 All mutation API routes must call `isAdmin(req)` from `src/lib/auth.ts` — never compare the cookie to a plain string. Public write endpoints (contact, dedication requests) must be rate-limited and validated.
 
 Required production env vars (set in Vercel): `PASSCODE` (admin passcode), `AUTH_SECRET` (long random string for cookie signing). Login returns 503 in production if `PASSCODE` is missing.

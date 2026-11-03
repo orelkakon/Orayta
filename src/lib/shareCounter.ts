@@ -1,3 +1,5 @@
+import { isAdminBrowser } from '@/lib/track';
+
 export type ShareKind = 'wa' | 'story' | 'tg';
 
 /**
@@ -6,6 +8,7 @@ export type ShareKind = 'wa' | 'story' | 'tg';
  * blocks or breaks the share flow itself, even if the network call fails.
  */
 export function trackShare(kind: ShareKind = 'wa'): void {
+  if (isAdminBrowser()) return;
   const safe: ShareKind = kind === 'story' || kind === 'tg' ? kind : 'wa';
   void fetch('/api/shares', {
     method: 'POST',

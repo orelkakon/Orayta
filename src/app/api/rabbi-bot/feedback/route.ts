@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdmin } from '@/lib/auth';
 import { isRating } from '@/lib/rabbiBot/rules';
 import { normalizeCommentText } from '@/lib/feedComments';
 import { applyFeedback, verifyQuestionToken } from '@/lib/rabbiBot/store';
@@ -9,6 +10,8 @@ const NOTE_MAX = 500;
 
 /** Public: the asker rates an answer (1–5) or reports an error. Owner = signed token from /ask. */
 export async function POST(req: NextRequest) {
+  // Admin answers aren't logged (see /ask), so their ratings are a no-op.
+  if (isAdmin(req)) return NextResponse.json({ ok: true });
   const body = await req.json().catch(() => null) as
     { id?: unknown; token?: unknown; rating?: unknown; report?: unknown; note?: unknown } | null;
   const id = typeof body?.id === 'string' ? body.id : '';

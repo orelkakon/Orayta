@@ -9,7 +9,13 @@ export type TrackMetric =
   | 'users' | 'feed' | 'content' | 'today' | 'pwa'
   | 'stories' | 'quiz' | 'rabbis' | 'study' | 'sikumim' | 'chidushim' | 'gematria' | 'live';
 
+/** UI-only role cookie — the server re-checks with the signed auth cookie. */
+export function isAdminBrowser(): boolean {
+  try { return /(?:^|;\s*)role=admin(?:;|$)/.test(document.cookie); } catch { return false; }
+}
+
 function post(metric: TrackMetric) {
+  if (isAdminBrowser()) return;
   void fetch('/api/track', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -31,17 +37,20 @@ function firstTime(storage: Storage, key: string, value: string): boolean {
 
 /** Counts once per device per calendar day — daily active users. */
 export function trackDaily(metric: TrackMetric) {
+  if (isAdminBrowser()) return;
   const today = new Date().toLocaleDateString('en-CA');
   if (firstTime(localStorage, `orayta_track_day_${metric}`, today)) post(metric);
 }
 
 /** Counts once per browsing session — section entries. */
 export function trackSession(metric: TrackMetric) {
+  if (isAdminBrowser()) return;
   if (firstTime(sessionStorage, `orayta_track_ses_${metric}`, '1')) post(metric);
 }
 
 /** Counts once ever per device — e.g. PWA install. */
 export function trackOnce(metric: TrackMetric) {
+  if (isAdminBrowser()) return;
   if (firstTime(localStorage, `orayta_track_once_${metric}`, '1')) post(metric);
 }
 
