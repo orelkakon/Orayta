@@ -9,4 +9,14 @@ export const NEARBY_HE = {
     { href: '/mikveh', icon: 'droplet', label: 'מקווה', sub: 'נשים · גברים · כלים' },
     { href: '/kivrei', icon: 'tomb', label: 'קברי צדיקים', sub: 'ציונים והילולות' },
   ] as { href: string; icon: string; label: string; sub: string }[],
+
+  /* Shared nearby-page UI (list/map layout, details, cross-links). */
+  NB_VIEW_ARIA: 'תצוגת התוצאות',
+  NB_VIEW_LIST: 'רשימה',
+  NB_VIEW_MAP: 'מפה',
+  NB_ABOUT: 'על המידע בעמוד',
+  NB_ALSO: 'גם בסביבה',
+  NB_DETAILS: 'פרטים ומקורות',
+  NB_REFRESHING: 'מעדכן את התוצאות…',
+  NB_MAP_HINT: 'הקישו על סיכה כדי לראות פרטים',
 };

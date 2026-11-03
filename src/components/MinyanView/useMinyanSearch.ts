@@ -8,13 +8,45 @@ export type Phase = 'idle' | 'locating' | 'loading' | 'ready' | 'denied' | 'unav
 
 export interface Origin { lat: number; lng: number; label: string | null; }
 
+/* The last search origin is shared by מניין · מקווה · קברי צדיקים for a
+   while, so moving between them doesn't ask for the location again. Kept
+   in sessionStorage only (this tab), never sent anywhere else. */
+const SHARED_KEY = 'orayta_nearby_origin';
+const SHARED_TTL_MS = 30 * 60 * 1000;
+
+function readShared(): Origin | null {
+  try {
+    const v = JSON.parse(sessionStorage.getItem(SHARED_KEY) ?? 'null') as (Origin & { t: number }) | null;
+    if (!v || Date.now() - v.t > SHARED_TTL_MS || typeof v.lat !== 'number' || typeof v.lng !== 'number') return null;
+    return { lat: v.lat, lng: v.lng, label: v.label ?? null };
+  } catch { return null; }
+}
+
+function writeShared(o: Origin): void {
+  try { sessionStorage.setItem(SHARED_KEY, JSON.stringify({ ...o, t: Date.now() })); } catch {}
+}
+
 /**
- * Location + results state for a "near me" page (מניין קרוב, מקווה בסביבה).
+ * Location + results state for a "near me" page (מניין, מקווה, קברי צדיקים).
  * Never prompts for location on its own: the browser prompt only appears
  * after the user taps "use my location", except when permission was already
- * granted earlier (then we locate at once).
+ * granted earlier (then we locate at once) or another nearby page searched
+ * from somewhere a moment ago (shared origin). While a new radius loads, the
+ * previous results stay on screen (`refreshing`).
  */
-export function useNearbySearch<T>(endpoint: string, defaultRadius: number) {
+export interface NearbySearch<T> {
+  phase: Phase;
+  origin: Origin | null;
+  radius: number;
+  data: T | null;
+  refreshing: boolean;
+  locate: () => void;
+  searchAt: (o: Origin) => void;
+  changeRadius: (r: number) => void;
+  retry: () => void;
+}
+
+export function useNearbySearch<T>(endpoint: string, defaultRadius: number): NearbySearch<T> {
   const [phase, setPhase] = useState<Phase>('idle');
   const [origin, setOrigin] = useState<Origin | null>(null);
   const [radius, setRadius] = useState<number>(defaultRadius);
@@ -42,6 +74,7 @@ export function useNearbySearch<T>(endpoint: string, defaultRadius: number) {
 
   const searchAt = useCallback((o: Origin) => {
     setOrigin(o);
+    writeShared(o);
     void load(o, radius);
   }, [load, radius]);
 
@@ -55,9 +88,12 @@ export function useNearbySearch<T>(endpoint: string, defaultRadius: number) {
     );
   }, [searchAt]);
 
-  // Auto-locate only when the visitor already granted permission before.
+  // Reuse a fresh shared origin; otherwise auto-locate only when the visitor
+  // already granted permission before.
   useEffect(() => {
     let cancelled = false;
+    const shared = readShared();
+    if (shared) { searchAt(shared); return; }
     navigator.permissions?.query({ name: 'geolocation' })
       .then(p => { if (!cancelled && p.state === 'granted') locate(); })
       .catch(() => {});
@@ -74,7 +110,8 @@ export function useNearbySearch<T>(endpoint: string, defaultRadius: number) {
     if (origin) void load(origin, radius); else locate();
   }, [origin, radius, load, locate]);
 
-  return { phase, origin, radius, data, locate, searchAt, changeRadius, retry };
+  const refreshing = phase === 'loading' && data !== null;
+  return { phase, origin, radius, data, refreshing, locate, searchAt, changeRadius, retry };
 }
 
 export const useMinyanSearch = () => useNearbySearch<NearbyResponse>('/api/minyan/nearby', DEFAULT_RADIUS_M);

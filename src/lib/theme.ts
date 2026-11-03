@@ -158,6 +158,7 @@ export const theme = {
     glassHi: 'rgba(255, 255, 255, 0.22)',
     line:    'rgba(255, 255, 255, 0.18)',
     shade:   'rgba(0, 0, 0, 0.45)',
+    scrimStrong: 'rgba(20, 14, 8, 0.72)',
     lift:    '0 10px 24px -14px rgba(0, 0, 0, 0.6)',
     // Feed rail: the "liked" heart and the dark glass behind rail buttons.
     void:    '#050505',

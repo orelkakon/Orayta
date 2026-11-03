@@ -13,17 +13,19 @@ import { GoogleMapsIcon, WazeIcon } from '@/components/MinyanView/BrandIcons';
 import { IconAction, Muted } from '@/components/MinyanView/minyanStyles';
 import MikvehHours from './MikvehHours';
 import MikvehFacts from './MikvehFacts';
+import Disclosure from '@/components/Nearby/Disclosure';
 
 const TONE_COLOR = {
   women: theme.colors.accent, men: theme.colors.primary, both: theme.colors.success, unknown: theme.colors.border,
 };
 
+
 const Card = styled.article<{ $selected: boolean; $c: string }>`
   background: ${theme.colors.surface};
-  border: 1.5px solid ${p => (p.$selected ? theme.colors.primary : theme.colors.borderLight)};
+  border: 1px solid ${p => (p.$selected ? theme.colors.gold : theme.colors.borderLight)};
   border-inline-start: 4px solid ${p => p.$c};
-  border-radius: ${theme.radii.lg};
-  box-shadow: ${p => (p.$selected ? theme.shadows.md : theme.shadows.sm)};
+  border-radius: 18px;
+  box-shadow: ${p => (p.$selected ? `0 0 0 3px color-mix(in srgb, ${theme.colors.gold} 25%, transparent), ${theme.shadows.md}` : theme.shadows.sm)};
   padding: ${theme.spacing.md};
   display: flex; flex-direction: column; gap: ${theme.spacing.sm};
   scroll-margin-top: calc(var(--header-h, 64px) + 12px);
@@ -33,14 +35,14 @@ const Card = styled.article<{ $selected: boolean; $c: string }>`
 const Top = styled.div`display: flex; align-items: flex-start; gap: ${theme.spacing.sm};`;
 const Head = styled.button`flex: 1; min-width: 0; text-align: right; display: flex; flex-direction: column; gap: 2px;`;
 const NameRow = styled.span`display: flex; align-items: baseline; gap: ${theme.spacing.sm}; flex-wrap: wrap;`;
-const Name = styled.h3`font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.lg}; font-weight: 800; color: ${theme.colors.primary}; line-height: 1.3;`;
-const Distance = styled.span`font-size: ${theme.fontSizes.sm}; font-weight: 800; color: ${theme.colors.secondary}; font-variant-numeric: tabular-nums; white-space: nowrap;`;
+const Name = styled.h3`font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.lg}; font-weight: 700; color: ${theme.colors.text}; line-height: 1.3;`;
+const Distance = styled.span`font-size: ${theme.fontSizes.sm}; font-weight: 700; color: ${theme.colors.secondaryText}; font-variant-numeric: tabular-nums; white-space: nowrap;`;
 const Actions = styled.div`display: flex; gap: 6px; flex-shrink: 0;`;
 
 const Approx = styled.span`
   display: inline-flex; align-items: center; gap: 4px; align-self: flex-start;
   font-size: ${theme.fontSizes.xs}; color: ${theme.colors.text};
-  background: ${theme.colors.bgWarning}; border-radius: ${theme.radii.xl}; padding: 2px 10px;
+  background: ${theme.colors.bgWarning}; border-radius: ${theme.radii.pill}; padding: 3px 10px;
 `;
 
 const Phone = styled.p`
@@ -88,9 +90,9 @@ const MikvehCard = forwardRef<HTMLElement, Props>(function MikvehCard({ m, selec
       {approx && <Approx><LineIcon name="pin" size={13} /> {approx}</Approx>}
       <MikvehFacts m={m} />
       <MikvehHours hours={m.hours} />
+      <Disclosure label={HE.NB_DETAILS}>
       {m.phone && <Phone>{HE.MN_PHONE}: <a href={callHref ?? undefined}>{m.phone}</a></Phone>}
       {m.website && <Phone><a href={m.website} target="_blank" rel="noopener noreferrer">{HE.MN_WEBSITE} ↗</a></Phone>}
-
       <Sources>
         {HE.MK_SOURCES}:{' '}
         {m.sources.map((s, i) => {
@@ -105,6 +107,7 @@ const MikvehCard = forwardRef<HTMLElement, Props>(function MikvehCard({ m, selec
           );
         })}
       </Sources>
+      </Disclosure>
     </Card>
   );
 });

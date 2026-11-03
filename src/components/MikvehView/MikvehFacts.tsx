@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import type { Mikveh } from '@/types/mikveh';
+import { LineIcon } from '@/components/common/LineIcons';
 
 const Row = styled.ul`display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0;`;
 
@@ -28,7 +29,7 @@ export default function MikvehFacts({ m }: { m: Mikveh }) {
       {m.men && <Pill $tone="men">{HE.MK_TYPE_MEN}</Pill>}
       {m.vessels && <Pill $tone="plain">{HE.MK_TYPE_VESSELS}</Pill>}
       {!typeKnown && <Pill $tone="muted">{HE.MK_TYPE_UNKNOWN}</Pill>}
-      {m.accessibility && <Pill $tone={m.accessibility === 'none' ? 'muted' : 'plain'}>♿ {HE.MK_ACCESS[m.accessibility]}</Pill>}
+      {m.accessibility && <Pill $tone={m.accessibility === 'none' ? 'muted' : 'plain'}><LineIcon name="a11y" size={13} strokeWidth={2} /> {HE.MK_ACCESS[m.accessibility]}</Pill>}
       {m.brideRoom && <Pill $tone="plain">{HE.MK_BRIDE_ROOM}</Pill>}
       {m.shelter && <Pill $tone="plain">{HE.MK_SHELTER}</Pill>}
       {m.onDuty && <Pill $tone="plain">{HE.MK_ON_DUTY}</Pill>}

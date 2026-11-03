@@ -64,6 +64,16 @@ Map + distance-sorted list of synagogues near the visitor. **Fully automatic —
 - **Map tiles:** `src/lib/mapTiles.ts` (OSM standard tiles, keyless; CARTO now returns "API KEY REQUIRED" images). Override with `NEXT_PUBLIC_MAP_TILE_URL` / `NEXT_PUBLIC_MAP_TILE_ATTRIBUTION`. Leaflet path classes must be passed as the `className` prop, not inside `pathOptions` (setStyle ignores it).
 - **"חדש" badges:** `src/lib/newBadges.ts` — date-expiring, no follow-up commit needed.
 
+### Nearby UI (shared by `/minyan`, `/mikveh`, `/kivrei`)
+- **`Nearby/NearbyShell`:** the page frame (header, location bar / locate panel, skeleton, errors, then cross-links and a collapsed "על המידע" note).
+- **`Nearby/NearbyResultsLayout`:**
+  - Phones and tablets get a רשימה | מפה switch; the map view fills the screen and floats the tapped pin's card over it.
+  - Desktop shows the list beside a sticky full-height map.
+  - A new radius keeps the old results dimmed under a progress bar (`refreshing`).
+- **`NearbyMap`:** one map for all three. Teardrop DivIcon pins coloured by tone (`sched`/`nosched` for minyan), tiles inverted in dark mode, height from `--map-h`.
+- **Cards** keep the key facts visible and fold provenance into `Nearby/Disclosure` ("פרטים ומקורות").
+- **Shared origin:** the search origin is shared for 30 minutes in sessionStorage (`orayta_nearby_origin`), so switching pages doesn't ask again. The privacy policy says so.
+
 ### 2m. מקווה בסביבה — `/mikveh`
 Same flow as מניין קרוב (shared `useNearbySearch`, `LocatePanel`, `LocationBar` with `radii`, generic map `components/NearbyMap/`). Radii 2/5/10/20 km.
 - **Sources:** the Ministry of Religious Services dataset "מקוואות טהרה" on data.gov.il (`lib/mikveh/dataset.ts`, ~650 rows: women/men/vessels, summer/winter/Shabbat hours verbatim, phone, accessibility, bride room, מיגון, מקווה תורן — fetched whole once a day, stale up to 30 days) + OSM mikvaot from the snapshot only (`lib/mikveh/sources.ts`). The dataset has **no coordinates**: `src/lib/mikveh/data/mikveh-geo.json` (key `town|address`) is built by `npx tsx scripts/mikveh-geocode.ts` (Nominatim, 1 req/s, resumable — rerun when the dataset changes; new rows without an entry fall back to the town centre or are skipped). Precision e/s/a/c → exact/street/area/city; town-centre pins are listed but kept off the map.

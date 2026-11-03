@@ -5,6 +5,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import type { Audience, MikvehFilter } from '@/lib/mikveh/filter';
 import { Chip, Muted } from '@/components/MinyanView/minyanStyles';
+import { LineIcon } from '@/components/common/LineIcons';
 
 const Bar = styled.div`display: flex; flex-direction: column; gap: 6px;`;
 
@@ -44,7 +45,7 @@ export default function MikvehFilters({ filter, onChange, count }: Props) {
         <Sep aria-hidden="true" />
         <Chip $active={filter.accessible} aria-pressed={filter.accessible}
           onClick={() => onChange({ ...filter, accessible: !filter.accessible })}>
-          ♿ {HE.MK_FILTER_ACCESSIBLE}
+          <LineIcon name="a11y" size={15} strokeWidth={2} /> {HE.MK_FILTER_ACCESSIBLE}
         </Chip>
       </Row>
       <Muted role="status" aria-live="polite">{HE.MK_COUNT(count)}</Muted>

@@ -22,16 +22,16 @@ const Wrap = styled(Panel)`
 const Medallion = styled.div<{ $busy: boolean }>`
   width: 64px; height: 64px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  color: ${theme.colors.secondary};
-  background: radial-gradient(circle at 32% 28%, rgba(196,149,106,0.3), rgba(196,149,106,0.06));
-  border: 1.5px solid rgba(196,149,106,0.55);
+  color: ${theme.colors.primary};
+  background: radial-gradient(circle at 32% 28%, ${theme.colors.surface}, ${theme.colors.goldSoft} 80%);
+  border: 1.5px solid color-mix(in srgb, ${theme.colors.gold} 55%, transparent);
   animation: ${p => (p.$busy ? pulse : 'none')} 1.4s ease-out infinite;
   @media (prefers-reduced-motion: reduce) { animation: none; }
 `;
 
 const Title = styled.h2`
   font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.xl}; font-weight: 800;
-  color: ${theme.colors.primary};
+  color: ${theme.colors.text};
 `;
 
 const Sub = styled.p`font-size: ${theme.fontSizes.sm}; color: ${theme.colors.textMuted}; line-height: 1.6; max-width: 420px;`;

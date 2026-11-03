@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import type { Kever } from '@/lib/kivrei/types';
+import { LineIcon } from '@/components/common/LineIcons';
 
 const About = styled.p<{ $open: boolean }>`
   font-size: ${theme.fontSizes.sm}; line-height: 1.75; color: ${theme.colors.text};
@@ -57,7 +58,7 @@ export default function KeverDetails({ k }: { k: Kever }) {
           ? <span><b>{HE.KV_HOURS}</b><span dir="ltr">{k.hours}</span></span>
           : <Unknown>{HE.KV_HOURS_UNKNOWN}</Unknown>}
         {k.note && <span><b>{HE.KV_DIRECTIONS}</b>{k.note}</span>}
-        {k.wheelchair && HE.KV_WHEELCHAIR[k.wheelchair] && <span>♿ {HE.KV_WHEELCHAIR[k.wheelchair]}</span>}
+        {k.wheelchair && HE.KV_WHEELCHAIR[k.wheelchair] && <span><LineIcon name="a11y" size={13} strokeWidth={2} /> {HE.KV_WHEELCHAIR[k.wheelchair]}</span>}
       </Info>
 
       {(k.personUrl || k.siteUrl || k.osmUrl) && (

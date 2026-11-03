@@ -10,19 +10,20 @@ import { googleMapsUrl, wazeUrl, telHref } from '@/lib/minyan/geo';
 import ReliabilityBadge from './ReliabilityBadge';
 import ScheduleBlock from './ScheduleBlock';
 import SourcesLine from './SourcesLine';
+import Disclosure from '@/components/Nearby/Disclosure';
 import { GoogleMapsIcon, WazeIcon } from './BrandIcons';
 import { LEVEL_COLOR, IconAction, Muted } from './minyanStyles';
 
 const Card = styled.article<{ $selected: boolean; $c: string }>`
   background: ${theme.colors.surface};
-  border: 1.5px solid ${p => (p.$selected ? theme.colors.primary : theme.colors.borderLight)};
+  border: 1px solid ${p => (p.$selected ? theme.colors.gold : theme.colors.borderLight)};
   border-inline-start: 4px solid ${p => p.$c};
-  border-radius: ${theme.radii.lg};
-  box-shadow: ${p => (p.$selected ? theme.shadows.md : theme.shadows.sm)};
+  border-radius: 18px;
+  box-shadow: ${p => (p.$selected ? `0 0 0 3px color-mix(in srgb, ${theme.colors.gold} 25%, transparent), ${theme.shadows.md}` : theme.shadows.sm)};
   padding: ${theme.spacing.md};
   display: flex; flex-direction: column; gap: ${theme.spacing.sm};
-  scroll-margin-top: 80px;
-  transition: border-color ${theme.motion.fast} ease, box-shadow ${theme.motion.fast} ease;
+  scroll-margin-top: calc(var(--header-h, 56px) + 12px);
+  transition: border-color 0.15s ease, box-shadow 0.2s ease;
 `;
 
 /* Details on the start side, compact icon actions on the end side. */
@@ -36,12 +37,12 @@ const Head = styled.button`
 const NameRow = styled.span`display: flex; align-items: baseline; gap: ${theme.spacing.sm}; flex-wrap: wrap;`;
 
 const Name = styled.h3`
-  font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.lg}; font-weight: 800;
-  color: ${theme.colors.primary}; line-height: 1.3;
+  font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.lg}; font-weight: 700;
+  color: ${theme.colors.text}; line-height: 1.3;
 `;
 
 const Distance = styled.span`
-  font-size: ${theme.fontSizes.sm}; font-weight: 800; color: ${theme.colors.secondary};
+  font-size: ${theme.fontSizes.sm}; font-weight: 700; color: ${theme.colors.secondaryText};
   font-variant-numeric: tabular-nums; white-space: nowrap;
 `;
 
@@ -84,24 +85,26 @@ const SynagogueCard = forwardRef<HTMLElement, Props>(function SynagogueCard({ s,
         </Actions>
       </Top>
 
-      <ReliabilityBadge label={HE.MN_EXIST_LABEL} r={s.existence} />
       <ScheduleBlock schedules={s.schedules} reliability={s.schedule} />
 
-      {(s.phone || s.gabbai) && (
-        <Contact>
-          {s.phone && <>{HE.MN_PHONE}: <a href={callHref ?? undefined}>{s.phone.value}</a> <Muted>{HE.MN_VIA(HE.MN_PROVIDERS[s.phone.provider])}</Muted></>}
-          {s.phone && s.gabbai && <br />}
-          {s.gabbai && (
-            <>
-              {HE.MN_GABBAI}{s.gabbai.name ? `: ${s.gabbai.name}` : ''}
-              {s.gabbai.phone && <> · <a href={gabbaiHref ?? undefined}>{s.gabbai.phone}</a></>}
-              {' '}<Muted>{HE.MN_VIA(HE.MN_PROVIDERS[s.gabbai.provider])}</Muted>
-            </>
-          )}
-        </Contact>
-      )}
-      {s.website && <Contact><a href={s.website} target="_blank" rel="noopener noreferrer">{HE.MN_WEBSITE} ↗</a></Contact>}
-      <SourcesLine sources={s.sources} />
+      <Disclosure label={HE.NB_DETAILS}>
+        <ReliabilityBadge label={HE.MN_EXIST_LABEL} r={s.existence} />
+        {(s.phone || s.gabbai) && (
+          <Contact>
+            {s.phone && <>{HE.MN_PHONE}: <a href={callHref ?? undefined}>{s.phone.value}</a> <Muted>{HE.MN_VIA(HE.MN_PROVIDERS[s.phone.provider])}</Muted></>}
+            {s.phone && s.gabbai && <br />}
+            {s.gabbai && (
+              <>
+                {HE.MN_GABBAI}{s.gabbai.name ? `: ${s.gabbai.name}` : ''}
+                {s.gabbai.phone && <> · <a href={gabbaiHref ?? undefined}>{s.gabbai.phone}</a></>}
+                {' '}<Muted>{HE.MN_VIA(HE.MN_PROVIDERS[s.gabbai.provider])}</Muted>
+              </>
+            )}
+          </Contact>
+        )}
+        {s.website && <Contact><a href={s.website} target="_blank" rel="noopener noreferrer">{HE.MN_WEBSITE} ↗</a></Contact>}
+        <SourcesLine sources={s.sources} />
+      </Disclosure>
     </Card>
   );
 });
