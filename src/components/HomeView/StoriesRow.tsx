@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { getViewedKeys, markStoryViewed } from '@/lib/stories';
+import { groupStories, groupSeen, openIndex } from '@/lib/storyGroups';
 import { haptics } from '@/lib/haptics';
 import { Skeleton } from '@/components/ui/Skeleton';
 import StoryCircle from './StoryCircle';
@@ -33,13 +34,8 @@ export default function StoriesRow() {
   const [payload, setPayload] = useState<DailyStoriesPayload | null>(null);
   const [failed, setFailed] = useState(false);
   const [viewed, setViewed] = useState<Set<StoryKey>>(new Set());
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [open, setOpen] = useState<{ index: number; origin: DOMRect | null } | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
-
-  // Always open on the row's logical start — the first story at the far right.
-  useEffect(() => {
-    scrollerRef.current?.scrollTo({ left: 0 });
-  }, [payload]);
 
   useEffect(() => {
     fetch('/api/stories/daily')
@@ -52,12 +48,12 @@ export default function StoriesRow() {
       .catch(() => setFailed(true));
   }, []);
 
-  if (failed) return null;
+  // Always open on the row's logical start — the first group at the far right.
+  useEffect(() => { scrollerRef.current?.scrollTo({ left: 0 }); }, [payload]);
 
-  const openStory = (i: number) => {
-    haptics.tap();
-    setOpenIndex(i);
-  };
+  const grouped = useMemo(() => (payload ? groupStories(payload.stories) : null), [payload]);
+
+  if (failed) return null;
 
   const handleViewed = (key: StoryKey) => {
     if (payload) setViewed(markStoryViewed(payload.date, key));
@@ -66,31 +62,42 @@ export default function StoriesRow() {
   return (
     <section aria-label={HE.STORIES_KICKER}>
       <Scroller role="list" ref={scrollerRef}>
-        {payload
-          ? payload.stories.map((s, i) => (
-              <StoryCircle
-                key={s.key}
-                storyKey={s.key}
-                viewed={viewed.has(s.key)}
-                index={i}
-                imageUrl={s.key === 'rabbi' ? s.data.imageUrl : undefined}
-                onClick={() => openStory(i)}
-              />
-            ))
-          : Array.from({ length: 7 }, (_, i) => (
+        {grouped
+          ? grouped.groups.map((g, i) => {
+              const seen = groupSeen(g, viewed);
+              const cover = grouped.flat[openIndex(g, viewed)];
+              const rabbi = g.stories.find(st => st.key === 'rabbi');
+              const label = HE.STORY_GROUP_LABELS[g.id];
+              return (
+                <StoryCircle
+                  key={g.id}
+                  groupId={g.id}
+                  storyKey={rabbi ? 'rabbi' : cover.key}
+                  label={label}
+                  ariaLabel={HE.STORY_GROUP_ARIA(label, g.stories.length, seen)}
+                  viewed={seen}
+                  index={i}
+                  imageUrl={rabbi?.key === 'rabbi' ? rabbi.data.imageUrl : undefined}
+                  onOpen={origin => { haptics.tap(); setOpen({ index: openIndex(g, viewed), origin }); }}
+                />
+              );
+            })
+          : Array.from({ length: 5 }, (_, i) => (
               <SkelItem key={i} aria-hidden="true">
                 <Skeleton $w="68px" $h="68px" $r="50%" />
                 <Skeleton $w="48px" $h="10px" />
               </SkelItem>
             ))}
       </Scroller>
-      {openIndex !== null && payload && (
+      {open && grouped && (
         <StoryViewer
-          stories={payload.stories}
-          startIndex={openIndex}
+          groups={grouped.groups}
+          stories={grouped.flat}
+          startIndex={open.index}
+          origin={open.origin}
           viewed={viewed}
           onViewed={handleViewed}
-          onClose={() => setOpenIndex(null)}
+          onClose={() => setOpen(null)}
         />
       )}
     </section>

@@ -83,7 +83,12 @@ Each search on `/api/minyan|mikveh|kivrei/nearby` writes one `NearbySearch` row 
 
 ### Home (`/`, `HomeView/`)
 The page is "today in Orayta", in order of daily use:
-- Stories row.
+- Stories row: one circle per group (`lib/storyGroups.ts`, pure, tested). The 13 daily stories form 5 groups (לימוד יומי, גדולי ישראל, חידון, חידוש, צפייה).
+  - The viewer's progress bars cover only the current group.
+  - Opening a group resumes at its first unseen story.
+  - The viewer grows out of the tapped circle and shrinks back into it (`useStoryFlip`).
+  - Gestures (`useStoryGestures`): pull down to close (follows the finger), swipe or tap to move, hold to pause (the chrome fades).
+  - A tap inside the video embed pauses the clock.
 - `TodayHero`: a dark "night" card with the greeting, the Hebrew date and year, the parasha and occasions, and a `SunArc` showing where the sun is in Jerusalem. Its CTA is the prayer that fits now (`/siddur/<service>`).
 - Live strip, shown only while live.
 - `FeedTeaser`: today's first feed items (a per-day seed) as portrait cards. Tapping one hands the item to `/feed` via sessionStorage (`stashFeedStart` / `takeFeedStart` in `lib/feedExcerpt.ts`), so the feed opens on it.

@@ -2,14 +2,15 @@
 
 import { forwardRef } from 'react';
 import styled from 'styled-components';
+import { theme } from '@/lib/theme';
 
 const Row = styled.div`
   display: flex; gap: 4px; width: 100%;
 `;
 
 const Seg = styled.div`
-  flex: 1; height: 3px; border-radius: 2px;
-  background: rgba(255, 248, 235, 0.28);
+  flex: 1; height: 2.5px; border-radius: 2px;
+  background: ${theme.onMedia.glassHi};
   overflow: hidden;
 `;
 
@@ -18,7 +19,7 @@ const Seg = styled.div`
    useStoryTimer via this ref (no re-render per frame). */
 const Fill = styled.div`
   height: 100%; width: 100%; border-radius: 2px;
-  background: #fdf6e6;
+  background: ${theme.onMedia.ink};
   transform-origin: right center;
   transform: scaleX(0);
 `;

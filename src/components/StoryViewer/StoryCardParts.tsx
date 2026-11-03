@@ -27,7 +27,7 @@ export const Body = styled.div`
   flex: 1; min-height: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: ${theme.spacing.md};
-  padding: 84px ${theme.spacing.lg} 108px;
+  padding: calc(84px + ${theme.safe.top}) ${theme.spacing.lg} calc(108px + ${theme.safe.bottom});
   text-align: center;
 `;
 

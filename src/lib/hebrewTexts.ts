@@ -5,6 +5,7 @@ import { NEARBY_HE } from './texts/nearby';
 import { NEARBY_STATS_HE } from './texts/nearbyStats';
 import { SHELL_HE } from './texts/shell';
 import { HOME_HE } from './texts/home';
+import { STORIES_HE } from './texts/stories';
 
 export const HE = {
   APP_NAME: 'אורייתא',
@@ -1643,4 +1644,5 @@ export const HE = {
   ...NEARBY_STATS_HE,
   ...SHELL_HE,
   ...HOME_HE,
+  ...STORIES_HE,
 };

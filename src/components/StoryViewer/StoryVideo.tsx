@@ -1,6 +1,8 @@
 'use client';
 
+import { useContext, useEffect, useRef } from 'react';
 import styled from 'styled-components';
+import { StoryPauseContext } from './ExpandableText';
 import { HE } from '@/lib/hebrewTexts';
 import type { StoryReel } from '@/types';
 import { SourceChip } from './StoryCardParts';
@@ -23,14 +25,30 @@ const CroppedFrame = styled.iframe`
 
 /**
  * The random-video story: the reel is embedded immediately with the video
- * visible — one tap on its own play button starts it. This story runs on a
- * tripled auto-advance timer (see StoryViewer) so a clip can be watched.
+ * visible — one tap on its own play button starts it, which also pauses the
+ * story clock until the user moves on.
  */
 export default function StoryVideo({ reel }: { reel: StoryReel }) {
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const setEngaged = useContext(StoryPauseContext);
+
+  // A tap inside the embed moves focus into the iframe (the page sees a
+  // window blur) — that's the user starting the clip, so hold the clock.
+  useEffect(() => {
+    const onBlur = () => {
+      window.setTimeout(() => {
+        if (document.activeElement === frameRef.current) setEngaged(true);
+      }, 0);
+    };
+    window.addEventListener('blur', onBlur);
+    return () => window.removeEventListener('blur', onBlur);
+  }, [setEngaged]);
+
   return (
     <>
       <VideoBox>
         <CroppedFrame
+          ref={frameRef}
           src={`https://www.instagram.com/reel/${reel.code}/embed/`}
           title={HE.STORY_LABELS.video}
           allow="autoplay; encrypted-media; picture-in-picture"

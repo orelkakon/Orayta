@@ -1,83 +1,74 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { STORY_ART, STORY_DURATION_MS } from '@/lib/stories';
+import { StoryGroup, locate } from '@/lib/storyGroups';
 import { shareStory } from '@/lib/storyShare';
 import { haptics } from '@/lib/haptics';
 import { trackEvent } from '@/lib/track';
+import { useBodyScrollLock } from '@/components/common/useBodyScrollLock';
+import { useThemeColor } from '@/components/common/useThemeColor';
 import { useStoryTimer } from './useStoryTimer';
-import { Shell, Body } from './StoryCardParts';
-import { StoryCardBody, storyCta, storyShareContent } from './storyCards';
-import { StoryPauseContext } from './ExpandableText';
-import StoryScene from './StoryScene';
+import { useStoryFlip } from './useStoryFlip';
+import { useStoryGestures } from './useStoryGestures';
+import { storyCta, storyShareContent } from './storyCards';
+import StoryCard, { CardDirection } from './StoryCard';
 import StoryChrome from './StoryChrome';
+import StoryDesktopNav from './StoryDesktopNav';
 import type { DailyStory, StoryKey } from '@/types';
-
-const overlayIn = keyframes`from { opacity: 0; } to { opacity: 1; }`;
-const stageIn = keyframes`
-  from { opacity: 0; transform: scale(0.94) translateY(12px); }
-  to   { opacity: 1; transform: none; }
-`;
-const cardIn = keyframes`
-  from { opacity: 0; transform: scale(1.03); }
-  to   { opacity: 1; transform: none; }
-`;
 
 const Overlay = styled.div`
   position: fixed; inset: 0; z-index: ${theme.z.feed};
-  background: rgba(12, 7, 3, 0.72);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  background: ${theme.game.stageSolid};
   display: flex; align-items: center; justify-content: center;
-  animation: ${overlayIn} 0.2s ease;
-  /* Long-press is a story gesture (pause), never text selection or the
-     iOS copy callout. */
+  /* Long-press is a story gesture (pause), never selection or the iOS callout. */
   user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  ${theme.up.sm} {
+    background: color-mix(in srgb, ${theme.game.stageSolid} 82%, transparent);
+    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+  }
 `;
 
 const Stage = styled.div`
   position: relative; width: 100%; max-width: 440px; height: 100dvh;
-  overflow: hidden; background: #150d07;
-  animation: ${stageIn} 0.3s ${theme.motion.out};
-  @media (min-width: 600px) {
-    height: min(86vh, 800px);
+  overflow: hidden; background: ${theme.game.stageSolid};
+  will-change: transform;
+  ${theme.up.sm} {
+    height: min(88dvh, 820px);
     border-radius: ${theme.radii.xl};
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+    box-shadow: ${theme.shadows.lg};
   }
 `;
 
-const CardLayer = styled.div`
-  position: absolute; inset: 0;
-  animation: ${cardIn} 0.28s ${theme.motion.out};
-`;
-
-/* Sits above the card, below the chrome buttons: taps, holds and swipes land
-   here. Tap left = next (RTL reading direction), tap right = back. */
 const GestureLayer = styled.div`
   position: absolute; inset: 0; z-index: 2;
   touch-action: none; cursor: pointer;
 `;
 
 const SrOnly = styled.span`
-  position: absolute; width: 1px; height: 1px; overflow: hidden;
-  clip: rect(0 0 0 0); white-space: nowrap;
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
 `;
 
 interface StoryViewerProps {
+  groups: StoryGroup[];
+  /** All stories, flattened in group order. */
   stories: DailyStory[];
   startIndex: number;
+  /** The tapped circle — the viewer grows out of it. */
+  origin: DOMRect | null;
   /** Keys already watched today — re-watches are not counted in the stats. */
   viewed: Set<StoryKey>;
   onViewed: (key: StoryKey) => void;
   onClose: () => void;
 }
 
-export default function StoryViewer({ stories, startIndex, viewed, onViewed, onClose }: StoryViewerProps) {
+export default function StoryViewer({ groups, stories, startIndex, origin, viewed, onViewed, onClose }: StoryViewerProps) {
   const [index, setIndex] = useState(startIndex);
-  const [holding, setHolding] = useState(false);
+  const [dir, setDir] = useState<CardDirection>('none');
   const [sharing, setSharing] = useState(false);
   // A card reported in-card engagement (full text open, video playing, quiz
   // answered) — hold the clock until the user moves on.
@@ -86,80 +77,66 @@ export default function StoryViewer({ stories, startIndex, viewed, onViewed, onC
   const [autoplay] = useState(() =>
     !window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
     document.documentElement.getAttribute('data-acc-motion') !== 'on');
-
-  const closeRef = useRef<HTMLButtonElement>(null);
-  const gesture = useRef<{ x: number; y: number; t: number } | null>(null);
+  const closing = useRef(false);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
 
   const story = stories[index];
-  const n = stories.length;
+  const { group, inGroup } = locate(groups, index);
   const art = STORY_ART[story.key];
   const share = storyShareContent(story);
 
-  const next = () => {
-    if (index + 1 < n) { haptics.tap(); setIndex(index + 1); }
-    else onClose();
-  };
-  const prev = () => {
-    if (index > 0) { haptics.tap(); setIndex(index - 1); }
-  };
+  useBodyScrollLock(true);
+  useThemeColor(theme.game.stageSolid);
+  const flipClose = useStoryFlip(stageRef, overlayRef, origin);
 
-  const navRef = useRef({ next, prev, close: onClose });
-  navRef.current = { next, prev, close: onClose };
-  const viewedRef = useRef(onViewed);
-  viewedRef.current = onViewed;
-  const viewedSetRef = useRef(viewed);
-  viewedSetRef.current = viewed;
+  const close = useCallback(() => {
+    if (closing.current) return;
+    closing.current = true;
+    flipClose(locate(groups, index).group.id, onClose);
+  }, [flipClose, groups, index, onClose]);
+
+  const go = useCallback((to: number) => {
+    const from = locate(groups, index).group;
+    const target = locate(groups, to).group;
+    setDir(target.id === from.id ? 'none' : to > index ? 'forward' : 'back');
+    haptics.tap();
+    setIndex(to);
+  }, [groups, index]);
+
+  const next = useCallback(() => { if (index + 1 < stories.length) go(index + 1); else close(); }, [index, stories.length, go, close]);
+  const prev = useCallback(() => { if (index > 0) go(index - 1); }, [index, go]);
+
+  const gestures = useStoryGestures(stageRef, overlayRef, { next, prev, dismiss: close });
 
   // The video story gets triple time so a clip can actually be watched.
   const duration = story.key === 'video' ? STORY_DURATION_MS * 3 : STORY_DURATION_MS;
-  const barRef = useStoryTimer(index, holding || sharing || engaged, autoplay, next, duration);
+  const barRef = useStoryTimer(index, gestures.paused || sharing || engaged, autoplay, next, duration);
 
   useEffect(() => { setEngaged(false); }, [index]);
+
+  const viewedRef = useRef({ onViewed, viewed });
+  viewedRef.current = { onViewed, viewed };
   useEffect(() => {
-    const firstViewToday = !viewedSetRef.current.has(story.key);
-    viewedRef.current(story.key);
-    if (firstViewToday) trackEvent('stories');
+    const first = !viewedRef.current.viewed.has(story.key);
+    viewedRef.current.onViewed(story.key);
+    if (first) trackEvent('stories');
   }, [story.key]);
 
+  const navRef = useRef({ next, prev, close });
+  navRef.current = { next, prev, close };
   useEffect(() => {
     const prevFocus = document.activeElement as HTMLElement | null;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    closeRef.current?.focus();
+    closeBtnRef.current?.focus({ preventScroll: true });
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') navRef.current.close();
       else if (e.key === 'ArrowLeft') navRef.current.next();
       else if (e.key === 'ArrowRight') navRef.current.prev();
     };
     window.addEventListener('keydown', onKey);
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
-      prevFocus?.focus?.();
-    };
+    return () => { window.removeEventListener('keydown', onKey); prevFocus?.focus?.({ preventScroll: true }); };
   }, []);
-
-  const onDown = (e: React.PointerEvent) => {
-    gesture.current = { x: e.clientX, y: e.clientY, t: performance.now() };
-    setHolding(true);
-  };
-  const onUp = (e: React.PointerEvent) => {
-    setHolding(false);
-    const g = gesture.current;
-    gesture.current = null;
-    if (!g) return;
-    const dx = e.clientX - g.x;
-    const dy = e.clientY - g.y;
-    const dt = performance.now() - g.t;
-    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) { dx < 0 ? next() : prev(); return; }
-    if (dy > 80 && dy > Math.abs(dx)) { onClose(); return; }
-    if (dt < 350 && Math.abs(dx) < 12 && Math.abs(dy) < 12) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      if ((e.clientX - rect.left) / rect.width < 0.62) next();
-      else prev();
-    }
-  };
-  const onCancel = () => { setHolding(false); gesture.current = null; };
 
   const handleShare = async () => {
     if (!share) return;
@@ -167,43 +144,29 @@ export default function StoryViewer({ stories, startIndex, viewed, onViewed, onC
     try { await shareStory(share); } finally { setSharing(false); }
   };
 
-  /* Portaled to <body>: the homepage wrapper creates its own stacking context
-     (position + z-index), so rendered in place the header/tab bar would paint
-     over the viewer no matter how high its z-index is. */
+  /* Portaled to <body>: an ancestor stacking context would otherwise let the
+     header / tab bar paint over the viewer. */
   return createPortal(
-    <Overlay>
-      <Stage role="dialog" aria-modal="true" aria-label={HE.STORIES_VIEWER_LABEL}>
-        <CardLayer key={index}>
-          <Shell $from={art.from} $to={art.to} $accent={art.accent}>
-            <StoryScene storyKey={story.key} />
-            <Body>
-              <StoryPauseContext.Provider value={setEngaged}>
-                <StoryCardBody story={story} />
-              </StoryPauseContext.Provider>
-            </Body>
-          </Shell>
-        </CardLayer>
-        <GestureLayer
-          onPointerDown={onDown}
-          onPointerUp={onUp}
-          onPointerCancel={onCancel}
-          onPointerLeave={onCancel}
-          aria-hidden="true"
-        />
+    <Overlay ref={overlayRef}>
+      <Stage ref={stageRef} role="dialog" aria-modal="true" aria-label={HE.STORIES_VIEWER_LABEL}>
+        <StoryCard key={index} story={story} art={art} dir={dir} onEngaged={setEngaged} />
+        <GestureLayer {...gestures.handlers} aria-hidden="true" />
         <StoryChrome
-          count={n}
-          current={index}
+          count={group.stories.length}
+          current={inGroup}
+          hidden={gestures.chromeHidden}
           barRef={barRef}
-          closeRef={closeRef}
-          label={HE.STORY_LABELS[story.key]}
+          closeRef={closeBtnRef}
+          label={`${HE.STORY_GROUP_LABELS[group.id]} · ${HE.STORY_LABELS[story.key]}`}
           cta={storyCta(story)}
           canShare={share !== null}
           sharing={sharing}
           onShare={handleShare}
-          onClose={onClose}
+          onClose={close}
         />
-        <SrOnly aria-live="polite">{HE.STORIES_COUNTER(index + 1, n)}</SrOnly>
+        <SrOnly aria-live="polite">{HE.STORIES_COUNTER(index + 1, stories.length)}</SrOnly>
       </Stage>
+      <StoryDesktopNav canPrev={index > 0} onPrev={prev} onNext={next} />
     </Overlay>,
     document.body,
   );

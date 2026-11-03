@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
-import { HE } from '@/lib/hebrewTexts';
 import { LineIcon } from '@/components/common/LineIcons';
 import { STORY_ART } from '@/lib/stories';
 import type { StoryKey } from '@/types';
@@ -63,26 +62,31 @@ const Label = styled.span<{ $viewed: boolean }>`
 `;
 
 interface StoryCircleProps {
+  /** The story whose artwork represents the circle (a group's next story). */
   storyKey: StoryKey;
+  label: string;
+  ariaLabel: string;
   viewed: boolean;
   index: number;
+  groupId: string;
   imageUrl?: string | null;
-  onClick: () => void;
+  onOpen: (ring: DOMRect | null) => void;
 }
 
-export default function StoryCircle({ storyKey, viewed, index, imageUrl, onClick }: StoryCircleProps) {
+export default function StoryCircle({ storyKey, label, ariaLabel, viewed, index, groupId, imageUrl, onOpen }: StoryCircleProps) {
   const [imgFailed, setImgFailed] = useState(false);
+  const ringRef = useRef<HTMLSpanElement>(null);
   const art = STORY_ART[storyKey];
-  const label = HE.STORY_LABELS[storyKey];
   const RingComp = viewed ? Ring : UnreadRing;
   return (
     <Button
       $index={index}
-      onClick={onClick}
+      onClick={() => onOpen(ringRef.current?.getBoundingClientRect() ?? null)}
       style={{ ['--ring' as string]: art.accent }}
-      aria-label={`${label} — ${viewed ? HE.STORIES_SEEN : HE.STORIES_NEW}`}
+      aria-label={ariaLabel}
+      data-story-group={groupId}
     >
-      <RingComp>
+      <RingComp ref={ringRef} data-story-ring="">
         <Art $from={art.from} $to={art.to}>
           {imageUrl && !imgFailed
             ? <Photo src={imageUrl} alt="" loading="lazy" onError={() => setImgFailed(true)} />

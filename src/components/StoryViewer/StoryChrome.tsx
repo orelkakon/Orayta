@@ -5,107 +5,74 @@ import styled, { css } from 'styled-components';
 import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
+import { LineIcon } from '@/components/common/LineIcons';
+import IconButton from '@/components/ui/IconButton';
 import StoryProgress from './StoryProgress';
 import type { StoryCta } from './storyCards';
 
 /* Scrims own no pointer events — taps fall through to the gesture layer;
-   only the actual buttons re-enable them. */
-const Top = styled.div`
+   only the actual buttons re-enable them. While a story is held the chrome
+   fades away so the card can be read clean. */
+const fadeable = css<{ $hidden: boolean }>`
+  opacity: ${p => (p.$hidden ? 0 : 1)};
+  transition: opacity 0.2s ease;
+`;
+
+const Top = styled.div<{ $hidden: boolean }>`
   position: absolute; top: 0; left: 0; right: 0; z-index: 3;
   display: flex; flex-direction: column; gap: 10px;
-  padding: calc(${theme.spacing.md} + env(safe-area-inset-top)) ${theme.spacing.md} ${theme.spacing.xl};
-  background: linear-gradient(180deg, rgba(10, 6, 2, 0.6), transparent);
+  padding: calc(10px + ${theme.safe.top}) 12px ${theme.spacing.xl};
+  background: linear-gradient(180deg, ${theme.onMedia.shade}, transparent);
   pointer-events: none;
+  ${fadeable}
 `;
 
-const HeadRow = styled.div`
-  display: flex; align-items: center; justify-content: space-between;
-`;
+const HeadRow = styled.div`display: flex; align-items: center; justify-content: space-between; gap: 8px;`;
 
 const Ident = styled.span`
-  display: inline-flex; align-items: center; gap: 8px;
-  color: #fdf6e6; font-weight: 700; font-size: 0.85rem;
+  display: inline-flex; align-items: center; gap: 8px; min-width: 0;
+  color: ${theme.onMedia.ink}; font-weight: 700; font-size: ${theme.fontSizes.sm};
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+  & > span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; opacity: 0.9; }
 `;
 
 const IdentDot = styled.span`
-  width: 22px; height: 22px; border-radius: 50%;
+  width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center;
-  background: linear-gradient(145deg, #f3d692, #c4956a);
-  color: #3c2711;
-  font-family: ${theme.fonts.body}; font-weight: 800; font-size: 0.8rem;
+  background: ${theme.gilded.fill}; color: ${theme.gilded.ink};
+  font-family: ${theme.fonts.body}; font-weight: 700; font-size: 0.85rem;
 `;
 
-const IdentLabel = styled.span`
-  opacity: 0.85; font-weight: 500;
-`;
+const Close = styled(IconButton)`pointer-events: auto;`;
 
-const CloseBtn = styled.button`
-  pointer-events: auto;
-  width: 38px; height: 38px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  color: #fdf6e6; background: rgba(255, 255, 255, 0.12);
-  transition: background ${theme.motion.fast}, transform ${theme.motion.fast};
-  &:hover { background: rgba(255, 255, 255, 0.22); }
-  &:active { transform: scale(0.9); }
-`;
-
-const Bottom = styled.div`
+const Bottom = styled.div<{ $hidden: boolean }>`
   position: absolute; bottom: 0; left: 0; right: 0; z-index: 3;
   display: flex; align-items: center; justify-content: center; gap: ${theme.spacing.ms};
-  padding: ${theme.spacing.xl} ${theme.spacing.md} calc(${theme.spacing.lg} + env(safe-area-inset-bottom));
-  background: linear-gradient(0deg, rgba(10, 6, 2, 0.6), transparent);
+  padding: ${theme.spacing.xl} ${theme.spacing.md} calc(${theme.spacing.lg} + ${theme.safe.bottom});
+  background: linear-gradient(0deg, ${theme.onMedia.shade}, transparent);
   pointer-events: none;
+  ${fadeable}
 `;
 
 const ctaStyle = css`
   pointer-events: auto;
-  display: inline-flex; align-items: center; gap: 8px;
-  background: linear-gradient(180deg, #ffffff, #f5e7cf);
-  color: #4a2f15; font-weight: 900; font-size: 0.92rem;
-  padding: 10px 26px; border-radius: 999px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
-  transition: transform ${theme.motion.fast} ${theme.motion.spring};
-  &:hover { transform: scale(1.05); }
-  &:active { transform: scale(0.94); }
+  display: inline-flex; align-items: center; gap: 8px; min-height: 48px;
+  padding: 0 24px; border-radius: ${theme.radii.pill};
+  background: ${theme.gilded.fill}; color: ${theme.gilded.ink};
+  font-weight: 800; font-size: ${theme.fontSizes.md};
+  box-shadow: 0 1px 0 ${theme.gilded.edge} inset, 0 8px 20px -8px rgba(0, 0, 0, 0.5);
+  transition: transform 0.16s ${theme.motion.outStrong};
+  &:active { transform: scale(0.96); }
 `;
 
 const CtaLink = styled(Link)`${ctaStyle}`;
 const CtaAnchor = styled.a`${ctaStyle}`;
-
-const ShareBtn = styled.button`
-  pointer-events: auto;
-  width: 44px; height: 44px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  color: #fdf6e6;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  transition: background ${theme.motion.fast}, transform ${theme.motion.fast};
-  &:hover { background: rgba(255, 255, 255, 0.24); }
-  &:active { transform: scale(0.9); }
-  &:disabled { opacity: 0.5; }
-`;
-
-function CloseGlyph() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
-      <line x1="5" y1="5" x2="19" y2="19" /><line x1="19" y1="5" x2="5" y2="19" />
-    </svg>
-  );
-}
-
-function ShareGlyph() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
-      <polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" />
-    </svg>
-  );
-}
+const Share = styled(IconButton)`pointer-events: auto;`;
 
 interface StoryChromeProps {
   count: number;
   current: number;
+  hidden: boolean;
   barRef: RefObject<HTMLDivElement>;
   closeRef: RefObject<HTMLButtonElement>;
   label: string;
@@ -117,32 +84,32 @@ interface StoryChromeProps {
 }
 
 export default function StoryChrome({
-  count, current, barRef, closeRef, label, cta, canShare, sharing, onShare, onClose,
+  count, current, hidden, barRef, closeRef, label, cta, canShare, sharing, onShare, onClose,
 }: StoryChromeProps) {
+  const ctaBody = cta && <>{cta.label}<LineIcon name="chevron" size={18} strokeWidth={2.2} /></>;
   return (
     <>
-      <Top>
+      <Top $hidden={hidden}>
         <StoryProgress count={count} current={current} ref={barRef} />
         <HeadRow>
           <Ident>
             <IdentDot aria-hidden="true">{HE.APP_NAME.charAt(0)}</IdentDot>
-            {HE.APP_NAME}
-            <IdentLabel>· {label}</IdentLabel>
+            <span>{label}</span>
           </Ident>
-          <CloseBtn ref={closeRef} onClick={onClose} aria-label={HE.STORIES_CLOSE}>
-            <CloseGlyph />
-          </CloseBtn>
+          <Close ref={closeRef} $variant="glass" onClick={onClose} aria-label={HE.STORIES_CLOSE}>
+            <LineIcon name="close" size={20} strokeWidth={2.2} />
+          </Close>
         </HeadRow>
       </Top>
-      <Bottom>
+      <Bottom $hidden={hidden}>
         {canShare && (
-          <ShareBtn onClick={onShare} disabled={sharing} aria-label={HE.STORY_SHARE_BTN}>
-            <ShareGlyph />
-          </ShareBtn>
+          <Share $variant="glass" onClick={onShare} disabled={sharing} aria-label={HE.STORY_SHARE_BTN}>
+            <LineIcon name="share" size={20} strokeWidth={2} />
+          </Share>
         )}
         {cta && (cta.external
-          ? <CtaAnchor href={cta.href} target="_blank" rel="noopener noreferrer">{cta.label} <span>←</span></CtaAnchor>
-          : <CtaLink href={cta.href}>{cta.label} <span>←</span></CtaLink>)}
+          ? <CtaAnchor href={cta.href} target="_blank" rel="noopener noreferrer">{ctaBody}</CtaAnchor>
+          : <CtaLink href={cta.href}>{ctaBody}</CtaLink>)}
       </Bottom>
     </>
   );
