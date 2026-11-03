@@ -1,0 +1,49 @@
+/* Home screen — spread into HE (src/lib/hebrewTexts.ts). */
+export const HOME_HE = {
+  HOME_GREETING_DAWN: 'לילה טוב',
+  HOME_GREETING_MORNING: 'בוקר טוב',
+  HOME_GREETING_NOON: 'צהריים טובים',
+  HOME_GREETING_EVENING: 'ערב טוב',
+  HOME_GREETING_NIGHT: 'לילה טוב',
+  HOME_TODAY_ARIA: 'היום בלוח העברי',
+  HOME_PARASHA: (name: string) => `פרשת ${name}`,
+  HOME_SUNRISE_AT: (t: string) => `הנץ ${t}`,
+  HOME_SUNSET_AT: (t: string) => `שקיעה ${t}`,
+  HOME_SUN_PLACE: 'ירושלים',
+  HOME_NOW_PRAY: (service: string) => `עכשיו: ${service}`,
+  HOME_NOW_SERVICE: { shacharit: 'שחרית', mincha: 'מנחה', arvit: 'ערבית' } as Record<string, string>,
+  HOME_TODAY_CTA: 'הלימוד היומי',
+
+  HOME_FEED_TITLE: 'רגע של תורה',
+  HOME_FEED_SUB: 'מנות קצרות של לימוד — לגלול, להתחזק, לשתף',
+  HOME_FEED_ALL: 'לפיד המלא',
+  HOME_FEED_CONTINUE: 'להמשיך לגלול',
+  HOME_FEED_CONTINUE_SUB: 'עוד מאות פריטים מחכים',
+  HOME_FEED_ITEM_ARIA: (label: string) => `${label} — פתיחה ברגע של תורה`,
+  HOME_FEED_BOOK_BY: (author: string) => `מאת ${author}`,
+  HOME_FEED_GEMATRIA: (value: number) => `${value} בגימטריה`,
+  HOME_FEED_DAF: (masechet: string, daf: string, amud: string | null) =>
+    `${masechet} · דף ${daf}${amud ? ` ${amud}` : ''}`,
+
+  HOME_QUICK_TITLE: 'גישה מהירה',
+  HOME_QUICK: [
+    { href: '/siddur', icon: 'sunrise', label: 'סידור' },
+    { href: '/content?open=birkhat-hamazon', icon: 'bread', label: 'ברכת המזון' },
+    { href: '/content?open=tehillim', icon: 'scroll', label: 'תהילים' },
+    { href: '/ask', icon: 'ask', label: 'רבי־בוט' },
+    { href: '/study', icon: 'openbook', label: 'תלמוד' },
+    { href: '/rabbis', icon: 'users', label: 'רבנים' },
+    { href: '/sikumim', icon: 'pencil', label: 'סיכומים' },
+    { href: '/quiz', icon: 'target', label: 'תרגול' },
+  ] as { href: string; icon: string; label: string }[],
+
+  HOME_LEARN_TITLE: 'הלימוד של היום',
+  HOME_LEARN_ALL: 'לוח יומי',
+  HOME_LEARN_PROGRESS: (done: number, total: number) => `${done} מתוך ${total} הושלמו`,
+
+  HOME_LIVE_NOW: 'בשידור חי עכשיו',
+
+  HOME_DEDICATE_TITLE: 'הקדישו את הלימוד',
+  HOME_DEDICATE_SUB: 'לעילוי נשמה, לרפואה, להצלחה או לזיווג — ההקדשה תופיע באתר',
+  HOME_DEDICATE_CTA: 'להקדשה',
+};

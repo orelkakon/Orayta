@@ -5,6 +5,7 @@ import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { Dedication } from '@/types';
+import { LineIcon } from '@/components/common/LineIcons';
 
 const scrollRight = keyframes`
   from { transform: translateX(-50%); }
@@ -12,17 +13,14 @@ const scrollRight = keyframes`
 `;
 
 const Strip = styled.div`
-  position: sticky;
-  top: var(--header-h, 60px);
-  z-index: 95;
   width: 100%;
   overflow: hidden;
   direction: ltr;
-  background: linear-gradient(90deg, ${theme.colors.primary} 0%, #7a4e28 50%, ${theme.colors.primary} 100%);
-  border-bottom: 1px solid color-mix(in srgb, ${theme.colors.secondary} 40%, transparent);
-  box-shadow: ${theme.shadows.sm};
-  padding: 5px 0;
-  @media (max-width: 480px) { top: var(--header-h, 52px); }
+  background: ${theme.colors.goldSoft};
+  border-bottom: 1px solid color-mix(in srgb, ${theme.colors.gold} 30%, transparent);
+  padding: 7px 0;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
 `;
 
 const Tape = styled.div.attrs({ className: 'anim-loop' })<{ $secs: number }>`
@@ -33,19 +31,21 @@ const Tape = styled.div.attrs({ className: 'anim-loop' })<{ $secs: number }>`
 const Item = styled.span`
   display: inline-flex; align-items: center; gap: 6px;
   padding: 0 26px;
-  font-family: ${theme.fonts.body}; font-size: 0.82rem; font-weight: 500;
-  color: rgba(255, 255, 255, 0.92); white-space: nowrap; direction: rtl;
+  font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.sm}; font-weight: 500;
+  color: ${theme.colors.text}; white-space: nowrap; direction: rtl;
 `;
 
 const TypeLabel = styled.span`
-  font-size: 0.72rem; color: ${theme.colors.secondary}; font-weight: 700;
+  font-size: ${theme.fontSizes.xs}; color: ${theme.colors.secondaryText}; font-weight: 700;
 `;
 
+const TypeIcon = styled.span`display: inline-flex; color: ${theme.colors.gold};`;
+
 const TYPES: Record<string, { icon: string; label: string }> = {
-  iluy:     { icon: '🕯️', label: HE.DEDICATION_TYPE_ILUY },
-  refua:    { icon: '❤️‍🩹', label: HE.DEDICATION_TYPE_REFUA },
-  hatzlaha: { icon: '🌟', label: HE.DEDICATION_TYPE_HATZLAHA },
-  zivug:    { icon: '💍', label: HE.DEDICATION_TYPE_ZIVUG },
+  iluy:     { icon: 'candle', label: HE.DEDICATION_TYPE_ILUY },
+  refua:    { icon: 'heart', label: HE.DEDICATION_TYPE_REFUA },
+  hatzlaha: { icon: 'sparkle', label: HE.DEDICATION_TYPE_HATZLAHA },
+  zivug:    { icon: 'users', label: HE.DEDICATION_TYPE_ZIVUG },
 };
 
 export default function DedicationsTicker() {
@@ -70,7 +70,7 @@ export default function DedicationsTicker() {
       <Tape $secs={secs}>
         {items.map((d, i) => (
           <Item key={`${d.id}-${i}`}>
-            <span>{TYPES[d.type]?.icon ?? '🕯️'}</span>
+            <TypeIcon aria-hidden="true"><LineIcon name={TYPES[d.type]?.icon ?? 'candle'} size={14} strokeWidth={1.9} /></TypeIcon>
             <TypeLabel>{TYPES[d.type]?.label ?? d.type}</TypeLabel>
             {d.name}
           </Item>

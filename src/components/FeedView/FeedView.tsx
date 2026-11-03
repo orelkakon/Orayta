@@ -25,6 +25,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { getDailyProgress, bumpViewed, DAILY_GOAL } from '@/lib/feedDaily';
 import FeedSeal from './FeedSeal';
 import AddToHomeScreen from '@/components/common/AddToHomeScreen';
+import { takeFeedStart } from '@/lib/feedExcerpt';
 
 const Wrapper = styled.div`position: fixed; inset: 0; background: #050505; z-index: 900; overflow: hidden;`;
 
@@ -113,7 +114,11 @@ export default function FeedView() {
       if (gen === genRef.current) {
         pageRef.current += 1;
         saveFeedDeck({ seed: seedRef.current, page: pageRef.current });
-        setCards(prev => [...prev, ...items]);
+        // De-dupe: the item opened from home may come round again in the deck.
+        setCards(prev => {
+          const have = new Set(prev.map(c => `${c.type}:${c.id}`));
+          return [...prev, ...items.filter(i => !have.has(`${i.type}:${i.id}`))];
+        });
       }
     } finally {
       fetchingRef.current = false;
@@ -144,6 +149,10 @@ export default function FeedView() {
     const deck = loadFeedDeck();
     seedRef.current = deck.seed;
     pageRef.current = deck.page;
+
+    // Opened from a home teaser card: start on that exact item.
+    const start = takeFeedStart();
+    if (start) setCards([start]);
 
     void fetchMore();
     void fetch('/api/dedications').then(r => r.json()).then((d: Dedication[]) => {

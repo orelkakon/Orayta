@@ -45,7 +45,7 @@ Live YouTube streams from a followed list of channels (`LiveChannel` model), wat
 - **Detection is scraping-based, no YouTube API key.** `src/lib/youtubeLive.ts` fetches each channel's public `youtube.com/channel/<id>/live` page. A page counts as live only if it contains `"isLive":true` and NOT `"isUpcoming":true` (waiting rooms/scheduled streams have both a canonical watch URL and `isUpcoming`). Video id comes from the canonical link, falling back to `currentVideoEndpoint` — YouTube serves datacenter IPs (Vercel) a page variant with `canonical="undefined"` and no `videoDetails`, so don't "simplify" back to those markers.
 - **Caching:** the sweep result is stored in `AppConfig` under `live_snapshot` with a 60s TTL — refreshed on demand by `/api/live`, never by cron (Vercel Hobby crons are once/day). Admin channel mutations invalidate it.
 - **API:** `GET /api/live` (public snapshot), `GET/POST /api/live/channels` + `PATCH/DELETE /api/live/channels/[id]` (admin; add accepts any channel URL/@handle and resolves it by scraping, including the channel avatar). Channels GET lazily backfills missing `avatarUrl` values (null = retry later, `""` = none found).
-- **UI:** `src/components/LiveView/` (cards, in-app player overlay, admin card), `HomeView/LiveBannerBlock.tsx` (loud banner with stream thumbnails when live, quiet strip otherwise).
+- **UI:** `src/components/LiveView/` (cards, in-app player overlay, admin card), `HomeView/LiveBannerBlock.tsx` (a red strip with the stream thumbnail, shown only while something is live).
 - Channels whose owners disabled embedding show an error inside the player; the overlay always offers an "open on YouTube" fallback link.
 
 ---
@@ -80,6 +80,16 @@ Same flow as מניין קרוב (shared `useNearbySearch`, `LocatePanel`, `Loca
 
 ### Nearby search statistics (admin)
 Each search on `/api/minyan|mikveh|kivrei/nearby` writes one `NearbySearch` row (`lib/nearbyStats/server.ts`): feature, **area = nearest city/town name only, never coordinates** (`area.ts` + `data/towns.json`, OSM place=city|town built by `scripts/osm-towns.py`, none beyond 20 km), via gps/place (client sends `via`), radius, result count, nearest distance, status ok/partial/error, degraded sources (`osm:snapshot`, `<provider>:error`), latency, ipHash (erased after 10 days when stats load). The DB is woken (`$connect`) while sources run and the write is capped at 1.5s, so recording never slows a search. `GET /api/admin/nearby-stats` → `compute.ts` (pure, tested: 30-day window, unique/returning searchers, zero-result %, median nearest distance, hours in Israel time, top areas, coverage gaps = area+feature with empty searches, source failures) → `AdminStatsView/nearby/`. Chart series colours are the `chart1–3` theme tokens. The privacy policy describes this — keep it true.
+
+### Home (`/`, `HomeView/`)
+The page is "today in Orayta", in order of daily use:
+- Stories row.
+- `TodayHero`: a dark "night" card with the greeting, the Hebrew date and year, the parasha and occasions, and a `SunArc` showing where the sun is in Jerusalem. Its CTA is the prayer that fits now (`/siddur/<service>`).
+- Live strip, shown only while live.
+- `FeedTeaser`: today's first feed items (a per-day seed) as portrait cards. Tapping one hands the item to `/feed` via sessionStorage (`stashFeedStart` / `takeFeedStart` in `lib/feedExcerpt.ts`), so the feed opens on it.
+- `QuickAccess` (the `HE.HOME_QUICK` tiles), `HomeLearnCard` (shared `LearnView/LearnTodayList`), the nearby hub, the push card and `DedicateCard`.
+
+Layout: one column on phones, side cards in pairs on tablets, main + side columns at ≥1100px (`isWideRoute`).
 
 ### Home "בסביבתך" hub
 `HomeView/HomeNearbyHub.tsx` — one gold-framed card with the three location features (מניין · מקווה · קברי צדיקים) on a dashed "route"; tiles come from `HE.NB_TILES`. Strings for these newer features live in `src/lib/texts/*.ts` and are spread into `HE` (still used as `HE.KEY`).

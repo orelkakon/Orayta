@@ -139,6 +139,12 @@ export const theme = {
     nightInk: '#FBF4E6',
     nightMuted: 'rgba(251, 244, 230, 0.72)',
     nightLine: 'rgba(226, 184, 107, 0.28)',
+    nightGlow: 'radial-gradient(120% 70% at 85% -10%, rgba(226, 184, 107, 0.22), transparent 60%), radial-gradient(80% 60% at 0% 110%, rgba(155, 35, 53, 0.18), transparent 70%)',
+    nightShadow: '0 18px 40px -18px rgba(35, 21, 10, 0.55)',
+    nightTag: 'rgba(226, 184, 107, 0.14)',
+    nightGhost: 'rgba(251, 244, 230, 0.08)',
+    nightGhostHi: 'rgba(251, 244, 230, 0.14)',
+    nightSkeleton: 'rgba(251, 244, 230, 0.1)',
   },
   // Controls laid over photos/video/dark stages (feed, stories, players).
   onMedia: {
@@ -148,6 +154,7 @@ export const theme = {
     glassHi: 'rgba(255, 255, 255, 0.22)',
     line:    'rgba(255, 255, 255, 0.18)',
     shade:   'rgba(0, 0, 0, 0.45)',
+    lift:    '0 10px 24px -14px rgba(0, 0, 0, 0.6)',
   },
   // Group quiz stage (/play) — a fixed night-and-gold stage in both themes
   // (like the feed), and the four answer colours, always paired with a shape

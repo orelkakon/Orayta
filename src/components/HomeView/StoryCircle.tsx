@@ -8,55 +8,46 @@ import { LineIcon } from '@/components/common/LineIcons';
 import { STORY_ART } from '@/lib/stories';
 import type { StoryKey } from '@/types';
 
-const spin = keyframes`to { transform: rotate(360deg); }`;
 const fadeUp = keyframes`
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: none; }
-`;
-const breathe = keyframes`
-  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--ring), 0.38); }
-  50%      { box-shadow: 0 0 0 7px rgba(var(--ring), 0); }
 `;
 
 const Button = styled.button<{ $index: number }>`
-  display: flex; flex-direction: column; align-items: center; gap: 7px;
-  width: 82px; flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  width: 76px; flex-shrink: 0;
   padding: 2px 0;
-  animation: ${fadeUp} 0.4s ${theme.motion.out} both;
-  animation-delay: ${({ $index }) => $index * 45}ms;
-  transition: transform ${theme.motion.fast} ${theme.motion.spring};
-  &:hover { transform: translateY(-2px); }
-  &:active { transform: scale(0.92); }
+  animation: ${fadeUp} 0.35s ${theme.motion.outStrong} both;
+  animation-delay: ${({ $index }) => Math.min($index, 8) * 35}ms;
+  transition: transform 0.16s ${theme.motion.outStrong};
+  &:active { transform: scale(0.94); }
 `;
 
-/* The ring lives on ::before so the artwork inside stays still. Viewed
-   circles get this quiet static border. */
+/* The ring lives on ::before so the artwork inside stays still. Unread:
+   a static gold → type-accent gradient (like Instagram's — motion would
+   read as "loading"). Viewed: a quiet hairline. */
 const Ring = styled.span`
   position: relative; display: block;
-  width: 70px; height: 70px; border-radius: 50%;
+  width: 68px; height: 68px; border-radius: 50%;
   &::before {
     content: ''; position: absolute; inset: 0; border-radius: 50%;
     background: ${theme.colors.border};
   }
 `;
 
-/* Unread: rotating gold conic gradient + a soft breathing glow. anim-loop
-   lets reduced-motion users get a static (but still golden) ring. */
-const UnreadRing = styled(Ring).attrs({ className: 'anim-loop' })`
-  animation: ${breathe} 2.6s ease-in-out infinite;
+const UnreadRing = styled(Ring)`
   &::before {
-    background: conic-gradient(#f3d692, rgb(var(--ring)), #f3d692, rgb(var(--ring)), #f3d692);
-    animation: ${spin} 3.4s linear infinite;
+    background: linear-gradient(200deg, ${theme.game.goldLight} 0%, ${theme.game.gold} 45%, rgb(var(--ring)) 100%);
   }
 `;
 
 const Art = styled.span<{ $from: string; $to: string }>`
-  position: absolute; inset: 3px; border-radius: 50%;
+  position: absolute; inset: 2.5px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   background: linear-gradient(160deg, ${p => p.$from}, ${p => p.$to});
-  border: 2px solid ${theme.colors.background};
+  border: 2.5px solid ${theme.colors.background};
   overflow: hidden;
-  color: #f8ecd4;
+  color: ${theme.game.goldInk};
 `;
 
 const Photo = styled.img`
@@ -65,8 +56,8 @@ const Photo = styled.img`
 
 const Label = styled.span<{ $viewed: boolean }>`
   font-family: ${theme.fonts.ui};
-  font-size: 0.72rem; line-height: 1.25; text-align: center;
-  max-width: 82px;
+  font-size: ${theme.fontSizes.xxs}; line-height: 1.25; text-align: center;
+  max-width: 76px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   font-weight: ${({ $viewed }) => $viewed ? 500 : 700};
   color: ${({ $viewed }) => $viewed ? theme.colors.textMuted : theme.colors.text};
 `;
@@ -95,7 +86,7 @@ export default function StoryCircle({ storyKey, viewed, index, imageUrl, onClick
         <Art $from={art.from} $to={art.to}>
           {imageUrl && !imgFailed
             ? <Photo src={imageUrl} alt="" loading="lazy" onError={() => setImgFailed(true)} />
-            : <LineIcon name={art.icon} size={28} />}
+            : <LineIcon name={art.icon} size={26} />}
         </Art>
       </RingComp>
       <Label $viewed={viewed}>{label}</Label>

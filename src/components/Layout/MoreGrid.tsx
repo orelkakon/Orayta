@@ -7,17 +7,17 @@ import { LineIcon } from '@/components/common/LineIcons';
 import { haptics } from '@/lib/haptics';
 import { NavItem, isNavActive } from './navItems';
 
-/** App-launcher style grid of destinations used by the "עוד" sheet. */
+/** App-launcher style grid of destinations (the "עוד" sheet, home quick access). */
 export const GroupTitle = styled.h3`
   font-family: ${theme.fonts.ui}; font-size: ${theme.fontSizes.sm}; font-weight: 700;
   color: ${theme.colors.textMuted};
   margin: ${theme.spacing.lg} 4px ${theme.spacing.sm};
 `;
 
-const Grid = styled.ul`
+const Grid = styled.ul<{ $cols?: number }>`
   list-style: none;
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
-  @media (min-width: 480px) { grid-template-columns: repeat(4, 1fr); }
+  display: grid; grid-template-columns: repeat(${p => p.$cols ?? 3}, 1fr); gap: 6px;
+  @media (min-width: 480px) { grid-template-columns: repeat(${p => p.$cols ?? 4}, 1fr); }
 `;
 
 const Tile = styled(Link)<{ $active: boolean }>`
@@ -44,11 +44,17 @@ const Label = styled.span`
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 `;
 
-interface Props { items: NavItem[]; pathname: string; onNavigate: () => void }
+interface Props {
+  items: NavItem[];
+  pathname: string;
+  onNavigate?: () => void;
+  /** Fixed column count (default: 3, or 4 from 480px). */
+  columns?: number;
+}
 
-export default function MoreGrid({ items, pathname, onNavigate }: Props) {
+export default function MoreGrid({ items, pathname, onNavigate, columns }: Props) {
   return (
-    <Grid>
+    <Grid $cols={columns}>
       {items.map(item => {
         const active = isNavActive(item, pathname);
         return (
@@ -57,7 +63,7 @@ export default function MoreGrid({ items, pathname, onNavigate }: Props) {
               href={item.href}
               $active={active}
               aria-current={active ? 'page' : undefined}
-              onClick={() => { haptics.tap(); onNavigate(); }}
+              onClick={() => { haptics.tap(); onNavigate?.(); }}
             >
               <Disc aria-hidden="true"><LineIcon name={item.icon} size={24} strokeWidth={1.7} /></Disc>
               <Label>{item.label}</Label>

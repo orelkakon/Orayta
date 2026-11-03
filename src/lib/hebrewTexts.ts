@@ -4,6 +4,7 @@ import { WHATS_NEW_HE } from './texts/whatsNew';
 import { NEARBY_HE } from './texts/nearby';
 import { NEARBY_STATS_HE } from './texts/nearbyStats';
 import { SHELL_HE } from './texts/shell';
+import { HOME_HE } from './texts/home';
 
 export const HE = {
   APP_NAME: 'אורייתא',
@@ -343,14 +344,6 @@ export const HE = {
 
   HOME_WELCOME: 'ברוך הבא לאורייתא',
   HOME_NAV_HINT: 'בחר מדור להתחיל',
-  HOME_SECTIONS: [
-    { icon: '📝', href: '/sikumim',   label: 'סיכומי חומרים',  desc: 'סיכומי לימוד יומיים לפי ספר' },
-    { icon: '👥', href: '/rabbis',    label: 'רבנים וספרים',   desc: 'מנהיגים, פוסקים וספרי קודש' },
-    { icon: '🎯', href: '/quiz',      label: 'תרגול ומשחקים',  desc: 'חידונים ועשרה מצבים' },
-    { icon: '📜', href: '/study',     label: 'תלמוד בבלי',     desc: 'ציטוטים וחיפוש בש"ס' },
-    { icon: '💡', href: '/chidushim', label: 'חידושים',        desc: 'חידושי תורה ומחשבה' },
-    { icon: '🔢', href: '/gematria',  label: 'גימטריות',       desc: 'ערכי אותיות ומילים' },
-  ] as { icon: string; href: string; label: string; desc: string }[],
 
   STORIES_KICKER: 'היום באורייתא',
   STORIES_FRESH_CHIP: 'מתחדש כל יום',
@@ -501,11 +494,8 @@ export const HE = {
   NAV_MINYAN: 'מניין קרוב',
   HOME_CONTACT_TITLE: 'יש לך שאלה, הערה או רעיון?',
   HOME_CONTACT_SUB: 'נשמח לשמוע ממך — כתבו לנו',
-  HOME_CARD_CTA: 'לחצו כאן',
   DEDICATIONS_PAGE_TITLE: 'הקדשות',
   DEDICATIONS_PAGE_SUBTITLE: 'לעילוי נשמת · לרפואת · להצלחת · לזיווג',
-  DEDICATION_BANNER_TITLE: 'רוצים להוסיף הקדשה?',
-  DEDICATION_BANNER_SUB: 'שלחו שם להקדשה — והוא יופיע ברצועת ההקדשות באתר',
   DEDICATION_REQUEST_TITLE: 'בקשת הקדשה חדשה',
   DEDICATION_REQUEST_HINT: 'הבקשה תישלח לאישור מנהל האתר, ולאחר האישור השם יופיע ברצועת ההקדשות',
   DEDICATION_REQUEST_SUBMIT: 'שלח בקשה',
@@ -597,8 +587,6 @@ export const HE = {
   FEED_TITLE: 'רגע של תורה',
   FEED_SUBTITLE: 'הפיד שישאיר אתכם מאמינים יותר מכל גלילה אחרת.',
   FEED_NEW_BADGE: 'חדש',
-  FEED_BANNER_TAGLINE: 'הפיד שישאיר אתכם מאמינים יותר מכל גלילה אחרת.',
-  FEED_BANNER_CTA: 'גלו רגע חדש',
   FEED_BACK: '← חזרה',
   FEED_LOADING: 'טוען...',
   FEED_LOADING_MORE: 'טוען עוד...',
@@ -800,9 +788,6 @@ export const HE = {
   LIVE_EMPTY_SUB: 'ברגע שאחד מהערוצים יעלה לשידור — הוא יופיע כאן. שווה לחזור מאוחר יותר',
   LIVE_CHANNELS_TITLE: 'הערוצים שאנחנו עוקבים אחריהם',
   LIVE_WATCH: 'לצפייה בשידור',
-  LIVE_HOME_BANNER_CTA: 'הצטרפו לשידור החי',
-  LIVE_HOME_QUIET_TITLE: 'שידורים חיים',
-  LIVE_HOME_QUIET_SUB: 'שיעורי תורה בשידור ישיר',
   LIVE_ADMIN_TITLE: 'ניהול ערוצי שידור',
   LIVE_ADMIN_NOTE: 'הדביקו קישור לערוץ יוטיוב (או @כינוי). המערכת מזהה לבד מתי הערוץ בשידור חי.',
   LIVE_ADMIN_PLACEHOLDER: 'קישור לערוץ יוטיוב...',
@@ -988,7 +973,6 @@ export const HE = {
   ARIA_SKIP_TO_CONTENT: 'דלג לתוכן הראשי',
 
   /* ── Home hero ── */
-  HOME_TAGLINE: 'האתר שלך לחיזוק האמונה וקביעת עיתים לתורה בדרך ייחודית',
   HEADER_TAGLINE: 'בס״ד · מקורות יהודיים',
   NAV_MENU: 'תפריט ניווט',
 
@@ -1658,4 +1642,5 @@ export const HE = {
   ...NEARBY_HE,
   ...NEARBY_STATS_HE,
   ...SHELL_HE,
+  ...HOME_HE,
 };

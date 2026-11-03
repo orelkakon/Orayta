@@ -1,51 +1,32 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { getViewedKeys, markStoryViewed } from '@/lib/stories';
 import { haptics } from '@/lib/haptics';
+import { Skeleton } from '@/components/ui/Skeleton';
 import StoryCircle from './StoryCircle';
 import StoryViewer from '@/components/StoryViewer/StoryViewer';
 import type { DailyStoriesPayload, StoryKey } from '@/types';
 
-const fadeUp = keyframes`
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: none; }
-`;
-const shimmer = keyframes`
-  0%, 100% { opacity: 0.45; }
-  50%      { opacity: 0.9; }
-`;
-
-const Section = styled.section`
-  width: 100%;
-  display: flex; flex-direction: column; gap: ${theme.spacing.sm};
-  animation: ${fadeUp} 0.45s ease both;
-`;
-
-/* Edge-bleed scroll strip: the circles glide under the page padding instead
-   of clipping hard at the container edge. */
+/* Edge-to-edge strip: the circles glide under the page gutter instead of
+   clipping at the content edge. */
 const Scroller = styled.div`
-  direction: rtl;
-  display: flex; gap: ${theme.spacing.ms};
+  display: flex; gap: ${theme.spacing.sm};
   overflow-x: auto; overscroll-behavior-x: contain;
-  padding: 6px 2px 2px;
-  margin: 0 -2px;
+  padding: 4px ${theme.layout.gutter} 2px;
+  margin: 0 calc(-1 * ${theme.layout.gutter});
+  scroll-padding-inline: ${theme.layout.gutter};
   scroll-snap-type: x proximity;
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
   > * { scroll-snap-align: start; }
 `;
 
-const Skeleton = styled.div<{ $index: number }>`
-  width: 70px; height: 70px; border-radius: 50%; flex-shrink: 0;
-  background: ${theme.colors.surfaceAlt};
-  border: 1px solid ${theme.colors.borderLight};
-  animation: ${shimmer} 1.4s ease-in-out infinite;
-  animation-delay: ${({ $index }) => $index * 120}ms;
-  margin-bottom: 24px;
+const SkelItem = styled.div`
+  width: 76px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 8px;
 `;
 
 export default function StoriesRow() {
@@ -83,7 +64,7 @@ export default function StoriesRow() {
   };
 
   return (
-    <Section aria-label={HE.STORIES_KICKER}>
+    <section aria-label={HE.STORIES_KICKER}>
       <Scroller role="list" ref={scrollerRef}>
         {payload
           ? payload.stories.map((s, i) => (
@@ -96,7 +77,12 @@ export default function StoriesRow() {
                 onClick={() => openStory(i)}
               />
             ))
-          : Array.from({ length: 8 }, (_, i) => <Skeleton key={i} $index={i} aria-hidden="true" />)}
+          : Array.from({ length: 7 }, (_, i) => (
+              <SkelItem key={i} aria-hidden="true">
+                <Skeleton $w="68px" $h="68px" $r="50%" />
+                <Skeleton $w="48px" $h="10px" />
+              </SkelItem>
+            ))}
       </Scroller>
       {openIndex !== null && payload && (
         <StoryViewer
@@ -107,6 +93,6 @@ export default function StoriesRow() {
           onClose={() => setOpenIndex(null)}
         />
       )}
-    </Section>
+    </section>
   );
 }

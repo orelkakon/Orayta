@@ -6,6 +6,8 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { LineIcon } from '@/components/common/LineIcons';
 import { openNotifications, pushSupport, readLocal } from '@/lib/push/client';
+import { Button } from '@/components/ui/Button';
+import IconButton from '@/components/ui/IconButton';
 
 const KEY = 'orayta_push_card';
 const DAY_MS = 86400000;
@@ -27,35 +29,25 @@ function dismiss() {
 const rise = keyframes`from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; }`;
 
 const Card = styled.div`
-  position: relative; width: 100%; max-width: 520px; margin: 0 auto;
+  position: relative; width: 100%;
   display: flex; align-items: center; gap: ${theme.spacing.ms};
-  padding: ${theme.spacing.ms} ${theme.spacing.md}; padding-inline-end: 40px;
-  background: linear-gradient(135deg, ${theme.colors.surface} 0%, ${theme.colors.surfaceAlt} 100%);
+  padding: ${theme.spacing.md}; padding-inline-end: 44px;
+  background: ${theme.colors.surface};
   border: 1px solid ${theme.colors.borderLight}; border-radius: ${theme.radii.lg};
   box-shadow: ${theme.shadows.sm};
-  animation: ${rise} 0.45s ${theme.motion.out} both;
+  animation: ${rise} 0.4s ${theme.motion.outStrong} both;
+  flex-wrap: wrap;
 `;
 const Bell = styled.span`
-  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; color: ${theme.colors.secondary};
-  background: radial-gradient(circle at 32% 28%, rgba(196,149,106,0.3), rgba(196,149,106,0.06));
-  border: 1px solid rgba(196,149,106,0.5);
+  width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; color: ${theme.colors.primary};
+  background: ${theme.colors.goldSoft};
+  border: 1px solid color-mix(in srgb, ${theme.colors.gold} 40%, transparent);
 `;
-const Text = styled.div`flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;`;
-const Title = styled.div`font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.md}; font-weight: 800; color: ${theme.colors.primary};`;
-const Body = styled.div`font-size: ${theme.fontSizes.xs}; color: ${theme.colors.textMuted}; line-height: 1.45;`;
-const Cta = styled.button`
-  flex-shrink: 0; padding: 8px 14px; border-radius: 999px;
-  background: ${theme.colors.primary}; color: ${theme.colors.onPrimary};
-  font-size: ${theme.fontSizes.sm}; font-weight: 700;
-  transition: transform ${theme.motion.fast} ${theme.motion.out};
-  &:active { transform: scale(0.95); }
-`;
-const Close = styled.button`
-  position: absolute; top: 6px; inset-inline-end: 6px; width: 28px; height: 28px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center; color: ${theme.colors.textMuted};
-  &:hover { background: ${theme.colors.surfaceAlt}; }
-`;
+const Text = styled.div`flex: 1; min-width: 160px; display: flex; flex-direction: column; gap: 2px;`;
+const Title = styled.div`font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.lg}; font-weight: 700; color: ${theme.colors.text};`;
+const Body = styled.div`font-size: ${theme.fontSizes.sm}; color: ${theme.colors.textMuted}; line-height: 1.45;`;
+const Close = styled(IconButton)`position: absolute; top: 4px; inset-inline-end: 4px;`;
 
 export default function PushOptInCard() {
   const [show, setShow] = useState(false);
@@ -70,14 +62,14 @@ export default function PushOptInCard() {
   if (!show) return null;
   return (
     <Card role="region" aria-label={HE.PUSH_CARD_TITLE}>
-      <Bell><LineIcon name="bell" size={20} /></Bell>
+      <Bell aria-hidden="true"><LineIcon name="bell" size={21} /></Bell>
       <Text>
         <Title>{HE.PUSH_CARD_TITLE}</Title>
         <Body>{HE.PUSH_CARD_BODY}</Body>
       </Text>
-      <Cta type="button" onClick={() => { setShow(false); openNotifications(); }}>{HE.PUSH_CARD_CTA}</Cta>
-      <Close type="button" aria-label={HE.PUSH_CARD_DISMISS} onClick={() => { dismiss(); setShow(false); }}>
-        <LineIcon name="close" size={14} />
+      <Button $size="sm" onClick={() => { setShow(false); openNotifications(); }}>{HE.PUSH_CARD_CTA}</Button>
+      <Close $size="sm" aria-label={HE.PUSH_CARD_DISMISS} onClick={() => { dismiss(); setShow(false); }}>
+        <LineIcon name="close" size={16} />
       </Close>
     </Card>
   );

@@ -2,120 +2,102 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { LineIcon } from '@/components/common/LineIcons';
 import { isNewFeature } from '@/lib/newBadges';
+import { Card as BaseCard } from '@/components/ui/Card';
+import Badge from '@/components/ui/Badge';
 
-const fadeUp = keyframes`from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; }`;
-const popIn = keyframes`from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: none; }`;
-
-/* Gold hairline frame — same family as the dedications card below it. */
-const Frame = styled.section`
-  width: 100%; padding: 1.5px; border-radius: ${theme.radii.xl};
-  background: linear-gradient(150deg, rgba(196,149,106,0.9) 0%, rgba(196,149,106,0.22) 35%, rgba(196,149,106,0.22) 65%, rgba(196,149,106,0.9) 100%);
-  box-shadow: ${theme.shadows.sm};
-`;
-
-/* Faint street grid fading toward the edges: "this is about the map around you". */
-const Card = styled.div`
-  position: relative; overflow: hidden;
-  border-radius: calc(${theme.radii.xl} - 1.5px);
-  padding: ${theme.spacing.md} ${theme.spacing.ms} ${theme.spacing.ms};
+/**
+ * Home: one card for everything "near me" (minyan · mikveh · kivrei), three
+ * stops on a dashed route over a faint street grid.
+ */
+const Card = styled(BaseCard)`
+  overflow: hidden;
   background-color: ${theme.colors.surface};
   background-image:
-    radial-gradient(120% 90% at 50% 0%, transparent 30%, ${theme.colors.surface} 78%),
-    linear-gradient(color-mix(in srgb, ${theme.colors.border} 50%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, ${theme.colors.border} 50%, transparent) 1px, transparent 1px);
-  background-size: 100% 100%, 24px 24px, 24px 24px;
-  display: flex; flex-direction: column; gap: ${theme.spacing.ms};
+    radial-gradient(120% 90% at 50% 0%, transparent 25%, ${theme.colors.surface} 80%),
+    linear-gradient(color-mix(in srgb, ${theme.colors.border} 55%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, ${theme.colors.border} 55%, transparent) 1px, transparent 1px);
+  background-size: 100% 100%, 22px 22px, 22px 22px;
+  display: flex; flex-direction: column; gap: ${theme.spacing.md};
 `;
 
-const Head = styled.div`display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px;`;
+const Head = styled.div`display: flex; flex-direction: column; gap: 2px;`;
 
 const Eyebrow = styled.span`
   display: inline-flex; align-items: center; gap: 5px;
-  font-size: 0.68rem; font-weight: 800; letter-spacing: 0.2em; color: ${theme.colors.secondary};
+  font-size: ${theme.fontSizes.xs}; font-weight: 700; color: ${theme.colors.secondaryText};
 `;
 
-const Title = styled.h2`font-family: ${theme.fonts.body}; font-size: 1.22rem; font-weight: 800; color: ${theme.colors.primary};`;
-const Sub = styled.p`font-size: 0.78rem; color: ${theme.colors.textMuted};`;
+const Title = styled.h2`font-size: ${theme.fontSizes.xl}; line-height: 1.2; color: ${theme.colors.text};`;
 
-/* Three stops on one dashed "route" drawn behind the medallions. */
-const Tiles = styled.div`
-  position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: ${theme.spacing.xs};
+const Sub = styled.p`font-size: ${theme.fontSizes.sm}; color: ${theme.colors.textMuted};`;
+
+const Tiles = styled.ul`
+  list-style: none; position: relative;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: ${theme.spacing.xs};
   &::before {
-    content: ''; position: absolute; top: 27px; left: 16%; right: 16%; height: 0;
-    border-top: 1.5px dashed color-mix(in srgb, ${theme.colors.secondary} 60%, transparent);
+    content: ''; position: absolute; top: 28px; left: 17%; right: 17%;
+    border-top: 1.5px dashed color-mix(in srgb, ${theme.colors.gold} 65%, transparent);
   }
 `;
 
-const Tile = styled(Link)<{ $i: number }>`
-  position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px;
-  padding: 0 2px ${theme.spacing.xs}; border-radius: ${theme.radii.md};
-  animation: ${fadeUp} 0.45s ${theme.motion.out} both; animation-delay: ${p => 120 + p.$i * 70}ms;
-  -webkit-tap-highlight-color: transparent;
-  &:focus-visible { outline: 2px solid ${theme.colors.primary}; outline-offset: 2px; }
-  @media (prefers-reduced-motion: reduce) { animation: none; }
+const Tile = styled(Link)`
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 0 2px 4px; border-radius: 14px; text-align: center;
+  transition: transform 0.16s ${theme.motion.outStrong};
+  &:active { transform: scale(0.95); }
 `;
 
 const Medallion = styled.span`
-  position: relative; width: 54px; height: 54px; border-radius: 50%;
+  position: relative; width: 56px; height: 56px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  color: ${theme.colors.secondary};
-  background: radial-gradient(circle at 32% 28%, color-mix(in srgb, ${theme.colors.secondary} 30%, ${theme.colors.surface}), ${theme.colors.surface} 75%);
-  border: 1.5px solid color-mix(in srgb, ${theme.colors.secondary} 60%, transparent);
-  box-shadow: 0 3px 12px rgba(92,61,30,0.16), inset 0 1px 0 rgba(255,255,255,0.4);
-  transition: transform ${theme.motion.base} ${theme.motion.spring}, color ${theme.motion.fast} ease, box-shadow ${theme.motion.fast} ease;
-  ${Tile}:hover & { transform: translateY(-3px); color: ${theme.colors.primary}; box-shadow: 0 8px 18px rgba(92,61,30,0.22); }
-  ${Tile}:active & { transform: scale(0.94); }
+  color: ${theme.colors.primary};
+  background: radial-gradient(circle at 32% 28%, ${theme.colors.surface}, ${theme.colors.goldSoft} 80%);
+  border: 1.5px solid color-mix(in srgb, ${theme.colors.gold} 60%, transparent);
+  box-shadow: ${theme.shadows.sm};
+  transition: transform 0.2s ${theme.motion.outStrong}, box-shadow 0.2s ease;
+  @media (hover: hover) and (pointer: fine) { ${Tile}:hover & { transform: translateY(-3px); box-shadow: ${theme.shadows.md}; } }
 `;
+
+const NewTag = styled(Badge)`position: absolute; top: -8px; inset-inline-end: -14px; box-shadow: 0 0 0 2px ${theme.colors.surface};`;
 
 const Label = styled.span`
-  font-family: ${theme.fonts.body}; font-size: clamp(0.88rem, 3.6vw, 1.02rem); font-weight: 800;
-  color: ${theme.colors.primary}; line-height: 1.2;
+  font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.md}; font-weight: 700;
+  color: ${theme.colors.text}; line-height: 1.2;
 `;
 
-const TileSub = styled.span`font-size: clamp(0.62rem, 2.6vw, 0.72rem); color: ${theme.colors.textMuted}; line-height: 1.3;`;
+const TileSub = styled.span`font-size: ${theme.fontSizes.xxs}; color: ${theme.colors.textMuted}; line-height: 1.3;`;
 
-const NewBadge = styled.span`
-  position: absolute; top: -6px; inset-inline-end: -12px;
-  padding: 0 6px; border-radius: ${theme.radii.xl};
-  font-size: 0.6rem; font-weight: 800; line-height: 1.6;
-  color: ${theme.colors.onPrimary}; background: ${theme.colors.success};
-  box-shadow: 0 0 0 2px ${theme.colors.surface};
-  animation: ${popIn} 0.35s ${theme.motion.spring} 0.5s both;
-  @media (prefers-reduced-motion: reduce) { animation: none; }
-`;
-
-/** Home: one framed card for everything "near me" instead of a card per feature. */
 export default function HomeNearbyHub() {
   // After mount: the home page is pre-rendered, a build-time date check could outlive the badge.
   const [fresh, setFresh] = useState<Set<string>>(new Set());
   useEffect(() => { setFresh(new Set(HE.NB_TILES.map(t => t.href).filter(h => isNewFeature(h)))); }, []);
 
   return (
-    <Frame aria-label={HE.NB_ARIA}>
-      <Card>
-        <Head>
-          <Eyebrow><LineIcon name="pin" size={12} strokeWidth={2.2} /> {HE.NB_EYEBROW}</Eyebrow>
-          <Title>{HE.NB_TITLE}</Title>
-          <Sub>{HE.NB_SUB}</Sub>
-        </Head>
-        <Tiles>
-          {HE.NB_TILES.map((t, i) => (
-            <Tile key={t.href} href={t.href} $i={i} aria-label={`${t.label} — ${t.sub}`}>
+    <Card as="section" aria-label={HE.NB_ARIA}>
+      <Head>
+        <Eyebrow><LineIcon name="pin" size={13} strokeWidth={2.2} />{HE.NB_EYEBROW}</Eyebrow>
+        <Title>{HE.NB_TITLE}</Title>
+        <Sub>{HE.NB_SUB}</Sub>
+      </Head>
+      <Tiles>
+        {HE.NB_TILES.map(t => (
+          <li key={t.href}>
+            <Tile href={t.href} aria-label={`${t.label} — ${t.sub}`}>
               <Medallion>
                 <LineIcon name={t.icon} size={26} />
-                {fresh.has(t.href) && <NewBadge>{HE.NEW_BADGE}</NewBadge>}
+                {fresh.has(t.href) && <NewTag $tone="new">{HE.NEW_BADGE}</NewTag>}
               </Medallion>
               <Label>{t.label}</Label>
               <TileSub>{t.sub}</TileSub>
             </Tile>
-          ))}
-        </Tiles>
-      </Card>
-    </Frame>
+          </li>
+        ))}
+      </Tiles>
+    </Card>
   );
 }
