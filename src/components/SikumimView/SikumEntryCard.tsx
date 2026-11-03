@@ -43,9 +43,9 @@ const Tags = styled.div`display: flex; flex-wrap: wrap; gap: 6px;`;
 const DateTag = styled.span`
   font-size: 0.73rem; font-weight: 700;
   padding: 3px 10px; border-radius: ${'9999px'};
-  background: ${theme.colors.primary}18;
+  background: color-mix(in srgb, ${theme.colors.primary} 9%, transparent);
   color: ${theme.colors.primary};
-  border: 1px solid ${theme.colors.primary}30;
+  border: 1px solid color-mix(in srgb, ${theme.colors.primary} 19%, transparent);
 `;
 
 const LocationTag = styled.span`

@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppLayout from '@/components/Layout/AppLayout';
 import SectionPing from '@/components/common/SectionPing';
 import QuizView from '@/components/QuizView/QuizView';
 
@@ -16,9 +15,9 @@ export const metadata: Metadata = {
 
 export default function QuizPage() {
   return (
-    <AppLayout>
+    <>
       <SectionPing metric="quiz" />
       <QuizView />
-    </AppLayout>
+    </>
   );
 }

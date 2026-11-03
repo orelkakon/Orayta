@@ -38,7 +38,7 @@ const Input = styled.input`
   border: 1px solid ${theme.colors.border}; border-radius: ${theme.radii.md};
   font-size: 0.95rem; background: ${theme.colors.surface}; color: ${theme.colors.text};
   direction: rtl;
-  &:focus { outline: 2px solid ${theme.colors.primary}40; border-color: ${theme.colors.primary}; }
+  &:focus { outline: 2px solid color-mix(in srgb, ${theme.colors.primary} 25%, transparent); border-color: ${theme.colors.primary}; }
 `;
 const Textarea = styled.textarea`
   padding: ${theme.spacing.sm} ${theme.spacing.md};
@@ -46,7 +46,7 @@ const Textarea = styled.textarea`
   font-size: 0.95rem; background: ${theme.colors.surface}; color: ${theme.colors.text};
   direction: rtl; resize: vertical; min-height: 160px; line-height: 1.7;
   font-family: ${theme.fonts.body};
-  &:focus { outline: 2px solid ${theme.colors.primary}40; border-color: ${theme.colors.primary}; }
+  &:focus { outline: 2px solid color-mix(in srgb, ${theme.colors.primary} 25%, transparent); border-color: ${theme.colors.primary}; }
 `;
 const TwoCol = styled.div`
   display: grid; grid-template-columns: 1fr 1fr; gap: ${theme.spacing.md};
@@ -60,7 +60,7 @@ const RangeToggle = styled.label`
 `;
 const DraftBadge = styled.div`
   font-size: 0.76rem; color: ${theme.colors.primary};
-  background: ${theme.colors.primary}12; border: 1px solid ${theme.colors.primary}28;
+  background: color-mix(in srgb, ${theme.colors.primary} 7%, transparent); border: 1px solid color-mix(in srgb, ${theme.colors.primary} 16%, transparent);
   border-radius: ${theme.radii.sm}; padding: 4px 10px; align-self: flex-start;
 `;
 const ErrorMsg = styled.p`font-size: 0.82rem; color: ${theme.colors.error};`;

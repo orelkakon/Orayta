@@ -6,118 +6,74 @@ import Link from 'next/link';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
-import { A11ySettings, DEFAULT_A11Y, loadA11y, saveA11y, applyA11y } from '@/lib/a11y';
+import {
+  A11ySettings, DEFAULT_A11Y, loadA11y, saveA11y, applyA11y, onOpenAccessibility, openAccessibility,
+} from '@/lib/a11y';
+import Sheet from '@/components/ui/Sheet';
+import SegmentedControl from '@/components/ui/SegmentedControl';
+import SwitchRow, { RowGroup } from '@/components/ui/Switch';
+import { Button } from '@/components/ui/Button';
+import { LineIcon } from './LineIcons';
+import { isBareRoute } from '@/lib/routes';
 
-/* z-index 140: below the nav drawer (150/160), feed overlay (900) and modals,
-   so the button never covers them — it simply disappears behind. */
+/**
+ * Accessibility settings. Opened from the header's a11y button on every page
+ * with the top bar (openAccessibility()); screens without a top bar get a
+ * floating button instead. Settings persist per device and apply site-wide.
+ */
+
 const Fab = styled.button`
-  position: fixed; bottom: 18px; right: 18px; z-index: 140;
+  position: fixed; z-index: ${theme.z.feed + 1};
+  bottom: calc(18px + ${theme.safe.bottom}); right: calc(18px + ${theme.safe.right});
   width: 46px; height: 46px; border-radius: 50%;
-  background: ${theme.colors.primary}; color: ${theme.colors.onPrimary};
   display: flex; align-items: center; justify-content: center;
+  background: ${theme.colors.primary}; color: ${theme.colors.onPrimary};
   box-shadow: ${theme.shadows.lg};
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  transition: transform 0.15s, box-shadow 0.15s;
-  &:hover { transform: scale(1.08); }
-  &:active { transform: scale(0.94); }
-  /* The mobile bottom tab bar owns the bottom edge — float above it. */
-  @media (max-width: 768px) {
-    bottom: calc(84px + env(safe-area-inset-bottom));
-  }
+  transition: transform 0.16s ${theme.motion.outStrong};
+  &:active { transform: scale(0.92); }
 `;
 
-const Panel = styled.div`
-  position: fixed; bottom: 74px; right: 18px; z-index: 140;
-  @media (max-width: 768px) {
-    bottom: calc(140px + env(safe-area-inset-bottom));
-  }
-  width: 250px; direction: rtl;
-  background: ${theme.colors.surface};
-  border: 1px solid ${theme.colors.border};
-  border-radius: ${theme.radii.lg};
-  box-shadow: ${theme.shadows.lg};
-  padding: ${theme.spacing.md};
-  display: flex; flex-direction: column; gap: ${theme.spacing.sm};
+const Label = styled.h3`
+  font-family: ${theme.fonts.ui}; font-size: ${theme.fontSizes.sm}; font-weight: 700;
+  color: ${theme.colors.textMuted}; margin: ${theme.spacing.md} 4px ${theme.spacing.sm};
+  &:first-child { margin-top: 0; }
 `;
 
-const PanelTitle = styled.div`
-  font-family: ${theme.fonts.body}; font-size: 1rem; font-weight: 700;
-  color: ${theme.colors.primary};
-  padding-bottom: ${theme.spacing.xs};
-  border-bottom: 2px solid ${theme.colors.borderLight};
-  display: flex; align-items: center; gap: 6px;
-`;
+const Toggles = styled(RowGroup)`margin-top: ${theme.spacing.lg};`;
 
-const RowLabel = styled.div`font-size: 0.82rem; font-weight: 600; color: ${theme.colors.text};`;
-
-const SegmentRow = styled.div`display: flex; gap: 6px;`;
-
-const SegBtn = styled.button<{ $active: boolean }>`
-  flex: 1; padding: 6px 4px; font-size: 0.76rem; font-weight: 600;
-  border-radius: ${theme.radii.sm};
-  border: 1.5px solid ${p => p.$active ? theme.colors.primary : theme.colors.border};
-  background: ${p => p.$active ? theme.colors.primary : theme.colors.surface};
-  color: ${p => p.$active ? 'white' : theme.colors.textMuted};
-  transition: all 0.15s;
-`;
-
-const ToggleRow = styled.button`
-  display: flex; align-items: center; justify-content: space-between;
-  gap: ${theme.spacing.sm}; width: 100%;
-  padding: 7px ${theme.spacing.sm};
-  border-radius: ${theme.radii.sm};
-  background: ${theme.colors.surfaceAlt};
-  font-size: 0.82rem; font-weight: 600; color: ${theme.colors.text};
-  transition: background 0.15s;
-  &:hover { background: ${theme.colors.borderLight}; }
-`;
-
-const Knob = styled.span<{ $on: boolean }>`
-  width: 34px; height: 19px; border-radius: 10px; flex-shrink: 0;
-  background: ${p => p.$on ? theme.colors.success : theme.colors.border};
-  position: relative; transition: background 0.15s;
-  &::after {
-    content: ''; position: absolute; top: 2px;
-    inset-inline-start: ${p => p.$on ? '17px' : '2px'};
-    width: 15px; height: 15px; border-radius: 50%;
-    background: white; transition: inset-inline-start 0.15s;
-  }
-`;
-
-const ResetBtn = styled.button`
-  font-size: 0.78rem; font-weight: 600; color: ${theme.colors.error};
-  padding: 6px; border-radius: ${theme.radii.sm};
-  border: 1px solid ${theme.colors.borderLight};
-  &:hover { background: ${theme.colors.bgError}; }
+const Foot = styled.div`
+  display: flex; align-items: center; justify-content: space-between; gap: ${theme.spacing.sm};
+  margin-top: ${theme.spacing.lg};
 `;
 
 const StatementLink = styled(Link)`
-  font-size: 0.78rem; font-weight: 600; text-align: center;
-  color: ${theme.colors.primary}; text-decoration: underline; text-underline-offset: 3px;
-  padding: 4px;
+  font-size: ${theme.fontSizes.sm}; font-weight: 600; color: ${theme.colors.secondaryText};
+  text-decoration: underline; text-underline-offset: 3px;
+  min-height: 44px; display: inline-flex; align-items: center;
 `;
 
-function A11yIcon() {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <circle cx="12" cy="4.5" r="2.2" />
-      <path d="M12 8c-2.6 0-5.2-.4-7.4-1l-.6 2c1.7.5 3.6.8 5.5 1l-.3 3.5-1.9 6.2 2 .6 1.9-6h1.6l1.9 6 2-.6-1.9-6.2-.3-3.5c1.9-.2 3.8-.5 5.5-1l-.6-2c-2.2.6-4.8 1-7.4 1z" />
-    </svg>
-  );
-}
-
 const FONT_LABELS = [HE.A11Y_FONT_NORMAL, HE.A11Y_FONT_LARGE, HE.A11Y_FONT_XLARGE];
+
+const TOGGLES: { key: Exclude<keyof A11ySettings, 'fontScale'>; label: string; icon: string }[] = [
+  { key: 'contrast', label: HE.A11Y_CONTRAST, icon: 'sun' },
+  { key: 'readableFont', label: HE.A11Y_READABLE_FONT, icon: 'type' },
+  { key: 'underlineLinks', label: HE.A11Y_LINKS, icon: 'list' },
+  { key: 'reduceMotion', label: HE.A11Y_MOTION, icon: 'stop' },
+];
 
 export default function AccessibilityWidget() {
   const [open, setOpen] = useState(false);
   const [settings, setSettings] = useState<A11ySettings>(DEFAULT_A11Y);
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '/';
 
   useEffect(() => {
     const loaded = loadA11y();
     setSettings(loaded);
     applyA11y(loaded);
+    return onOpenAccessibility(() => setOpen(true));
   }, []);
+
+  useEffect(() => { setOpen(false); }, [pathname]);
 
   const update = (patch: Partial<A11ySettings>) => {
     setSettings(prev => {
@@ -128,57 +84,41 @@ export default function AccessibilityWidget() {
     });
   };
 
-  const toggles: { key: keyof A11ySettings; label: string }[] = [
-    { key: 'contrast',       label: HE.A11Y_CONTRAST },
-    { key: 'readableFont',   label: HE.A11Y_READABLE_FONT },
-    { key: 'underlineLinks', label: HE.A11Y_LINKS },
-    { key: 'reduceMotion',   label: HE.A11Y_MOTION },
-  ];
-
-  // The group quiz is full-screen answer tiles — a floating button there would
-  // sit on top of an answer. Saved settings still apply (effect above).
-  if (pathname?.startsWith('/play')) return null;
+  // The group quiz is full-screen answer tiles — nothing may float over them.
+  // Saved settings still apply (effect above).
+  const showFab = isBareRoute(pathname) && !pathname.startsWith('/play');
 
   return (
     <>
-      {open && (
-        <Panel role="dialog" aria-label={HE.A11Y_TITLE}>
-          <PanelTitle><A11yIcon />{HE.A11Y_TITLE}</PanelTitle>
-          <RowLabel>{HE.A11Y_FONT_SIZE}</RowLabel>
-          <SegmentRow>
-            {FONT_LABELS.map((label, i) => (
-              <SegBtn
-                key={label}
-                $active={settings.fontScale === i}
-                onClick={() => update({ fontScale: i as A11ySettings['fontScale'] })}
-              >
-                {label}
-              </SegBtn>
-            ))}
-          </SegmentRow>
-          {toggles.map(t => (
-            <ToggleRow
-              key={t.key}
-              aria-pressed={Boolean(settings[t.key])}
-              onClick={() => update({ [t.key]: !settings[t.key] })}
-            >
-              {t.label}
-              <Knob $on={Boolean(settings[t.key])} />
-            </ToggleRow>
-          ))}
-          <ResetBtn onClick={() => update(DEFAULT_A11Y)}>↺ {HE.A11Y_RESET}</ResetBtn>
-          <StatementLink href="/legal#accessibility" onClick={() => setOpen(false)}>
-            {HE.A11Y_STATEMENT}
-          </StatementLink>
-        </Panel>
+      {showFab && (
+        <Fab type="button" aria-label={HE.A11Y_OPEN} onClick={openAccessibility}>
+          <LineIcon name="a11y" size={24} strokeWidth={1.9} />
+        </Fab>
       )}
-      <Fab
-        aria-label={HE.A11Y_OPEN}
-        aria-expanded={open}
-        onClick={() => setOpen(o => !o)}
-      >
-        {open ? '✕' : <A11yIcon />}
-      </Fab>
+      <Sheet open={open} onClose={() => setOpen(false)} title={HE.A11Y_TITLE} maxWidth={440}>
+        <Label>{HE.A11Y_FONT_SIZE}</Label>
+        <SegmentedControl
+          ariaLabel={HE.A11Y_FONT_SIZE}
+          value={String(settings.fontScale)}
+          onChange={v => update({ fontScale: Number(v) as A11ySettings['fontScale'] })}
+          options={FONT_LABELS.map((label, i) => ({ value: String(i), label }))}
+        />
+        <Toggles>
+          {TOGGLES.map(t => (
+            <SwitchRow
+              key={t.key}
+              label={t.label}
+              icon={<LineIcon name={t.icon} size={20} />}
+              checked={settings[t.key]}
+              onChange={v => update({ [t.key]: v })}
+            />
+          ))}
+        </Toggles>
+        <Foot>
+          <StatementLink href="/legal#accessibility">{HE.A11Y_STATEMENT}</StatementLink>
+          <Button $variant="danger" $size="sm" onClick={() => update(DEFAULT_A11Y)}>{HE.A11Y_RESET}</Button>
+        </Foot>
+      </Sheet>
     </>
   );
 }

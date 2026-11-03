@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppLayout from '@/components/Layout/AppLayout';
 import SiddurHome from '@/components/SiddurView/SiddurHome';
 import SectionPing from '@/components/common/SectionPing';
 
@@ -16,9 +15,9 @@ export const metadata: Metadata = {
 
 export default function SiddurPage() {
   return (
-    <AppLayout>
+    <>
       <SectionPing metric="content" />
       <SiddurHome />
-    </AppLayout>
+    </>
   );
 }

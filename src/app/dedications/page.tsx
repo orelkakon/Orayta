@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppLayout from '@/components/Layout/AppLayout';
 import DedicationsView from '@/components/DedicationsView/DedicationsView';
 
 const TITLE = 'הקדשות';
@@ -15,8 +14,8 @@ export const metadata: Metadata = {
 
 export default function DedicationsPage() {
   return (
-    <AppLayout>
+    <>
       <DedicationsView />
-    </AppLayout>
+    </>
   );
 }

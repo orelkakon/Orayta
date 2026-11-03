@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppLayout from '@/components/Layout/AppLayout';
 import HilulaView from '@/components/HilulaView/HilulaView';
 import { HE } from '@/lib/hebrewTexts';
 
@@ -14,8 +13,8 @@ export const metadata: Metadata = {
 
 export default function HilulaPage() {
   return (
-    <AppLayout>
+    <>
       <HilulaView />
-    </AppLayout>
+    </>
   );
 }

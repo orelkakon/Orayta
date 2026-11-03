@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppLayout from '@/components/Layout/AppLayout';
 import OmerView from '@/components/OmerView/OmerView';
 import SectionPing from '@/components/common/SectionPing';
 
@@ -16,9 +15,9 @@ export const metadata: Metadata = {
 
 export default function OmerPage() {
   return (
-    <AppLayout>
+    <>
       <SectionPing metric="content" />
       <OmerView />
-    </AppLayout>
+    </>
   );
 }

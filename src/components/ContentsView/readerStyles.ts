@@ -30,7 +30,7 @@ export const JumpBtn = styled.button`
   border: 1.5px solid ${theme.colors.secondary};
   font-size: 0.82rem; font-weight: 600; color: ${theme.colors.secondary};
   transition: all 0.15s;
-  &:hover:not(:disabled) { background: ${theme.colors.secondary}14; }
+  &:hover:not(:disabled) { background: color-mix(in srgb, ${theme.colors.secondary} 8%, transparent); }
   &:disabled { opacity: 0.4; }
 `;
 

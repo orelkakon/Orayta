@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppLayout from '@/components/Layout/AppLayout';
 import SectionPing from '@/components/common/SectionPing';
 import SikumimView from '@/components/SikumimView/SikumimView';
 
@@ -18,9 +17,9 @@ interface Props { searchParams: { q?: string; book?: string; entry?: string } }
 
 export default function SikumimPage({ searchParams }: Props) {
   return (
-    <AppLayout>
+    <>
       <SectionPing metric="sikumim" />
       <SikumimView initialSearch={searchParams.q ?? ''} initialBookId={searchParams.book} initialEntryId={searchParams.entry} />
-    </AppLayout>
+    </>
   );
 }

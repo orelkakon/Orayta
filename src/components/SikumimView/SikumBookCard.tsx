@@ -62,8 +62,8 @@ const CountBadge = styled.div`
   font-size: 0.72rem;
   font-weight: 700;
   color: ${theme.colors.primary};
-  background: ${theme.colors.primary}14;
-  border: 1px solid ${theme.colors.primary}28;
+  background: color-mix(in srgb, ${theme.colors.primary} 8%, transparent);
+  border: 1px solid color-mix(in srgb, ${theme.colors.primary} 16%, transparent);
   border-radius: ${'9999px'};
   padding: 2px 8px;
   line-height: 1.4;

@@ -11,10 +11,10 @@ const Foot = styled.footer`
   padding: ${theme.spacing.lg} ${theme.spacing.md};
   display: flex; flex-direction: column; align-items: center; gap: ${theme.spacing.xs};
   text-align: center;
-  ${theme.media.md} {
-    /* Clear the fixed bottom tab bar, and keep the links clear of the
-       floating accessibility button on the right edge. */
-    padding: ${theme.spacing.md} 64px calc(76px + env(safe-area-inset-bottom) + ${theme.spacing.md});
+  ${theme.media.compact} {
+    /* Clear the fixed bottom tab bar (its live height) and the floating
+       רבי־בוט button on the left edge. */
+    padding: ${theme.spacing.md} 72px calc(var(--tabbar-h, 0px) + ${theme.spacing.md});
   }
 `;
 

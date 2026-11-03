@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppLayout from '@/components/Layout/AppLayout';
 import MinyanView from '@/components/MinyanView/MinyanView';
 
 const TITLE = 'מניין קרוב';
@@ -15,8 +14,8 @@ export const metadata: Metadata = {
 
 export default function MinyanPage() {
   return (
-    <AppLayout>
+    <>
       <MinyanView />
-    </AppLayout>
+    </>
   );
 }

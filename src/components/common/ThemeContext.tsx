@@ -1,35 +1,75 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { THEME_KEY as KEY, DARK_MQ } from '@/lib/themeBoot';
 
-const KEY = 'orayta_theme';
+export type ThemeMode = 'light' | 'dark' | 'system';
 
-interface DarkCtxValue { isDark: boolean; toggle: () => void; }
-const DarkCtx = createContext<DarkCtxValue>({ isDark: false, toggle: () => {} });
+/* Light stays the product default; "dark" and "system" (follow the device)
+   are explicit choices made in the "עוד" sheet or with the header toggle. */
+const DEFAULT_MODE: ThemeMode = 'light';
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    // Light is the product default for everyone; dark only when the user
-    // explicitly chose it with the toggle (OS preference is ignored).
-    const dark = localStorage.getItem(KEY) === 'dark';
-    setIsDark(dark);
-    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-  }, []);
-
-  const toggle = useCallback(() => {
-    setIsDark(prev => {
-      const next = !prev;
-      try { localStorage.setItem(KEY, next ? 'dark' : 'light'); } catch {}
-      document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light');
-      return next;
-    });
-  }, []);
-
-  const value = useMemo(() => ({ isDark, toggle }), [isDark, toggle]);
-
-  return <DarkCtx.Provider value={value}>{children}</DarkCtx.Provider>;
+interface ThemeCtxValue {
+  mode: ThemeMode;
+  isDark: boolean;
+  setMode: (mode: ThemeMode) => void;
+  toggle: () => void;
 }
 
-export const useDarkMode = () => useContext(DarkCtx);
+const ThemeCtx = createContext<ThemeCtxValue>({
+  mode: DEFAULT_MODE, isDark: false, setMode: () => {}, toggle: () => {},
+});
+
+function readMode(): ThemeMode {
+  try {
+    const v = localStorage.getItem(KEY);
+    if (v === 'light' || v === 'dark' || v === 'system') return v;
+  } catch {}
+  return DEFAULT_MODE;
+}
+
+/** Keep the browser/status-bar colour on the header's chrome colour. */
+export function syncThemeColor(): void {
+  const chrome = getComputedStyle(document.documentElement).getPropertyValue('--color-chrome').trim();
+  if (!chrome) return;
+  let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.name = 'theme-color';
+    document.head.appendChild(meta);
+  }
+  if (!meta.dataset.locked) meta.content = chrome;
+}
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [mode, setModeState] = useState<ThemeMode>(DEFAULT_MODE);
+  const [systemDark, setSystemDark] = useState(false);
+
+  useEffect(() => {
+    setModeState(readMode());
+    const mq = window.matchMedia(DARK_MQ);
+    const sync = () => setSystemDark(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+
+  const isDark = mode === 'dark' || (mode === 'system' && systemDark);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    syncThemeColor();
+  }, [isDark]);
+
+  const setMode = useCallback((next: ThemeMode) => {
+    try { localStorage.setItem(KEY, next); } catch {}
+    setModeState(next);
+  }, []);
+
+  const toggle = useCallback(() => setMode(isDark ? 'light' : 'dark'), [isDark, setMode]);
+
+  const value = useMemo(() => ({ mode, isDark, setMode, toggle }), [mode, isDark, setMode, toggle]);
+  return <ThemeCtx.Provider value={value}>{children}</ThemeCtx.Provider>;
+}
+
+export const useDarkMode = () => useContext(ThemeCtx);

@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppLayout from '@/components/Layout/AppLayout';
 import SectionPing from '@/components/common/SectionPing';
 import TalmudView from '@/components/TalmudView/TalmudView';
 
@@ -18,9 +17,9 @@ interface Props { searchParams: { masechet?: string } }
 
 export default function StudyPage({ searchParams }: Props) {
   return (
-    <AppLayout>
+    <>
       <SectionPing metric="study" />
       <TalmudView initialMasechet={searchParams.masechet ?? ''} />
-    </AppLayout>
+    </>
   );
 }

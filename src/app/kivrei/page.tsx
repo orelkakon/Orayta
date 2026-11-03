@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppLayout from '@/components/Layout/AppLayout';
 import KivreiView from '@/components/KivreiView/KivreiView';
 
 const TITLE = 'קברי צדיקים באזור';
@@ -15,8 +14,8 @@ export const metadata: Metadata = {
 
 export default function KivreiPage() {
   return (
-    <AppLayout>
+    <>
       <KivreiView />
-    </AppLayout>
+    </>
   );
 }

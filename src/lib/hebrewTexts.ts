@@ -3,6 +3,7 @@ import { KIVREI_HE } from './texts/kivrei';
 import { WHATS_NEW_HE } from './texts/whatsNew';
 import { NEARBY_HE } from './texts/nearby';
 import { NEARBY_STATS_HE } from './texts/nearbyStats';
+import { SHELL_HE } from './texts/shell';
 
 export const HE = {
   APP_NAME: 'אורייתא',
@@ -992,10 +993,6 @@ export const HE = {
   NAV_MENU: 'תפריט ניווט',
 
   /* ── Mobile bottom tab bar (short labels) ── */
-  TAB_FEED: 'פיד',
-  TAB_PRAYERS: 'תפילות',
-  TAB_TODAY: 'יומיומי',
-  TAB_MORE: 'עוד',
   ARIA_MUSIC_ON: 'הפעל מוזיקת רקע',
   ARIA_MUSIC_OFF: 'כבה מוזיקת רקע',
 
@@ -1660,4 +1657,5 @@ export const HE = {
   ...WHATS_NEW_HE,
   ...NEARBY_HE,
   ...NEARBY_STATS_HE,
+  ...SHELL_HE,
 };

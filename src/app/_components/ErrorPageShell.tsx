@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import OraytaLogo from '@/components/common/OraytaLogo';
 
-export const Page = styled.main`
+export const Page = styled.div`
   direction: rtl;
   min-height: 70vh;
   display: flex;

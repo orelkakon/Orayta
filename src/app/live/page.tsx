@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppLayout from '@/components/Layout/AppLayout';
 import LiveView from '@/components/LiveView/LiveView';
 import SectionPing from '@/components/common/SectionPing';
 
@@ -16,9 +15,9 @@ export const metadata: Metadata = {
 
 export default function LivePage() {
   return (
-    <AppLayout>
+    <>
       <SectionPing metric="live" />
       <LiveView />
-    </AppLayout>
+    </>
   );
 }

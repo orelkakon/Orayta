@@ -28,9 +28,9 @@ const Cube = styled.button`
 const CubeDate = styled.span`
   font-size: 0.7rem; font-weight: 700;
   padding: 2px 9px; border-radius: 9999px;
-  background: ${theme.colors.primary}18;
+  background: color-mix(in srgb, ${theme.colors.primary} 9%, transparent);
   color: ${theme.colors.primary};
-  border: 1px solid ${theme.colors.primary}30;
+  border: 1px solid color-mix(in srgb, ${theme.colors.primary} 19%, transparent);
 `;
 
 const CubeTitle = styled.div`

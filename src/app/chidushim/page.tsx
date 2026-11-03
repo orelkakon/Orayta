@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppLayout from '@/components/Layout/AppLayout';
 import SectionPing from '@/components/common/SectionPing';
 import ChidushimView from '@/components/ChidushimView/ChidushimView';
 
@@ -18,9 +17,9 @@ interface Props { searchParams: { q?: string } }
 
 export default function ChidushimPage({ searchParams }: Props) {
   return (
-    <AppLayout>
+    <>
       <SectionPing metric="chidushim" />
       <ChidushimView initialSearch={searchParams.q ?? ''} />
-    </AppLayout>
+    </>
   );
 }

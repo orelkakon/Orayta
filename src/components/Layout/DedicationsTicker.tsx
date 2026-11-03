@@ -19,7 +19,7 @@ const Strip = styled.div`
   overflow: hidden;
   direction: ltr;
   background: linear-gradient(90deg, ${theme.colors.primary} 0%, #7a4e28 50%, ${theme.colors.primary} 100%);
-  border-bottom: 1px solid ${theme.colors.secondary}66;
+  border-bottom: 1px solid color-mix(in srgb, ${theme.colors.secondary} 40%, transparent);
   box-shadow: ${theme.shadows.sm};
   padding: 5px 0;
   @media (max-width: 480px) { top: var(--header-h, 52px); }

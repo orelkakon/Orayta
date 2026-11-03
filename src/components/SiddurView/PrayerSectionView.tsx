@@ -20,7 +20,7 @@ const Title = styled.h2<{ $muted: boolean }>`
   display: flex; align-items: center; gap: ${theme.spacing.sm}; flex-wrap: wrap;
   font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.h2}; font-weight: 800;
   color: ${p => p.$muted ? theme.colors.textMuted : theme.colors.primary}; margin: 0 0 ${theme.spacing.xs};
-  &::after { content: ''; flex: 1; min-width: 24px; height: 1px; background: linear-gradient(to left, ${theme.colors.secondary}66, transparent); }
+  &::after { content: ''; flex: 1; min-width: 24px; height: 1px; background: linear-gradient(to left, color-mix(in srgb, ${theme.colors.secondary} 40%, transparent), transparent); }
 `;
 
 const Badge = styled.span<{ $on: boolean }>`

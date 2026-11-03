@@ -63,6 +63,27 @@ const GLYPHS: Record<string, React.ReactNode> = {
   stop: <><rect x="6" y="6" width="12" height="12" rx="2" /></>,
   bell: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></>,
   dots: <><circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" /><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none" /></>,
+  // Direction glyphs are drawn for RTL: "chevron"/"arrow" point left = forward.
+  chevron: <path d="M15 5l-7 7 7 7" />,
+  chevronBack: <path d="M9 5l7 7-7 7" />,
+  chevronDown: <path d="M5 9l7 7 7-7" />,
+  chevronUp: <path d="M5 15l7-7 7 7" />,
+  arrow: <><path d="M20 12H5" /><path d="M11 6l-6 6 6 6" /></>,
+  share: <><path d="M12 3v12" /><path d="M7.5 7.5L12 3l4.5 4.5" /><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" /></>,
+  heart: <path d="M12 20.5s-7.5-4.6-9.3-9.4C1.4 7.6 3.6 4 7.2 4c2 0 3.6 1.1 4.8 2.8C13.2 5.1 14.8 4 16.8 4c3.6 0 5.8 3.6 4.5 7.1-1.8 4.8-9.3 9.4-9.3 9.4z" />,
+  grid: <><rect x="3.5" y="3.5" width="7" height="7" rx="2" /><rect x="13.5" y="3.5" width="7" height="7" rx="2" /><rect x="3.5" y="13.5" width="7" height="7" rx="2" /><rect x="13.5" y="13.5" width="7" height="7" rx="2" /></>,
+  a11y: <><circle cx="12" cy="4.5" r="1.8" /><path d="M5 8.5l7 1.5 7-1.5" /><path d="M12 10v4.5" /><path d="M8.5 21l3.5-6.5 3.5 6.5" /></>,
+  clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
+  map: <><path d="M9 4L3 6.5v13.5L9 17.5l6 2.5 6-2.5V4l-6 2.5z" /><path d="M9 4v13.5M15 6.5V20" /></>,
+  list2: <><path d="M8 6h13M8 12h13M8 18h13" /><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" strokeWidth={2.6} /></>,
+  refresh: <><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" /></>,
+  locate: <><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></>,
+  sliders: <><path d="M4 7h10M18 7h2M4 17h4M12 17h8" /><circle cx="16" cy="7" r="2" /><circle cx="10" cy="17" r="2" /></>,
+  type: <><path d="M4 7V5h12v2" /><path d="M10 5v14" /><path d="M8 19h4" /><path d="M14 13v-1.5h7V13" /><path d="M17.5 11.5V19" /><path d="M16 19h3" /></>,
+  plus: <><path d="M12 5v14" /><path d="M5 12h14" /></>,
+  wine: <><path d="M8 3h8l-.6 5.2a3.4 3.4 0 0 1-6.8 0z" /><path d="M12 11.6V20" /><path d="M8.5 20.5h7" /></>,
+  road: <><path d="M7 21L10 3M17 21L14 3" /><path d="M12 6v2M12 11v2M12 16v2" /></>,
+  hands: <><path d="M7.5 11V5.5a1.5 1.5 0 0 1 3 0V10" /><path d="M10.5 9V4a1.5 1.5 0 0 1 3 0v5" /><path d="M13.5 9.5V6a1.5 1.5 0 0 1 3 0v7.5c0 4-2.5 7-6 7-2.6 0-4-1.4-5.5-3.5L3.6 13.6a1.5 1.5 0 0 1 2.3-1.9L7.5 13" /></>,
 };
 
 interface LineIconProps {

@@ -4,6 +4,7 @@ import { useEffect, useId, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
+import { useBodyScrollLock } from './useBodyScrollLock';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -25,7 +26,7 @@ const Overlay = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: ${theme.spacing.md};
+  padding: calc(${theme.spacing.md} + ${theme.safe.top}) ${theme.spacing.md} calc(${theme.spacing.md} + ${theme.safe.bottom});
   animation: ${fadeIn} 0.2s ease;
 `;
 
@@ -35,7 +36,7 @@ const Content = styled.div`
   padding: ${theme.spacing.xl};
   width: 100%;
   max-width: 620px;
-  max-height: 90vh;
+  max-height: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
   animation: ${slideIn} 0.3s ${theme.motion.out};
@@ -83,6 +84,7 @@ interface Props {
 export default function Modal({ title, onClose, children }: Props) {
   const contentRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
+  useBodyScrollLock(true);
 
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null;
@@ -106,11 +108,8 @@ export default function Modal({ title, onClose, children }: Props) {
     };
 
     window.addEventListener('keydown', handler);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
     return () => {
       window.removeEventListener('keydown', handler);
-      document.body.style.overflow = prevOverflow;
       opener?.focus?.();
     };
   }, [onClose]);

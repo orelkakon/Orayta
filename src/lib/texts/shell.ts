@@ -1,0 +1,38 @@
+/* App shell — header, tab bar, "עוד" sheet, desktop nav. Spread into HE. */
+export const SHELL_HE = {
+  TAB_HOME: 'בית',
+  TAB_FEED: 'רגע של תורה',
+  TAB_PRAYERS: 'תפילות',
+  TAB_TODAY: 'יומי',
+  TAB_MORE: 'עוד',
+
+  NAV_GROUP_LEARN: 'לימוד ועיון',
+  NAV_GROUP_PRAYER: 'תפילה ומועדים',
+  NAV_GROUP_NEARBY: 'בסביבתך',
+  NAV_GROUP_COMMUNITY: 'קהילה',
+  NAV_GROUP_MORE: 'עוד',
+  NAV_SIDDUR: 'סידור',
+  NAV_PRAYERS: 'תפילות וברכות',
+  NAV_HILULA: 'הילולות צדיקים',
+  NAV_OMER: 'ספירת העומר',
+  NAV_PLAY: 'חידון קבוצתי',
+  NAV_RABBI_BOT: 'רבי־בוט',
+
+  MORE_TITLE: 'כל מה שיש באורייתא',
+  MORE_SEARCH: 'חיפוש עמוד או תפילה…',
+  MORE_SEARCH_ARIA: 'חיפוש בתפריט',
+  MORE_EMPTY: 'לא נמצא עמוד בשם הזה',
+  MORE_SETTINGS: 'הגדרות',
+  MORE_THEME: 'תצוגה',
+  MORE_THEME_LIGHT: 'בהיר',
+  MORE_THEME_DARK: 'כהה',
+  MORE_THEME_SYSTEM: 'כמו במכשיר',
+  MORE_NOTIFICATIONS: 'התראות ותזכורות',
+  MORE_A11Y: 'הגדרות נגישות',
+  MORE_TICKER: 'רצועת הקדשות בדף הבית',
+  MORE_ADMIN: 'ניהול',
+
+  HEADER_HOME_ARIA: 'אורייתא — לדף הבית',
+  HEADER_NAV_ARIA: 'ניווט ראשי',
+  HEADER_MENU_ARIA: 'עוד עמודים',
+};

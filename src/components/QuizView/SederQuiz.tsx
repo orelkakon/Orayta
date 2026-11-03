@@ -32,8 +32,8 @@ const Wrapper = styled.div`
   min-width: 0;
 `;
 const MasechetCard = styled.div`
-  background: linear-gradient(135deg, ${theme.colors.primary}10, ${theme.colors.secondary}18);
-  border: 2px solid ${theme.colors.primary}30;
+  background: linear-gradient(135deg, color-mix(in srgb, ${theme.colors.primary} 6%, transparent), color-mix(in srgb, ${theme.colors.secondary} 9%, transparent));
+  border: 2px solid color-mix(in srgb, ${theme.colors.primary} 19%, transparent);
   border-radius: ${theme.radii.lg};
   padding: ${theme.spacing.xl} ${theme.spacing.xxl};
   text-align: center;

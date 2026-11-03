@@ -226,9 +226,9 @@ const LightboxCaption = styled.div`
 `;
 
 const LightboxClose = styled.button`
-  position: fixed; top: ${theme.spacing.lg}; left: ${theme.spacing.lg};
+  position: fixed; top: calc(${theme.spacing.lg} + ${theme.safe.top}); left: calc(${theme.spacing.lg} + ${theme.safe.left});
   background: rgba(0,0,0,0.5); color: white;
-  width: 36px; height: 36px; border-radius: 50%;
+  width: 44px; height: 44px; border-radius: 50%;
   font-size: 1.2rem; line-height: 1;
   display: flex; align-items: center; justify-content: center;
   transition: background 0.15s;
@@ -243,7 +243,7 @@ const EditBtn = styled.button`
 `;
 const DeleteBtn = styled.button`
   font-size: 0.75rem; padding: 2px ${theme.spacing.sm};
-  border: 1px solid ${theme.colors.error}33; border-radius: ${theme.radii.sm};
+  border: 1px solid color-mix(in srgb, ${theme.colors.error} 20%, transparent); border-radius: ${theme.radii.sm};
   color: ${theme.colors.error}; opacity: 0.7; transition: opacity 0.15s;
   &:hover { opacity: 1; background: rgba(155,35,53,0.06); }
 `;

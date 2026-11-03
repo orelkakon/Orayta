@@ -146,7 +146,7 @@ Kahoot-style live game for a shiur / Shabbat table. Anyone can host (no account)
 ---
 
 ### 2k. תנאי שימוש, פרטיות ונגישות — `/legal`
-One page with three documents (anchors `#terms`, `#privacy`, `#accessibility`), linked from `Layout/SiteFooter.tsx` (every AppLayout page, not the nav) and from the accessibility widget. Written to Israeli law: Privacy Protection Law incl. Amendment 13 (§11 notice: voluntary, purposes, controller, recipients, §13/§14 rights) and accessibility regulation 35ה (statement + coordinator contact, ת״י 5568 AA).
+One page with three documents (anchors `#terms`, `#privacy`, `#accessibility`), linked from `Layout/SiteFooter.tsx` (every page with the app shell) and the "עוד" sheet and from the accessibility widget. Written to Israeli law: Privacy Protection Law incl. Amendment 13 (§11 notice: voluntary, purposes, controller, recipients, §13/§14 rights) and accessibility regulation 35ה (statement + coordinator contact, ת״י 5568 AA).
 
 - **Content** is data in `src/lib/legal/` (`terms.ts`, `privacy.ts` = `privacyCollect.ts` + `privacyShare.ts`, `accessibility.ts`, shared owner/email/date in `meta.ts`); blocks support `**bold**` and `[label](href)` (`LegalView/RichText.tsx`). Section numbers are positional and cross-referenced in the text ("ראו סעיף 7") — renumber references when reordering.
 - **Keep it true:** the privacy policy describes what the code actually collects, stores and forwards (IP hashes, push rows, comments, dedications, contact messages, game data, localStorage, location → our server / Hebcal, third-party embeds, Vercel / Neon us-east-1 / Gmail). A feature that changes any of that must update the policy and bump `LEGAL_UPDATED`. Same for the accessibility statement's adjustments and known limitations.
@@ -297,7 +297,7 @@ Full lists and lookup functions are in `src/lib/hebrewData.ts` (`MASECHTOT`, `SE
 src/
 ├── app/
 │   ├── layout.tsx                  ← root layout: StyledComponentsRegistry, ClientProviders
-│   ├── page.tsx                    ← redirects to /study
+│   ├── page.tsx                    ← home (HomeView)
 │   ├── login/page.tsx
 │   ├── study/page.tsx              ← TalmudView (צפייה + הוספה tabs)
 │   ├── rabbis/page.tsx             ← RabbisView
@@ -324,7 +324,9 @@ src/
 │
 ├── components/
 │   ├── Layout/
-│   │   └── AppLayout.tsx           ← nav (תלמוד | רבנים | תרגול | אודות | יציאה), logout
+│   │   ├── AppShell.tsx            ← root shell (mounted once in app/layout.tsx; bare on /feed, /play*, /login)
+│   │   ├── ShellChrome.tsx         ← header + tab bar + "עוד" sheet + footer around every page
+│   │   └── navItems.ts             ← PRIMARY_NAV (tabs) + NAV_GROUPS ("עוד" / desktop dropdowns)
 │   ├── LoginScreen/
 │   │   └── LoginScreen.tsx         ← styled login with animations
 │   ├── TalmudView/
@@ -351,7 +353,6 @@ src/
 │   ├── AboutView/
 │   │   └── AboutView.tsx
 │   └── common/
-│       ├── AppLayout.tsx           ← (see Layout/)
 │       ├── ClientProviders.tsx     ← wraps RoleProvider
 │       ├── GlobalStyles.tsx
 │       ├── Modal.tsx               ← reusable modal wrapper
@@ -390,6 +391,19 @@ function isAdmin(req: NextRequest) {
 
 ### RTL
 The entire site is RTL (Hebrew). Use `direction: rtl` in styled components where needed. Global RTL is set in `GlobalStyles.tsx`.
+
+### App shell and design system
+- **Shell:** `Layout/AppShell` is mounted once in the root layout, so pages never wrap themselves in a layout. Bare routes come from `lib/routes.ts` (`isBareRoute`); `isWideRoute` gives a page the wider desktop canvas.
+  - **Compact screens (<1100px):** `AppHeader` (the espresso `chrome` bar, under the status bar) + `BottomTabBar` (בית · רגע של תורה · תפילות · יומי · עוד) + `MoreSheet` (searchable launcher grid + settings).
+  - **Desktop:** `DesktopNav` (flat primary links + `NavMenu` dropdowns).
+- **iPhone safe areas:** `viewport-fit=cover` + `black-translucent` status bar. Every top-anchored full-screen surface pads with `theme.safe.top`; bottom ones with `theme.safe.bottom`. The tab bar publishes `--tabbar-h` (0 when hidden), and floating buttons and footers clear it with that var.
+- **Tokens (`lib/theme.ts`):** `colors.chrome/onChrome/gold/goldSoft/elevated/scrim`, `gilded` (gold CTA + night hero surfaces), `onMedia` (controls over photos/video), `radii.pill`, `motion.outStrong/inOut/drawer`, `z.tabbar/popover/sheet`, `media.compact` + mobile-first `up.*`, `safe.*`, `layout.content/wide/reading/gutter`.
+- **Primitives (`components/ui/`)** — use these instead of new one-off styled buttons/cards/sheets:
+  - `Sheet`: bottom sheet with finger-following drag-to-dismiss on phones, a dialog on desktop; scroll lock + focus trap.
+  - `Button` / `ButtonLink`, `IconButton` (≥44px hit area), `Card` / `CardLink` / `CardButton`.
+  - `Chip` / `ChipRow`, `Badge`, `Skeleton` / `SkeletonText`, `SegmentedControl`, `SwitchRow` / `RowGroup`, `PageHeader` / `SectionHeader`.
+- **Theme:** `ThemeContext` has a 3-way mode (light / dark / system); light is the default. It keeps `<meta name="theme-color">` on the chrome colour, and immersive screens override it with `useThemeColor`.
+- **Accessibility settings** open from the header button (`openAccessibility()`); bare routes get a floating button instead.
 
 ### Styled components
 Use Styled Components for all styling. Theme tokens from `src/lib/theme.ts` only — no hardcoded colors or spacing values. The `StyledComponentsRegistry` in the root layout is required for SSR to work correctly.

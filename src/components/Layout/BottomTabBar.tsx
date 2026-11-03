@@ -1,121 +1,79 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { LineIcon } from '@/components/common/LineIcons';
+import { usePublishHeight } from '@/components/common/usePublishHeight';
 import { haptics } from '@/lib/haptics';
+import { PRIMARY_NAV, isNavActive } from './navItems';
 
 /**
- * Native-style bottom tab bar — mobile only. The four daily destinations get
- * one-tap access; everything else lives behind "עוד" (opens the drawer).
- * The /feed route renders fullscreen without AppLayout, so the bar never
- * covers the immersive feed.
+ * Native-style bottom tab bar on compact screens (phones and tablets, <1100px):
+ * בית · רגע של תורה · תפילות · יומי · עוד. Its live height is published as
+ * --tabbar-h (0 when hidden) so floating buttons and the footer clear it.
  */
-
-const TABS = [
-  { href: '/',      label: HE.NAV_HOME,  icon: 'home' },
-  { href: '/feed',  label: HE.TAB_FEED,  icon: 'reels' },
-  { href: '/content', label: HE.TAB_PRAYERS, icon: 'book' },
-  { href: '/today', label: HE.TAB_TODAY, icon: 'calendar' },
-];
-
 const Bar = styled.nav<{ $hidden: boolean }>`
   display: none;
-  @media (max-width: 768px) {
+  ${theme.media.compact} {
     display: ${p => (p.$hidden ? 'none' : 'flex')};
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    z-index: ${theme.z.header};
+    position: fixed; bottom: 0; left: 0; right: 0;
+    z-index: ${theme.z.tabbar};
+    padding: 0 max(4px, ${theme.safe.right}) ${theme.safe.bottom} max(4px, ${theme.safe.left});
     background: ${theme.colors.surface};
-    background: color-mix(in srgb, ${theme.colors.surface} 86%, transparent);
-    -webkit-backdrop-filter: blur(18px) saturate(1.5);
-    backdrop-filter: blur(18px) saturate(1.5);
-    border-top: 1px solid ${theme.colors.borderLight};
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
-    padding-bottom: env(safe-area-inset-bottom);
+    background: color-mix(in srgb, ${theme.colors.surface} 84%, transparent);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
+    backdrop-filter: blur(20px) saturate(1.6);
+    border-top: 0.5px solid ${theme.colors.border};
   }
 `;
 
-const TabItem = styled(Link)<{ $active: boolean }>`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  padding: 10px 0 9px;
-  min-height: 64px;
-  color: ${({ $active }) => ($active ? theme.colors.primary : theme.colors.textMuted)};
-  transition: color ${theme.motion.fast} ease;
+const tabStyles = `
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; min-height: 58px; padding: 7px 2px 6px;
   -webkit-tap-highlight-color: transparent;
-
-  &:active { transform: scale(0.92); transition: transform 0.1s ease; }
 `;
 
-const TabButton = styled.button<{ $active: boolean }>`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  padding: 10px 0 9px;
-  min-height: 64px;
-  color: ${({ $active }) => ($active ? theme.colors.primary : theme.colors.textMuted)};
-  transition: color ${theme.motion.fast} ease;
-  -webkit-tap-highlight-color: transparent;
-
-  &:active { transform: scale(0.92); transition: transform 0.1s ease; }
+const Tab = styled(Link)<{ $active: boolean }>`
+  ${tabStyles}
+  color: ${p => (p.$active ? theme.colors.primary : theme.colors.textMuted)};
 `;
 
-const IconWrap = styled.span<{ $active: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px; height: 26px;
-  border-radius: 13px;
-  background: ${({ $active }) =>
-    $active ? `color-mix(in srgb, ${theme.colors.primary} 14%, transparent)` : 'transparent'};
-  transform: ${({ $active }) => ($active ? 'translateY(-1px)' : 'none')};
-  transition: background ${theme.motion.base} ease, transform ${theme.motion.base} ${theme.motion.spring};
+const TabBtn = styled.button<{ $active: boolean }>`
+  ${tabStyles}
+  color: ${p => (p.$active ? theme.colors.primary : theme.colors.textMuted)};
 `;
 
-const TabLabel = styled.span<{ $active: boolean }>`
-  font-size: 0.65rem;
-  font-weight: ${({ $active }) => ($active ? 700 : 500)};
-  letter-spacing: 0.01em;
-  line-height: 1;
+const Icon = styled.span<{ $active: boolean }>`
+  display: flex; align-items: center; justify-content: center;
+  width: 52px; height: 30px; border-radius: 15px;
+  background: ${p => (p.$active ? `color-mix(in srgb, ${theme.colors.primary} 13%, transparent)` : 'transparent')};
+  transition: background-color 0.2s ease, transform 0.16s ${theme.motion.outStrong};
+  ${Tab}:active &, ${TabBtn}:active & { transform: scale(0.9); }
 `;
 
-interface Props {
-  pathname: string;
-  onMore: () => void;
-  moreOpen: boolean;
-}
+const Label = styled.span<{ $active: boolean }>`
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: ${theme.fontSizes.xxs}; line-height: 1.1; letter-spacing: 0.01em;
+  font-weight: ${p => (p.$active ? 700 : 500)};
+`;
 
-/**
- * True while the software keyboard is up. With the keyboard open, mobile
- * browsers pin fixed-bottom elements to the shrunken visual viewport — the
- * bar lands mid-page and floats around while scrolling. Native apps hide
- * their tab bar under the keyboard; so do we.
- */
+/** True while the software keyboard is up — native apps hide the tab bar. */
 function useKeyboardOpen(): boolean {
   const [open, setOpen] = useState(false);
   useEffect(() => {
     const vv = window.visualViewport;
-    const onResize = () => {
-      if (vv) setOpen(window.innerHeight - vv.height > 140);
-    };
+    const onResize = () => { if (vv) setOpen(window.innerHeight - vv.height > 140); };
     const isField = (t: EventTarget | null) =>
       t instanceof HTMLElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName);
-    // Focus events as fallback for browsers without visualViewport.
     const onFocusIn = (e: FocusEvent) => { if (isField(e.target)) setOpen(true); };
-    const onFocusOut = () => { setTimeout(onResize, 100); setTimeout(() => {
-      if (!isField(document.activeElement)) setOpen(false);
-    }, 120); };
+    const onFocusOut = () => {
+      setTimeout(onResize, 100);
+      setTimeout(() => { if (!isField(document.activeElement)) setOpen(false); }, 120);
+    };
     vv?.addEventListener('resize', onResize);
     document.addEventListener('focusin', onFocusIn);
     document.addEventListener('focusout', onFocusOut);
@@ -128,47 +86,32 @@ function useKeyboardOpen(): boolean {
   return open;
 }
 
+interface Props { pathname: string; onMore: () => void; moreOpen: boolean }
+
 export default function BottomTabBar({ pathname, onMore, moreOpen }: Props) {
   const keyboardOpen = useKeyboardOpen();
-  const isActive = (href: string) =>
-    href === '/' ? pathname === '/' : pathname.startsWith(href);
+  const ref = useRef<HTMLElement>(null);
+  usePublishHeight(ref, '--tabbar-h');
 
-  // While the drawer is open (or the user is on a page reached from it),
-  // "עוד" is the highlighted tab so the bar always shows where you are.
-  const anyTabActive = TABS.some(t => isActive(t.href));
-  const moreActive = moreOpen || !anyTabActive;
+  // On a page reached from "עוד" (or while the sheet is open), "עוד" is the
+  // highlighted tab, so the bar always shows where you are.
+  const moreActive = moreOpen || !PRIMARY_NAV.some(t => isNavActive(t, pathname));
 
   return (
-    <Bar aria-label={HE.NAV_MENU} $hidden={keyboardOpen}>
-      {TABS.map(tab => {
-        const active = isActive(tab.href);
+    <Bar ref={ref} aria-label={HE.NAV_MENU} $hidden={keyboardOpen}>
+      {PRIMARY_NAV.map(tab => {
+        const active = !moreOpen && isNavActive(tab, pathname);
         return (
-          <TabItem
-            key={tab.href}
-            href={tab.href}
-            $active={active}
-            aria-current={active ? 'page' : undefined}
-            onClick={() => haptics.tap()}
-          >
-            <IconWrap $active={active}>
-              <LineIcon name={tab.icon} size={21} strokeWidth={active ? 2 : 1.6} />
-            </IconWrap>
-            <TabLabel $active={active}>{tab.label}</TabLabel>
-          </TabItem>
+          <Tab key={tab.href} href={tab.href} $active={active} aria-current={active ? 'page' : undefined} onClick={() => haptics.tap()}>
+            <Icon $active={active}><LineIcon name={tab.icon} size={22} strokeWidth={active ? 2 : 1.6} /></Icon>
+            <Label $active={active}>{tab.label}</Label>
+          </Tab>
         );
       })}
-      <TabButton
-        type="button"
-        $active={moreActive}
-        aria-expanded={moreOpen}
-        aria-controls="nav-drawer"
-        onClick={() => { haptics.tap(); onMore(); }}
-      >
-        <IconWrap $active={moreActive}>
-          <LineIcon name="dots" size={21} strokeWidth={moreActive ? 2 : 1.6} />
-        </IconWrap>
-        <TabLabel $active={moreActive}>{HE.TAB_MORE}</TabLabel>
-      </TabButton>
+      <TabBtn type="button" $active={moreActive} aria-expanded={moreOpen} aria-haspopup="dialog" onClick={() => { haptics.tap(); onMore(); }}>
+        <Icon $active={moreActive}><LineIcon name="grid" size={21} strokeWidth={moreActive ? 2 : 1.6} /></Icon>
+        <Label $active={moreActive}>{HE.TAB_MORE}</Label>
+      </TabBtn>
     </Bar>
   );
 }

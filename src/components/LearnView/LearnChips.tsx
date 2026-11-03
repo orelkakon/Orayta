@@ -10,8 +10,7 @@ import type { LearnItem, LearnKind } from '@/types/dailyLearning';
 
 const Strip = styled.nav`
   display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
-  margin: 0 -${theme.spacing.lg}; padding: 2px ${theme.spacing.lg};
-  ${theme.media.sm} { margin: 0 -${theme.spacing.md}; padding: 2px ${theme.spacing.md}; }
+  margin: 0 calc(-1 * ${theme.layout.gutter}); padding: 2px ${theme.layout.gutter};
   &::-webkit-scrollbar { display: none; }
 `;
 

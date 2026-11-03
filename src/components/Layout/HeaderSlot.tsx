@@ -13,14 +13,16 @@ export const HeaderSlotContext = createContext<HTMLElement | null>(null);
 export const TopBar = styled.div`
   position: sticky;
   top: 0;
-  z-index: 100;
-  box-shadow: ${theme.shadows.md};
+  z-index: ${theme.z.header};
+  box-shadow: ${theme.shadows.sm};
 `;
 
 export const SlotRow = styled.div`
   background: ${theme.colors.background};
   & > div {
-    max-width: 1000px; margin: 0 auto; padding: 0 ${theme.spacing.xl};
-    @media (max-width: 600px) { padding: 0 ${theme.spacing.md}; }
+    max-width: ${theme.layout.content}; margin: 0 auto;
+    padding-left: max(${theme.layout.gutter}, ${theme.safe.left});
+    padding-right: max(${theme.layout.gutter}, ${theme.safe.right});
   }
+  & > div:empty { display: none; }
 `;

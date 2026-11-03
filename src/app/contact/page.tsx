@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppLayout from '@/components/Layout/AppLayout';
 import ContactView from '@/components/ContactView/ContactView';
 
 const TITLE = 'צור קשר';
@@ -15,8 +14,8 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <AppLayout>
+    <>
       <ContactView />
-    </AppLayout>
+    </>
   );
 }

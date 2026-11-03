@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppLayout from '@/components/Layout/AppLayout';
 import MikvehView from '@/components/MikvehView/MikvehView';
 
 const TITLE = 'מקווה בסביבה';
@@ -15,8 +14,8 @@ export const metadata: Metadata = {
 
 export default function MikvehPage() {
   return (
-    <AppLayout>
+    <>
       <MikvehView />
-    </AppLayout>
+    </>
   );
 }

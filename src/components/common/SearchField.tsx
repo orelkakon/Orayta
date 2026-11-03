@@ -16,59 +16,41 @@ const Wrap = styled.div`
 /* Leading (right, in RTL) search glyph — tells the eye what the field is for
    before the placeholder is read. */
 const SearchGlyph = styled.span`
-  position: absolute;
-  right: 12px;
-  display: flex;
-  align-items: center;
+  position: absolute; right: 14px;
+  display: flex; align-items: center;
   color: ${theme.colors.textMuted};
   pointer-events: none;
 `;
 
 const Input = styled.input`
-  padding: ${theme.spacing.sm} ${theme.spacing.md};
-  padding-right: 38px;
-  padding-left: 60px;
-  border: 2px solid ${theme.colors.borderStrong};
-  border-radius: ${theme.radii.md};
+  width: 100%; height: 48px;
+  padding: 0 44px 0 48px;
+  border: 1px solid ${theme.colors.border};
+  border-radius: 14px;
   font-size: 1rem;
   background: ${theme.colors.surface};
   color: ${theme.colors.text};
-  width: 100%;
-  transition: border-color ${theme.motion.fast} ease, box-shadow ${theme.motion.fast} ease;
+  box-shadow: ${theme.shadows.sm};
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  &::placeholder { color: ${theme.colors.textLight}; }
   &:focus {
-    border-color: ${theme.colors.primaryLight};
-    box-shadow: 0 0 0 4px color-mix(in srgb, ${theme.colors.primaryLight} 18%, transparent);
+    outline: none;
+    border-color: color-mix(in srgb, ${theme.colors.gold} 70%, ${theme.colors.border});
+    box-shadow: 0 0 0 4px color-mix(in srgb, ${theme.colors.gold} 20%, transparent);
   }
 `;
 
 const ClearBtn = styled.button<{ $visible: boolean }>`
-  position: absolute;
-  left: ${theme.spacing.sm};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 10px;
-  min-height: 28px;
-  border-radius: ${theme.radii.sm};
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  position: absolute; left: 6px;
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
   color: ${theme.colors.textMuted};
-  border: 1px solid ${theme.colors.border};
-  background: ${theme.colors.surfaceAlt};
+  background: color-mix(in srgb, ${theme.colors.text} 7%, transparent);
   opacity: ${p => (p.$visible ? 1 : 0)};
   visibility: ${p => (p.$visible ? 'visible' : 'hidden')};
-  transform: ${p => (p.$visible ? 'scale(1)' : 'scale(0.85)')};
-  transition: opacity ${theme.motion.fast} ease, transform ${theme.motion.fast} ease,
-    visibility ${theme.motion.fast} ease, color ${theme.motion.fast} ease,
-    background ${theme.motion.fast} ease;
-  white-space: nowrap;
-  &:hover {
-    color: ${theme.colors.primary};
-    border-color: ${theme.colors.border};
-    background: ${theme.colors.surface};
-  }
-  &:active { transform: scale(0.92); }
+  transform: scale(${p => (p.$visible ? 1 : 0.85)});
+  transition: opacity 0.15s ease, transform 0.16s ${theme.motion.outStrong}, visibility 0.15s;
+  &:active { transform: scale(0.9); }
 `;
 
 interface Props {
@@ -78,6 +60,8 @@ interface Props {
   autoFocus?: boolean;
   /** Delay before `onChange` fires, in ms. 0 disables debouncing. */
   debounceMs?: number;
+  /** Accessible name; defaults to the placeholder. */
+  ariaLabel?: string;
 }
 
 export default function SearchField({
@@ -86,6 +70,7 @@ export default function SearchField({
   placeholder,
   autoFocus,
   debounceMs = 250,
+  ariaLabel,
 }: Props) {
   // The input stays instant while the reported value is debounced, so views
   // that refetch on change don't fire a request per keystroke.
@@ -108,7 +93,7 @@ export default function SearchField({
 
   return (
     <Wrap>
-      <SearchGlyph aria-hidden="true"><LineIcon name="search" size={16} /></SearchGlyph>
+      <SearchGlyph aria-hidden="true"><LineIcon name="search" size={19} strokeWidth={1.8} /></SearchGlyph>
       {/* type="text": WebKit's built-in ✕ on type="search" doubled our custom clear button. */}
       <Input
         type="text"
@@ -117,14 +102,16 @@ export default function SearchField({
         placeholder={placeholder ?? ''}
         autoFocus={autoFocus}
         enterKeyHint="search"
+        aria-label={ariaLabel ?? placeholder}
       />
       <ClearBtn
         $visible={draft.length > 0}
         onClick={clear}
         type="button"
         aria-label={HE.ARIA_SEARCH_CLEAR}
+        title={HE.SEARCH_CLEAR}
       >
-        {HE.SEARCH_CLEAR}
+        <LineIcon name="close" size={16} strokeWidth={2.2} />
       </ClearBtn>
     </Wrap>
   );

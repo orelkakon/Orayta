@@ -8,8 +8,8 @@ import { HE } from '@/lib/hebrewTexts';
 import { readBotLocal } from '@/lib/rabbiBot/client';
 import RabbiBotAvatar from './RabbiBotAvatar';
 
-/* Bottom-left (the accessibility button owns bottom-right), same z-layer, so
-   the drawer, the feed overlay and modals all cover it. */
+/* Bottom-left, above the tab bar (its live --tabbar-h) and the home
+   indicator; sheets, the feed overlay and modals all cover it. */
 
 const ring = keyframes`
   0% { box-shadow: 0 0 0 0 color-mix(in srgb, ${theme.colors.secondary} 55%, transparent); }
@@ -18,9 +18,11 @@ const ring = keyframes`
 const bubbleIn = keyframes`from { opacity: 0; transform: translateY(8px) scale(0.92); } to { opacity: 1; transform: none; }`;
 
 const Corner = styled.div`
-  position: fixed; bottom: 16px; left: 16px; z-index: ${theme.z.fab};
+  position: fixed; z-index: ${theme.z.fab};
+  bottom: calc(max(var(--tabbar-h, 0px), ${theme.safe.bottom}) + 16px);
+  left: calc(16px + ${theme.safe.left});
   display: flex; align-items: flex-end; gap: ${theme.spacing.sm}; direction: ltr;
-  @media (max-width: 768px) { bottom: calc(80px + env(safe-area-inset-bottom)); left: 12px; }
+  ${theme.media.compact} { bottom: calc(max(var(--tabbar-h, 0px), ${theme.safe.bottom}) + 12px); left: calc(12px + ${theme.safe.left}); }
 `;
 
 const Button = styled.button`
@@ -33,7 +35,7 @@ const Button = styled.button`
   transition: transform ${theme.motion.fast} ${theme.motion.out};
   &:hover { transform: translateY(-2px) scale(1.03); }
   &:active { transform: scale(0.95); }
-  @media (max-width: 768px) { width: 62px; height: 62px; padding: 0; justify-content: center; }
+  ${theme.media.compact} { width: 58px; height: 58px; padding: 0; justify-content: center; }
   @media (prefers-reduced-motion: reduce) { animation: none; }
 `;
 
@@ -47,7 +49,7 @@ const Label = styled.span`
   display: flex; flex-direction: column; line-height: 1.15; text-align: start;
   & > b { font-size: ${theme.fontSizes.md}; font-weight: 800; }
   & > small { font-size: ${theme.fontSizes.xs}; opacity: 0.85; }
-  @media (max-width: 768px) { display: none; }
+  ${theme.media.compact} { display: none; }
 `;
 
 const Bubble = styled.div`
@@ -57,7 +59,7 @@ const Bubble = styled.div`
   background: ${theme.colors.surface}; color: ${theme.colors.text}; border: 1px solid ${theme.colors.border};
   box-shadow: ${theme.shadows.md}; font-size: ${theme.fontSizes.sm}; font-weight: 600; line-height: 1.45;
   cursor: pointer; animation: ${bubbleIn} 0.35s ${theme.motion.spring} both;
-  @media (min-width: 769px) { display: none; }
+  ${theme.up.wide} { display: none; }
 `;
 
 const BubbleClose = styled.button`

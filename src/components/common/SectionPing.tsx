@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { trackDaily, trackSession, TrackMetric } from '@/lib/track';
 
 /** Counts one section entry per browsing session (and a daily-user ping for
- *  pages like the feed that render outside AppLayout). */
+ *  pages like the feed that render outside the app shell). */
 export default function SectionPing({ metric }: { metric: TrackMetric }) {
   useEffect(() => {
     trackSession(metric);

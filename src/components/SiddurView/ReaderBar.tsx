@@ -11,10 +11,9 @@ import { sectionApplies, PrayerDay } from '@/lib/siddur/calendar';
 const Bar = styled.div`
   position: sticky; top: var(--header-h, 60px); z-index: ${theme.z.sticky};
   @media (max-width: 480px) { top: var(--header-h, 52px); }
-  /* Bleed to the edges of <main> (32px padding, 16px on phones). */
-  margin: 0 -${theme.spacing.xl};
-  padding: 0 ${theme.spacing.xl};
-  ${theme.media.sm} { margin: 0 -${theme.spacing.md}; padding: 0 ${theme.spacing.md}; }
+  /* Bleed to the edges of <main> (its padding is the page gutter). */
+  margin: 0 calc(-1 * ${theme.layout.gutter});
+  padding: 0 ${theme.layout.gutter};
   background: ${theme.colors.background};
   background: color-mix(in srgb, ${theme.colors.background} 92%, transparent);
   -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
@@ -56,8 +55,7 @@ const ContentsBtn = styled.button`
 `;
 
 const Progress = styled.div`
-  height: 2px; margin: 0 -${theme.spacing.xl};
-  ${theme.media.sm} { margin: 0 -${theme.spacing.md}; }
+  height: 2px; margin: 0 calc(-1 * ${theme.layout.gutter});
   background: ${theme.colors.secondary};
   transform-origin: right; transition: transform 0.1s linear;
 `;

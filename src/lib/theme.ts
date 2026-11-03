@@ -26,6 +26,16 @@ export const theme = {
     chart1:       'var(--color-chart-1)',
     chart2:       'var(--color-chart-2)',
     chart3:       'var(--color-chart-3)',
+    // App chrome (header bar): espresso in both themes, so the iOS
+    // black-translucent status bar's white text always reads on it.
+    chrome:       'var(--color-chrome)',
+    onChrome:     'var(--color-on-chrome)',
+    // Decorative gold (rules, rings, highlights) — never body text.
+    gold:         'var(--color-gold)',
+    goldSoft:     'var(--color-gold-soft)',
+    // Raised surfaces (sheets, popovers) and the dim layer behind them.
+    elevated:     'var(--color-elevated)',
+    scrim:        'var(--color-scrim)',
   },
   fonts: {
     body: "var(--font-frank, 'Frank Ruhl Libre', Georgia, serif)",
@@ -36,6 +46,7 @@ export const theme = {
     md: '12px',
     lg: '16px',
     xl: '24px',
+    pill: '999px',
   },
   shadows: {
     sm: 'var(--shadow-sm)',
@@ -54,6 +65,7 @@ export const theme = {
   // Canonical type scale. Prefer these over ad-hoc rem literals so the
   // accessibility font-scale (html[data-acc-font]) stays predictable.
   fontSizes: {
+    xxs:     '0.6875rem',
     xs:      '0.75rem',
     sm:      '0.875rem',
     md:      '1rem',
@@ -75,6 +87,30 @@ export const theme = {
     sm: '@media (max-width: 600px)',
     md: '@media (max-width: 768px)',
     lg: '@media (max-width: 1000px)',
+    // Below this the app is "compact": bottom tab bar + "עוד" sheet instead
+    // of the desktop nav (phones, tablets, small laptops).
+    compact: '@media (max-width: 1099px)',
+  },
+  // Mobile-first counterparts — prefer these for new layouts.
+  up: {
+    sm:   '@media (min-width: 601px)',
+    md:   '@media (min-width: 769px)',
+    wide: '@media (min-width: 1100px)',
+  },
+  // Safe-area insets (viewport-fit=cover). Always use with a fallback base,
+  // e.g. calc(16px + theme.safe.bottom).
+  safe: {
+    top:    'env(safe-area-inset-top, 0px)',
+    bottom: 'env(safe-area-inset-bottom, 0px)',
+    left:   'env(safe-area-inset-left, 0px)',
+    right:  'env(safe-area-inset-right, 0px)',
+  },
+  layout: {
+    content: '1000px',
+    wide:    '1180px',
+    // Comfortable line length for long Hebrew reading (siddur, texts).
+    reading: '36em',
+    gutter:  'clamp(16px, 4vw, 32px)',
   },
   // Brand colours for third-party channels — fixed by the vendor, never themed.
   brand: {
@@ -91,6 +127,27 @@ export const theme = {
     gmapsYellow: '#FBBC04',
     gmapsGreen: '#34A853',
     brandTileBg: '#FFFFFF',
+  },
+  // The gilded call-to-action — same in both themes (gold reads on light and dark).
+  gilded: {
+    fill:   'linear-gradient(180deg, #E9C27A 0%, #C9974A 100%)',
+    ink:    '#2A1A08',
+    edge:   'rgba(255, 255, 255, 0.45)',
+    glow:   'rgba(184, 134, 63, 0.6)',
+    // Deep espresso → bronze surface for hero cards (home "today", siddur "now").
+    night:  'linear-gradient(155deg, #3A2410 0%, #23150A 55%, #160D06 100%)',
+    nightInk: '#FBF4E6',
+    nightMuted: 'rgba(251, 244, 230, 0.72)',
+    nightLine: 'rgba(226, 184, 107, 0.28)',
+  },
+  // Controls laid over photos/video/dark stages (feed, stories, players).
+  onMedia: {
+    ink:     '#FFFFFF',
+    muted:   'rgba(255, 255, 255, 0.78)',
+    glass:   'rgba(255, 255, 255, 0.14)',
+    glassHi: 'rgba(255, 255, 255, 0.22)',
+    line:    'rgba(255, 255, 255, 0.18)',
+    shade:   'rgba(0, 0, 0, 0.45)',
   },
   // Group quiz stage (/play) — a fixed night-and-gold stage in both themes
   // (like the feed), and the four answer colours, always paired with a shape
@@ -150,6 +207,11 @@ export const theme = {
   motion: {
     spring:  'cubic-bezier(0.34, 1.56, 0.64, 1)',
     out:     'cubic-bezier(0.22, 1, 0.36, 1)',
+    // Strong ease-out for presses/entrances, ease-in-out for on-screen moves,
+    // and the iOS sheet curve for drawers and bottom sheets.
+    outStrong: 'cubic-bezier(0.23, 1, 0.32, 1)',
+    inOut:   'cubic-bezier(0.77, 0, 0.175, 1)',
+    drawer:  'cubic-bezier(0.32, 0.72, 0, 1)',
     fast:    '0.15s',
     base:    '0.25s',
     slow:    '0.4s',
@@ -158,9 +220,12 @@ export const theme = {
   z: {
     sticky: 50,
     header: 100,
-    drawer: 160,
+    tabbar: 110,
     fab: 140,
+    drawer: 160,
+    popover: 200,
     modal: 300,
+    sheet: 320,
     feed: 900,
     toast: 1000,
   },

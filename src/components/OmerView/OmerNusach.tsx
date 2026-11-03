@@ -15,7 +15,7 @@ const Card = styled.section`
 const Head = styled.h2`
   display: flex; align-items: center; gap: ${theme.spacing.sm};
   font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.lg}; font-weight: 800; color: ${theme.colors.primary};
-  &::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to left, ${theme.colors.secondary}66, transparent); }
+  &::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to left, color-mix(in srgb, ${theme.colors.secondary} 40%, transparent), transparent); }
 `;
 const Instruction = styled.p`
   font-size: ${theme.fontSizes.sm}; color: ${theme.colors.textMuted}; line-height: 1.6;

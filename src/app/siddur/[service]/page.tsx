@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import AppLayout from '@/components/Layout/AppLayout';
 import ServiceReader from '@/components/SiddurView/ServiceReader';
 import SectionPing from '@/components/common/SectionPing';
 import { SERVICE_IDS, getService, isServiceId } from '@/lib/siddur';
@@ -23,9 +22,9 @@ export function generateMetadata({ params }: Params): Metadata {
 export default function ServicePage({ params }: Params) {
   if (!isServiceId(params.service)) notFound();
   return (
-    <AppLayout>
+    <>
       <SectionPing metric="content" />
       <ServiceReader id={params.service} />
-    </AppLayout>
+    </>
   );
 }

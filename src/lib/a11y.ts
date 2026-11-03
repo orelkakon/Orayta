@@ -45,3 +45,15 @@ export function applyA11y(s: A11ySettings): void {
   set('data-acc-links', s.underlineLinks);
   set('data-acc-motion', s.reduceMotion);
 }
+
+const OPEN_EVENT = 'orayta:open-a11y';
+
+/** Opens the accessibility sheet from anywhere (header button, "עוד" sheet). */
+export function openAccessibility(): void {
+  window.dispatchEvent(new Event(OPEN_EVENT));
+}
+
+export function onOpenAccessibility(cb: () => void): () => void {
+  window.addEventListener(OPEN_EVENT, cb);
+  return () => window.removeEventListener(OPEN_EVENT, cb);
+}

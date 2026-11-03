@@ -58,7 +58,7 @@ const EditBtn = styled.button`
 `;
 const DeleteBtn = styled.button`
   font-size: 0.75rem; padding: 2px ${theme.spacing.sm};
-  border: 1px solid ${theme.colors.error}33; border-radius: ${theme.radii.sm};
+  border: 1px solid color-mix(in srgb, ${theme.colors.error} 20%, transparent); border-radius: ${theme.radii.sm};
   color: ${theme.colors.error}; opacity: 0.7; transition: opacity 0.15s;
   &:hover { opacity: 1; background: rgba(155,35,53,0.06); }
 `;

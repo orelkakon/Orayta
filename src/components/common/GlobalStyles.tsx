@@ -35,9 +35,16 @@ const GlobalStylesheet = createGlobalStyle`
     --color-chart-1:      #2a78d6;
     --color-chart-2:      #eb6834;
     --color-chart-3:      #1baf7a;
-    --shadow-sm: 0 1px 3px rgba(44, 24, 16, 0.08);
-    --shadow-md: 0 4px 12px rgba(44, 24, 16, 0.10);
-    --shadow-lg: 0 8px 24px rgba(44, 24, 16, 0.12);
+    --color-chrome:       #4E3218;
+    --color-on-chrome:    #FBF4E6;
+    --color-gold:         #B8863F;
+    --color-gold-soft:    #F6ECD9;
+    --color-elevated:     #FFFFFF;
+    --color-scrim:        rgba(28, 16, 6, 0.48);
+    --shadow-sm: 0 1px 2px rgba(44, 24, 16, 0.06), 0 1px 3px rgba(44, 24, 16, 0.06);
+    --shadow-md: 0 2px 4px rgba(44, 24, 16, 0.05), 0 6px 16px rgba(44, 24, 16, 0.08);
+    --shadow-lg: 0 4px 8px rgba(44, 24, 16, 0.06), 0 16px 40px rgba(44, 24, 16, 0.14);
+    color-scheme: light;
   }
 
   [data-theme="dark"] {
@@ -67,9 +74,16 @@ const GlobalStylesheet = createGlobalStyle`
     --color-chart-1:      #3987e5;
     --color-chart-2:      #d95926;
     --color-chart-3:      #199e70;
+    --color-chrome:       #1F1710;
+    --color-on-chrome:    #F3E7D3;
+    --color-gold:         #E2B86B;
+    --color-gold-soft:    #2E2416;
+    --color-elevated:     #261E16;
+    --color-scrim:        rgba(0, 0, 0, 0.6);
     --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.35);
     --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
     --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.55);
+    color-scheme: dark;
   }
 
   *, *::before, *::after {
@@ -81,6 +95,10 @@ const GlobalStylesheet = createGlobalStyle`
   html {
     direction: rtl;
     font-size: 16px;
+    /* The rubber-band area above/below the page shows this, not white. */
+    background-color: ${theme.colors.background};
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   /* ── Accessibility overrides (set by AccessibilityWidget via data-attrs) ── */
@@ -131,6 +149,10 @@ const GlobalStylesheet = createGlobalStyle`
 
   html[data-acc-contrast="on"] {
     --color-background:   #FFFFFF;
+    --color-chrome:       #1A0D00;
+    --color-on-chrome:    #FFFFFF;
+    --color-gold:         #6B3E12;
+    --color-elevated:     #FFFFFF;
     --color-surface:      #FFFFFF;
     --color-surface-alt:  #F2F2F2;
     --color-primary:      #2A1500;
@@ -168,13 +190,15 @@ const GlobalStylesheet = createGlobalStyle`
     color: ${theme.colors.text};
     line-height: 1.6;
     min-height: 100vh;
+    min-height: 100dvh;
+    text-rendering: optimizeLegibility;
     transition: background-color 0.2s ease, color 0.2s ease;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Mobile: no gray tap flash, no rubber-band past the page edges — the two
-     strongest "this is a website" tells inside a home-screen install. */
+  /* Mobile: no gray tap flash and no 300ms tap delay — the strongest
+     "this is a website" tells inside a home-screen install. */
   a, button, [role="button"] {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
@@ -205,9 +229,12 @@ const GlobalStylesheet = createGlobalStyle`
   a { color: inherit; text-decoration: none; }
 
   ::selection {
-    background: ${theme.colors.secondary};
-    color: white;
+    background: color-mix(in srgb, ${theme.colors.gold} 35%, transparent);
+    color: inherit;
   }
+
+  /* Hebrew numerals/times line up in lists and counters. */
+  time, [data-tabular] { font-variant-numeric: tabular-nums; }
 `;
 
 export default function GlobalStyles() {

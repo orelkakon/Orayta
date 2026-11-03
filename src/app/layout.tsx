@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Frank_Ruhl_Libre, Heebo } from 'next/font/google';
 import ClientProviders from '@/components/common/ClientProviders';
+import AppShell from '@/components/Layout/AppShell';
+import { THEME_BOOT_SCRIPT } from '@/lib/themeBoot';
 
 const frankRuhl = Frank_Ruhl_Libre({
   subsets: ['hebrew', 'latin'],
@@ -37,7 +39,13 @@ export const metadata: Metadata = {
     description: 'מערכת לניהול, לימוד ותרגול מקורות יהודיים',
   },
   // Next 13.5 API — the standalone `viewport` export only exists from Next 14.
-  themeColor: '#5C3D1E',
+  // viewport-fit=cover + a translucent status bar let the espresso header run
+  // under the iPhone status bar / notch like a native app; every top-anchored
+  // surface pads itself with env(safe-area-inset-top) (theme.safe.top).
+  viewport: { width: 'device-width', initialScale: 1, viewportFit: 'cover' },
+  appleWebApp: { capable: true, title: 'אורייתא', statusBarStyle: 'black-translucent' },
+  // Updated at runtime by ThemeContext / immersive pages (useThemeColor).
+  themeColor: '#4E3218',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -45,11 +53,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="he" dir="rtl" className={`${frankRuhl.variable} ${heebo.variable}`}>
       <head>
         {/* Prevent dark-mode flash: read localStorage before first paint */}
-        <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem('orayta_theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){};window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__bip=e});` }} />
+        <script dangerouslySetInnerHTML={{ __html: `${THEME_BOOT_SCRIPT};window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__bip=e});` }} />
       </head>
       <body>
         <ClientProviders>
-          {children}
+          <AppShell>{children}</AppShell>
         </ClientProviders>
       </body>
     </html>

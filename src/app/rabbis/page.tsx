@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppLayout from '@/components/Layout/AppLayout';
 import SectionPing from '@/components/common/SectionPing';
 import RabbisAndBooksView from '@/components/RabbisAndBooksView/RabbisAndBooksView';
 
@@ -21,9 +20,9 @@ interface Props {
 export default function RabbisPage({ searchParams }: Props) {
   const initialTab = searchParams.tab === 'books' ? 'books' : 'rabbis';
   return (
-    <AppLayout>
+    <>
       <SectionPing metric="rabbis" />
       <RabbisAndBooksView initialTab={initialTab} initialSearch={searchParams.q ?? ''} />
-    </AppLayout>
+    </>
   );
 }

@@ -17,7 +17,8 @@ const Overlay = styled.div`
   background: rgba(10,6,3,0.88);
   -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   display: flex; align-items: center; justify-content: center;
-  padding: ${theme.spacing.md};
+  padding: calc(${theme.spacing.md} + ${theme.safe.top}) calc(${theme.spacing.md} + ${theme.safe.right})
+    calc(${theme.spacing.md} + ${theme.safe.bottom}) calc(${theme.spacing.md} + ${theme.safe.left});
   animation: ${fadeIn} 0.2s ease;
 `;
 

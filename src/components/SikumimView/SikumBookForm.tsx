@@ -20,7 +20,7 @@ const Input = styled.input`
   border: 1px solid ${theme.colors.border}; border-radius: ${theme.radii.md};
   font-size: 0.95rem; background: ${theme.colors.surface}; color: ${theme.colors.text};
   direction: rtl;
-  &:focus { outline: 2px solid ${theme.colors.primary}40; border-color: ${theme.colors.primary}; }
+  &:focus { outline: 2px solid color-mix(in srgb, ${theme.colors.primary} 25%, transparent); border-color: ${theme.colors.primary}; }
 `;
 const PickerLabel = styled.div`font-size: 0.9rem; font-weight: 600; color: ${theme.colors.text};`;
 const IconGrid = styled.div`

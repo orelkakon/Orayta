@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import AppLayout from '@/components/Layout/AppLayout';
 import LearnReader from '@/components/LearnView/LearnReader';
 import SectionPing from '@/components/common/SectionPing';
 import { LEARN_KINDS, isLearnKind, learnKind } from '@/lib/dailyLearning/kinds';
@@ -23,9 +22,9 @@ export function generateMetadata({ params }: Params): Metadata {
 export default function LearnPage({ params }: Params) {
   if (!isLearnKind(params.kind)) notFound();
   return (
-    <AppLayout>
+    <>
       <SectionPing metric="today" />
       <LearnReader kind={params.kind} />
-    </AppLayout>
+    </>
   );
 }

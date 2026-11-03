@@ -13,7 +13,7 @@ const BlockHead = styled.h2`
   display: flex; align-items: center; gap: ${theme.spacing.sm};
   font-family: ${theme.fonts.body}; font-size: calc(1.05rem * var(--siddur-scale, 1.22)); font-weight: 800;
   color: ${theme.colors.primary}; margin: ${theme.spacing.lg} 0 ${theme.spacing.sm};
-  &::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to left, ${theme.colors.secondary}66, transparent); }
+  &::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to left, color-mix(in srgb, ${theme.colors.secondary} 40%, transparent), transparent); }
 `;
 
 const Seg = styled.div`margin: 0 0 0.9em;`;

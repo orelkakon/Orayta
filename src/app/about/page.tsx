@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppLayout from '@/components/Layout/AppLayout';
 import AboutView from '@/components/AboutView/AboutView';
 
 const TITLE = 'אודות';
@@ -15,8 +14,8 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <AppLayout>
+    <>
       <AboutView />
-    </AppLayout>
+    </>
   );
 }

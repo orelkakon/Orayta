@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppLayout from '@/components/Layout/AppLayout';
 import LegalView from '@/components/LegalView/LegalView';
 
 const TITLE = 'תנאי שימוש, פרטיות ונגישות';
@@ -15,8 +14,8 @@ export const metadata: Metadata = {
 
 export default function LegalPage() {
   return (
-    <AppLayout>
+    <>
       <LegalView />
-    </AppLayout>
+    </>
   );
 }

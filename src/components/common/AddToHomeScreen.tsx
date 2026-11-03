@@ -60,7 +60,7 @@ const Sheet = styled.div`
   padding:${theme.spacing.lg} ${theme.spacing.lg} calc(${theme.spacing.lg} + env(safe-area-inset-bottom, 0px));
   animation:${slideUp} .5s ${theme.motion.spring} both;
   ${theme.media.md}{
-    bottom:calc(64px + env(safe-area-inset-bottom, 0px));
+    bottom:var(--tabbar-h, 0px);
     max-width:none;border-radius:20px 20px 0 0;padding-bottom:${theme.spacing.lg};
   }
 `;
