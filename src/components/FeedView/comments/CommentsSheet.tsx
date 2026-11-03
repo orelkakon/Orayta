@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useSheetDrag } from '@/components/ui/useSheetDrag';
 import styled, { keyframes, css } from 'styled-components';
 import type { FeedCommentsTarget } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
@@ -38,8 +39,9 @@ const Sheet = styled.div<{ $out: boolean }>`
 `;
 
 const Grip = styled.div`
-  flex-shrink: 0; width: 40px; height: 4px; border-radius: 999px;
-  background: rgba(255,255,255,0.2); margin: 9px auto 0;
+  flex-shrink: 0; width: 40px; height: 5px; border-radius: 999px;
+  background: rgba(255,255,255,0.24); margin: 9px auto 0;
+  touch-action: none;
 `;
 
 const Head = styled.div`
@@ -113,10 +115,19 @@ export default function CommentsSheet({ target, onTotal, onClose }: Props) {
   const t = useCommentThread(target, onTotal);
   const [out, setOut] = useState(false);
 
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
+
   const close = useCallback(() => {
     setOut(true);
     setTimeout(onClose, EXIT_MS);
   }, [onClose]);
+
+  // Pull the sheet down (from its header, or from the list when it's scrolled
+  // to the top) to dismiss — the drag already animates it out.
+  const dragClose = useCallback(() => { window.setTimeout(onClose, 260); }, [onClose]);
+  useSheetDrag(!out, sheetRef, listRef, backdropRef, dragClose);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
@@ -126,8 +137,8 @@ export default function CommentsSheet({ target, onTotal, onClose }: Props) {
 
   return (
     <>
-      <Backdrop $out={out} onClick={close} />
-      <Sheet $out={out} role="dialog" aria-modal="true" aria-label={HE.COMMENTS_TITLE} onClick={e => e.stopPropagation()}>
+      <Backdrop ref={backdropRef} $out={out} onClick={close} />
+      <Sheet ref={sheetRef} $out={out} role="dialog" aria-modal="true" aria-label={HE.COMMENTS_TITLE} onClick={e => e.stopPropagation()}>
         <Grip />
         <Head>
           <Title>
@@ -139,7 +150,7 @@ export default function CommentsSheet({ target, onTotal, onClose }: Props) {
           </Context>
           <CloseBtn onClick={close} aria-label={HE.COMMENTS_CLOSE}><LineIcon name="close" size={16} strokeWidth={2} /></CloseBtn>
         </Head>
-        <List>
+        <List ref={listRef}>
           {t.status === 'loading' && [0, 1, 2].map(i => <Skeleton key={i} />)}
           {t.status === 'error' && (
             <State>

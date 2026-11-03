@@ -84,9 +84,10 @@ export default function AccessibilityWidget() {
     });
   };
 
-  // The group quiz is full-screen answer tiles — nothing may float over them.
-  // Saved settings still apply (effect above).
-  const showFab = isBareRoute(pathname) && !pathname.startsWith('/play');
+  // Bare screens without their own a11y button get a floating one. The feed
+  // has one in its top bar; the group quiz is full-screen answer tiles and
+  // nothing may float over them (saved settings still apply there).
+  const showFab = isBareRoute(pathname) && !pathname.startsWith('/play') && pathname !== '/feed';
 
   return (
     <>

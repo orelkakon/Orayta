@@ -155,6 +155,13 @@ export const theme = {
     line:    'rgba(255, 255, 255, 0.18)',
     shade:   'rgba(0, 0, 0, 0.45)',
     lift:    '0 10px 24px -14px rgba(0, 0, 0, 0.6)',
+    // Feed rail: the "liked" heart and the dark glass behind rail buttons.
+    void:    '#050505',
+    like:    '#FF4D67',
+    likeLight: '#FF7A8C',
+    likeGlow: 'rgba(255, 77, 103, 0.45)',
+    rail:    'rgba(12, 9, 22, 0.42)',
+    textShadow: '0 1px 6px rgba(0, 0, 0, 0.6)',
   },
   // Group quiz stage (/play) — a fixed night-and-gold stage in both themes
   // (like the feed), and the four answer colours, always paired with a shape

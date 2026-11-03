@@ -57,7 +57,7 @@ const flicker = keyframes`
 `;
 
 const CandleWrap = styled.div`position: relative; width: 28px; height: 46px; margin: 0 auto;`;
-const Flame = styled.div`
+const Flame = styled.div.attrs({ className: 'anim-loop' })`
   position: absolute; bottom: 12px; left: 0; right: 0; margin: auto;
   width: 18px; height: 28px;
   background: radial-gradient(ellipse at 50% 80%, #fff8a0 0%, #ffbe00 38%, #ff6200 68%, transparent 100%);
@@ -77,7 +77,7 @@ const CandleBase = styled.div`
 `;
 
 const glowPulse = keyframes`0%,100%{opacity:0.55} 50%{opacity:0.9}`;
-const CandleGlow = styled.div`
+const CandleGlow = styled.div.attrs({ className: 'anim-loop' })`
   position: absolute; bottom: 8px; left: 0; right: 0; margin: auto;
   width: 60px; height: 60px; border-radius: 50%;
   background: radial-gradient(circle, rgba(255,160,0,0.18) 0%, transparent 70%);
@@ -87,7 +87,7 @@ const CandleGlow = styled.div`
 
 // --- Refua icon: glowing medical cross ---
 const RefuaWrap = styled.div`position: relative; width: 44px; height: 44px; margin: 0 auto;`;
-const RefuaGlow = styled.div`
+const RefuaGlow = styled.div.attrs({ className: 'anim-loop' })`
   position: absolute; inset: -14px; border-radius: 50%;
   background: radial-gradient(circle, rgba(100,190,255,0.18) 0%, transparent 70%);
   animation: ${glowPulse} 1.4s ease-in-out infinite;
@@ -100,7 +100,7 @@ const RefuaCross = styled.div`
 
 // --- Hatzlaha icon: glowing 5-pointed star ---
 const StarWrap = styled.div`position: relative; width: 46px; height: 46px; margin: 0 auto;`;
-const StarGlow = styled.div`
+const StarGlow = styled.div.attrs({ className: 'anim-loop' })`
   position: absolute; inset: -10px; border-radius: 50%;
   background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%);
   animation: ${glowPulse} 1.2s ease-in-out infinite 0.1s;

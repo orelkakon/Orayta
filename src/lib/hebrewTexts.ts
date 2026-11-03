@@ -6,6 +6,7 @@ import { NEARBY_STATS_HE } from './texts/nearbyStats';
 import { SHELL_HE } from './texts/shell';
 import { HOME_HE } from './texts/home';
 import { STORIES_HE } from './texts/stories';
+import { FEED_HE } from './texts/feed';
 
 export const HE = {
   APP_NAME: 'אורייתא',
@@ -589,7 +590,6 @@ export const HE = {
   FEED_SUBTITLE: 'הפיד שישאיר אתכם מאמינים יותר מכל גלילה אחרת.',
   FEED_NEW_BADGE: 'חדש',
   FEED_BACK: '← חזרה',
-  FEED_LOADING: 'טוען...',
   FEED_LOADING_MORE: 'טוען עוד...',
   FEED_TYPE_CITATION: 'ציטוט תלמודי',
   FEED_TYPE_RABBI: 'רב ומנהיג',
@@ -605,7 +605,6 @@ export const HE = {
   STORY_INVITE_TEXT: 'ציטוטים מהתלמוד, רבנים ומנהיגים לאורך הדורות, חידושי תורה, סיכומי לימוד וחידונים — הכל במקום אחד.\n\nמוזמנים להצטרף ✨',
   FEED_GEMATRIA_UNIT: 'בגימטריה',
   FEED_BOOK_BY: 'מאת',
-  FEED_LIKE: 'אהבתי',
   FEED_TOTAL_LIKES: 'תגובות',
   FEED_TOTAL_LIKES_SUB: 'סה״כ תגובות חיוביות',
   ABOUT_FEED_LIKES: 'תגובות',
@@ -1645,4 +1644,5 @@ export const HE = {
   ...SHELL_HE,
   ...HOME_HE,
   ...STORIES_HE,
+  ...FEED_HE,
 };

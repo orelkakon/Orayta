@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import styled, { keyframes } from 'styled-components';
+import { LineIcon } from '@/components/common/LineIcons';
 import FeedCard from './FeedCard';
 import FeedAmbient from './FeedAmbient';
 import FeedBackground from './FeedBackground';
@@ -15,66 +15,32 @@ import SavedPanel from './SavedPanel';
 import { useFeedEngagement } from './useFeedEngagement';
 import { useCommentsSheet } from './comments/useCommentsSheet';
 import CommentsSheet from './comments/CommentsSheet';
-import type { FeedItem, FeedSlide, Dedication, InstagramReel } from '@/types';
-import { ALL_FEED_TYPES, FeedPrefs, DEFAULT_FEED_PREFS, getFeedPrefs, saveFeedPrefs, isCustomPrefs } from '@/lib/feedPrefs';
-import { shuffleArray } from '@/lib/feedShuffle';
-import { loadFeedDeck, saveFeedDeck, freshFeedDeck } from '@/lib/feedDeck';
+import type { FeedItem, FeedSlide } from '@/types';
+import { FeedPrefs, DEFAULT_FEED_PREFS, getFeedPrefs, saveFeedPrefs, isCustomPrefs } from '@/lib/feedPrefs';
 import { buildFeedSlides, ensureReelGaps } from '@/lib/feedSlides';
 import { bumpStreak, isFirstVisit, StreakInfo } from '@/lib/feedStreak';
 import { HE } from '@/lib/hebrewTexts';
 import { getDailyProgress, bumpViewed, DAILY_GOAL } from '@/lib/feedDaily';
 import FeedSeal from './FeedSeal';
 import AddToHomeScreen from '@/components/common/AddToHomeScreen';
-import { takeFeedStart } from '@/lib/feedExcerpt';
-
-const Wrapper = styled.div`position: fixed; inset: 0; background: #050505; z-index: 900; overflow: hidden;`;
-
-const Scroll = styled.div`
-  height: 100dvh; overflow-y: scroll; scroll-snap-type: y mandatory;
-  -webkit-overflow-scrolling: touch; scrollbar-width: none;
-  /* Never hand the gesture to the document — an edge rubber-band (or Android
-     pull-to-refresh) hijacks the flick chain and the feed feels stuck. */
-  overscroll-behavior-y: contain;
-  &::-webkit-scrollbar { display: none; }
-`;
-
-const hintBob = keyframes`
-  0%, 100% { transform: translate(-50%, 0); opacity: 0.85; }
-  50%      { transform: translate(-50%, -9px); opacity: 1; }
-`;
-
-/* First-visit only: one quiet gesture cue, gone forever after the first swipe. */
-const SwipeHint = styled.div`
-  position: fixed; bottom: calc(30px + env(safe-area-inset-bottom)); left: 50%;
-  transform: translateX(-50%);
-  z-index: 250; pointer-events: none;
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  color: rgba(255, 250, 235, 0.85); font-size: 0.8rem; font-weight: 600;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
-  animation: ${hintBob} 1.6s ease-in-out infinite;
-  span { font-size: 1.1rem; line-height: 1; }
-`;
-
-const spin = keyframes`to { transform: rotate(360deg); }`;
-const Spinner = styled.div`
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  width: 22px; height: 22px; border: 2px solid rgba(255,255,255,0.15);
-  border-top-color: rgba(255,255,255,0.6); border-radius: 50%;
-  animation: ${spin} 0.7s linear infinite; z-index: 300;
-`;
+import { useFeedDeck } from './useFeedDeck';
+import { useFeedExtras } from './useFeedExtras';
+import { theme } from '@/lib/theme';
+import FeedShareSheet from './FeedShareSheet';
+import { Wrapper, Scroll, SwipeHint, Spinner } from './feedViewStyles';
+import { FeedLoadingSlide, FeedErrorSlide, FeedEmptySlide } from './FeedStatus';
+import { useThemeColor } from '@/components/common/useThemeColor';
 
 const PRELOAD_THRESHOLD = 6;
 
 export default function FeedView() {
-  const [cards, setCards]               = useState<FeedItem[]>([]);
-  const [fetching, setFetching]         = useState(false);
-  const [initialLoaded, setInitial]     = useState(false);
+  const deck = useFeedDeck();
+  const { cards, setCards, fetching, initialLoaded, loadError, fetchMore } = deck;
   const [savedMode, setSavedMode]       = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [reader, setReader]             = useState<ReaderData | null>(null);
   const [prefs, setPrefs]               = useState<FeedPrefs>(DEFAULT_FEED_PREFS);
-  const [dedications, setDedications]   = useState<Dedication[]>([]);
-  const [reels, setReels]               = useState<InstagramReel[]>([]);
+  const { dedications, reels } = useFeedExtras();
   const [reelsOnScreen, setReelsOnScreen] = useState(0);
   const [streak, setStreak]             = useState<StreakInfo>({ days: 0, best: 0 });
   const [viewedToday, setViewedToday]   = useState(0);
@@ -86,46 +52,14 @@ export default function FeedView() {
   // mount so the slide doesn't jump around as the user scrolls.
   const sealAfterRef = useRef<number | null>(null);
   const maxIdxRef    = useRef(0);
-  const fetchingRef = useRef(false);
-  const prefsRef    = useRef<FeedPrefs>(DEFAULT_FEED_PREFS);
-  const genRef      = useRef(0);
-  // Persistent deck: seed + page let the server deal content without repeats
-  // until the full pool is exhausted (see /api/feed and lib/feedShuffle).
-  // Restored from localStorage on mount so revisits continue the same deck
-  // instead of reshuffling — otherwise small pools feel repetitive.
-  const seedRef     = useRef(Math.floor(Math.random() * 4294967296));
-  const pageRef     = useRef(0);
   const slidesLenRef = useRef(0);
   const reelGapsRef = useRef<number[]>([]);
 
   const { reacted, savedIds, savedItems, handleReact, handleBookmark } = useFeedEngagement(setCards);
+  const [share, setShare] = useState<{ item: FeedItem; slide: HTMLElement | null } | null>(null);
+  const openShare = useCallback((item: FeedItem, slide: HTMLElement | null) => setShare({ item, slide }), []);
   const comments = useCommentsSheet();
-
-  const fetchMore = useCallback(async () => {
-    if (fetchingRef.current) return;
-    fetchingRef.current = true;
-    setFetching(true);
-    const gen = genRef.current;
-    try {
-      const types = prefsRef.current.types;
-      const typesQ = types.length < ALL_FEED_TYPES.length ? `&types=${types.join(',')}` : '';
-      const res = await fetch(`/api/feed?seed=${seedRef.current}&page=${pageRef.current}${typesQ}`);
-      const items: FeedItem[] = await res.json();
-      if (gen === genRef.current) {
-        pageRef.current += 1;
-        saveFeedDeck({ seed: seedRef.current, page: pageRef.current });
-        // De-dupe: the item opened from home may come round again in the deck.
-        setCards(prev => {
-          const have = new Set(prev.map(c => `${c.type}:${c.id}`));
-          return [...prev, ...items.filter(i => !have.has(`${i.type}:${i.id}`))];
-        });
-      }
-    } finally {
-      fetchingRef.current = false;
-      setFetching(false);
-      setInitial(true);
-    }
-  }, []);
+  useThemeColor(theme.onMedia.void);
 
   useEffect(() => {
     setFirstVisit(isFirstVisit());
@@ -140,27 +74,11 @@ export default function FeedView() {
       ? null
       : Math.max(2, DAILY_GOAL - daily.viewed);
 
-    // Load feed preferences before the first fetch
+    // Preferences first, then continue the persisted deck (or start on the
+    // item handed over from a home teaser card).
     const loadedPrefs = getFeedPrefs();
-    prefsRef.current = loadedPrefs;
     setPrefs(loadedPrefs);
-
-    // Continue the persisted deck from where the last visit stopped
-    const deck = loadFeedDeck();
-    seedRef.current = deck.seed;
-    pageRef.current = deck.page;
-
-    // Opened from a home teaser card: start on that exact item.
-    const start = takeFeedStart();
-    if (start) setCards([start]);
-
-    void fetchMore();
-    void fetch('/api/dedications').then(r => r.json()).then((d: Dedication[]) => {
-      setDedications(shuffleArray(d));
-    });
-    void fetch('/api/instagram/reels').then(r => r.json()).then((r: InstagramReel[]) => {
-      setReels(shuffleArray(r));
-    }).catch(() => {});
+    deck.start(loadedPrefs);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -189,19 +107,11 @@ export default function FeedView() {
 
   const handleSaveSettings = useCallback((next: FeedPrefs) => {
     saveFeedPrefs(next);
-    prefsRef.current = next;
     setPrefs(next);
     setSettingsOpen(false);
-    genRef.current += 1;       // discard any in-flight page of the old mix
-    fetchingRef.current = false;
-    const deck = freshFeedDeck(); // new deck for the new content mix
-    saveFeedDeck(deck);
-    seedRef.current = deck.seed;
-    pageRef.current = deck.page;
-    setCards([]);
     scrollRef.current?.scrollTo({ top: 0 });
-    void fetchMore();
-  }, [fetchMore]);
+    deck.restart(next);
+  }, [deck]);
 
   const handleReelVisible = useCallback((visible: boolean) => {
     setReelsOnScreen(c => Math.max(0, c + (visible ? 1 : -1)));
@@ -216,10 +126,15 @@ export default function FeedView() {
         onSettings={() => setSettingsOpen(true)}
         onSaved={() => setSavedMode(true)}
       />
-      {fetching && <Spinner />}
+      {fetching && cards.length > 0 && <Spinner aria-hidden="true" />}
       <FeedBackground />
       <FeedAmbient suppressed={reelsOnScreen > 0} />
       <Scroll ref={scrollRef} onScroll={handleScroll}>
+        {cards.length === 0 && (loadError
+          ? <FeedErrorSlide onRetry={deck.retry} />
+          : initialLoaded && !fetching
+            ? <FeedEmptySlide onSettings={() => setSettingsOpen(true)} />
+            : <FeedLoadingSlide />)}
         {displaySlides.map((slide, i) => {
           if ('slideType' in slide) {
             if (slide.slideType === 'reel') {
@@ -248,11 +163,13 @@ export default function FeedView() {
               onExpand={setReader}
               commentCount={comments.countFor(item.type, item.id, item.comments)}
               onComments={comments.open}
+              onShare={openShare}
             />
           );
         })}
       </Scroll>
       {reader && <FeedReader data={reader} onClose={() => setReader(null)} />}
+      <FeedShareSheet item={share?.item ?? null} slide={share?.slide ?? null} onClose={() => setShare(null)} />
       {comments.target && (
         <CommentsSheet
           key={`${comments.target.type}:${comments.target.id}`}
@@ -273,7 +190,7 @@ export default function FeedView() {
         onSave={handleSaveSettings}
       />
       {firstVisit && !hintDone && initialLoaded && (
-        <SwipeHint>{HE.FEED_SWIPE_HINT}<span>⌃</span></SwipeHint>
+        <SwipeHint>{HE.FEED_SWIPE_HINT}<LineIcon name="chevronUp" size={20} strokeWidth={2.2} /></SwipeHint>
       )}
       <FeedSplash ready={initialLoaded} streak={streak.days} firstVisit={firstVisit} sealed={sealedToday} />
       <AddToHomeScreen />

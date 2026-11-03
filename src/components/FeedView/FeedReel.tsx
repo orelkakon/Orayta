@@ -3,61 +3,59 @@
 import { useEffect, useRef, useState } from 'react';
 import styled, { css, keyframes } from 'styled-components';
 import type { FeedReelSlide, FeedCommentsTarget } from '@/types';
+import { theme } from '@/lib/theme';
 import { LineIcon } from '@/components/common/LineIcons';
 import { FEED_GOLD } from './feedTypes';
 import { HE } from '@/lib/hebrewTexts';
 import { trackShare } from '@/lib/shareCounter';
-import { reelCodeToMediaId } from '@/lib/instagram';
 import { shareTextSmart } from '@/lib/siteUrl';
+import { openReelInInstagram } from '@/lib/instagramOpen';
+import FeedRail, { RailButton, RailItem } from './FeedRail';
 
 /*
- * The IG embed lays out: 54px header, then the video in a 4:5 box (width x 1.25)
- * with the 9:16 video letterboxed inside it (object-fit: contain), then footer
- * chrome. The visible 9:16 video is therefore the middle 70.3% of the iframe
- * width. Oversizing the iframe to 142.3% and shifting it right/up crops the
- * header, footer and side bars, so only actual video pixels fill the frame.
+ * Full-screen reel. The IG embed lays out a 54px header, then the video in a
+ * 4:5 box with the 9:16 video letterboxed inside, then footer chrome; the
+ * oversized, shifted iframe crops all of that so only video pixels show.
+ * Phones: the 9:16 frame covers the screen (sides cropped, like TikTok).
+ * Wider screens: a rounded 9:16 card at full height.
  */
-const ACTION_BAR = 52; // px reserved below the video for our own actions
-
 const Slide = styled.div`
   height: 100dvh; scroll-snap-align: start; flex-shrink: 0;
-  background: linear-gradient(160deg, #0a0612 0%, #1a0b24 50%, #0a0612 100%);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 10px; position: relative; z-index: 2;
+  position: relative; z-index: 2; overflow: hidden;
+  background: ${theme.onMedia.void};
 `;
 
 const FrameWrap = styled.div`
-  position: relative; overflow: hidden; background: #000;
-  width: min(100vw, 430px, calc((100dvh - ${ACTION_BAR + 24}px) * 9 / 16));
-  aspect-ratio: 9 / 16;
-  border-radius: 16px;
-  box-shadow: 0 12px 44px rgba(0,0,0,0.55);
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  height: 100dvh; width: calc(100dvh * 9 / 16); min-width: 100vw;
+  overflow: hidden; background: ${theme.onMedia.void};
+  ${theme.up.sm} {
+    min-width: 0; height: calc(100dvh - 32px); width: calc((100dvh - 32px) * 9 / 16);
+    border-radius: 20px; box-shadow: ${theme.onMedia.lift};
+  }
 `;
 
 const Frame = styled.iframe`
   position: absolute; top: -54px; left: -21.15%;
   width: 142.3%; height: calc(100% + 60px);
-  border: none; display: block; background: #000;
+  border: none; display: block; background: ${theme.onMedia.void};
 `;
 
-const placeholderPulse = keyframes`
-  0%, 100% { opacity: 0.45; transform: scale(1); }
-  50%      { opacity: 0.9; transform: scale(1.12); }
-`;
+const pulse = keyframes`0%, 100% { opacity: 0.35; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.08); }`;
 
-const Placeholder = styled.div`
+const Placeholder = styled.div.attrs({ className: 'anim-loop' })`
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  color: rgba(217, 181, 108, 0.8); font-size: 1.6rem;
-  text-shadow: 0 0 20px rgba(217, 181, 108, 0.5);
-  span { animation: ${placeholderPulse} 1.8s ease-in-out infinite; }
+  color: ${theme.game.gold};
+  background: ${theme.game.stage};
+  svg { animation: ${pulse} 1.8s ease-in-out infinite; }
 `;
 
 /*
  * Transparent shield strips owned by the page (not the iframe): touches on
- * them scroll OUR feed, never the embed's internal content. A small hole is
- * left in the center so tapping the embed's play/pause button still works.
+ * them scroll OUR feed, never the embed. A hole in the middle lets a tap reach
+ * the embed's own play button.
  */
-const HOLE = 110; // px — size of the center tap-through hole
+const HOLE = 120;
 const Shield = styled.div<{ $pos: 'top' | 'bottom' | 'left' | 'right' }>`
   position: absolute; z-index: 2;
   ${p => p.$pos === 'top'    && css`inset: 0 0 auto 0; height: calc(50% - ${HOLE / 2}px);`}
@@ -66,36 +64,12 @@ const Shield = styled.div<{ $pos: 'top' | 'bottom' | 'left' | 'right' }>`
   ${p => p.$pos === 'right'  && css`top: calc(50% - ${HOLE / 2}px); right: 0; width: calc(50% - ${HOLE / 2}px); height: ${HOLE}px;`}
 `;
 
-const Bar = styled.div`
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  width: min(100vw, 430px);
-`;
-
-const BarBtn = styled.button`
-  -webkit-tap-highlight-color: transparent; appearance: none; cursor: pointer;
-  display: flex; align-items: center; gap: 7px;
-  background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.2); border-radius: 20px;
-  color: white; font-size: 0.85rem; font-weight: 700; padding: 8px 16px;
-  transition: background 0.15s, transform 0.12s;
-  &:active { transform: scale(0.95); }
-  &:hover { background: rgba(255,255,255,0.18); }
-`;
-
 const User = styled.span`
-  color: rgba(255,255,255,0.45); font-size: 0.75rem; direction: ltr;
-  max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  position: absolute; z-index: 5; left: calc(14px + ${theme.safe.left}); bottom: calc(28px + ${theme.safe.bottom});
+  max-width: 55vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: ltr;
+  color: ${theme.onMedia.ink}; font-size: ${theme.fontSizes.sm}; font-weight: 700;
+  text-shadow: ${theme.onMedia.textShadow};
 `;
-
-function InstagramIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" />
-      <circle cx="12" cy="12" r="4.3" />
-      <circle cx="17.4" cy="6.6" r="1.3" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
 
 interface Props {
   slide: FeedReelSlide;
@@ -106,82 +80,81 @@ interface Props {
 
 export default function FeedReel({ slide, onVisible, commentCount, onComments }: Props) {
   const slideRef = useRef<HTMLDivElement>(null);
+  const [near, setNear] = useState(false);
   const [active, setActive] = useState(false);
+  // Swiped away after watching: unmount to stop playback (re-mounts on return).
+  const [parked, setParked] = useState(false);
   const activeRef = useRef(false);
 
   useEffect(() => {
     const el = slideRef.current;
     if (!el) return;
+    // Preload one screen ahead/behind so the embed is ready on arrival.
+    const nearObs = new IntersectionObserver(entries => {
+      const isNear = entries[entries.length - 1].isIntersecting;
+      setNear(isNear);
+      if (!isNear) setParked(false);
+    }, { rootMargin: '100% 0px' });
     // Read the LAST entry — on fast swipes enter+leave arrive in one batch,
     // and dropping the leave would keep the ambient music muted forever.
-    const obs = new IntersectionObserver(entries => {
+    const activeObs = new IntersectionObserver(entries => {
       const visible = entries[entries.length - 1].isIntersecting;
       if (visible === activeRef.current) return;
+      if (!visible) setParked(true); else setParked(false);
       activeRef.current = visible;
       setActive(visible);
       onVisible(visible);
     }, { threshold: 0.6 });
-    obs.observe(el);
+    nearObs.observe(el);
+    activeObs.observe(el);
     return () => {
-      obs.disconnect();
+      nearObs.disconnect();
+      activeObs.disconnect();
       if (activeRef.current) { activeRef.current = false; onVisible(false); }
     };
   }, [onVisible]);
 
-  function openInInstagram() {
-    const webUrl = `https://www.instagram.com/p/${slide.code}/`;
-    const mediaId = reelCodeToMediaId(slide.code);
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if (!isMobile || !mediaId) { window.open(webUrl, '_blank', 'noopener'); return; }
-    // Launch the app straight to this video; fall back to the web page only
-    // if the app didn't take over (i.e. the tab stayed visible).
-    const timer = setTimeout(() => {
-      if (document.visibilityState === 'visible') window.open(webUrl, '_blank', 'noopener');
-    }, 1600);
-    document.addEventListener('visibilitychange', () => clearTimeout(timer), { once: true });
-    window.location.href = `instagram://media?id=${mediaId}`;
-  }
-
-  function doShare() {
-    const text = `${HE.FEED_REEL_SHARE_TEXT}\n${slide.url}`;
+  const share = () => {
     trackShare();
-    void shareTextSmart(text, HE.FEED_TITLE);
-  }
+    void shareTextSmart(`${HE.FEED_REEL_SHARE_TEXT}\n${slide.url}`, HE.FEED_TITLE);
+  };
+
+  const mounted = active || (near && !parked);
 
   return (
     <Slide ref={slideRef}>
       <FrameWrap>
-        {/* Mounted only while on screen — unmounting stops playback when swiping away */}
-        {active ? (
+        {mounted ? (
           <Frame
             src={`https://www.instagram.com/reel/${slide.code}/embed/`}
             title={HE.FEED_REEL_BADGE}
             allow="autoplay; encrypted-media; picture-in-picture"
             allowFullScreen
-            loading="lazy"
             scrolling="no"
           />
         ) : (
-          <Placeholder><span>✦</span></Placeholder>
+          <Placeholder><LineIcon name="reels" size={40} strokeWidth={1.5} /></Placeholder>
         )}
         <Shield $pos="top" />
         <Shield $pos="bottom" />
         <Shield $pos="left" />
         <Shield $pos="right" />
       </FrameWrap>
-      <Bar>
-        <BarBtn
-          onClick={() => onComments({ type: 'reel', id: slide.reelId, label: HE.COMMENTS_REEL_LABEL, icon: 'reels', accent: FEED_GOLD })}
-          aria-label={`${HE.COMMENTS_OPEN} (${commentCount})`}
-        >
-          <LineIcon name="comment" size={16} strokeWidth={2} /> {commentCount > 0 ? commentCount : HE.COMMENTS_OPEN}
-        </BarBtn>
-        <BarBtn onClick={doShare}>↗ {HE.FEED_REEL_SHARE}</BarBtn>
-        <BarBtn onClick={openInInstagram}>
-          <InstagramIcon /> {HE.FEED_REEL_OPEN_IG}
-        </BarBtn>
-        {slide.username && <User>@{slide.username}</User>}
-      </Bar>
+      {slide.username && <User>@{slide.username}</User>}
+      <FeedRail
+        comments={{
+          count: commentCount,
+          onOpen: () => onComments({ type: 'reel', id: slide.reelId, label: HE.COMMENTS_REEL_LABEL, icon: 'reels', accent: FEED_GOLD }),
+        }}
+        onShare={share}
+        extra={(
+          <RailItem>
+            <RailButton onClick={e => { e.stopPropagation(); openReelInInstagram(slide.code); }} aria-label={HE.FEED_REEL_OPEN_IG}>
+              <LineIcon name="camera" size={22} strokeWidth={1.9} />
+            </RailButton>
+          </RailItem>
+        )}
+      />
     </Slide>
   );
 }

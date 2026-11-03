@@ -4,6 +4,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 import { AMBIENT_SONGS, shuffleSongs } from '@/lib/ambientSongs';
 import { HE } from '@/lib/hebrewTexts';
+import { theme } from '@/lib/theme';
 
 const AMBIENT_KEY = 'orayta_feed_ambient';
 // Privacy-enhanced embed: no tracking cookies on load. postMessage targets and
@@ -15,13 +16,13 @@ function ytCmd(iframe: HTMLIFrameElement, func: string, args: unknown[] = []) {
 }
 
 const HiddenFrame = styled.iframe`
-  position: fixed; bottom: 26px; left: 14px; z-index: 300;
+  position: fixed; bottom: calc(26px + ${theme.safe.bottom}); left: calc(14px + ${theme.safe.left}); z-index: 300;
   width: 36px; height: 36px; border: none; border-radius: 50%;
   opacity: 0; pointer-events: none;
 `;
 
 const Btn = styled.button<{ $on: boolean }>`
-  position: fixed; bottom: 26px; left: 14px; z-index: 301;
+  position: fixed; bottom: calc(26px + ${theme.safe.bottom}); left: calc(14px + ${theme.safe.left}); z-index: 301;
   width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
   background: ${p => p.$on ? 'rgba(255,220,140,0.18)' : 'rgba(0,0,0,0.38)'};
   border: 1px solid rgba(255,255,255,${p => p.$on ? '0.38' : '0.12'});
@@ -37,11 +38,11 @@ const b2 = keyframes`0%,100%{height:10px} 33%{height:4px} 66%{height:16px}`;
 const b3 = keyframes`0%,100%{height:7px} 25%{height:16px} 75%{height:3px}`;
 
 const EqWrap = styled.div<{ $on: boolean }>`
-  position: fixed; bottom: 32px; left: 56px; z-index: 301;
+  position: fixed; bottom: calc(32px + ${theme.safe.bottom}); left: calc(56px + ${theme.safe.left}); z-index: 301;
   display: flex; gap: 2px; align-items: flex-end; height: 18px;
   opacity: ${p => p.$on ? 1 : 0}; transition: opacity 0.3s; pointer-events: none;
 `;
-const Bar = styled.div<{ $i: number }>`
+const Bar = styled.div.attrs({ className: 'anim-loop' })<{ $i: number }>`
   width: 3px; border-radius: 2px; background: rgba(255,220,140,0.75);
   ${p => p.$i === 0 && css`animation: ${b1} 0.75s ease-in-out infinite;`}
   ${p => p.$i === 1 && css`animation: ${b2} 0.9s ease-in-out infinite 0.15s;`}
@@ -49,7 +50,7 @@ const Bar = styled.div<{ $i: number }>`
 `;
 
 const Pill = styled.div<{ $visible: boolean }>`
-  position: fixed; bottom: 70px; left: 12px; z-index: 301;
+  position: fixed; bottom: calc(70px + ${theme.safe.bottom}); left: calc(12px + ${theme.safe.left}); z-index: 301;
   background: rgba(10,8,20,0.82); backdrop-filter: blur(12px);
   border: 1px solid rgba(255,220,140,0.28); border-radius: 20px;
   padding: 6px 14px; pointer-events: none;

@@ -53,7 +53,7 @@ const Kicker = styled.div`
   color: rgba(${GOLD}, 0.9);
 `;
 
-const SealRing = styled.div<{ $v: boolean }>`
+const SealRing = styled.div.attrs({ className: 'anim-loop' })<{ $v: boolean }>`
   position: relative; width: 148px; height: 148px;
   animation: ${breathe} 5s ease-in-out 1.4s infinite;
   svg { position: absolute; inset: 0; transform: rotate(-90deg); }
@@ -138,14 +138,14 @@ const BtnRow = styled.div`
   margin-top: 6px;
 `;
 
-const Continue = styled.div`
+const Continue = styled.div.attrs({ className: 'anim-loop' })`
   position: absolute; bottom: calc(34px + env(safe-area-inset-bottom));
   font-size: 0.75rem; color: rgba(255, 250, 235, 0.55);
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   animation: ${nudge} 2s ease-in-out infinite;
 `;
 
-const Particle = styled.span<{ $left: string; $delay: string; $size: string }>`
+const Particle = styled.span.attrs({ className: 'anim-loop' })<{ $left: string; $delay: string; $size: string }>`
   position: absolute; bottom: 30%; left: ${p => p.$left};
   font-size: ${p => p.$size}; color: rgba(${GOLD}, 0.8); pointer-events: none;
   animation: ${floatUp} 3.4s ease-out ${p => p.$delay} infinite;

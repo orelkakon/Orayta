@@ -118,6 +118,14 @@ Weekday services in נוסח עדות המזרח, read as one continuous text wi
 - **API:** `GET /api/learn?date=YYYY-MM-DD` (today's items + parasha) and `GET /api/learn/[kind]?date=&explain=1` (text; `explain` adds Steinsaltz Hebrew for the daf). Clients always pass the Israel date — Sefaria's undated calendar follows its own server timezone. Texts are normalized by `normalize.ts` (pure, tested: spanning refs → blocks with פרק/סימן/עמוד headings, first block may start mid-chapter, footnotes/markers stripped, siddur sanitizer).
 - **UI** (`src/components/LearnView/`): header with font size (shared `orayta_siddur_font`), chips between today's cycles, numbered segments, "סיימתי" per cycle with day streak in `orayta_daily_learning`, Sefaria attribution (CC-BY-NC for the William Davidson Talmud). `TodayView/DafYomiCard` lists the cycles with ✓ and links into the reader.
 
+### 2e-0. Feed UI (רגע של תורה, `/feed`)
+- **Rail:** one action rail per slide (`FeedRail`): like (hold for 🔥/👏 via `ReactionPicker`; count = all reactions), comments, save, share. Reels use the same rail plus "open in Instagram".
+- **Share sheet:** `FeedShareSheet` (ui `Sheet`) gathers every export: send (native share / WhatsApp, text from `lib/feedShare.ts`), copy, IG story image, screenshot.
+- **Double-tap** pops a heart where the finger landed (`DoubleTapHeart`).
+- **Header:** back, accessibility, settings, saved.
+- **Data:** `useFeedDeck` owns the persisted deck, paging, errors and the home hand-off; `FeedStatus` has the loading / error / empty slides.
+- **Reels** cover the screen on phones (a rounded 9:16 card on wide screens). They mount one screen ahead for preload, and unmount after being swiped away so playback stops.
+
 ### 2e. Feed comments (רגע של תורה)
 Public, anonymous comments (text + optional name/nickname) on every feed post — content items and reels (`itemType` = feed type or `'reel'`, `itemId` = the item/reel id). Model `FeedComment`.
 

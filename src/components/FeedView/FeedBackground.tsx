@@ -13,7 +13,7 @@ const d5 = keyframes`0%,100%{transform:translate(0,0) rotate(0deg)} 50%{transfor
 
 const DRIFTS = [d1, d2, d3, d4, d5];
 
-const Letter = styled.div<{
+const Letter = styled.div.attrs({ className: 'anim-loop' })<{
   $x: number; $y: number; $size: number; $opacity: number;
   $dur: number; $delay: number; $drift: number;
 }>`
