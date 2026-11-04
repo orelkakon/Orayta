@@ -1,5 +1,5 @@
 import { toHebrewNumeral } from '@/lib/hebrewNumerals';
-import { stripHtml } from './text';
+import { stripHtml, markRema } from './text';
 
 // Server-only: Sefaria's public API (no key). Texts are cached by Next's data
 // cache — a seif never changes — searches are not.
@@ -47,6 +47,8 @@ export async function fetchText(wanted: string): Promise<SefariaText | null> {
   if (!d || d.error || !d.ref) return null;
   const ref = d.ref;
   const heRef = d.heRef ?? ref;
+  // The Shulchan Arukh itself (not its commentaries) keeps the Rema's glosses marked — see splitRema.
+  const clean = ref.startsWith('Shulchan Arukh, ') ? (h: string) => stripHtml(markRema(h)) : stripHtml;
   const first = d.sections?.length ? d.sections[d.sections.length - 1] : null;
   // A range within one section ("Mishnah Berurah 671:31-33") → one segment per
   // item with its own exact ref; a range of sections keeps the item's 1-based
@@ -55,11 +57,11 @@ export async function fetchText(wanted: string): Promise<SefariaText | null> {
   const prefix = ref.replace(/\d+(-[\d:]+)?$/, '');
   const hePrefix = heRef.replace(/[^\s:]+(-\S+)?$/, '');
   const segments = !ranged || first === null
-    ? [{ ref, heRef, text: flat(d.he).map(stripHtml).join(' ') }]
+    ? [{ ref, heRef, text: flat(d.he).map(clean).join(' ') }]
     : (d.he as unknown[]).flatMap((item, i) => {
       const n = first + i;
-      if (!Array.isArray(item)) return [{ ref: `${prefix}${n}`, heRef: `${hePrefix}${heNumeral(n)}`, text: stripHtml(String(item ?? '')) }];
-      return flat(item).map((t, j) => ({ ref: `${prefix}${n}:${j + 1}`, heRef: `${hePrefix}${heNumeral(n)}:${heNumeral(j + 1)}`, text: stripHtml(t) }));
+      if (!Array.isArray(item)) return [{ ref: `${prefix}${n}`, heRef: `${hePrefix}${heNumeral(n)}`, text: clean(String(item ?? '')) }];
+      return flat(item).map((t, j) => ({ ref: `${prefix}${n}:${j + 1}`, heRef: `${hePrefix}${heNumeral(n)}:${heNumeral(j + 1)}`, text: clean(t) }));
     });
   const nonEmpty = segments.filter(s => s.text);
   if (nonEmpty.length === 0) return null;

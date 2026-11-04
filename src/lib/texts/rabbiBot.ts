@@ -1,6 +1,8 @@
 /* רבי־בוט — answer extras, sharing, history and the admin's knowledge gaps. Spread into HE (src/lib/hebrewTexts.ts). */
 export const RABBI_BOT_HE = {
   RB_UNDERSTOOD: 'הבנתי שהשאלה היא:',
+  RB_REMA_REF: (seif: string) => `הגהת הרמ״א — ${seif}`,
+  RB_REMA_BOOK: 'הגהות הרמ״א',
   RB_BY_RULE_TITLE: 'אין מקור שעוסק במקרה הזה במפורש',
   RB_BY_RULE_TEXT: 'התשובה נלמדת מכלל הלכתי או ממקרה דומה שבמקורות. כדאי לוודא עם רב.',
   RB_RULE_BADGE: 'נלמד מכלל או ממקרה דומה',

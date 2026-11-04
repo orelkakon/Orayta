@@ -28,11 +28,14 @@ export function normWord(w: string): string {
     .replace(/[^א-תa-zA-Z0-9]/g, '');
 }
 
+/** "…" marks a cut in a passage (an excerpt's edge, a removed Rema gloss): a quote never runs across it. */
+const GAP = '…';
+
 /** Split into words, keeping each original word (and where it sits) next to its normalized form. */
 export function tokenize(text: string): { raw: string; norm: string; start: number; end: number }[] {
   const out: { raw: string; norm: string; start: number; end: number }[] = [];
   for (const m of Array.from(text.matchAll(/[^\s\u05BE\-–—/]+/g))) {
-    const norm = normWord(m[0]);
+    const norm = m[0] === GAP ? GAP : normWord(m[0]);
     if (norm) out.push({ raw: m[0], norm, start: m.index ?? 0, end: (m.index ?? 0) + m[0].length });
   }
   return out;
@@ -57,7 +60,7 @@ export function findQuote(source: string, quote: string): string | null {
   for (let i = 0; i < src.length; i++) {
     for (let j = 0; j < q.length; j++) {
       let k = 0;
-      while (i + k < src.length && j + k < q.length && src[i + k].norm === q[j + k]) k++;
+      while (i + k < src.length && j + k < q.length && src[i + k].norm !== GAP && src[i + k].norm === q[j + k]) k++;
       if (k > best.len) best = { len: k, at: i };
     }
   }
@@ -121,4 +124,33 @@ export function excerpt(text: string, words: string[], max: number): string {
   let end = start;
   for (; end < toks.length && out.length + toks[end].raw.length < max; end++) out += (out ? ' ' : '') + toks[end].raw;
   return `${start > 0 ? '… ' : ''}${out}${end < toks.length ? ' …' : ''}`;
+}
+
+// ── The Rema inside a Shulchan Arukh seif ────────────────────────────────
+// Sefaria's Shulchan Arukh interleaves the Rema's glosses (הגה) with Maran's
+// words, wrapping each gloss in <small>. markRema keeps those bounds through
+// stripHtml; splitRema then separates the two, so no model reads a gloss as Maran.
+
+const REMA_OPEN = '⟦';
+const REMA_CLOSE = '⟧';
+
+/** Seif HTML with each Rema gloss (<small>…</small>) bracketed by markers that survive stripHtml. */
+export function markRema(html: string): string {
+  return html.replace(/<small\b[^>]*>/gi, ` ${REMA_OPEN}`).replace(/<\/small>/gi, `${REMA_CLOSE} `);
+}
+
+const tidy = (s: string) => s.replace(/\s+/g, ' ').replace(/(…\s*){2,}/g, '… ').replace(/^[\s…]+|[\s…]+$/g, '').trim();
+
+/**
+ * Maran's words (each gloss replaced by "…", so no quote spans the gap) and the
+ * Rema's glosses joined by "…". Text without markers is all Maran. Pure.
+ */
+export function splitRema(text: string): { main: string; rema: string } {
+  if (!text.includes(REMA_OPEN)) return { main: text, rema: '' };
+  const glosses: string[] = [];
+  const main = text.replace(new RegExp(`${REMA_OPEN}([^${REMA_CLOSE}]*)${REMA_CLOSE}?`, 'g'), (_m, inner: string) => {
+    glosses.push(tidy(inner));
+    return ' … ';
+  });
+  return { main: tidy(main), rema: glosses.filter(Boolean).join(' … ') };
 }

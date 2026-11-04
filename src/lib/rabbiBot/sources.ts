@@ -1,7 +1,8 @@
 import type { RabbiBotPassage } from '@/types/rabbiBot';
 import { fetchText, fetchLinks, searchRefs, sefariaUrl, SefariaText } from './sefaria';
 import { searchTitles, fetchPage } from './wikisource';
-import { fallbackPhrases, overlap } from './text';
+import { HE } from '@/lib/hebrewTexts';
+import { fallbackPhrases, keywords, overlap, splitRema } from './text';
 
 // Server-only: the individual source lookups retrieve() combines.
 
@@ -12,6 +13,24 @@ export const fromSefaria = (t: SefariaText): Candidate[] =>
 
 export const best = <T extends { text: string }>(cands: T[], words: string[], n: number) =>
   [...cands].sort((a, b) => overlap(b.text, words) - overlap(a.text, words)).slice(0, n);
+
+/** A gloss shorter than this many content words is just a source note ("(טור בשם סה״מ)"). */
+const MIN_REMA_WORDS = 3;
+
+/**
+ * A Shulchan Arukh seif becomes two passages: Maran's words under the seif's
+ * own heading, and the Rema's glosses under "הגהת הרמ״א" — so the answer can
+ * never present a gloss as Maran's ruling. Other candidates pass through.
+ */
+export function splitRemaCandidate(c: Candidate): Candidate[] {
+  const { main, rema } = splitRema(c.text);
+  if (!rema) return [{ ...c, text: main }];
+  const out: Candidate[] = keywords(main).length > 0 ? [{ ...c, text: main }] : [];
+  if (keywords(rema).length >= MIN_REMA_WORDS) {
+    out.push({ ...c, ref: `${c.ref}|rema`, heRef: HE.RB_REMA_REF(c.heRef), book: HE.RB_REMA_BOOK, text: rema });
+  }
+  return out;
+}
 
 /**
  * Commentaries pulled in through Sefaria's links when the plan names a seif of

@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { stripHtml, findQuote, questionKey, excerpt, keywords, fallbackPhrases } from '@/lib/rabbiBot/text';
+import { stripHtml, findQuote, questionKey, excerpt, keywords, fallbackPhrases, markRema, splitRema } from '@/lib/rabbiBot/text';
+import { splitRemaCandidate } from '@/lib/rabbiBot/sources';
 import { withHistory, LastAnswer } from '@/lib/rabbiBot/client';
 import { answerShareText } from '@/lib/rabbiBot/share';
 import { RLM } from '@/lib/siteUrl';
@@ -239,4 +240,30 @@ test('fitPassages keeps priority order and S-numbers within the budget', () => {
   assert.deepEqual(fitPassages(ps, 140).map(p => p.id), ['S1', 'S3'], 'a too-long passage is skipped, a later short one still fits');
   assert.deepEqual(fitPassages(ps, 1000).map(p => p.id), ['S1', 'S2', 'S3']);
   assert.deepEqual(fitPassages(ps, 10), []);
+});
+
+// ── Maran vs. the Rema ───────────────────────────────────────────────────
+
+// Shulchan Arukh, Orach Chayim 422:1 as Sefaria serves it (abridged).
+const SEIF_422 = 'ואם לא אמרו בערבי\' אין מחזירין אותו <small>(<i data-commentator="Mishnah Berurah" data-label="ב"></i>ובאיזה מקום שזוכר שאינו חוזר ע"ל סי\' רצ"ד)</small> מפני שאין מקדשין את החודש בלילה אבל לא אמרו שחרית ומנחה <i data-commentator="Mishnah Berurah" data-label="ד"></i>מחזירין אותו: <small>הגה (ואם הוא ספק אם הזכיר או לאו אין צריך לחזור כל בו הלכות תפלה)</small> וש"ץ ששכח';
+
+test('splitRema separates the Rema\'s glosses from Maran\'s words', () => {
+  const { main, rema } = splitRema(stripHtml(markRema(SEIF_422)));
+  assert.equal(main, 'ואם לא אמרו בערבי\' אין מחזירין אותו … מפני שאין מקדשין את החודש בלילה אבל לא אמרו שחרית ומנחה מחזירין אותו: … וש"ץ ששכח');
+  assert.equal(rema, '(ובאיזה מקום שזוכר שאינו חוזר ע"ל סי\' רצ"ד) … הגה (ואם הוא ספק אם הזכיר או לאו אין צריך לחזור כל בו הלכות תפלה)');
+  assert.equal(findQuote(main, 'ואם הוא ספק אם הזכיר או לאו אין צריך לחזור'), null, 'the gloss is no longer quotable as Maran');
+  assert.equal(findQuote(main, 'מחזירין אותו וש"ץ ששכח'), null, 'no quote spans the gap');
+  assert.deepEqual(splitRema('טקסט בלי הגה'), { main: 'טקסט בלי הגה', rema: '' });
+});
+
+test('splitRemaCandidate: a seif becomes Maran + "הגהת הרמ״א"; a bare source note is dropped', () => {
+  const c = { ref: 'Shulchan Arukh, Orach Chayim 422:1', heRef: 'שולחן ערוך, אורח חיים תכ״ב:א׳', book: 'שולחן ערוך, אורח חיים', url: 'u', origin: 'sefaria' as const, text: stripHtml(markRema(SEIF_422)) };
+  const [maran, rema] = splitRemaCandidate(c);
+  assert.equal(maran.heRef, c.heRef);
+  assert.equal(rema.heRef, 'הגהת הרמ״א — שולחן ערוך, אורח חיים תכ״ב:א׳');
+  assert.equal(rema.book, 'הגהות הרמ״א');
+  assert.notEqual(rema.ref, maran.ref, 'distinct keys, so both survive de-duplication');
+  assert.ok(findQuote(rema.text, 'ואם הוא ספק אם הזכיר או לאו אין צריך לחזור'));
+  const noteOnly = { ...c, text: stripHtml(markRema('צריך להטבילם במקוה <small>(טור)</small>')) };
+  assert.deepEqual(splitRemaCandidate(noteOnly).map(x => x.text), ['צריך להטבילם במקוה']);
 });

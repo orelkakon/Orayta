@@ -2,7 +2,7 @@ import type { RabbiBotKind, RabbiBotPassage } from '@/types/rabbiBot';
 import { fetchText, searchRefs, SefariaText } from './sefaria';
 import { searchSikumim } from './sikumim';
 import { excerpt, keywords, overlap } from './text';
-import { best, Candidate, fromSefaria, linkedCommentaries, searchPhrase, searchTerms, wikisource } from './sources';
+import { best, Candidate, fromSefaria, linkedCommentaries, searchPhrase, searchTerms, splitRemaCandidate, wikisource } from './sources';
 
 export interface RetrievalPlan {
   kind: RabbiBotKind;
@@ -39,6 +39,7 @@ const SEARCH_PATHS: Record<RabbiBotKind, { path: string; size: number }[]> = {
  * commentaries, the rule / parallel cases that decide an unwritten case, the
  * site's own summaries, Sefaria full-text hits (exact for a quote being
  * located; shortened phrases when a phrase finds nothing), and Hebrew Wikisource.
+ * A Shulchan Arukh seif reaches the model as Maran's words and, separately, the Rema's glosses.
  */
 export async function retrieve(question: string, plan: RetrievalPlan): Promise<RabbiBotPassage[]> {
   // `core` = the plan's source-language words; `words` adds the user's own wording.
@@ -101,7 +102,7 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
 
   const seen = new Set<string>();
   const out: RabbiBotPassage[] = [];
-  for (const c of ordered) {
+  for (const c of ordered.flatMap(splitRemaCandidate)) {
     if (seen.has(c.ref) || !c.text) continue;
     seen.add(c.ref);
     out.push({ id: `S${out.length + 1}`, ref: c.ref, heRef: c.heRef, book: c.book, url: c.url, origin: c.origin, text: excerpt(c.text, words, PASSAGE_CHARS) });
