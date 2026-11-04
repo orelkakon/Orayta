@@ -454,6 +454,7 @@ export const HE = {
   SIKUMIM_DELETE_PASSWORD_WRONG: 'סיסמה שגויה — המחיקה בוטלה',
   SIKUMIM_ENTRY_SAVE_ERROR: 'שגיאה בשמירה, נסה שנית',
   SIKUMIM_DRAFT_RESTORED: 'טיוטה שמורה שוחזרה',
+  SIKUMIM_WORDS: 'מילים',
   SIKUMIM_ENTRY_EDIT: 'עריכה',
   SIKUMIM_ENTRY_DELETE: 'מחיקה',
   SIKUMIM_ENTRY_LOCATION_LABEL: 'מיקום',

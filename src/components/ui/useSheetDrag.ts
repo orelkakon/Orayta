@@ -4,12 +4,25 @@ import { theme } from '@/lib/theme';
 const DECIDE_PX = 6;
 // A quick flick dismisses regardless of distance (px per ms).
 const FLICK_VELOCITY = 0.4;
+const EDITABLE = 'textarea, input, select, [contenteditable=""], [contenteditable="true"]';
+
+/** True when the touch lands in a field or in anything between it and the body that is scrolled down. */
+function ownsTheGesture(target: Element, body: HTMLElement): boolean {
+  if (target.closest(EDITABLE)) return true;
+  for (let n: Element | null = target; n && body.contains(n); n = n.parentElement) {
+    if (n.scrollTop > 0) return true;
+  }
+  return false;
+}
 
 /**
  * Drag-to-dismiss for a bottom sheet, following the finger 1:1.
  * A drag starts from the handle area anywhere, or from the scrolling body only
  * when it is already scrolled to the top and the finger moves down — so the
  * content scrolls normally and the sheet still pulls down from the top.
+ * Touches inside a text field or an inner scroller that isn't at its top never
+ * drag the sheet (scrolling a long textarea up used to close the form), and
+ * `bodyDrag: false` limits dragging to the handle and title (forms).
  * Upward drags get rubber-band friction instead of a hard stop. Transforms are
  * written straight to the element (no React state per frame).
  */
@@ -19,6 +32,7 @@ export function useSheetDrag(
   scroller: RefObject<HTMLElement>,
   backdrop: RefObject<HTMLElement>,
   onDismiss: () => void,
+  bodyDrag = true,
 ): void {
   const dismissRef = useRef(onDismiss);
   dismissRef.current = onDismiss;
@@ -40,8 +54,9 @@ export function useSheetDrag(
     const onStart = (e: TouchEvent) => {
       if (e.touches.length !== 1) { tracking = false; return; }
       const body = scroller.current;
-      fromBody = !!body && body.contains(e.target as Node);
-      tracking = !(fromBody && body && body.scrollTop > 0);
+      const target = e.target as Element;
+      fromBody = !!body && body.contains(target);
+      tracking = !(fromBody && body && (!bodyDrag || ownsTheGesture(target, body)));
       startY = e.touches[0].clientY;
       startT = performance.now();
       dy = 0; decided = false; dragging = false;
@@ -91,5 +106,5 @@ export function useSheetDrag(
       el.removeEventListener('touchend', onEnd);
       el.removeEventListener('touchcancel', onEnd);
     };
-  }, [enabled, panel, scroller, backdrop]);
+  }, [enabled, panel, scroller, backdrop, bodyDrag]);
 }

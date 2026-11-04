@@ -1,105 +1,58 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { theme } from '@/lib/theme';
+import { useState, useEffect, useId, useRef } from 'react';
 import { HE } from '@/lib/hebrewTexts';
 import Modal from '@/components/common/Modal';
+import { Button } from '@/components/ui/Button';
+import { useAutoGrow } from '@/components/common/useAutoGrow';
 import { SikumEntry } from '@/types';
-
-const DRAFT_TTL = 24 * 60 * 60 * 1000;
-const draftKey = (bookId: string) => `orayta_sikum_draft_${bookId}`;
-
-interface DraftData { title: string; text: string; date: string; dateEnd: string; isRange: boolean; location: string; at: number; }
-
-function loadDraft(bookId: string): DraftData | null {
-  try {
-    const raw = localStorage.getItem(draftKey(bookId));
-    if (!raw) return null;
-    const d = JSON.parse(raw) as DraftData;
-    if (Date.now() - d.at > DRAFT_TTL) { localStorage.removeItem(draftKey(bookId)); return null; }
-    return d;
-  } catch { return null; }
-}
-function saveDraft(bookId: string, data: Omit<DraftData, 'at'>) {
-  try { localStorage.setItem(draftKey(bookId), JSON.stringify({ ...data, at: Date.now() })); } catch {}
-}
-function clearDraft(bookId: string) {
-  try { localStorage.removeItem(draftKey(bookId)); } catch {}
-}
-
-const Form = styled.form`display: flex; flex-direction: column; gap: ${theme.spacing.md};`;
-const Label = styled.label`
-  display: flex; flex-direction: column; gap: ${theme.spacing.xs};
-  font-size: 0.9rem; font-weight: 600; color: ${theme.colors.text};
-`;
-const Input = styled.input`
-  padding: ${theme.spacing.sm} ${theme.spacing.md};
-  border: 1px solid ${theme.colors.border}; border-radius: ${theme.radii.md};
-  font-size: 0.95rem; background: ${theme.colors.surface}; color: ${theme.colors.text};
-  direction: rtl;
-  &:focus { outline: 2px solid color-mix(in srgb, ${theme.colors.primary} 25%, transparent); border-color: ${theme.colors.primary}; }
-`;
-const Textarea = styled.textarea`
-  padding: ${theme.spacing.sm} ${theme.spacing.md};
-  border: 1px solid ${theme.colors.border}; border-radius: ${theme.radii.md};
-  font-size: 0.95rem; background: ${theme.colors.surface}; color: ${theme.colors.text};
-  direction: rtl; resize: vertical; min-height: 160px; line-height: 1.7;
-  font-family: ${theme.fonts.body};
-  &:focus { outline: 2px solid color-mix(in srgb, ${theme.colors.primary} 25%, transparent); border-color: ${theme.colors.primary}; }
-`;
-const TwoCol = styled.div`
-  display: grid; grid-template-columns: 1fr 1fr; gap: ${theme.spacing.md};
-  @media (max-width: 480px) { grid-template-columns: 1fr; }
-`;
-const RangeToggle = styled.label`
-  display: flex; align-items: center; gap: ${theme.spacing.sm};
-  font-size: 0.82rem; color: ${theme.colors.textMuted}; cursor: pointer;
-  user-select: none;
-  input[type="checkbox"] { accent-color: ${theme.colors.primary}; width: 15px; height: 15px; }
-`;
-const DraftBadge = styled.div`
-  font-size: 0.76rem; color: ${theme.colors.primary};
-  background: color-mix(in srgb, ${theme.colors.primary} 7%, transparent); border: 1px solid color-mix(in srgb, ${theme.colors.primary} 16%, transparent);
-  border-radius: ${theme.radii.sm}; padding: 4px 10px; align-self: flex-start;
-`;
-const ErrorMsg = styled.p`font-size: 0.82rem; color: ${theme.colors.error};`;
-const BtnRow = styled.div`display: flex; gap: ${theme.spacing.sm}; justify-content: flex-end;`;
-const SaveBtn = styled.button`
-  padding: ${theme.spacing.sm} ${theme.spacing.xl};
-  background: ${theme.colors.primary}; color: ${theme.colors.onPrimary};
-  border-radius: ${theme.radii.md}; font-size: 0.9rem; font-weight: 600;
-  &:hover { background: ${theme.colors.primaryLight}; } &:disabled { opacity: 0.5; }
-`;
-const CancelBtn = styled.button`
-  padding: ${theme.spacing.sm} ${theme.spacing.lg};
-  border: 1px solid ${theme.colors.border}; border-radius: ${theme.radii.md};
-  font-size: 0.9rem; color: ${theme.colors.textMuted};
-  &:hover { background: ${theme.colors.borderLight}; }
-`;
+import { DraftData, DraftFields, draftScope, loadDraft, saveDraft, clearDraft, countWords } from './sikumDraft';
+import {
+  Form, Label, TextLabel, Input, Textarea, TwoCol, RangeToggle, DraftBadge, ErrorMsg, FootRow, WordCount,
+} from './SikumEntryForm.styles';
 
 function toDateInput(d: string) { return new Date(d).toISOString().slice(0, 10); }
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
+function initialFields(entry?: SikumEntry): DraftFields {
+  return {
+    title: entry?.title ?? '',
+    text: entry?.text ?? '',
+    date: entry ? toDateInput(entry.date) : todayStr(),
+    dateEnd: entry?.dateEnd ? toDateInput(entry.dateEnd) : '',
+    isRange: !!entry?.dateEnd,
+    location: entry?.location ?? '',
+  };
+}
+
+const sameFields = (a: DraftFields, b: DraftFields) =>
+  (Object.keys(a) as (keyof DraftFields)[]).every(k => a[k] === b[k]);
+
 interface Props { entry?: SikumEntry; bookId: string; onClose: () => void; onSaved: () => void; }
 
 export default function SikumEntryForm({ entry, bookId, onClose, onSaved }: Props) {
-  const isNew = !entry;
-  const [draft] = useState<DraftData | null>(() => isNew ? loadDraft(bookId) : null);
+  const scope = draftScope(bookId, entry);
+  const [original] = useState(() => initialFields(entry));
+  const [draft] = useState<DraftData | null>(() => loadDraft(scope, entry));
+  const start = draft ?? original;
 
-  const [title,    setTitle]    = useState(entry?.title    ?? draft?.title    ?? '');
-  const [text,     setText]     = useState(entry?.text     ?? draft?.text     ?? '');
-  const [date,     setDate]     = useState(entry ? toDateInput(entry.date) : draft?.date ?? todayStr());
-  const [dateEnd,  setDateEnd]  = useState(entry?.dateEnd ? toDateInput(entry.dateEnd) : draft?.dateEnd ?? '');
-  const [isRange,  setIsRange]  = useState(!!(entry?.dateEnd ?? draft?.isRange));
-  const [location, setLocation] = useState(entry?.location ?? draft?.location ?? '');
+  const [title,    setTitle]    = useState(start.title);
+  const [text,     setText]     = useState(start.text);
+  const [date,     setDate]     = useState(start.date);
+  const [dateEnd,  setDateEnd]  = useState(start.dateEnd);
+  const [isRange,  setIsRange]  = useState(start.isRange);
+  const [location, setLocation] = useState(start.location);
   const [error,    setError]    = useState('');
   const [saving,   setSaving]   = useState(false);
+  const formId = useId();
+  const textRef = useRef<HTMLTextAreaElement>(null);
+  useAutoGrow(textRef, text);
 
   useEffect(() => {
-    if (!isNew) return;
-    saveDraft(bookId, { title, text, date, dateEnd, isRange, location });
-  }, [isNew, bookId, title, text, date, dateEnd, isRange, location]);
+    const fields = { title, text, date, dateEnd, isRange, location };
+    if (entry && sameFields(fields, original)) clearDraft(scope);
+    else saveDraft(scope, fields);
+  }, [entry, original, scope, title, text, date, dateEnd, isRange, location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,17 +66,39 @@ export default function SikumEntryForm({ entry, bookId, onClose, onSaved }: Prop
         body: JSON.stringify({ bookId, title, text, date, dateEnd: isRange ? dateEnd : null, location }),
       });
       if (!res.ok) throw new Error();
-      clearDraft(bookId);
+      clearDraft(scope);
       onSaved(); onClose();
     } catch {
       setError(HE.SIKUMIM_ENTRY_SAVE_ERROR);
     } finally { setSaving(false); }
   };
 
+  // ⌘/Ctrl+Enter saves from inside the text.
+  const onTextKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); e.currentTarget.form?.requestSubmit(); }
+  };
+
+  const words = countWords(text);
+  const footer = (<>
+    {error && <ErrorMsg role="alert">{error}</ErrorMsg>}
+    <FootRow>
+      <WordCount aria-live="polite">{words > 0 && `${words.toLocaleString('he-IL')} ${HE.SIKUMIM_WORDS}`}</WordCount>
+      <Button $variant="ghost" onClick={() => { clearDraft(scope); onClose(); }}>{HE.CANCEL}</Button>
+      <Button type="submit" form={formId} $variant="primary" disabled={saving}>{HE.SIKUMIM_ENTRY_FORM_SAVE}</Button>
+    </FootRow>
+  </>);
+
   return (
-    <Modal onClose={onClose} title={entry ? HE.SIKUMIM_ENTRY_FORM_EDIT_TITLE : HE.SIKUMIM_ENTRY_FORM_ADD_TITLE}>
-      <Form onSubmit={handleSubmit}>
-        {isNew && draft?.text && <DraftBadge>✏️ {HE.SIKUMIM_DRAFT_RESTORED}</DraftBadge>}
+    <Modal
+      onClose={onClose}
+      title={entry ? HE.SIKUMIM_ENTRY_FORM_EDIT_TITLE : HE.SIKUMIM_ENTRY_FORM_ADD_TITLE}
+      footer={footer}
+      maxWidth={820}
+      full
+      guarded
+    >
+      <Form id={formId} onSubmit={handleSubmit}>
+        {draft && draft.text && <DraftBadge>✏️ {HE.SIKUMIM_DRAFT_RESTORED}</DraftBadge>}
         <TwoCol>
           <Label>
             {HE.SIKUMIM_ENTRY_FORM_TITLE}
@@ -150,15 +125,17 @@ export default function SikumEntryForm({ entry, bookId, onClose, onSaved }: Prop
           {HE.SIKUMIM_ENTRY_FORM_LOCATION}
           <Input value={location} onChange={e => setLocation(e.target.value)} placeholder={HE.SIKUMIM_ENTRY_FORM_LOCATION_PLACEHOLDER} />
         </Label>
-        <Label>
+        <TextLabel>
           {HE.SIKUMIM_ENTRY_FORM_TEXT} *
-          <Textarea value={text} onChange={e => setText(e.target.value)} placeholder={HE.SIKUMIM_ENTRY_FORM_TEXT_PLACEHOLDER} autoFocus={!entry} />
-        </Label>
-        {error && <ErrorMsg role="alert">{error}</ErrorMsg>}
-        <BtnRow>
-          <CancelBtn type="button" onClick={() => { clearDraft(bookId); onClose(); }}>{HE.CANCEL}</CancelBtn>
-          <SaveBtn type="submit" disabled={saving}>{HE.SIKUMIM_ENTRY_FORM_SAVE}</SaveBtn>
-        </BtnRow>
+          <Textarea
+            ref={textRef}
+            value={text}
+            onChange={e => setText(e.target.value)}
+            onKeyDown={onTextKey}
+            placeholder={HE.SIKUMIM_ENTRY_FORM_TEXT_PLACEHOLDER}
+            autoFocus={!entry}
+          />
+        </TextLabel>
       </Form>
     </Modal>
   );

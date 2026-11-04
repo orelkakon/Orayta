@@ -447,6 +447,9 @@ The entire site is RTL (Hebrew). Use `direction: rtl` in styled components where
 - **Tokens (`lib/theme.ts`):** `colors.chrome/onChrome/gold/goldSoft/elevated/scrim`, `gilded` (gold CTA + night hero surfaces), `onMedia` (controls over photos/video), `radii.pill`, `motion.outStrong/inOut/drawer`, `z.tabbar/popover/sheet`, `media.compact` + mobile-first `up.*`, `safe.*`, `layout.content/wide/reading/gutter`.
 - **Primitives (`components/ui/`)** — use these instead of new one-off styled buttons/cards/sheets:
   - `Sheet`: bottom sheet with finger-following drag-to-dismiss on phones, a dialog on desktop; scroll lock + focus trap.
+    - Touches in a text field or a scrolled inner scroller never drag it.
+    - `full` = full-screen editor above the iOS keyboard (`useViewportBox`).
+    - `guarded` = no dismiss from the backdrop or a body pull. Long-text forms use both, with buttons in `footer` and an auto-growing textarea (`common/useAutoGrow`). Example: `SikumEntryForm`, whose drafts are kept for edits too.
   - `Button` / `ButtonLink`, `IconButton` (≥44px hit area), `Card` / `CardLink` / `CardButton`.
   - `Chip` / `ChipRow`, `Badge`, `Skeleton` / `SkeletonText`, `SegmentedControl`, `SwitchRow` / `RowGroup`, `PageHeader` / `SectionHeader`.
 - **Theme:** `ThemeContext` has a 3-way mode (light / dark / system); light is the default. It keeps `<meta name="theme-color">` on the chrome colour, and immersive screens override it with `useThemeColor`.

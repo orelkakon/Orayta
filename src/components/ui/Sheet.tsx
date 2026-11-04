@@ -2,13 +2,14 @@
 
 import { ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { useBodyScrollLock } from '@/components/common/useBodyScrollLock';
 import { usePresence } from './usePresence';
 import { useDialogFocus } from './useDialogFocus';
 import { useSheetDrag } from './useSheetDrag';
+import { useViewportBox } from './useViewportBox';
 import IconButton from './IconButton';
 import { LineIcon } from '@/components/common/LineIcons';
 
@@ -16,6 +17,9 @@ import { LineIcon } from '@/components/common/LineIcons';
  * The one overlay primitive. Phones/tablets: a bottom sheet that follows the
  * finger and dismisses on a pull or a flick. Desktop (≥769px): a centred
  * dialog. Portalled, iOS-safe scroll lock, focus trap, Escape, safe areas.
+ * `full` (editors): the whole screen above the keyboard on phones, a tall
+ * dialog on desktop. `guarded` (forms with typed text): only the handle,
+ * the title, the close button and Escape dismiss it.
  */
 
 const EXIT_MS = 260;
@@ -29,7 +33,16 @@ const Backdrop = styled.div<{ $shown: boolean }>`
   transition: opacity ${p => (p.$shown ? '0.32s' : '0.22s')} ease;
 `;
 
-const Panel = styled.div<{ $shown: boolean; $maxWidth: number; $tall: boolean }>`
+const SAFE_B = `var(--sheet-safe-b, ${theme.safe.bottom})`;
+
+// Phones: from under the status bar to the top of the keyboard (useViewportBox).
+const fullPhone = css`
+  top: calc(var(--vv-top, 0px) + ${theme.safe.top} + 8px); bottom: auto;
+  height: calc(var(--vv-h, 100dvh) - ${theme.safe.top} - 8px);
+  max-height: none;
+`;
+
+const Panel = styled.div<{ $shown: boolean; $maxWidth: number; $tall: boolean; $full: boolean }>`
   position: fixed; z-index: ${theme.z.sheet + 1};
   display: flex; flex-direction: column;
   background: ${theme.colors.elevated}; color: ${theme.colors.text};
@@ -43,11 +56,13 @@ const Panel = styled.div<{ $shown: boolean; $maxWidth: number; $tall: boolean }>
   border-radius: 24px 24px 0 0;
   transform: translate3d(0, ${p => (p.$shown ? '0' : '100%')}, 0);
   transition: transform ${p => (p.$shown ? `0.36s ${theme.motion.drawer}` : `0.24s ${theme.motion.drawer}`)};
+  ${p => p.$full && fullPhone}
 
   ${theme.up.md} {
     left: 50%; right: auto; bottom: auto; top: 50%;
     width: calc(100% - 48px); max-width: ${p => p.$maxWidth}px;
-    max-height: min(86dvh, 820px); min-height: 0;
+    height: ${p => (p.$full ? 'min(90dvh, 960px)' : 'auto')};
+    max-height: ${p => (p.$full ? 'none' : 'min(86dvh, 820px)')}; min-height: 0;
     border-radius: 20px;
     opacity: ${p => (p.$shown ? 1 : 0)};
     transform: translate(-50%, -50%) scale(${p => (p.$shown ? 1 : 0.96)});
@@ -77,11 +92,12 @@ const Title = styled.h2`
   font-size: ${theme.fontSizes.xl}; line-height: 1.25; color: ${theme.colors.text};
 `;
 
-const Body = styled.div<{ $pad: boolean }>`
+const Body = styled.div<{ $pad: boolean; $full: boolean }>`
   flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  ${p => p.$full && 'display: flex; flex-direction: column;'}
   -webkit-overflow-scrolling: touch;
   padding: ${p => (p.$pad ? `4px ${theme.spacing.md} ${theme.spacing.md}` : '0')};
-  padding-bottom: calc(${p => (p.$pad ? theme.spacing.md : '0px')} + ${theme.safe.bottom});
+  padding-bottom: calc(${p => (p.$pad ? theme.spacing.md : '0px')} + ${SAFE_B});
   ${theme.up.md} {
     padding: ${p => (p.$pad ? `4px ${theme.spacing.lg} ${theme.spacing.lg}` : '0')};
   }
@@ -89,7 +105,7 @@ const Body = styled.div<{ $pad: boolean }>`
 
 const Foot = styled.div`
   flex-shrink: 0; padding: ${theme.spacing.sm} ${theme.spacing.md};
-  padding-bottom: calc(${theme.spacing.sm} + ${theme.safe.bottom});
+  padding-bottom: calc(${theme.spacing.sm} + ${SAFE_B});
   border-top: 1px solid ${theme.colors.borderLight};
   ${theme.up.md} { padding: ${theme.spacing.md} ${theme.spacing.lg}; }
 `;
@@ -108,10 +124,15 @@ export interface SheetProps {
   tall?: boolean;
   /** Default true — body gets standard padding. */
   padded?: boolean;
+  /** Full-screen editor surface; the body becomes a flex column. */
+  full?: boolean;
+  /** No dismiss from a backdrop tap or a pull on the body. */
+  guarded?: boolean;
 }
 
 export default function Sheet({
   open, onClose, title, ariaLabel, children, footer, maxWidth = 560, tall = false, padded = true,
+  full = false, guarded = false,
 }: SheetProps) {
   const { mounted, shown } = usePresence(open, EXIT_MS);
   const [isSheet, setIsSheet] = useState(false);
@@ -130,13 +151,14 @@ export default function Sheet({
 
   useBodyScrollLock(mounted);
   useDialogFocus(open && mounted, panel, onClose);
-  useSheetDrag(mounted && isSheet, panel, body, backdrop, onClose);
+  useSheetDrag(mounted && isSheet, panel, body, backdrop, onClose, !guarded);
+  useViewportBox(mounted && isSheet && full, panel);
 
   if (!mounted || typeof document === 'undefined') return null;
 
   return createPortal(
     <>
-      <Backdrop ref={backdrop} $shown={shown} onClick={onClose} aria-hidden="true" />
+      <Backdrop ref={backdrop} $shown={shown} onClick={guarded ? undefined : onClose} aria-hidden="true" />
       <Panel
         ref={panel}
         role="dialog"
@@ -147,6 +169,7 @@ export default function Sheet({
         $shown={shown}
         $maxWidth={maxWidth}
         $tall={tall}
+        $full={full}
       >
         <Handle aria-hidden="true" />
         {title && (
@@ -157,7 +180,7 @@ export default function Sheet({
             </IconButton>
           </Head>
         )}
-        <Body ref={body} $pad={padded}>{children}</Body>
+        <Body ref={body} $pad={padded} $full={full}>{children}</Body>
         {footer && <Foot>{footer}</Foot>}
       </Panel>
     </>,
