@@ -5,11 +5,16 @@ import { retrieve } from './retrieve';
 import { verifyAnswer, fixedAnswer, RawAnswer } from './verify';
 import { isTopic } from './rules';
 
-interface RawPlan { kind?: unknown; topic?: unknown; refs?: unknown; searches?: unknown; terms?: unknown; quote?: unknown }
+interface RawPlan {
+  kind?: unknown; topic?: unknown; refs?: unknown; searches?: unknown; terms?: unknown; quote?: unknown;
+  rewrite?: unknown; parallels?: unknown; principles?: unknown;
+}
 
 const strings = (v: unknown, max: number, len: number) =>
   (Array.isArray(v) ? v : []).filter((s): s is string => typeof s === 'string' && s.trim().length > 0)
     .map(s => s.trim().slice(0, len)).slice(0, max);
+const text = (v: unknown, len: number) => (typeof v === 'string' ? v.trim().slice(0, len) : '');
+const REWRITE_MAX = 200;
 
 export interface AskResult {
   answer: RabbiBotAnswer;
@@ -24,8 +29,10 @@ const MAX_SHOWN_BOOKS = 10;
 const PLAN_HEDGE_MS = 7000;
 
 /**
- * Question → plan (lite model) → sources (Sefaria, Wikisource, the site's
- * summaries) → answer (best model with quota) → quote verification (code).
+ * Question → plan (restated in the sources' language, with the refs, terms,
+ * and the rule / parallel cases that decide it) → sources (Sefaria,
+ * Wikisource, the site's summaries) → answer (best model with quota) → quote
+ * verification (code).
  * Throws NoModelError when no model is available.
  */
 export async function askRabbiBot(question: string, hooks: ModelHooks, onStep: StepFn): Promise<AskResult> {
@@ -38,20 +45,25 @@ export async function askRabbiBot(question: string, hooks: ModelHooks, onStep: S
   const kind: RabbiBotKind = p.kind;
 
   onStep('search');
+  const understood = text(p.rewrite, REWRITE_MAX);
   const passages = await retrieve(question, {
     kind,
     refs: strings(p.refs, 6, 120),
     searches: strings(p.searches, 3, 80),
     terms: strings(p.terms, 3, 40),
-    quote: typeof p.quote === 'string' ? p.quote.trim().slice(0, 120) : '',
+    quote: text(p.quote, 120),
+    rewrite: understood,
+    parallels: strings(p.parallels, 3, 120),
+    principles: strings(p.principles, 2, 60),
   });
   const books = Array.from(new Set(passages.map(x => x.book))).slice(0, MAX_SHOWN_BOOKS);
+  const context = { kind, understood: understood || undefined, searchedBooks: books };
   onStep('read', { count: passages.length, books });
-  if (passages.length === 0) return { answer: { ...verifyAnswer({ status: 'not_found' }, [], topic), kind }, model: plan.model };
+  if (passages.length === 0) return { answer: { ...verifyAnswer({ status: 'not_found' }, [], topic), ...context }, model: plan.model };
 
   onStep('answer');
   const answer = await generateJson(answerModels(), {
-    system: ANSWER_SYSTEM, user: answerPrompt(question, kind, passages), schema: ANSWER_SCHEMA, timeoutMs: 22_000,
+    system: ANSWER_SYSTEM, user: answerPrompt(question, kind, passages, understood), schema: ANSWER_SCHEMA, timeoutMs: 22_000,
   }, hooks);
 
   onStep('verify');
@@ -61,5 +73,5 @@ export async function askRabbiBot(question: string, hooks: ModelHooks, onStep: S
     verified.points = verified.points.map(pt => (pt.view === 'ashkenaz' ? { ...pt, view: 'note' } : pt));
     verified.dispute = false;
   }
-  return { answer: { ...verified, kind, searched: passages.length }, model: answer.model };
+  return { answer: { ...verified, ...context, searched: passages.length }, model: answer.model };
 }

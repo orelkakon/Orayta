@@ -1,11 +1,12 @@
 import { prisma } from '@/lib/db';
 import { dayKeys, jerusalemDay } from '@/lib/adminStatsUtils';
-import type { RabbiBotAdminRow, RabbiBotAdminStats, RabbiBotStatus } from '@/types/rabbiBot';
+import type { RabbiBotAdminRow, RabbiBotAdminStats, RabbiBotAnswer, RabbiBotGapRow, RabbiBotStatus } from '@/types/rabbiBot';
 import { loadExhausted } from './quota';
 import { botModels } from './gemini';
 import { quotaResetAt, RETENTION_DAYS } from './rules';
 
 const LIST_N = 8;
+const GAPS_N = 12;
 const TOP_N = 8;
 const DAY_MS = 86_400_000;
 
@@ -19,6 +20,18 @@ type Row = { id: string; createdAt: Date; question: string | null; status: strin
 const toRow = (r: Row): RabbiBotAdminRow => ({ ...r, status: r.status as RabbiBotStatus, createdAt: r.createdAt.toISOString() });
 const pct = (a: number, b: number) => (b > 0 ? Math.round((a / b) * 100) : 0);
 
+type GapSource = { id: string; createdAt: Date; question: string | null; topic: string | null; answer: unknown };
+
+/** A not_found question with what the bot understood and where it looked (from the stored answer). */
+function toGap(r: GapSource): RabbiBotGapRow {
+  const a = (r.answer ?? {}) as Partial<RabbiBotAnswer>;
+  return {
+    id: r.id, createdAt: r.createdAt.toISOString(), question: r.question ?? '', topic: r.topic,
+    understood: typeof a.understood === 'string' ? a.understood : null,
+    books: Array.isArray(a.searchedBooks) ? a.searchedBooks.filter((b): b is string => typeof b === 'string').slice(0, 6) : [],
+  };
+}
+
 /** Everything the admin card shows, computed straight from RabbiBotQuestion. */
 export async function getRabbiBotStats(now = new Date()): Promise<RabbiBotAdminStats> {
   const days = dayKeys(14, now.getTime());
@@ -26,7 +39,8 @@ export async function getRabbiBotStats(now = new Date()): Promise<RabbiBotAdminS
   const since10 = new Date(now.getTime() - RETENTION_DAYS * DAY_MS);
   const quotaSince = new Date(quotaResetAt(now).getTime() - DAY_MS);
 
-  const [total, agg, ratingRows, statusRows, topicRows, windowRows, askers, bookRows, modelRows, reports, lowRated, recent, exhausted] = await Promise.all([
+  const gapWhere = { status: 'not_found', createdAt: { gte: since10 }, question: { not: null } };
+  const [total, agg, ratingRows, statusRows, topicRows, windowRows, askers, bookRows, modelRows, reports, lowRated, recent, exhausted, gaps10d, gaps] = await Promise.all([
     prisma.rabbiBotQuestion.count(),
     prisma.rabbiBotQuestion.aggregate({ _avg: { rating: true, latencyMs: true }, _sum: { points: true, verified: true } }),
     prisma.rabbiBotQuestion.groupBy({ by: ['rating'], where: { rating: { not: null } }, _count: { _all: true } }),
@@ -43,6 +57,11 @@ export async function getRabbiBotStats(now = new Date()): Promise<RabbiBotAdminS
     }),
     prisma.rabbiBotQuestion.findMany({ orderBy: { createdAt: 'desc' }, take: LIST_N, select: ROW_SELECT }),
     loadExhausted(now),
+    prisma.rabbiBotQuestion.count({ where: gapWhere }),
+    prisma.rabbiBotQuestion.findMany({
+      where: gapWhere, orderBy: { createdAt: 'desc' }, take: GAPS_N,
+      select: { id: true, createdAt: true, question: true, topic: true, answer: true },
+    }),
   ]);
 
   const perDay = new Map<string, number>();
@@ -82,5 +101,7 @@ export async function getRabbiBotStats(now = new Date()): Promise<RabbiBotAdminS
     exhaustedToday: Array.from(exhausted),
     lowRated: lowRated.map(toRow),
     recent: recent.map(toRow),
+    gaps10d,
+    gaps: gaps.map(toGap),
   };
 }

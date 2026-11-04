@@ -6,6 +6,7 @@ import { LineIcon } from '@/components/common/LineIcons';
 import { computeDelta, Delta } from '@/lib/adminStatsUtils';
 import type { RabbiBotAdminStats } from '@/types/rabbiBot';
 import AdminRabbiBotLists from './AdminRabbiBotLists';
+import AdminRabbiBotGaps from './AdminRabbiBotGaps';
 import {
   Card, TitleRow, TitleIcon, CardTitle, CardSub, Kpis, Kpi, KpiValue, KpiLabel, DeltaTag,
   Grid, Section, SectionTitle, Bars, BarRow, BarName, Track, Fill, BarNum, Pill, Empty,
@@ -107,6 +108,7 @@ export default function AdminRabbiBotCard() {
             </Section>
           </Grid>
           <AdminRabbiBotLists lowRated={s.lowRated} recent={s.recent} />
+          <AdminRabbiBotGaps count={s.gaps10d} gaps={s.gaps} />
         </>
       )}
     </Card>

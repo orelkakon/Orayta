@@ -12,7 +12,7 @@ export interface RawAnswer {
 }
 
 interface RawCite { id?: unknown; quote?: unknown }
-interface RawPoint { text?: unknown; view?: unknown; cites?: unknown; derived?: unknown }
+interface RawPoint { text?: unknown; view?: unknown; cites?: unknown; basis?: unknown; derived?: unknown }
 
 const VIEWS: RabbiBotView[] = ['main', 'ashkenaz', 'note'];
 const MAX_POINTS = 8;
@@ -23,9 +23,10 @@ const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice
 /**
  * The accuracy gate. Every point must cite at least one retrieved passage with
  * a quote that is really in it (see findQuote); points that don't are dropped —
- * a derived conclusion is dropped if any one of its premises fails —
- * and the quotes shown are the source's own words. With nothing left, the
- * answer becomes "not found" — the model's prose never stands on its own.
+ * a derived conclusion or an applied rule is dropped if any one of its
+ * premises fails — and the quotes shown are the source's own words. With
+ * nothing left, the answer becomes "not found" — the model's prose never
+ * stands on its own.
  */
 export function verifyAnswer(raw: RawAnswer, passages: RabbiBotPassage[], topic: RabbiBotTopic): RabbiBotAnswer {
   const byId = new Map(passages.map(p => [p.id, p]));
@@ -48,14 +49,19 @@ export function verifyAnswer(raw: RawAnswer, passages: RabbiBotPassage[], topic:
       }
       return [{ source: sourceIndex.get(p.id) as number, quote }];
     });
-    // A derived conclusion stands on its premises, so it needs every one of them verified.
-    const derived = rp.derived === true;
+    // A conclusion (derived, or a rule applied to an unwritten case) stands on
+    // its premises, so it needs every one of them verified.
+    const derived = rp.basis === 'derived' || rp.derived === true;
+    const rule = rp.basis === 'rule';
     const wanted = Array.isArray(rp.cites) ? Math.min(rp.cites.length, MAX_CITES) : 0;
-    if (cites.length === 0 || (derived && cites.length < wanted)) continue;
-    points.push(derived ? { text, view, cites, derived } : { text, view, cites });
+    if (cites.length === 0 || ((derived || rule) && cites.length < wanted)) continue;
+    points.push({ text, view, cites, ...(rule ? { rule } : derived ? { derived } : {}) });
   }
 
   const found = raw.status !== 'not_found' && points.length > 0;
+  // No point says it outright: the answer is learned from a rule or a parallel case.
+  const ruling = points.filter(p => p.view !== 'note');
+  const byRule = found && ruling.length > 0 && ruling.every(p => p.rule);
   return {
     status: found ? 'answered' : 'not_found',
     short: found ? str(raw.short, 500) : '',
@@ -65,6 +71,7 @@ export function verifyAnswer(raw: RawAnswer, passages: RabbiBotPassage[], topic:
     topic,
     total: rawPoints.length,
     verified: points.length,
+    ...(byRule ? { byRule } : {}),
   };
 }
 

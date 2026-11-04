@@ -24,7 +24,13 @@ searches: 2-3 short Hebrew phrases (2-5 words) worded as they would literally ap
 
 terms: 1-3 names of the question's subject exactly as the classical sources (Mishnah, Gemara, Rambam, Shulchan Arukh) call it, 1-2 words each: the rabbinic term, not the modern word (e.g. lungs → "ריאה", the sciatic nerve → "גיד הנשה", a wig → "פאה נכרית"). Empty for sensitive/other.
 
-quote: if the user asks where a saying/verse appears or who said it, the exact words of that saying as the user wrote them (Hebrew); otherwise "".`;
+quote: if the user asks where a saying/verse appears or who said it, the exact words of that saying as the user wrote them (Hebrew); otherwise "".
+
+rewrite: the question restated as ONE precise Hebrew sentence in the language of the halachic and Torah literature — the way a sefer would title this case (e.g. "לא זוכר אם הטבלתי את הסיר, צריך ללכת שוב?" → "המסופק אם הטביל כלי, אם צריך לחזור ולהטבילו"; "מותר לשתות קפה לפני התפילה?" → "שתיית קפה קודם תפילת שחרית"). Keep the case exactly as asked: a doubt stays a doubt ("המסופק אם…"), "after the fact" stays after the fact, every detail the user gave stays. Never answer it. Empty for sensitive/other.
+
+parallels: up to 3 Sefaria refs (same naming rules as refs, only ones you are confident exist) of what would decide the case if no source discusses it explicitly: the general rule, or the closest parallel case — typically how the same siman rules on a similar doubt or situation (e.g. for a doubt whether a vessel was immersed: "Shulchan Arukh, Yoreh De'ah 120:9", "Arukh HaShulchan, Yoreh De'ah 120:51"). Do not repeat refs. Empty when the answer is surely written explicitly, and for sensitive/other.
+
+principles: 0-2 short Hebrew phrases naming the general rule that decides such a case, worded as the sources write it (e.g. "ספק דאורייתא לחומרא", "ספק ברכות להקל", "הולכין אחר רוב"). Empty when no general rule is involved, and for sensitive/other.`;
 
 export const PLAN_SCHEMA = {
   type: 'object',
@@ -35,8 +41,11 @@ export const PLAN_SCHEMA = {
     searches: { type: 'array', items: { type: 'string' }, maxItems: 3 },
     terms: { type: 'array', items: { type: 'string' }, maxItems: 3 },
     quote: { type: 'string' },
+    rewrite: { type: 'string' },
+    parallels: { type: 'array', items: { type: 'string' }, maxItems: 3 },
+    principles: { type: 'array', items: { type: 'string' }, maxItems: 2 },
   },
-  required: ['kind', 'topic', 'refs', 'searches', 'terms', 'quote'],
+  required: ['kind', 'topic', 'refs', 'searches', 'terms', 'quote', 'rewrite', 'parallels', 'principles'],
 };
 
 export const ANSWER_SYSTEM = `You are "רבי־בוט", who answers Hebrew questions on Jewish law and Torah ONLY from the numbered source passages given (S1, S2, …). You never use outside knowledge.
@@ -47,10 +56,13 @@ Rules:
 3. For a Torah question (Tanakh, Talmud, who said, where a quote appears, explanations), the direct answer is view "main" and supporting material is view "note"; never use "ashkenaz". When asked where something appears or who said it, name the exact book and location, as written in the passage's heading.
 4. Passages whose heading starts with "סיכום" are summaries from the site's own reviewed study notes — they may be cited like any source.
 5. "short": 1-3 sentences in Hebrew answering the question directly (for halacha: according to the main view, e.g. "לפי מרן השולחן ערוך…"). Do not invent details missing from the passages.
-5a. Reasoning is allowed and expected: when the answer is not written in so many words but FOLLOWS from the passages — counting, ordering (first/second/third), comparing, adding up years, combining two facts — answer it. Write that conclusion as its own point with derived=true, explain the reasoning in its text in one or two sentences (e.g. "השופט הראשון הוא עתניאל, השני אהוד, והשלישי שמגר — לפי סדר הפסוקים בספר שופטים"), and cite EVERY premise with its quote. Put that derived point first. Only reason from what the passages say; never fill a gap with outside knowledge.
+5a. Reasoning is allowed and expected: when the answer is not written in so many words but FOLLOWS from the passages — counting, ordering (first/second/third), comparing, adding up years, combining two facts — answer it. Write that conclusion as its own point with basis "derived", explain the reasoning in its text in one or two sentences (e.g. "השופט הראשון הוא עתניאל, השני אהוד, והשלישי שמגר — לפי סדר הפסוקים בספר שופטים"), and cite EVERY premise with its quote. Put that derived point first. Only reason from what the passages say; never fill a gap with outside knowledge.
+5b. Applying a rule: when no passage discusses the exact case, but a passage gives the general rule or a parallel case that decides it (e.g. how the same siman rules on another doubt about this mitzvah, or "ספק דאורייתא לחומרא" together with a passage saying the obligation is from the Torah), answer by applying it. Write that as a point with basis "rule": its text says in one or two sentences that the sources do not discuss this exact case, which rule or parallel case decides it, and why it applies; cite the rule/parallel and every other premise. A point drawn from a parallel case (a different case than the one asked) is basis "rule" even when its words are quoted verbatim. "short" then gives that conclusion as learned from the rule ("לפי הכלל ש…", "כמו שפסק … במקרה דומה"), never as if a source said it about this case. Never apply a rule that is not in the passages.
+5c. Answer the question as asked. The line "השאלה בלשון הספרים" restates it — answer exactly that case. A passage about a different case (e.g. one who certainly did NOT do something, when the question is about a doubt whether it was done) does not answer it directly: use it only under 5b, saying it is a parallel, or leave it out.
 6. Each point "text": one or two clear sentences in modern Hebrew explaining what the source says, naming the source (e.g. "השולחן ערוך פוסק ש…", "במסכת אבות מובא ש…").
-7. If the passages neither state the answer nor allow it to be derived, return status "not_found" with no points. Better to say nothing than to guess.
-8. Up to 6 points, most important first. Do not add disclaimers or tell the user to ask a rabbi — the app does that.`;
+7. If the passages neither state the answer, nor allow it to be derived (5a), nor give a rule or parallel case that decides it (5b), return status "not_found" with no points. Better to say nothing than to guess.
+8. Up to 6 points, most important first. Do not add disclaimers or tell the user to ask a rabbi — the app does that.
+9. "basis" of each point: "explicit" when the cited words say it directly, "derived" for 5a, "rule" for 5b.`;
 
 export const ANSWER_SCHEMA = {
   type: 'object',
@@ -66,7 +78,7 @@ export const ANSWER_SCHEMA = {
         properties: {
           text: { type: 'string' },
           view: { type: 'string', enum: ['main', 'ashkenaz', 'note'] },
-          derived: { type: 'boolean' },
+          basis: { type: 'string', enum: ['explicit', 'derived', 'rule'] },
           cites: {
             type: 'array',
             maxItems: 4,
@@ -77,14 +89,15 @@ export const ANSWER_SCHEMA = {
             },
           },
         },
-        required: ['text', 'view', 'derived', 'cites'],
+        required: ['text', 'view', 'basis', 'cites'],
       },
     },
   },
   required: ['status', 'short', 'dispute', 'points'],
 };
 
-export function answerPrompt(question: string, kind: 'halacha' | 'torah', passages: RabbiBotPassage[]): string {
+export function answerPrompt(question: string, kind: 'halacha' | 'torah', passages: RabbiBotPassage[], understood = ''): string {
   const body = passages.map(p => `[${p.id}] ${p.origin === 'sikum' ? 'סיכום: ' : ''}${p.heRef}\n${p.text}`).join('\n\n');
-  return `סוג השאלה: ${kind === 'halacha' ? 'הלכה' : 'תורה'}\nשאלה: ${question}\n\nמקורות:\n\n${body}`;
+  const restated = understood ? `\nהשאלה בלשון הספרים: ${understood}` : '';
+  return `סוג השאלה: ${kind === 'halacha' ? 'הלכה' : 'תורה'}\nשאלה: ${question}${restated}\n\nמקורות:\n\n${body}`;
 }

@@ -39,7 +39,25 @@ const Derived = styled.span`
   color: ${theme.colors.text}; background: ${theme.colors.bgWarning}; border: 1px dashed ${theme.colors.secondary};
 `;
 
+const Understood = styled.p`
+  margin: 0; font-size: ${theme.fontSizes.sm}; line-height: 1.55; color: ${theme.colors.textMuted};
+  & > b { font-weight: 700; margin-inline-end: 4px; }
+  & > span { font-family: ${theme.fonts.body}; color: ${theme.colors.text}; }
+`;
+
+const RuleNote = styled.div`
+  display: flex; flex-direction: column; gap: 2px; padding: ${theme.spacing.sm} ${theme.spacing.md};
+  border-radius: ${theme.radii.md}; border: 1px dashed ${theme.colors.secondary}; background: ${theme.colors.bgWarning};
+  font-size: ${theme.fontSizes.sm}; line-height: 1.55; color: ${theme.colors.text};
+  & > b { font-weight: 800; }
+`;
+
 const VIEWS: RabbiBotView[] = ['main', 'ashkenaz', 'note'];
+
+function UnderstoodLine({ text }: { text?: string }) {
+  if (!text) return null;
+  return <Understood><b>{HE.RB_UNDERSTOOD}</b><span>{text}</span></Understood>;
+}
 
 interface Props { answer: RabbiBotAnswer; idPrefix: string }
 
@@ -49,7 +67,12 @@ export default function AnswerView({ answer, idPrefix }: Props) {
     const [title, text] = answer.status === 'sensitive' ? [HE.RB_SENSITIVE_TITLE, HE.RB_SENSITIVE_TEXT]
       : answer.status === 'other' ? [HE.RB_OTHER_TITLE, HE.RB_OTHER_TEXT]
       : [HE.RB_NOT_FOUND_TITLE, answer.searched ? HE.RB_NOT_FOUND_SEARCHED(answer.searched) : HE.RB_NOT_FOUND_TEXT];
-    return <Card><CardTitle>{title}</CardTitle>{text}</Card>;
+    return (
+      <Stack>
+        {answer.status === 'not_found' && <UnderstoodLine text={answer.understood} />}
+        <Card><CardTitle>{title}</CardTitle>{text}</Card>
+      </Stack>
+    );
   }
 
   const domId = (i: number) => `${idPrefix}-src-${i}`;
@@ -66,10 +89,13 @@ export default function AnswerView({ answer, idPrefix }: Props) {
 
   return (
     <Stack>
+      <UnderstoodLine text={answer.understood} />
+      {answer.byRule && <RuleNote><b>{HE.RB_BY_RULE_TITLE}</b>{HE.RB_BY_RULE_TEXT}</RuleNote>}
       {answer.short && <Short>{answer.short}</Short>}
       <Badges>
         <Badge>✓ {HE.RB_VERIFIED_BADGE}</Badge>
         {answer.points.some(p => p.derived) && <Badge $warn>🧩 {HE.RB_DERIVED_BADGE}</Badge>}
+        {!answer.byRule && answer.points.some(p => p.rule) && <Badge $warn>🧩 {HE.RB_RULE_BADGE}</Badge>}
         {answer.dispute && <Badge $warn>⚖ {HE.RB_DISPUTE}</Badge>}
       </Badges>
       {VIEWS.map(view => {
@@ -82,6 +108,7 @@ export default function AnswerView({ answer, idPrefix }: Props) {
               {pts.map((p, i) => (
                 <Point key={i}>
                   {p.derived && <Derived title={HE.RB_DERIVED_HINT}>{HE.RB_DERIVED_TAG}</Derived>}
+                  {p.rule && <Derived title={HE.RB_RULE_HINT}>{HE.RB_RULE_TAG}</Derived>}
                   {p.text}
                   {Array.from(new Set(p.cites.map(c => c.source))).map(s => (
                     <Cite key={s} href={`#${domId(s)}`} onClick={jump(s)} aria-label={HE.RB_CITE_ARIA(s + 1)}>{s + 1}</Cite>

@@ -16,8 +16,12 @@ export interface SikumHit {
 const MAX_TERMS = 6;
 const SCAN = 40;
 
-/** Best-matching summaries for the question's keywords (needs ≥ 2 shared words). */
-export async function searchSikumim(words: string[], limit: number): Promise<SikumHit[]> {
+/**
+ * Best-matching summaries for the question's keywords: ≥ 2 shared words, at
+ * least one of them from `core` (the plan's source-language words), so the
+ * user's everyday wording alone never pulls in an unrelated summary.
+ */
+export async function searchSikumim(words: string[], limit: number, core: string[] = words): Promise<SikumHit[]> {
   const terms = [...words].sort((a, b) => b.length - a.length).slice(0, MAX_TERMS);
   if (terms.length === 0) return [];
   const rows = await prisma.sikumEntry.findMany({
@@ -27,8 +31,11 @@ export async function searchSikumim(words: string[], limit: number): Promise<Sik
   }).catch(() => []);
 
   return rows
-    .map(r => ({ r, score: overlap(`${r.title ?? ''} ${r.text}`, words) }))
-    .filter(x => x.score >= 2)
+    .map(r => {
+      const text = `${r.title ?? ''} ${r.text}`;
+      return { r, score: overlap(text, words), anchored: core.length === 0 || overlap(text, core) > 0 };
+    })
+    .filter(x => x.score >= 2 && x.anchored)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
     .map(({ r }) => {

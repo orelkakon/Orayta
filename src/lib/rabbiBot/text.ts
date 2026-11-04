@@ -70,11 +70,32 @@ export function questionKey(q: string): string {
   return tokenize(q).map(t => t.norm).join(' ');
 }
 
-/** Words worth matching on (≥ 3 letters, not the commonest function words). */
-const STOP = new Set(['את', 'של', 'על', 'עם', 'אם', 'או', 'גם', 'כל', 'לא', 'מה', 'זה', 'זו', 'הוא', 'היא', 'אני', 'אפשר', 'מותר', 'צריך', 'האם', 'איך', 'למה', 'כאשר', 'אחרי', 'לפני']);
+/**
+ * Words worth matching on (≥ 3 letters): not the commonest function words, nor
+ * the everyday filler of a spoken question ("במידה ואני…", "רציתי לשאול").
+ */
+const STOP = new Set([
+  'את', 'של', 'על', 'עם', 'אם', 'או', 'גם', 'כל', 'לא', 'מה', 'זה', 'זו', 'הוא', 'היא', 'אני', 'אפשר', 'מותר', 'צריך', 'האם', 'איך', 'למה', 'כאשר', 'אחרי', 'לפני',
+  'במידה', 'ואני', 'שאני', 'אנחנו', 'אתה', 'רציתי', 'לשאול', 'לדעת', 'בבקשה', 'יכול', 'צריכים', 'עושים', 'ללכת', 'שאינו', 'אינו', 'שהוא', 'שהיא', 'היה',
+]);
+
+const isKeyword = (w: string) => w.length >= 3 && !STOP.has(w);
 
 export function keywords(text: string): string[] {
-  return Array.from(new Set(tokenize(text).map(t => t.norm).filter(w => w.length >= 3 && !STOP.has(w))));
+  return Array.from(new Set(tokenize(text).map(t => t.norm).filter(isKeyword)));
+}
+
+/**
+ * Shorter phrasings to retry when a planned search phrase finds nothing
+ * (Sefaria's search needs every word): the phrase's content words in
+ * overlapping pairs, as written. A phrase of two content words has nothing shorter.
+ */
+export function fallbackPhrases(phrase: string, max = 2): string[] {
+  // Two-letter words count here (נר, חג, גט) — only the function words go.
+  const words = tokenize(phrase).filter(t => t.norm.length >= 2 && !STOP.has(t.norm)).map(t => t.raw.replace(/[^\u05D0-\u05EA\u0591-\u05C7"'״׳]/g, ''));
+  if (words.length < 3) return [];
+  const pairs = words.slice(0, -1).map((w, i) => `${w} ${words[i + 1]}`);
+  return Array.from(new Set(pairs)).slice(0, max);
 }
 
 /** How many of `words` occur in `text` (prefix-tolerant: ב/ה/ו/ל/מ/ש/כ prefixes). */

@@ -10,6 +10,7 @@ import { FEED_HE } from './texts/feed';
 import { READER_HE } from './texts/reader';
 import { PRAYERS_HE } from './texts/prayers';
 import { TODAY_HE } from './texts/today';
+import { RABBI_BOT_HE } from './texts/rabbiBot';
 
 export const HE = {
   APP_NAME: 'אורייתא',
@@ -1653,4 +1654,5 @@ export const HE = {
   ...READER_HE,
   ...PRAYERS_HE,
   ...TODAY_HE,
+  ...RABBI_BOT_HE,
 };

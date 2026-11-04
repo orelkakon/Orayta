@@ -1,7 +1,8 @@
 import type { RabbiBotAnswer, RabbiBotEvent } from '@/types/rabbiBot';
 
 // Client-only helpers: open the floating panel from anywhere, the per-device
-// memory (welcome accepted, last answer), and reading the NDJSON stream.
+// memory (welcome accepted, the answer on screen, the last few answers), and
+// reading the NDJSON stream.
 
 const OPEN_EVENT = 'orayta:rabbi-bot-open';
 const STORAGE_KEY = 'orayta_rabbibot';
@@ -26,15 +27,27 @@ export interface LastAnswer {
 
 export interface BotLocal {
   welcomed: boolean;
+  /** The answer on screen (null = composer). */
   last: LastAnswer | null;
+  /** The device's latest answers, newest first. */
+  history: LastAnswer[];
+}
+
+export const HISTORY_MAX = 5;
+
+/** `item` first, replacing an older copy of the same answer (id) or question, capped. Pure. */
+export function withHistory(list: LastAnswer[], item: LastAnswer, max = HISTORY_MAX): LastAnswer[] {
+  const same = (x: LastAnswer) => (item.id && x.id === item.id) || x.question.trim() === item.question.trim();
+  return [item, ...list.filter(x => !same(x))].slice(0, max);
 }
 
 export function readBotLocal(): BotLocal {
   try {
     const v = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null') as Partial<BotLocal> | null;
-    return { welcomed: v?.welcomed === true, last: v?.last ?? null };
+    const history = Array.isArray(v?.history) ? v.history.filter(h => h && typeof h.question === 'string' && h.answer) : [];
+    return { welcomed: v?.welcomed === true, last: v?.last ?? null, history: history.slice(0, HISTORY_MAX) };
   } catch {
-    return { welcomed: false, last: null };
+    return { welcomed: false, last: null, history: [] };
   }
 }
 

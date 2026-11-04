@@ -35,6 +35,8 @@ export interface RabbiBotPoint {
   cites: RabbiBotCite[];
   /** A conclusion reasoned from the cited sources (counting, ordering, combining) rather than stated in them. */
   derived?: boolean;
+  /** No source discusses this exact case: a general rule or a parallel case in the cited sources decides it. */
+  rule?: boolean;
 }
 
 export interface RabbiBotSource {
@@ -61,6 +63,12 @@ export interface RabbiBotAnswer {
   verified: number;
   /** How many retrieved passages the answer was checked against (missing on older answers). */
   searched?: number;
+  /** The question restated in the sources' own language — shown as "הבנתי שהשאלה היא…". */
+  understood?: string;
+  /** Every non-note point applies a rule or a parallel case: no source addresses the exact case. */
+  byRule?: boolean;
+  /** Books the retrieved passages came from (the admin's knowledge-gap list). */
+  searchedBooks?: string[];
 }
 
 export type RabbiBotStep = 'plan' | 'search' | 'read' | 'answer' | 'verify';
@@ -96,6 +104,16 @@ export interface RabbiBotAdminRow {
   points: number;
 }
 
+/** A question no verified source answered — a topic worth a summary on /sikumim. */
+export interface RabbiBotGapRow {
+  id: string;
+  createdAt: string;
+  question: string;
+  understood: string | null;
+  topic: string | null;
+  books: string[];
+}
+
 export interface RabbiBotAdminStats {
   total: number;
   today: number;
@@ -119,4 +137,7 @@ export interface RabbiBotAdminStats {
   exhaustedToday: string[];
   lowRated: RabbiBotAdminRow[];
   recent: RabbiBotAdminRow[];
+  /** not_found questions in the retention window (count + the latest ones). */
+  gaps10d: number;
+  gaps: RabbiBotGapRow[];
 }

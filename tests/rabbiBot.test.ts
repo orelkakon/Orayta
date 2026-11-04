@@ -1,6 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { stripHtml, findQuote, questionKey, excerpt, keywords } from '@/lib/rabbiBot/text';
+import { stripHtml, findQuote, questionKey, excerpt, keywords, fallbackPhrases } from '@/lib/rabbiBot/text';
+import { withHistory, LastAnswer } from '@/lib/rabbiBot/client';
+import { answerShareText } from '@/lib/rabbiBot/share';
+import { RLM } from '@/lib/siteUrl';
 import { verifyAnswer } from '@/lib/rabbiBot/verify';
 import { validateQuestion, classifyFailure, quotaDay, quotaResetAt, isRating } from '@/lib/rabbiBot/rules';
 import type { RabbiBotPassage } from '@/types/rabbiBot';
@@ -116,4 +119,73 @@ test('a derived conclusion survives only when every premise is verified', () => 
   const broken = [...premises.slice(0, 2), { id: 'S3', quote: 'והשלישי היה שמגר השופט' }];
   const bad = verifyAnswer({ status: 'answered', short: 'שמגר', points: [{ text, view: 'main', derived: true, cites: broken }] }, ps, 'tanakh');
   assert.equal(bad.status, 'not_found');
+});
+
+// ── Applied rules, search fallback, history, sharing ─────────────────────
+
+const TEVILA = [
+  passage('S1', 'אבל כלי מתכות יטבול בלא ברכה או יקנה כלי אחר ויטבילנו עמו ויברך על טבילת כלים'),
+  passage('S2', 'אם תקע סדר א בנשימה אחת מחלוקת בין הפוסקים אם יצא וספק דאורייתא לחומרא'),
+];
+const RULE_TEXT = 'אין מקור שעוסק בספק אם הוטבל הכלי, אך מהכלל ספק דאורייתא לחומרא עולה שיטבילנו בלא ברכה';
+const RULE_CITES = [{ id: 'S1', quote: 'כלי מתכות יטבול בלא ברכה' }, { id: 'S2', quote: 'וספק דאורייתא לחומרא' }];
+
+test('a rule applied to an unwritten case is kept and marks the answer byRule', () => {
+  const a = verifyAnswer({ status: 'answered', short: 'יטבילנו בלא ברכה', points: [
+    { text: RULE_TEXT, view: 'main', basis: 'rule', cites: RULE_CITES },
+    { text: 'הרמב״ם כותב שהטבילה מדברי סופרים', view: 'note', basis: 'explicit', cites: [{ id: 'S1', quote: 'ויקנה כלי אחר ויטבילנו עמו' }] },
+  ] }, TEVILA, 'kashrut');
+  assert.equal(a.status, 'answered');
+  assert.equal(a.points[0].rule, true);
+  assert.equal(a.points[0].derived, undefined);
+  assert.equal(a.byRule, true, 'notes do not count against byRule');
+});
+
+test('an applied rule with one unverified premise is dropped', () => {
+  const cites = [RULE_CITES[0], { id: 'S2', quote: 'ספק טבילת כלים לחומרא לעולם' }];
+  const a = verifyAnswer({ status: 'answered', short: 'x', points: [{ text: RULE_TEXT, view: 'main', basis: 'rule', cites }] }, TEVILA, 'kashrut');
+  assert.equal(a.status, 'not_found');
+});
+
+test('an explicit ruling beside an applied rule: not byRule; basis "derived" maps to derived', () => {
+  const a = verifyAnswer({ status: 'answered', short: 'x', points: [
+    { text: RULE_TEXT, view: 'main', basis: 'rule', cites: RULE_CITES },
+    { text: 'ערוך השולחן פוסק שכלי מתכות יטבול בלא ברכה', view: 'main', basis: 'explicit', cites: [RULE_CITES[0]] },
+    { text: 'מסקנה מחושבת מתוך שני המקורות יחד', view: 'main', basis: 'derived', cites: RULE_CITES },
+  ] }, TEVILA, 'kashrut');
+  assert.equal(a.byRule, undefined);
+  assert.deepEqual(a.points.map(p => [Boolean(p.rule), Boolean(p.derived)]), [[true, false], [false, false], [false, true]]);
+});
+
+test('fallbackPhrases: content-word pairs, nothing for short phrases', () => {
+  assert.deepEqual(fallbackPhrases('ספק אם הוטבל כלי'), ['ספק הוטבל', 'הוטבל כלי']);
+  assert.deepEqual(fallbackPhrases('טבילת כלים'), []);
+  assert.deepEqual(fallbackPhrases('נר חנוכה מניחו על פתח', 1), ['נר חנוכה']);
+});
+
+test('keywords skip the filler of a spoken question', () => {
+  assert.deepEqual(keywords('במידה ואני לא זוכר האם הטבלתי כלי, צריך ללכת להטביל?'), ['זוכר', 'הטבלתי', 'כלי', 'להטביל']);
+});
+
+const entry = (id: string, question: string): LastAnswer => ({
+  id, question, token: 't', rating: null, reported: false,
+  answer: { status: 'answered', short: 'קצר', points: [], sources: [], dispute: false, topic: 'kashrut', total: 0, verified: 0 },
+});
+
+test('withHistory puts the newest first, replaces repeats and caps the list', () => {
+  let h: LastAnswer[] = [];
+  ['1', '2', '3', '4', '5', '6'].forEach(id => { h = withHistory(h, entry(id, `שאלה ${id}`)); });
+  assert.deepEqual(h.map(x => x.id), ['6', '5', '4', '3', '2']);
+  h = withHistory(h, entry('7', 'שאלה 4 '));
+  assert.deepEqual(h.map(x => x.id), ['7', '6', '5', '3', '2'], 'the same question asked again replaces the old one');
+});
+
+test('answerShareText: question, answer, sources and link, every line RTL', () => {
+  const a = verifyAnswer({ status: 'answered', short: 'יטבילנו בלא ברכה', points: [{ text: RULE_TEXT, view: 'main', basis: 'rule', cites: RULE_CITES }] }, TEVILA, 'kashrut');
+  const text = answerShareText('לא זוכר אם הטבלתי', a);
+  const lines = text.split('\n').filter(Boolean);
+  assert.ok(lines.every(l => l.startsWith(RLM)));
+  assert.ok(text.includes('לא זוכר אם הטבלתי') && text.includes('יטבילנו בלא ברכה') && text.includes('מקור S1 · מקור S2'));
+  assert.ok(text.includes('(מקור S1, מקור S2)'), 'each point names where it comes from');
+  assert.ok(text.trimEnd().endsWith('/ask'));
 });

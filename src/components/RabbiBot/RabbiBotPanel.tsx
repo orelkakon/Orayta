@@ -9,6 +9,8 @@ import Composer from './Composer';
 import ThinkingStage from './ThinkingStage';
 import AnswerView from './AnswerView';
 import Feedback from './Feedback';
+import ShareAnswer from './ShareAnswer';
+import RecentQuestions from './RecentQuestions';
 import RabbiBotAvatar from './RabbiBotAvatar';
 import { Card, Greeting, Question, Stack } from './styles';
 
@@ -19,7 +21,7 @@ function quotaTime(iso: string | null): string {
 
 /** The whole רבי־בוט flow; hosted by the floating sheet and by /ask. */
 export default function RabbiBotPanel({ idPrefix }: { idPrefix: string }) {
-  const { state, acceptWelcome, ask, reset, feedback } = useRabbiBot();
+  const { state, acceptWelcome, ask, reset, reopen, clearHistory, feedback } = useRabbiBot();
 
   if (!state.welcomed) return <WelcomeCard onAccept={acceptWelcome} />;
 
@@ -36,6 +38,7 @@ export default function RabbiBotPanel({ idPrefix }: { idPrefix: string }) {
       {state.phase === 'done' && state.last && (
         <>
           <AnswerView answer={state.last.answer} idPrefix={idPrefix} />
+          {state.last.answer.status === 'answered' && <ShareAnswer question={state.last.question} answer={state.last.answer} />}
           <Feedback rating={state.last.rating} reported={state.last.reported} onFeedback={feedback} />
           <QuietBtn type="button" onClick={reset}><LineIcon name="ask" size={18} /> {HE.RB_NEW_QUESTION}</QuietBtn>
         </>
@@ -55,6 +58,8 @@ export default function RabbiBotPanel({ idPrefix }: { idPrefix: string }) {
           onAsk={(q, website) => void ask(q, website)}
         />
       )}
+
+      {state.phase === 'idle' && <RecentQuestions items={state.history} onOpen={reopen} onClear={clearHistory} />}
     </Stack>
   );
 }
