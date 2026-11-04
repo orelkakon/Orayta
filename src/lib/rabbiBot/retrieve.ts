@@ -44,7 +44,7 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
   // `core` = the plan's source-language words; `words` adds the user's own wording.
   const core = keywords(`${plan.rewrite} ${plan.searches.join(' ')} ${plan.terms.join(' ')} ${plan.quote}`);
   const words = keywords(`${question} ${plan.rewrite} ${plan.searches.join(' ')} ${plan.terms.join(' ')} ${plan.quote} ${plan.principles.join(' ')}`);
-  const phrases = plan.searches.slice(0, 3);
+  const phrases = plan.searches.slice(0, 4);
   const halacha = plan.kind === 'halacha';
   const searches = [
     ...phrases.flatMap(q => SEARCH_PATHS[plan.kind].map(s => searchPhrase(q, s.path, s.size))),
@@ -52,8 +52,8 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
   ];
 
   const [planned, parallels, quoteHits, searchHits, ruleHits, termTexts, wiki, sikumim] = await Promise.all([
-    Promise.all(plan.refs.slice(0, 6).map(fetchText)),
-    Promise.all(plan.parallels.filter(r => !plan.refs.includes(r)).slice(0, 3).map(fetchText)),
+    Promise.all(plan.refs.slice(0, 8).map(fetchText)),
+    Promise.all(plan.parallels.filter(r => !plan.refs.includes(r)).slice(0, 4).map(fetchText)),
     plan.quote ? searchRefs(plan.quote, null, 5, 'exact') : Promise.resolve([]),
     Promise.all(searches),
     halacha ? Promise.all(plan.principles.slice(0, 2).map(p => searchRefs(p, 'Halakhah', 2))) : [],
@@ -89,7 +89,7 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
 
   const ordered: Candidate[] = [
     ...anchors.flatMap(t => best(fromSefaria(t), words, 2)),
-    ...valid.flatMap(t => best(fromSefaria(t), words, valid.length > 4 ? 2 : 3)),
+    ...valid.flatMap(t => best(fromSefaria(t), words, valid.length > 4 ? 1 : valid.length > 2 ? 2 : 3)),
     ...decide.flatMap(t => best(fromSefaria(t), words, 2)),
     ...sikumim.map(s => ({ ref: `sikum:${s.id}`, heRef: s.heRef, book: s.book, text: s.text, url: s.url, origin: 'sikum' as const })),
     ...linked.flat(),

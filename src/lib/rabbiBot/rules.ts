@@ -58,11 +58,15 @@ export function quotaResetAt(now: Date): Date {
 export type ModelFailure = 'daily' | 'rate' | 'error';
 
 /**
- * Classifies a failed Gemini call. Only a per-day quota violation means "done
- * for today"; per-minute limits and server errors just move on to the next model.
+ * Classifies a failed model call. Only a per-day quota violation means "done
+ * for today" — Gemini names it in its violations' quotaId, Groq in its message
+ * ("…per day (RPD)" / "(TPD)"); per-minute limits and server errors just move
+ * on to the next model.
  */
 export function classifyFailure(status: number, body: unknown): ModelFailure {
   if (status !== 429) return 'error';
+  const message = (body as { error?: { message?: unknown } } | null)?.error?.message;
+  if (typeof message === 'string' && /per day \((RPD|TPD)\)/i.test(message)) return 'daily';
   const details = (body as { error?: { details?: unknown[] } } | null)?.error?.details ?? [];
   const daily = details.some(d => {
     const violations = (d as { violations?: { quotaId?: string }[] }).violations ?? [];

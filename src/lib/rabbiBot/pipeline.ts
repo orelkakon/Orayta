@@ -1,14 +1,10 @@
 import type { RabbiBotAnswer, RabbiBotKind, RabbiBotStep } from '@/types/rabbiBot';
-import { generateJson, generateJsonHedged, ModelHooks, planModels, answerModels } from './gemini';
-import { PLAN_SYSTEM, PLAN_SCHEMA, ANSWER_SYSTEM, ANSWER_SCHEMA, answerPrompt } from './prompts';
+import { generateJson, ModelHooks, answerModels } from './gemini';
+import { ANSWER_SYSTEM, ANSWER_SCHEMA, answerPrompt, fitPassages } from './prompts';
+import { makePlan, PLAN_CAPS } from './plan';
 import { retrieve } from './retrieve';
 import { verifyAnswer, fixedAnswer, RawAnswer } from './verify';
 import { isTopic } from './rules';
-
-interface RawPlan {
-  kind?: unknown; topic?: unknown; refs?: unknown; searches?: unknown; terms?: unknown; quote?: unknown;
-  rewrite?: unknown; parallels?: unknown; principles?: unknown;
-}
 
 const strings = (v: unknown, max: number, len: number) =>
   (Array.isArray(v) ? v : []).filter((s): s is string => typeof s === 'string' && s.trim().length > 0)
@@ -25,11 +21,11 @@ export interface AskResult {
 export type StepFn = (step: RabbiBotStep, extra?: { count?: number; books?: string[] }) => void;
 
 const MAX_SHOWN_BOOKS = 10;
-/** A plan slower than this gets a second model racing it. */
-const PLAN_HEDGE_MS = 7000;
+/** Source text sent to small-input models (Groq): ~3k tokens, leaving room for its plan in the same minute. */
+const COMPACT_SOURCE_CHARS = 6000;
 
 /**
- * Question → plan (restated in the sources' language, with the refs, terms,
+ * Question → plan (Groq ensemble or Gemini chain, plan.ts — restated in the sources' language, with the refs, terms,
  * and the rule / parallel cases that decide it) → sources (Sefaria,
  * Wikisource, the site's summaries) → answer (best model with quota) → quote
  * verification (code).
@@ -37,8 +33,8 @@ const PLAN_HEDGE_MS = 7000;
  */
 export async function askRabbiBot(question: string, hooks: ModelHooks, onStep: StepFn): Promise<AskResult> {
   onStep('plan');
-  const plan = await generateJsonHedged(planModels(), { system: PLAN_SYSTEM, user: question, schema: PLAN_SCHEMA, timeoutMs: 15_000 }, hooks, PLAN_HEDGE_MS);
-  const p = plan.value as RawPlan;
+  const plan = await makePlan(question, hooks);
+  const p = plan.plan;
   const topic = isTopic(p.topic) ? p.topic : 'other';
   if (p.kind === 'sensitive') return { answer: fixedAnswer('sensitive', topic), model: plan.model };
   if (p.kind !== 'halacha' && p.kind !== 'torah') return { answer: fixedAnswer('other', topic), model: plan.model };
@@ -48,13 +44,13 @@ export async function askRabbiBot(question: string, hooks: ModelHooks, onStep: S
   const understood = text(p.rewrite, REWRITE_MAX);
   const passages = await retrieve(question, {
     kind,
-    refs: strings(p.refs, 6, 120),
-    searches: strings(p.searches, 3, 80),
-    terms: strings(p.terms, 3, 40),
+    refs: strings(p.refs, PLAN_CAPS.refs, 120),
+    searches: strings(p.searches, PLAN_CAPS.searches, 80),
+    terms: strings(p.terms, PLAN_CAPS.terms, 40),
     quote: text(p.quote, 120),
     rewrite: understood,
-    parallels: strings(p.parallels, 3, 120),
-    principles: strings(p.principles, 2, 60),
+    parallels: strings(p.parallels, PLAN_CAPS.parallels, 120),
+    principles: strings(p.principles, PLAN_CAPS.principles, 60),
   });
   const books = Array.from(new Set(passages.map(x => x.book))).slice(0, MAX_SHOWN_BOOKS);
   const context = { kind, understood: understood || undefined, searchedBooks: books };
@@ -64,6 +60,7 @@ export async function askRabbiBot(question: string, hooks: ModelHooks, onStep: S
   onStep('answer');
   const answer = await generateJson(answerModels(), {
     system: ANSWER_SYSTEM, user: answerPrompt(question, kind, passages, understood), schema: ANSWER_SCHEMA, timeoutMs: 22_000,
+    compactUser: answerPrompt(question, kind, fitPassages(passages, COMPACT_SOURCE_CHARS), understood),
   }, hooks);
 
   onStep('verify');

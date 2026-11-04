@@ -96,6 +96,21 @@ export const ANSWER_SCHEMA = {
   required: ['status', 'short', 'dispute', 'points'],
 };
 
+/**
+ * The passages that fit in `maxChars` of text, in priority order (a passage
+ * too long to fit is skipped, a shorter later one may still go in). They keep
+ * their S-numbers, so quotes are still verified against the same passages. Pure.
+ */
+export function fitPassages(passages: RabbiBotPassage[], maxChars: number): RabbiBotPassage[] {
+  let used = 0;
+  return passages.filter(p => {
+    const size = p.heRef.length + p.text.length + 12;
+    if (used + size > maxChars) return false;
+    used += size;
+    return true;
+  });
+}
+
 export function answerPrompt(question: string, kind: 'halacha' | 'torah', passages: RabbiBotPassage[], understood = ''): string {
   const body = passages.map(p => `[${p.id}] ${p.origin === 'sikum' ? 'סיכום: ' : ''}${p.heRef}\n${p.text}`).join('\n\n');
   const restated = understood ? `\nהשאלה בלשון הספרים: ${understood}` : '';

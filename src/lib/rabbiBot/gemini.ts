@@ -1,22 +1,29 @@
 import { classifyFailure } from './rules';
+import { callGroq, isGroqModel, GROQ_PREFIX } from './groq';
 
-// Server-only: Gemini REST (Google AI Studio free tier, key in GEMINI_API_KEY).
-// The free quota is counted per model *name* (the flash models allow ~20
-// requests a day each, the lite models far more), so each step walks a chain
-// of models. Planning needs real knowledge of where a law is written (the lite
-// models name the wrong siman and the modern word instead of the sources'
-// term), so it starts on the fast flash models and falls back to lite; the
-// answer runs on the strongest model that still has quota today.
+// Server-only: the models behind רבי־בוט, all on free tiers — Gemini REST
+// (Google AI Studio, GEMINI_API_KEY) and Groq ("groq:" models, GROQ_API_KEY,
+// see groq.ts). Free quota is counted per model *name* (the Gemini flash
+// models allow ~20 requests a day each), so each step walks a chain of models.
+// Planning runs first on the Groq ensemble (plan.ts: two models in parallel,
+// merged — they miss different simanim), which leaves the scarce flash quota
+// to the answer; the Gemini plan chain is its fallback. The answer runs on the
+// strongest model that still has quota today: flash, then Groq's Qwen, then lite.
 const API = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 const DEFAULT_PLAN = [
   'gemini-3-flash-preview', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest',
 ];
 // 3.8-flash (and flash-latest, which points at it) is strong but often slow — tried last among the flash models.
+// Qwen on Groq beat the lite models on halacha answers (and gpt-oss-120b, which
+// gives up too readily), so it comes right after flash.
 const DEFAULT_ANSWER = [
   'gemini-3.5-flash', 'gemini-3-flash-preview', 'gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-flash-latest',
+  'groq:qwen/qwen3.8-27b',
   'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-flash-lite-latest',
 ];
+// Planned in parallel and merged: Qwen restates the question best, gpt-oss knows more simanim.
+const DEFAULT_PLAN_ENSEMBLE = ['groq:qwen/qwen3.8-27b', 'groq:openai/gpt-oss-120b'];
 
 const fromEnv = (v: string | undefined, fallback: string[]) => {
   const list = v?.split(',').map(s => s.trim()).filter(Boolean);
@@ -25,14 +32,17 @@ const fromEnv = (v: string | undefined, fallback: string[]) => {
 
 export const planModels = () => fromEnv(process.env.RABBI_BOT_PLAN_MODELS, DEFAULT_PLAN);
 export const answerModels = () => fromEnv(process.env.RABBI_BOT_ANSWER_MODELS, DEFAULT_ANSWER);
+export const planEnsemble = () => fromEnv(process.env.RABBI_BOT_PLAN_ENSEMBLE, DEFAULT_PLAN_ENSEMBLE);
 /** Every model in use, answer chain order first (admin display, quota bookkeeping). */
-export const botModels = () => Array.from(new Set([...answerModels(), ...planModels()]));
-/** Lite models are the backup tier: fine for planning, a notch weaker at answering. */
-export const isBackupModel = (m: string) => m.includes('lite');
+export const botModels = () => Array.from(new Set([...answerModels(), ...planEnsemble(), ...planModels()]));
+/** The backup tier — a notch weaker at answering than the Gemini flash models. */
+export const isBackupModel = (m: string) => m.includes('lite') || isGroqModel(m);
 
 export interface JsonCall {
   system: string;
   user: string;
+  /** A shorter `user` for models with small input limits (Groq's free tier); defaults to `user`. */
+  compactUser?: string;
   schema: object;
   timeoutMs: number;
 }
@@ -54,11 +64,19 @@ interface GenResponse {
   candidates?: { content?: { parts?: { text?: string; thought?: boolean }[] } }[];
 }
 
-type CallResult = { ok: true; value: unknown } | { ok: false; status: number; body: unknown };
+export type CallResult = { ok: true; value: unknown } | { ok: false; status: number; body: unknown };
 
 const MIN_CALL_MS = 6000;
 
-async function callOnce(model: string, key: string, call: JsonCall, timeoutMs: number): Promise<CallResult> {
+/** The API key a model's provider needs, or undefined when it isn't configured (the model is skipped). */
+const keyFor = (model: string) => (isGroqModel(model) ? process.env.GROQ_API_KEY : process.env.GEMINI_API_KEY);
+export const isConfigured = (model: string) => Boolean(keyFor(model));
+
+function callOnce(model: string, key: string, call: JsonCall, timeoutMs: number): Promise<CallResult> {
+  return isGroqModel(model) ? callGroq(model.slice(GROQ_PREFIX.length), key, call, timeoutMs) : callGemini(model, key, call, timeoutMs);
+}
+
+async function callGemini(model: string, key: string, call: JsonCall, timeoutMs: number): Promise<CallResult> {
   const res = await fetch(`${API}/${model}:generateContent`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
@@ -92,11 +110,10 @@ async function callOnce(model: string, key: string, call: JsonCall, timeoutMs: n
  * without marking.
  */
 export async function generateJson(models: string[], call: JsonCall, hooks: ModelHooks): Promise<{ value: unknown; model: string }> {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new NoModelError(false);
   let anyLive = false;
   for (const model of models) {
-    if (hooks.skip.has(model)) continue;
+    const key = keyFor(model);
+    if (!key || hooks.skip.has(model)) continue;
     const budget = Math.min(call.timeoutMs, hooks.deadline - Date.now());
     if (budget < MIN_CALL_MS) { anyLive = true; break; }
     try {
@@ -119,7 +136,9 @@ export async function generateJson(models: string[], call: JsonCall, hooks: Mode
       anyLive = true;
     }
   }
-  throw new NoModelError(!anyLive && models.every(m => hooks.skip.has(m)));
+  // "Out of quota" only when every configured model has used up its day.
+  const configured = models.filter(isConfigured);
+  throw new NoModelError(!anyLive && configured.length > 0 && configured.every(m => hooks.skip.has(m)));
 }
 
 /**

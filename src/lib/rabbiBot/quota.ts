@@ -2,12 +2,12 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { sendAdminEmail } from '@/lib/mailer';
 import { HE } from '@/lib/hebrewTexts';
-import { answerModels, botModels, isBackupModel } from './gemini';
+import { answerModels, botModels, isBackupModel, isConfigured } from './gemini';
 import { quotaDay, quotaResetAt } from './rules';
 
 // Server-only. A model that hit its daily quota is remembered in AppConfig
 // until the quota day (Pacific) rolls over, so later questions skip it. The
-// admin gets at most two emails per quota day: when every primary (non-lite)
+// admin gets at most two emails per quota day: when every primary (Gemini flash)
 // answer model is out — answers continue on the backup tier — and when every
 // model is out.
 
@@ -52,9 +52,10 @@ export async function markExhausted(model: string, now = new Date()): Promise<vo
   await prisma.appConfig.upsert({ where: { key }, create: { key, value: day }, update: { value: day } });
 
   const exhausted = await loadExhausted(now);
-  const primary = answerModels().filter(m => !isBackupModel(m));
-  const backup = answerModels().filter(isBackupModel);
-  const allOut = botModels().every(m => exhausted.has(m));
+  // Only models whose provider has a key count — an unconfigured one is never "out".
+  const primary = answerModels().filter(m => isConfigured(m) && !isBackupModel(m));
+  const backup = answerModels().filter(m => isConfigured(m) && isBackupModel(m));
+  const allOut = botModels().filter(isConfigured).every(m => exhausted.has(m));
   const primaryOut = primary.every(m => exhausted.has(m));
   const tier = allOut ? 'all' : primaryOut ? 'primary' : null;
   if (!tier || !(await claim(mailKey(tier, day)))) return;

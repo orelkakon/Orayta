@@ -73,7 +73,7 @@ export async function wikisource(queries: string[], words: string[]): Promise<Ca
 
 /** Shulchan Arukh seifim that use the sources' own term for the subject. */
 export async function searchTerms(terms: string[]): Promise<SefariaText[]> {
-  const refs = Array.from(new Set((await Promise.all(terms.slice(0, 3).map(t => searchRefs(t, SA_PATHS, 4)))).flat()));
+  const refs = Array.from(new Set((await Promise.all(terms.slice(0, 4).map(t => searchRefs(t, SA_PATHS, 4)))).flat()));
   const texts = await Promise.all(refs.slice(0, 4).map(fetchText));
   return texts.filter((t): t is SefariaText => t !== null);
 }

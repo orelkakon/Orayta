@@ -4,6 +4,9 @@ import { stripHtml, findQuote, questionKey, excerpt, keywords, fallbackPhrases }
 import { withHistory, LastAnswer } from '@/lib/rabbiBot/client';
 import { answerShareText } from '@/lib/rabbiBot/share';
 import { RLM } from '@/lib/siteUrl';
+import { mergePlans } from '@/lib/rabbiBot/plan';
+import { strictSchema } from '@/lib/rabbiBot/groq';
+import { PLAN_SCHEMA, fitPassages } from '@/lib/rabbiBot/prompts';
 import { verifyAnswer } from '@/lib/rabbiBot/verify';
 import { validateQuestion, classifyFailure, quotaDay, quotaResetAt, isRating } from '@/lib/rabbiBot/rules';
 import type { RabbiBotPassage } from '@/types/rabbiBot';
@@ -188,4 +191,52 @@ test('answerShareText: question, answer, sources and link, every line RTL', () =
   assert.ok(text.includes('לא זוכר אם הטבלתי') && text.includes('יטבילנו בלא ברכה') && text.includes('מקור S1 · מקור S2'));
   assert.ok(text.includes('(מקור S1, מקור S2)'), 'each point names where it comes from');
   assert.ok(text.trimEnd().endsWith('/ask'));
+});
+
+// ── Groq + the planning ensemble ─────────────────────────────────────────
+
+test('mergePlans interleaves both plans and keeps the first rewrite', () => {
+  const qwen = { kind: 'halacha', topic: 'kashrut', refs: ["Shulchan Arukh, Yoreh De'ah 120:9", 'Arukh HaShulchan 120:51'], parallels: [],
+    searches: ['ספק טבילת כלים'], terms: ['טבילת כלים'], principles: ['ספק דאורייתא לחומרא'], quote: '', rewrite: 'המסופק אם הטביל כלי' };
+  const oss = { kind: 'halacha', topic: 'kashrut', refs: ["Shulchan Arukh, Yoreh De'ah 120:9", 'Tur, Yoreh De\'ah 120'], parallels: ['Kitzur Shulchan Arukh 37:1'],
+    searches: ['טבילת כלים'], terms: ['טבילה', 'טבילת כלים'], principles: ['ספק דאורייתא לחומרא', 'ספק ברכות להקל', 'המתנה'], quote: '', rewrite: 'שכחתי אם הטבלתי' };
+  const m = mergePlans([qwen, oss]);
+  assert.deepEqual(m.refs, ["Shulchan Arukh, Yoreh De'ah 120:9", 'Arukh HaShulchan 120:51', "Tur, Yoreh De'ah 120"]);
+  assert.deepEqual(m.terms, ['טבילת כלים', 'טבילה']);
+  assert.deepEqual(m.principles, ['ספק דאורייתא לחומרא', 'ספק ברכות להקל'], 'capped at 2');
+  assert.deepEqual(m.parallels, ['Kitzur Shulchan Arukh 37:1']);
+  assert.equal(m.rewrite, 'המסופק אם הטביל כלי');
+});
+
+test('mergePlans: "sensitive" from either model wins; "other" yields to an answerable kind', () => {
+  assert.equal(mergePlans([{ kind: 'halacha', topic: 'family' }, { kind: 'sensitive', topic: 'family' }]).kind, 'sensitive');
+  const m = mergePlans([{ kind: 'other', topic: 'other' }, { kind: 'torah', topic: 'tanakh', refs: ['Judges 3:31'] }]);
+  assert.equal(m.kind, 'torah');
+  assert.equal(m.topic, 'tanakh');
+  assert.deepEqual(mergePlans([{ kind: 'torah', refs: ['Genesis 1:1'] }]).refs, ['Genesis 1:1'], 'a single plan passes through');
+});
+
+test('classifyFailure reads Groq\'s per-day limits from its message', () => {
+  const groq = (m: string) => ({ error: { message: m, code: 'rate_limit_exceeded' } });
+  assert.equal(classifyFailure(429, groq('Rate limit reached for model `qwen/qwen3.8-27b` on requests per day (RPD): Limit 1000')), 'daily');
+  assert.equal(classifyFailure(429, groq('Rate limit reached … on tokens per day (TPD): Limit 200000')), 'daily');
+  assert.equal(classifyFailure(429, groq('Rate limit reached … on tokens per minute (TPM): Limit 8000')), 'rate');
+});
+
+test('strictSchema closes every object and drops maxItems', () => {
+  const s = strictSchema(PLAN_SCHEMA) as { additionalProperties: boolean; required: string[]; properties: Record<string, { maxItems?: number }> };
+  assert.equal(s.additionalProperties, false);
+  assert.deepEqual([...s.required].sort(), Object.keys(PLAN_SCHEMA.properties).sort());
+  assert.equal(s.properties.refs.maxItems, undefined);
+  const nested = strictSchema({ type: 'array', items: { type: 'object', properties: { a: { type: 'string' } } } }) as { items: { additionalProperties: boolean; required: string[] } };
+  assert.equal(nested.items.additionalProperties, false);
+  assert.deepEqual(nested.items.required, ['a']);
+});
+
+test('fitPassages keeps priority order and S-numbers within the budget', () => {
+  const ps = [passage('S1', 'א'.repeat(50)), passage('S2', 'ב'.repeat(200)), passage('S3', 'ג'.repeat(40))];
+  // מקור Sn = 6 chars + 12 overhead: S1 = 68, S2 = 218, S3 = 58
+  assert.deepEqual(fitPassages(ps, 140).map(p => p.id), ['S1', 'S3'], 'a too-long passage is skipped, a later short one still fits');
+  assert.deepEqual(fitPassages(ps, 1000).map(p => p.id), ['S1', 'S2', 'S3']);
+  assert.deepEqual(fitPassages(ps, 10), []);
 });
