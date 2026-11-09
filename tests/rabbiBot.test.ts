@@ -11,6 +11,7 @@ import { PLAN_SCHEMA, fitPassages } from '@/lib/rabbiBot/prompts';
 import { verifyAnswer } from '@/lib/rabbiBot/verify';
 import { validateQuestion, classifyFailure, isMomentary, quotaDay, quotaResetAt, isRating } from '@/lib/rabbiBot/rules';
 import { namedAuthorities } from '@/lib/rabbiBot/authorities';
+import { unitWords, hasModernUnit } from '@/lib/rabbiBot/measures';
 import type { RabbiBotPassage } from '@/types/rabbiBot';
 
 const SA = 'מצוה להניחו בטפח הסמוך לפתח משמאל, כדי שתהא מזוזה מימין ונר חנוכה משמאל. ובשעת הסכנה מניחו על שלחנו ודיו.';
@@ -289,4 +290,27 @@ test('namedAuthorities finds the poskim whose books are not online, in any spell
   assert.deepEqual(names('האם מותר לאכול לפני קידוש?'), []);
   // "נאה" alone is just "nice".
   assert.deepEqual(names('האם נאה להתפלל בבגד כזה?'), []);
+});
+
+test('unitWords: a question asked in modern units pairs the measure with the unit as the sources spell it', () => {
+  assert.deepEqual(unitWords('מה המידה של לוג בליטרים?'), ['ליטר', 'מיליליטר']);
+  assert.deepEqual(unitWords('כמה זה רביעית במ״ל?'), ['ליטר', 'מיליליטר']);
+  assert.deepEqual(unitWords('כמה ס"מ זה טפח?'), ['סנטימטר', 'מטר']);
+  assert.deepEqual(unitWords('כמה גרם זה כזית?'), ['גרם']);
+  assert.deepEqual(unitWords('מה שיעור כזית?'), []);
+});
+
+test('hasModernUnit tells liters and meters from litras, rain and "caused"', () => {
+  assert.equal(hasModernUnit('שלושה לוגים שהם 0.8 ליטר'), true);
+  assert.equal(hasModernUnit("שיעור 'רביעית הלוג' יין, שהוא כ-75 מיליליטר"), true);
+  assert.equal(hasModernUnit('הלוג היא מידה שהיא כחצי ליטר'), true);
+  assert.equal(hasModernUnit('חֲצִי סְאָה. כארבעה ליטרים.'), true);
+  assert.equal(hasModernUnit('וכל מיל אורכו 912 מטר'), true);
+  assert.equal(hasModernUnit("סאה עבדה כ\"ד לוגים, וכל לוג ב' ליטרות"), false);
+  assert.equal(hasModernUnit("ולוג ב' ליטרים"), false);
+  assert.equal(hasModernUnit('ונתתי מטר ארצכם בעתו'), false);
+  assert.equal(hasModernUnit('הו"ל גורם ברכה שאינה צריכה, כי גרם לו'), false);
+  assert.equal(hasModernUnit('רבע לוג, כשבעים וחמש סמ"ק.'), true);
+  assert.equal(hasModernUnit('ובמידות ימינו שיעור הלוג כ-350 סמ"ק'), true);
+  assert.equal(hasModernUnit('וכמ"ש לעיל ס"מ ע"ש'), false);
 });
