@@ -23,11 +23,11 @@ const Page = styled.div`display: flex; flex-direction: column; gap: ${theme.spac
 
 const open = (id: string) => `/content?open=${encodeURIComponent(id)}`;
 
-const QUICK: NavItem[] = HE.PRAYERS_QUICK.map(q => ({ href: open(q.id), label: q.label, icon: q.icon }));
+const QUICK: NavItem[] = HE.PRAYERS_QUICK.map(q => ({ href: q.href ?? open(q.id), label: q.label, icon: q.icon }));
 
 const MORE: NavItem[] = [
   ...SIDDUR_EXTRAS.filter(x => !HE.PRAYERS_QUICK.some(q => q.id === x.id)).map(x => ({ href: open(x.id), label: x.name, icon: x.icon })),
-  ...SECTIONS.filter(s => s.id === 'general-prayers').map(s => ({ href: open(s.id), label: s.title, icon: s.icon })),
+  ...SECTIONS.filter(s => s.id === 'general-prayers' || s.id === 'brachot-reiya').map(s => ({ href: open(s.id), label: s.title, icon: s.icon })),
 ];
 
 const TANAKH = SECTIONS.filter(s => s.group === 'tanakh' || s.id === 'tehillim');
