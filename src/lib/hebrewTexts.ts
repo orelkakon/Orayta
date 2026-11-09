@@ -1635,7 +1635,6 @@ export const HE = {
   RB_ADMIN_QUOTA_OUT: 'המכסה נגמרה',
   RB_ADMIN_LOW: 'דירוג נמוך ודיווחים',
   RB_ADMIN_RECENT: 'שאלות אחרונות',
-  RB_ADMIN_PURGED: 'הטקסט נמחק (עברו 10 ימים)',
   RB_ADMIN_EMPTY: 'אין עדיין',
   RB_ADMIN_REPORTED: 'דווח',
   RB_TEASER: 'שאלה בהלכה או בתורה? שאלו אותי — אענה עם מקורות.',

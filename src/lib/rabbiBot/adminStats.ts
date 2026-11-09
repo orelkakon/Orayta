@@ -17,7 +17,7 @@ const ROW_SELECT = {
 
 type Row = { id: string; createdAt: Date; question: string | null; status: string; topic: string | null; rating: number | null; reported: boolean; note: string | null; verified: number; points: number };
 
-const toRow = (r: Row): RabbiBotAdminRow => ({ ...r, status: r.status as RabbiBotStatus, createdAt: r.createdAt.toISOString() });
+const toRow = (r: Row): RabbiBotAdminRow => ({ ...r, question: r.question ?? '', status: r.status as RabbiBotStatus, createdAt: r.createdAt.toISOString() });
 const pct = (a: number, b: number) => (b > 0 ? Math.round((a / b) * 100) : 0);
 
 type GapSource = { id: string; createdAt: Date; question: string | null; topic: string | null; answer: unknown };
@@ -39,7 +39,9 @@ export async function getRabbiBotStats(now = new Date()): Promise<RabbiBotAdminS
   const since10 = new Date(now.getTime() - RETENTION_DAYS * DAY_MS);
   const quotaSince = new Date(quotaResetAt(now).getTime() - DAY_MS);
 
-  const gapWhere = { status: 'not_found', createdAt: { gte: since10 }, question: { not: null } };
+  // Purged rows (text erased after the retention window) count in the numbers but are never listed.
+  const listed = { question: { not: null } };
+  const gapWhere = { ...listed, status: 'not_found', createdAt: { gte: since10 } };
   const [total, agg, ratingRows, statusRows, topicRows, windowRows, askers, bookRows, modelRows, reports, lowRated, recent, exhausted, gaps10d, gaps] = await Promise.all([
     prisma.rabbiBotQuestion.count(),
     prisma.rabbiBotQuestion.aggregate({ _avg: { rating: true, latencyMs: true }, _sum: { points: true, verified: true } }),
@@ -52,10 +54,10 @@ export async function getRabbiBotStats(now = new Date()): Promise<RabbiBotAdminS
     prisma.rabbiBotQuestion.groupBy({ by: ['model'], where: { createdAt: { gte: quotaSince }, cached: false }, _count: { _all: true } }),
     prisma.rabbiBotQuestion.count({ where: { reported: true } }),
     prisma.rabbiBotQuestion.findMany({
-      where: { OR: [{ rating: { lte: 2 } }, { reported: true }], createdAt: { gte: since10 } },
+      where: { ...listed, OR: [{ rating: { lte: 2 } }, { reported: true }], createdAt: { gte: since10 } },
       orderBy: { createdAt: 'desc' }, take: LIST_N, select: ROW_SELECT,
     }),
-    prisma.rabbiBotQuestion.findMany({ orderBy: { createdAt: 'desc' }, take: LIST_N, select: ROW_SELECT }),
+    prisma.rabbiBotQuestion.findMany({ where: listed, orderBy: { createdAt: 'desc' }, take: LIST_N, select: ROW_SELECT }),
     loadExhausted(now),
     prisma.rabbiBotQuestion.count({ where: gapWhere }),
     prisma.rabbiBotQuestion.findMany({

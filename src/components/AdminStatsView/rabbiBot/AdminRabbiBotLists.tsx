@@ -12,10 +12,8 @@ const Item = styled.li`
   display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: ${theme.spacing.sm} 0;
   &:not(:last-child) { border-bottom: 1px solid ${theme.colors.borderLight}; }
 `;
-const Text = styled.span<{ $gone: boolean }>`
-  font-family: ${theme.fonts.body}; font-size: 0.9rem; line-height: 1.55; overflow-wrap: anywhere;
-  color: ${p => (p.$gone ? theme.colors.textLight : theme.colors.text)};
-  font-style: ${p => (p.$gone ? 'italic' : 'normal')};
+const Text = styled.span`
+  font-family: ${theme.fonts.body}; font-size: 0.9rem; line-height: 1.55; overflow-wrap: anywhere; color: ${theme.colors.text};
 `;
 const Note = styled.span`font-size: 0.8rem; color: ${theme.colors.error}; overflow-wrap: anywhere;`;
 const Meta = styled.span`display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.7rem; color: ${theme.colors.textLight};`;
@@ -25,7 +23,7 @@ const None = styled.p`margin: 0; font-size: 0.8rem; color: ${theme.colors.textLi
 function Row({ r }: { r: RabbiBotAdminRow }) {
   return (
     <Item>
-      <Text $gone={r.question === null}>{r.question ?? HE.RB_ADMIN_PURGED}</Text>
+      <Text>{r.question}</Text>
       {r.note && <Note>{r.note}</Note>}
       <Meta>
         <span>{formatCommentAge(r.createdAt)}</span>

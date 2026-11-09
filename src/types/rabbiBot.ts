@@ -94,7 +94,7 @@ export interface RabbiBotFeedback {
 export interface RabbiBotAdminRow {
   id: string;
   createdAt: string;
-  question: string | null;
+  question: string;
   status: RabbiBotStatus;
   topic: string | null;
   rating: number | null;
