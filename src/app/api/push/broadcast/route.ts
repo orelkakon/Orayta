@@ -6,6 +6,7 @@ import { normalizeCommentText } from '@/lib/feedComments';
 import { lastPushError, mapLimit, pushConfigured, sendPush } from '@/lib/push/server';
 import type { PushBroadcastRecord, PushPayload } from '@/types/push';
 import { invalidateSchedule } from '@/lib/push/scheduleCache';
+import { isHolyFor, isHolyInIsrael } from '@/lib/push/holy';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,8 @@ export const dynamic = 'force-dynamic';
  * Admin-only broadcast: one written notification to every subscribed device.
  * Guarded against double-taps (one send per 2 minutes); dead subscriptions
  * (404/410) are removed on the way. The last broadcast is kept for the card.
+ * Never on Shabbat or Yom Tov: refused in Israel's, and devices abroad that
+ * are inside theirs are skipped.
  */
 const LAST_KEY = 'push_broadcast_last';
 const COOLDOWN_MS = 2 * 60_000;
@@ -36,6 +39,7 @@ function safePath(v: unknown): string {
 export async function POST(req: NextRequest) {
   if (!isAdmin(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   if (!pushConfigured()) return NextResponse.json({ error: 'push not configured' }, { status: 503 });
+  if (isHolyInIsrael(new Date())) return NextResponse.json({ error: 'shabbat' }, { status: 409 });
   let raw: { title?: unknown; body?: unknown; url?: unknown };
   try { raw = await req.json() as typeof raw; } catch { return NextResponse.json({ error: 'bad json' }, { status: 400 }); }
 
@@ -56,7 +60,9 @@ export async function POST(req: NextRequest) {
   const record: PushBroadcastRecord = { at, title, body, url, sent: 0, failed: 0 };
   await prisma.appConfig.upsert({ where: { key: LAST_KEY }, update: { value: JSON.stringify(record) }, create: { key: LAST_KEY, value: JSON.stringify(record) } });
 
-  const subs = await prisma.pushSubscription.findMany({ select: { id: true, endpoint: true, p256dh: true, auth: true } });
+  const now = new Date();
+  const subs = (await prisma.pushSubscription.findMany({ select: { id: true, endpoint: true, p256dh: true, auth: true, timeZone: true } }))
+    .filter(s => !isHolyFor(now, s.timeZone));
   const outcomes = await mapLimit(subs, 20, s => sendPush(s, payload));
   const gone = subs.filter((_, i) => outcomes[i] === 'gone').map(s => s.id);
   const failedIds = subs.filter((_, i) => outcomes[i] === 'failed').map(s => s.id);

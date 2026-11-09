@@ -68,6 +68,7 @@ export default function AdminBroadcast({ total }: { total: number }) {
     const data = res ? await res.json().catch(() => null) as { sent?: number; failed?: number; reason?: string } | null : null;
     setStep('edit');
     if (res?.status === 429) { setNote({ text: HE.ADMIN_BC_TOO_SOON, error: true }); return; }
+    if (res?.status === 409) { setNote({ text: HE.ADMIN_BC_SHABBAT, error: true }); return; }
     if (!res?.ok || !data) { setNote({ text: HE.ADMIN_BC_ERROR, error: true }); return; }
     setNote({ text: HE.ADMIN_BC_DONE(data.sent ?? 0, data.failed ?? 0) + (data.reason ? ` (${data.reason})` : ''), error: !data.sent && !!data.failed });
     setLast({ at: new Date().toISOString(), title: title.trim() || HE.APP_NAME, body: body.trim(), url, sent: data.sent ?? 0, failed: data.failed ?? 0 });

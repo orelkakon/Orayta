@@ -1,11 +1,13 @@
-import { localClock } from './schedule';
+import { localClock, DEFAULT_TIME_ZONE } from './schedule';
+import { isHolyFor } from './holy';
 
 /**
  * Decides — without touching the database — whether the 5-minute heartbeat
  * needs to run the dispatcher now (pure, tested). Input is the cached list of
  * subscribers' chosen times, so Neon is woken only when someone is actually
  * due: at their chosen minute (+ one backup ping), or at Israel nightfall on
- * nights that have a hilula / omer count for subscribers who want them.
+ * nights that have a hilula / omer count for subscribers who want them —
+ * never on Shabbat or Yom Tov.
  */
 export interface ScheduleEntry {
   timeZone: string;
@@ -33,8 +35,10 @@ export function inNightfallWindow(now: Date, nightfallMs: number): boolean {
   return since >= 0 && since < WAKE_WINDOW_MIN * 60_000;
 }
 
+/** Shabbat / Yom Tov: subscribers inside it are skipped, and nothing goes out at Israel nightfall. */
 export function needsDispatch(now: Date, entries: ScheduleEntry[], nightfallMs: number, tonight: Tonight): boolean {
+  entries = entries.filter(e => !isHolyFor(now, e.timeZone));
   if (dailyDueNow(now, entries)) return true;
-  if (!inNightfallWindow(now, nightfallMs)) return false;
+  if (!inNightfallWindow(now, nightfallMs) || isHolyFor(now, DEFAULT_TIME_ZONE)) return false;
   return (tonight.hilula && entries.some(e => e.hilula)) || (tonight.omer && entries.some(e => e.omer));
 }

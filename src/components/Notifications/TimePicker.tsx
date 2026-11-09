@@ -56,7 +56,7 @@ export default function TimePicker({ value, onChange }: Props) {
           </Chip>
         ))}
       </Chips>
-      <Hint>{HE.PUSH_TIME_HINT}</Hint>
+      <Hint>{HE.PUSH_TIME_HINT} {HE.PUSH_SHABBAT_NOTE}</Hint>
     </Box>
   );
 }

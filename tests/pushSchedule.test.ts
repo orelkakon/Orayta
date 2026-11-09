@@ -158,3 +158,66 @@ test('nightfall wakes only on hilula / omer nights for subscribers who want them
   assert.equal(needsDispatch(at, [entry({ dailyMinutes: 0 })], NIGHTFALL, { hilula: false, omer: true }), true);
   assert.equal(needsDispatch(new Date(NIGHTFALL + 9 * 60_000), [entry({ dailyMinutes: 0 })], NIGHTFALL, { hilula: true, omer: true }), false);
 });
+
+import { isRestDay, isHolyInIsrael, isHolyFor, eveningDelayMin, HOLY_AFTER_SUNSET_MIN } from '@/lib/push/holy';
+
+const holyCtx = { ...noHoliday, holy: isHolyFor };
+
+test('rest days: Shabbat and Yom Tov, with the diaspora second days', () => {
+  assert.equal(isRestDay('2026-10-24'), true);   // Saturday
+  assert.equal(isRestDay('2026-10-23'), false);  // Friday
+  assert.equal(isRestDay('2026-09-12'), true);   // 1 Tishrei 5787 (Shabbat anyway)
+  assert.equal(isRestDay('2026-09-13'), true);   // 2 Tishrei — Rosh Hashana day 2
+  assert.equal(isRestDay('2026-09-21'), true);   // 10 Tishrei — Yom Kippur (Monday)
+  assert.equal(isRestDay('2026-09-27'), false);  // 16 Tishrei — Chol HaMoed in Israel…
+  assert.equal(isRestDay('2026-09-27', true), true); // …second day abroad
+  assert.equal(isRestDay('2027-04-22'), true);   // 15 Nisan 5787 (Thursday)
+  assert.equal(isRestDay('2027-06-11'), true);   // 6 Sivan — Shavuot (Friday)
+});
+
+test('Israel holy time: from 40 min before sunset on the eve to 50 min after sunset on the day', () => {
+  // Friday 2026-10-23, sunset in Jerusalem ≈ 17:59 (UTC+3 → 14:59Z)
+  assert.equal(isHolyInIsrael(new Date('2026-10-23T13:40:00Z')), false); // 16:40 Friday
+  assert.equal(isHolyInIsrael(new Date('2026-10-23T14:30:00Z')), true);  // 17:30 Friday
+  assert.equal(isHolyInIsrael(new Date('2026-10-24T09:00:00Z')), true);  // Shabbat morning
+  assert.equal(isHolyInIsrael(new Date('2026-10-24T15:30:00Z')), true);  // 18:30, before the end
+  assert.equal(isHolyInIsrael(new Date('2026-10-24T16:00:00Z')), false); // 19:00 Motzash
+  assert.equal(isHolyInIsrael(new Date('2026-10-21T15:30:00Z')), false); // ordinary Wednesday
+});
+
+test('abroad: the whole local rest day plus its eve from 14:00', () => {
+  const ny = 'America/New_York';
+  assert.equal(isHolyFor(new Date('2026-10-23T17:00:00Z'), ny), false); // Fri 13:00 NY
+  assert.equal(isHolyFor(new Date('2026-10-23T19:00:00Z'), ny), true);  // Fri 15:00 NY
+  assert.equal(isHolyFor(new Date('2026-10-24T22:00:00Z'), ny), true);  // Sat 18:00 NY
+  assert.equal(isHolyFor(new Date('2026-10-25T13:00:00Z'), ny), false); // Sun 09:00 NY
+});
+
+test('no notification on Shabbat; a reminder that fell in Shabbat is not sent late', () => {
+  const shabbat8 = new Date('2026-10-24T05:00:00Z'); // Sat 08:00 Israel
+  assert.deepEqual(dueKinds(shabbat8, sub(), holyCtx), []);
+  // 17:00 reminder on Shabbat (inside it); at 19:00 Shabbat is out but the reminder stays skipped
+  const motzash = new Date('2026-10-24T16:00:00Z');
+  assert.deepEqual(dueKinds(motzash, sub({ dailyMinutes: 17 * 60 }), holyCtx), []);
+  // An evening reminder after Shabbat ends goes out as usual
+  assert.deepEqual(dueKinds(new Date('2026-10-24T18:00:00Z'), sub({ dailyMinutes: 21 * 60 }), holyCtx), ['daily']);
+  // Hilula / omer at Friday nightfall are held
+  const fridayNight = new Date('2026-10-23T15:40:00Z');
+  const night = { hilulaDay: '2026-10-24', omerTonight: 3, nightfallMinutes: 18 * 60 + 24, holy: isHolyFor };
+  assert.deepEqual(dueKinds(fridayNight, sub({ daily: false }), night), []);
+  // Weekday nights unchanged
+  assert.deepEqual(dueKinds(new Date('2026-10-21T15:40:00Z'), sub({ daily: false }), { ...night, hilulaDay: '2026-10-22' }), ['hilula', 'omer']);
+});
+
+test('evening notifications after a rest day wait until it has ended', () => {
+  assert.equal(eveningDelayMin(new Date('2026-10-21T14:00:00Z'), 25), 25);
+  assert.equal(eveningDelayMin(new Date('2026-10-24T14:00:00Z'), 25), HOLY_AFTER_SUNSET_MIN + 5);
+});
+
+test('heartbeat sleeps through Shabbat', () => {
+  const e = { timeZone: 'Asia/Jerusalem', dailyMinutes: 8 * 60, daily: true, hilula: true, omer: true };
+  assert.equal(needsDispatch(new Date('2026-10-24T05:01:00Z'), [e], 0, { hilula: false, omer: false }), false);
+  assert.equal(needsDispatch(new Date('2026-10-22T05:01:00Z'), [e], 0, { hilula: false, omer: false }), true);
+  const fridayNightfall = Date.parse('2026-10-23T15:24:00Z');
+  assert.equal(needsDispatch(new Date(fridayNightfall + 60_000), [{ ...e, dailyMinutes: 0 }], fridayNightfall, { hilula: true, omer: true }), false);
+});

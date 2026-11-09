@@ -8,6 +8,7 @@ import { inNightfallWindow, needsDispatch, type Tonight } from '@/lib/push/wake'
 import { cachedHilulaDates, cachedSchedule } from '@/lib/push/scheduleCache';
 import { getOmerDay } from '@/lib/omer';
 import { jerusalemSunTimes } from '@/lib/siddur/calendar';
+import { eveningDelayMin } from '@/lib/push/holy';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -38,7 +39,8 @@ async function tick() {
   const entries = await cachedSchedule();
   if (entries.length === 0) return NextResponse.json({ ok: true, ran: false, idle: true }, IDLE);
 
-  const nightfall = jerusalemSunTimes(now).sunset.getTime() + OMER_AFTER_SUNSET_MIN * 60_000;
+  // Same moment the dispatcher uses — later after Shabbat / Yom Tov, once it has surely ended.
+  const nightfall = jerusalemSunTimes(now).sunset.getTime() + eveningDelayMin(now, OMER_AFTER_SUNSET_MIN) * 60_000;
   const tonight: Tonight = { hilula: false, omer: false };
   if (inNightfallWindow(now, nightfall)) {
     tonight.omer = getOmerDay(now) !== null;

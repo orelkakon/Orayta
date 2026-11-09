@@ -3,7 +3,8 @@
  * ~10 minutes from GitHub Actions, and GitHub may delay or skip scheduled runs,
  * so nothing here depends on hitting an exact minute: a notification is "due"
  * once its local time has passed today, it wasn't sent today yet, and we are
- * not so late that it would arrive at a strange hour.
+ * not so late that it would arrive at a strange hour. Nothing goes out on
+ * Shabbat or Yom Tov (`DayContext.holy`).
  */
 
 export const DEFAULT_TIME_ZONE = 'Asia/Jerusalem';
@@ -81,6 +82,8 @@ export interface DayContext {
   omerTonight: number | null;
   /** Israel nightfall (צאת הכוכבים) in minutes after midnight — hilula and omer go out then. */
   nightfallMinutes: number;
+  /** Shabbat / Yom Tov in force at `at` for a subscriber in `timeZone` (`holy.ts`); nothing is sent then. */
+  holy?: (at: Date, timeZone: string) => boolean;
 }
 
 export type PushKind = 'daily' | 'hilula' | 'omer';
@@ -91,9 +94,14 @@ export type PushKind = 'daily' | 'hilula' | 'omer';
  * omer follow Israel's nightfall, when the Hebrew day they belong to begins.
  */
 export function dueKinds(now: Date, sub: SubscriptionPrefs, ctx: DayContext): PushKind[] {
+  const holy = (at: Date, tz: string) => ctx.holy?.(at, tz) ?? false;
+  if (holy(now, sub.timeZone)) return [];
   const clock = localClock(now, sub.timeZone);
   const kinds: PushKind[] = [];
-  if (sub.daily && isDue(clock, sub.dailyMinutes, sub.lastDailyDay)) kinds.push('daily');
+  // A reminder whose time fell inside Shabbat is skipped, not sent late once it ends.
+  const target = new Date(now.getTime() - (clock.minutes - sub.dailyMinutes) * 60_000);
+  if (sub.daily && isDue(clock, sub.dailyMinutes, sub.lastDailyDay) && !holy(target, sub.timeZone)) kinds.push('daily');
+  if (holy(now, DEFAULT_TIME_ZONE)) return kinds;
   const il = localClock(now, DEFAULT_TIME_ZONE);
   if (sub.hilula && ctx.hilulaDay !== null && sub.lastHilulaDay !== ctx.hilulaDay
     && isDue(il, ctx.nightfallMinutes, null)) kinds.push('hilula');

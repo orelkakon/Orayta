@@ -4,9 +4,10 @@ import { sendPush, mapLimit } from './server';
 import { hebrewDayAnchor, israelIso } from './hilula';
 import { dailyPayload, hilulaPayload, omerPayload } from './content';
 import { getOmerDay } from '@/lib/omer';
-import { jerusalemSunTimes } from '@/lib/siddur/calendar';
 import type { PushPayload } from '@/types/push';
 import { invalidateSchedule } from './scheduleCache';
+import { eveningDelayMin, isHolyFor } from './holy';
+import { jerusalemSunTimes } from '@/lib/siddur/calendar';
 
 const MAX_FAILURES = 20;
 const LAST_FIELD = { daily: 'lastDailyDay', hilula: 'lastHilulaDay', omer: 'lastOmerDay' } as const;
@@ -21,13 +22,13 @@ export interface DispatchResult { subscribers: number; sent: number; gone: numbe
 export async function runDispatch(): Promise<DispatchResult> {
   const now = new Date();
   const il = localClock(now, DEFAULT_TIME_ZONE);
-  const sunset = localClock(jerusalemSunTimes(now).sunset, DEFAULT_TIME_ZONE).minutes;
   const omerDay = getOmerDay(now);
-  const nightfall = sunset + OMER_AFTER_SUNSET_MIN;
+  const sunset = localClock(jerusalemSunTimes(now).sunset, DEFAULT_TIME_ZONE).minutes;
+  const nightfall = sunset + eveningDelayMin(now, OMER_AFTER_SUNSET_MIN);
   // After nightfall the Hebrew day of tomorrow's civil date has begun — that's whose hilula we announce.
   const tonight = hebrewDayAnchor(now);
   const hilula = tonight !== now ? await hilulaPayload(tonight, il.day) : null;
-  const ctx = { hilulaDay: hilula ? israelIso(tonight) : null, omerTonight: omerDay, nightfallMinutes: nightfall };
+  const ctx = { hilulaDay: hilula ? israelIso(tonight) : null, omerTonight: omerDay, nightfallMinutes: nightfall, holy: isHolyFor };
 
   const subs = await prisma.pushSubscription.findMany();
   const plan = subs.flatMap(sub => dueKinds(now, sub, ctx).map(kind => ({ sub, kind })));
