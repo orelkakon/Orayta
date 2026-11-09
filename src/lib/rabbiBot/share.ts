@@ -23,7 +23,8 @@ export function answerShareText(question: string, a: RabbiBotAnswer): string {
     ...(a.sources.length ? ['', `${HE.RB_SHARE_SOURCES} ${a.sources.map(s => s.heRef).join(' · ')}`] : []),
     '',
     HE.RB_SHARE_SIG,
-    `${SITE_URL}/ask`,
+    // The question's own link: previews as the question and asks it on arrival.
+    `${SITE_URL}/ask?q=${encodeURIComponent(question.trim())}`,
   ];
   return lines.map(l => (l ? `${RLM}${l}` : l)).join('\n');
 }

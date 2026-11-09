@@ -23,9 +23,11 @@ const INITIAL: BotState = { phase: 'idle', welcomed: true, question: '', steps: 
 export function useRabbiBot() {
   const [s, setS] = useState<BotState>(INITIAL);
   const busy = useRef(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const local = readBotLocal();
+    setLoaded(true);
     setS(prev => ({
       ...prev, welcomed: local.welcomed, last: local.last, history: local.history,
       phase: local.last ? 'done' : 'idle', question: local.last?.question ?? '',
@@ -91,5 +93,5 @@ export function useRabbiBot() {
     return ok;
   }, []);
 
-  return { state: s, acceptWelcome, ask, reset, reopen, clearHistory, feedback };
+  return { state: s, loaded, acceptWelcome, ask, reset, reopen, clearHistory, feedback };
 }

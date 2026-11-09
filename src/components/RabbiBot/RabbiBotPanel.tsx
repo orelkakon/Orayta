@@ -13,15 +13,23 @@ import ShareAnswer from './ShareAnswer';
 import RecentQuestions from './RecentQuestions';
 import RabbiBotAvatar from './RabbiBotAvatar';
 import { Card, Greeting, Question, Stack } from './styles';
+import { useSharedQuestion } from './useSharedQuestion';
 
 function quotaTime(iso: string | null): string {
   if (!iso) return '';
   return new Intl.DateTimeFormat('he-IL', { timeZone: 'Asia/Jerusalem', hour: '2-digit', minute: '2-digit' }).format(new Date(iso));
 }
 
+interface Props {
+  idPrefix: string;
+  /** A question from a shared link (/ask?q=): asked once on arrival, or reopened if this device has it. */
+  sharedQuestion?: string | null;
+}
+
 /** The whole רבי־בוט flow; hosted by the floating sheet and by /ask. */
-export default function RabbiBotPanel({ idPrefix }: { idPrefix: string }) {
-  const { state, acceptWelcome, ask, reset, reopen, clearHistory, feedback } = useRabbiBot();
+export default function RabbiBotPanel({ idPrefix, sharedQuestion }: Props) {
+  const { state, loaded, acceptWelcome, ask, reset, reopen, clearHistory, feedback } = useRabbiBot();
+  useSharedQuestion(sharedQuestion, loaded && state.welcomed, state.history, ask, reopen);
 
   if (!state.welcomed) return <WelcomeCard onAccept={acceptWelcome} />;
 

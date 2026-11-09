@@ -197,7 +197,7 @@ test('answerShareText: question, answer, sources and link, every line RTL', () =
   assert.ok(lines.every(l => l.startsWith(RLM)));
   assert.ok(text.includes('לא זוכר אם הטבלתי') && text.includes('יטבילנו בלא ברכה') && text.includes('מקור S1 · מקור S2'));
   assert.ok(text.includes('(מקור S1, מקור S2)'), 'each point names where it comes from');
-  assert.ok(text.trimEnd().endsWith('/ask'));
+  assert.ok(text.trimEnd().endsWith(`/ask?q=${encodeURIComponent('לא זוכר אם הטבלתי')}`), 'links to the question itself');
 });
 
 // ── Groq + the planning ensemble ─────────────────────────────────────────

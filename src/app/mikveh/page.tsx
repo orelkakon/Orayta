@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import MikvehView from '@/components/MikvehView/MikvehView';
+import { shareMeta } from '@/lib/og/meta';
 
 const TITLE = 'מקווה בסביבה';
 const DESC = 'מצאו מקוואות טהרה קרובים אליכם על המפה — מקווה נשים, גברים וכלים, שעות פעילות, נגישות, טלפון וניווט ב-Waze או Google Maps.';
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESC,
   alternates: { canonical: PATH },
-  openGraph: { title: TITLE, description: DESC, url: PATH },
+  ...shareMeta(TITLE, DESC, PATH, { p: 'mikveh' }),
 };
 
 export default function MikvehPage() {

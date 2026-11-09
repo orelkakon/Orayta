@@ -1,11 +1,13 @@
 import type { Book, Chidush, Citation, FeedGematriaData, FeedItem, FeedSikumData, Rabbi } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
-import { SITE_URL, RLM, clip } from '@/lib/siteUrl';
+import { RLM, clip } from '@/lib/siteUrl';
+import { feedItemUrl } from '@/lib/feedLink';
 import { trackShare } from '@/lib/shareCounter';
 
 /** The WhatsApp-ready text for a feed item, signed with the site link. */
 export function feedShareText(item: FeedItem): string {
-  const sig = `\n— ${HE.APP_NAME}\n${SITE_URL}`;
+  // The post's own link: its preview shows this post and opens the feed on it.
+  const sig = `\n— ${HE.APP_NAME}\n${feedItemUrl(item.type, item.id)}`;
   const d = item.data;
   let text = sig;
   if (item.type === 'citation') {

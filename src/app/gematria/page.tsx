@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import SectionPing from '@/components/common/SectionPing';
 import GematriaView from '@/components/GematriaView/GematriaView';
+import { shareMeta } from '@/lib/og/meta';
 
 const TITLE = 'גימטריות';
 const DESC = 'חישוב ערכי אותיות במילים, בשמות ובביטויים, לצד אוסף גימטריות וקשרים מספריים בין מושגים בתורה — עם חיפוש חופשי בכל הגימטריות שנאספו באתר.';
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESC,
   alternates: { canonical: PATH },
-  openGraph: { title: TITLE, description: DESC, url: PATH },
+  ...shareMeta(TITLE, DESC, PATH, { p: 'gematria' }),
 };
 
 interface Props { searchParams: { q?: string } }

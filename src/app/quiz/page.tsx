@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import SectionPing from '@/components/common/SectionPing';
 import QuizView from '@/components/QuizView/QuizView';
+import { shareMeta } from '@/lib/og/meta';
 
 const TITLE = 'תרגול';
 const DESC = 'חידונים אינטראקטיביים על מקורות התלמוד וגדולי ישראל — חידון אמריקאי, השלמת ציטוט, ניחוש רב, גימטריות וסדרי המשנה, עם רמזים ומעקב סטטיסטיקות אישי.';
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESC,
   alternates: { canonical: PATH },
-  openGraph: { title: TITLE, description: DESC, url: PATH },
+  ...shareMeta(TITLE, DESC, PATH, { p: 'quiz' }),
 };
 
 export default function QuizPage() {

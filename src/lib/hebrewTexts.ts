@@ -13,6 +13,7 @@ import { TODAY_HE } from './texts/today';
 import { RABBI_BOT_HE } from './texts/rabbiBot';
 import { CONTACT_HE } from './texts/contact';
 import { ABOUT_HE } from './texts/about';
+import { OG_HE } from './texts/og';
 
 export const HE = {
   APP_NAME: 'אורייתא',
@@ -1626,4 +1627,5 @@ export const HE = {
   ...RABBI_BOT_HE,
   ...CONTACT_HE,
   ...ABOUT_HE,
+  ...OG_HE,
 };

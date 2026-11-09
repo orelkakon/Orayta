@@ -54,7 +54,7 @@ export function buildDailyShareMessage(d: DailyShareData): string {
     parts.push(`*${HE.YAHRZEIT_BADGE} ${HE.DAILY_SHARE_TODAY}:* ${d.yahrzeitNames.join(', ')}`);
   }
 
-  parts.push(`${HE.DAILY_SHARE_LINK_LABEL}: ${SITE_URL}`);
+  parts.push(`${HE.DAILY_SHARE_LINK_LABEL}: ${SITE_URL}/today`);
 
   return parts.join('\n\n');
 }

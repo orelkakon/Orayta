@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import SiddurHome from '@/components/SiddurView/SiddurHome';
 import SectionPing from '@/components/common/SectionPing';
+import { shareMeta } from '@/lib/og/meta';
 
 const TITLE = 'סידור — נוסח עדות המזרח';
 const DESC = 'סידור תפילה לימות החול בנוסח עדות המזרח: שחרית, מנחה וערבית, עם ניווט מהיר לקריאת שמע, פסוקי דזמרה, עמידה, אשרי ועוד.';
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESC,
   alternates: { canonical: PATH },
-  openGraph: { title: TITLE, description: DESC, url: PATH },
+  ...shareMeta(TITLE, DESC, PATH, { p: 'siddur' }),
 };
 
 export default function SiddurPage() {

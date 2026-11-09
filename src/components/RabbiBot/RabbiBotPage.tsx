@@ -21,7 +21,7 @@ const Panel = styled.section`
 `;
 
 /** /ask — the same panel as the floating sheet, full page (shareable link). */
-export default function RabbiBotPage() {
+export default function RabbiBotPage({ sharedQuestion }: { sharedQuestion?: string | null }) {
   return (
     <Page>
       <Head>
@@ -31,7 +31,7 @@ export default function RabbiBotPage() {
           <Sub>{HE.RB_TAGLINE}</Sub>
         </TitleBox>
       </Head>
-      <Panel><RabbiBotPanel idPrefix="rb-page" /></Panel>
+      <Panel><RabbiBotPanel idPrefix="rb-page" sharedQuestion={sharedQuestion} /></Panel>
     </Page>
   );
 }

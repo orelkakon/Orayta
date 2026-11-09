@@ -3,6 +3,7 @@ import { Frank_Ruhl_Libre, Heebo } from 'next/font/google';
 import ClientProviders from '@/components/common/ClientProviders';
 import AppShell from '@/components/Layout/AppShell';
 import { THEME_BOOT_SCRIPT } from '@/lib/themeBoot';
+import { ogImageUrl } from '@/lib/og/meta';
 
 const frankRuhl = Frank_Ruhl_Libre({
   subsets: ['hebrew', 'latin'],
@@ -31,12 +32,13 @@ export const metadata: Metadata = {
     siteName: 'אורייתא',
     locale: 'he_IL',
     type: 'website',
-    images: [{ url: `${APP_URL}/opengraph-image?v=6`, width: 1200, height: 630, alt: 'אורייתא — מקורות יהודיים' }],
+    images: [{ url: ogImageUrl({ p: 'home' }), width: 1200, height: 630, alt: 'אורייתא — מקורות יהודיים' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'אורייתא',
     description: 'מערכת לניהול, לימוד ותרגול מקורות יהודיים',
+    images: [ogImageUrl({ p: 'home' })],
   },
   // Next 13.5 API — the standalone `viewport` export only exists from Next 14.
   // viewport-fit=cover + a translucent status bar let the espresso header run

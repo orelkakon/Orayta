@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import SectionPing from '@/components/common/SectionPing';
 import SikumimView from '@/components/SikumimView/SikumimView';
+import { shareMeta } from '@/lib/og/meta';
 
 const TITLE = 'סיכומים';
 const DESC = 'סיכומי לימוד יומיים מסודרים לפי ספר ולפי נושא — לחזרה מהירה על החומר, השלמת פערים ומעקב אחר סדר הלימוד, עם חיפוש חופשי בכל הסיכומים שבאתר.';
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESC,
   alternates: { canonical: PATH },
-  openGraph: { title: TITLE, description: DESC, url: PATH },
+  ...shareMeta(TITLE, DESC, PATH, { p: 'sikumim' }),
 };
 
 interface Props { searchParams: { q?: string; book?: string; entry?: string } }

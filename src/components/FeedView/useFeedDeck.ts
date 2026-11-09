@@ -3,6 +3,7 @@ import type { FeedItem } from '@/types';
 import { ALL_FEED_TYPES, FeedPrefs } from '@/lib/feedPrefs';
 import { loadFeedDeck, saveFeedDeck, freshFeedDeck } from '@/lib/feedDeck';
 import { takeFeedStart } from '@/lib/feedExcerpt';
+import { fetchSharedItem, takeSharedLink } from '@/lib/feedLinkClient';
 
 /**
  * The feed's content pages. Persistent deck: seed + page let the server deal
@@ -74,7 +75,10 @@ export function useFeedDeck(): FeedDeck {
     pageRef.current = deck.page;
     const handed = takeFeedStart();
     if (handed) setCards([handed]);
-    void fetchMore();
+    const shared = handed ? null : takeSharedLink();
+    // A shared post link opens on that post: load it first, then the deck after it.
+    if (shared) void fetchSharedItem(shared).then(item => { if (item) setCards([item]); }).finally(() => void fetchMore());
+    else void fetchMore();
   }, [fetchMore]);
 
   const restart = useCallback((prefs: FeedPrefs) => {
