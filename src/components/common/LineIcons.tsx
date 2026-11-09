@@ -61,6 +61,8 @@ const GLYPHS: Record<string, React.ReactNode> = {
   timeline: <><line x1="7" y1="3" x2="7" y2="21" /><circle cx="7" cy="6" r="2" fill="currentColor" stroke="none" /><circle cx="7" cy="12" r="2" fill="currentColor" stroke="none" /><circle cx="7" cy="18" r="2" fill="currentColor" stroke="none" /><path d="M11 6h9M11 12h6M11 18h8" /></>,
   volume: <><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14" /></>,
   stop: <><rect x="6" y="6" width="12" height="12" rx="2" /></>,
+  pause: <><line x1="9" y1="5.5" x2="9" y2="18.5" /><line x1="15" y1="5.5" x2="15" y2="18.5" /></>,
+  mic: <><rect x="9" y="2.5" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0" /><line x1="12" y1="18" x2="12" y2="21.5" /></>,
   bell: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></>,
   dots: <><circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" /><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none" /></>,
   // Direction glyphs are drawn for RTL: "chevron"/"arrow" point left = forward.

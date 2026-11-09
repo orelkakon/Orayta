@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { HE } from '@/lib/hebrewTexts';
 import { QuietBtn, ErrorLine } from '@/components/Notifications/sheetStyles';
 import { LineIcon } from '@/components/common/LineIcons';
@@ -7,7 +8,7 @@ import { useRabbiBot } from './useRabbiBot';
 import WelcomeCard from './WelcomeCard';
 import Composer from './Composer';
 import ThinkingStage from './ThinkingStage';
-import AnswerView from './AnswerView';
+import SpokenAnswer from './voice/SpokenAnswer';
 import Feedback from './Feedback';
 import ShareAnswer from './ShareAnswer';
 import RecentQuestions from './RecentQuestions';
@@ -30,6 +31,8 @@ interface Props {
 export default function RabbiBotPanel({ idPrefix, sharedQuestion }: Props) {
   const { state, loaded, acceptWelcome, ask, reset, reopen, clearHistory, feedback } = useRabbiBot();
   useSharedQuestion(sharedQuestion, loaded && state.welcomed, state.history, ask, reopen);
+  // A spoken question gets its answer read aloud when it arrives.
+  const [spokenAsk, setSpokenAsk] = useState<string | null>(null);
 
   if (!state.welcomed) return <WelcomeCard onAccept={acceptWelcome} />;
 
@@ -45,7 +48,7 @@ export default function RabbiBotPanel({ idPrefix, sharedQuestion }: Props) {
 
       {state.phase === 'done' && state.last && (
         <>
-          <AnswerView answer={state.last.answer} idPrefix={idPrefix} />
+          <SpokenAnswer answer={state.last.answer} idPrefix={idPrefix} autoPlay={spokenAsk === state.last.question} />
           {state.last.answer.status === 'answered' && <ShareAnswer question={state.last.question} answer={state.last.answer} />}
           <Feedback rating={state.last.rating} reported={state.last.reported} onFeedback={feedback} />
           <QuietBtn type="button" onClick={reset}><LineIcon name="ask" size={18} /> {HE.RB_NEW_QUESTION}</QuietBtn>
@@ -63,7 +66,7 @@ export default function RabbiBotPanel({ idPrefix, sharedQuestion }: Props) {
           key={state.phase === 'error' ? 'retry' : 'new'}
           disabled={asking || state.error === 'quota'}
           initial={state.phase === 'error' ? state.question : ''}
-          onAsk={(q, website) => void ask(q, website)}
+          onAsk={(q, website, voice) => { setSpokenAsk(voice ? q : null); void ask(q, website); }}
         />
       )}
 

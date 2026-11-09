@@ -314,3 +314,48 @@ test('hasModernUnit tells liters and meters from litras, rain and "caused"', () 
   assert.equal(hasModernUnit('ובמידות ימינו שיעור הלוג כ-350 סמ"ק'), true);
   assert.equal(hasModernUnit('וכמ"ש לעיל ס"מ ע"ש'), false);
 });
+
+// ── Voice: transcripts and the reading script ─────────────────────────────
+
+import { audioExtension, cleanTranscript } from '@/lib/rabbiBot/voice/transcript';
+import { answerSpeech, sentences, speakable } from '@/lib/rabbiBot/voice/speech';
+
+test('audioExtension maps recorder types and refuses the rest', () => {
+  assert.equal(audioExtension('audio/webm;codecs=opus'), 'webm');
+  assert.equal(audioExtension('audio/mp4'), 'm4a');
+  assert.equal(audioExtension('video/mp4'), null);
+  assert.equal(audioExtension(null), null);
+});
+
+test('cleanTranscript trims and drops Whisper silence hallucinations', () => {
+  assert.equal(cleanTranscript('  האם מותר   לטלטל מוקצה? '), 'האם מותר לטלטל מוקצה?');
+  assert.equal(cleanTranscript('תודה שצפיתם'), '');
+  assert.equal(cleanTranscript('תודה רבה.'), '');
+  assert.equal(cleanTranscript('כתוביות על ידי'), '');
+  assert.equal(cleanTranscript(' . '), '');
+  assert.equal(cleanTranscript('תודה רבה על התשובה, ומה הדין בחול המועד?'), 'תודה רבה על התשובה, ומה הדין בחול המועד?');
+});
+
+test('speakable spells out abbreviations as whole words only', () => {
+  assert.equal(speakable('כך פסק בשו״ע או"ח שח'), 'כך פסק בשולחן ערוך אורח חיים שח');
+  assert.equal(speakable('והרמ״א (שם) מחמיר'), 'והרמא, שם, מחמיר');
+  assert.equal(speakable('דברי רע״א'), 'דברי רבי עקיבא איגר');
+  assert.equal(speakable('ברע״א'), 'ברבי עקיבא איגר');
+});
+
+test('sentences splits long text into short utterances', () => {
+  const long = `${'מילה '.repeat(60)}סוף.`;
+  const parts = sentences(long, 100);
+  assert.ok(parts.length > 1 && parts.every(p => p.length <= 100));
+  assert.deepEqual(sentences('אחת. שתיים? שלוש'), ['אחת.', 'שתיים?', 'שלוש']);
+});
+
+test('answerSpeech reads understood, short, points by view and sources', () => {
+  const a = verifyAnswer({ status: 'answered', short: 'יטבילנו בלא ברכה', points: [{ text: RULE_TEXT, view: 'main', basis: 'rule', cites: RULE_CITES }] }, TEVILA, 'kashrut');
+  const chunks = answerSpeech({ ...a, understood: 'המסופק אם הטביל' });
+  assert.ok(chunks[0].text.startsWith('הבנתי שהשאלה היא'));
+  assert.ok(chunks.some(c => c.text.includes('יטבילנו בלא ברכה')));
+  assert.ok(chunks.some(c => c.point === 0), 'point chunks carry their index');
+  assert.ok(chunks[chunks.length - 1].text.startsWith('המקורות'));
+  assert.deepEqual(answerSpeech({ ...a, status: 'not_found' }), []);
+});
