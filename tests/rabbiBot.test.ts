@@ -9,16 +9,21 @@ import { mergePlans } from '@/lib/rabbiBot/plan';
 import { strictSchema } from '@/lib/rabbiBot/groq';
 import { PLAN_SCHEMA, fitPassages } from '@/lib/rabbiBot/prompts';
 import { verifyAnswer } from '@/lib/rabbiBot/verify';
-import { validateQuestion, classifyFailure, quotaDay, quotaResetAt, isRating } from '@/lib/rabbiBot/rules';
+import { validateQuestion, classifyFailure, isMomentary, quotaDay, quotaResetAt, isRating } from '@/lib/rabbiBot/rules';
+import { namedAuthorities } from '@/lib/rabbiBot/authorities';
 import type { RabbiBotPassage } from '@/types/rabbiBot';
 
 const SA = 'מצוה להניחו בטפח הסמוך לפתח משמאל, כדי שתהא מזוזה מימין ונר חנוכה משמאל. ובשעת הסכנה מניחו על שלחנו ודיו.';
 const passage = (id: string, text: string): RabbiBotPassage =>
   ({ id, ref: `Ref ${id}`, heRef: `מקור ${id}`, book: 'שולחן ערוך', text, url: `https://example.org/${id}`, origin: 'sefaria' });
 
-test('stripHtml drops tags, footnotes and commentator markers', () => {
+test('stripHtml drops tags and commentator markers, fences footnotes off', () => {
   const html = '<i data-commentator="Mishnah Berurah" data-label="לא"></i>מצוה <b>להניחו</b><sup>1</sup><i class="footnote">הערה</i>&nbsp;בטפח';
-  assert.equal(stripHtml(html), 'מצוה להניחו בטפח');
+  assert.equal(stripHtml(html), 'מצוה להניחו … הערה … בטפח');
+  // A footnote can be quoted, but a quote never runs from the text into it.
+  const noted = stripHtml('להקיף בגדר שגובהה עשרה טפחים<sup>1</sup><i class="footnote">טפח לפי שיעור רבי חיים נאה הוא 8 ס"מ</i> ולסגור את הדלתות');
+  assert.equal(findQuote(noted, 'טפח לפי שיעור רבי חיים נאה'), 'טפח לפי שיעור רבי חיים נאה');
+  assert.equal(findQuote(noted, 'שגובהה עשרה טפחים טפח לפי שיעור'), null);
 });
 
 test('findQuote returns the exact source span, ignoring nikud and punctuation', () => {
@@ -266,4 +271,22 @@ test('splitRemaCandidate: a seif becomes Maran + "הגהת הרמ״א"; a bare s
   assert.ok(findQuote(rema.text, 'ואם הוא ספק אם הזכיר או לאו אין צריך לחזור'));
   const noteOnly = { ...c, text: stripHtml(markRema('צריך להטבילם במקוה <small>(טור)</small>')) };
   assert.deepEqual(splitRemaCandidate(noteOnly).map(x => x.text), ['צריך להטבילם במקוה']);
+});
+
+test('isMomentary: overload, unparsable output and a derailed Groq generation get one retry', () => {
+  assert.equal(isMomentary(503, null), true);
+  assert.equal(isMomentary(502, null), true);
+  assert.equal(isMomentary(400, { error: { code: 'json_validate_failed' } }), true);
+  assert.equal(isMomentary(400, { error: { code: 'invalid_api_key' } }), false);
+  assert.equal(isMomentary(429, null), false);
+});
+
+test('namedAuthorities finds the poskim whose books are not online, in any spelling', () => {
+  const names = (q: string) => namedAuthorities(q).map(a => a.names[0]);
+  assert.deepEqual(names('כמה זה טפח לפי החזו״א?'), ['חזון איש']);
+  assert.deepEqual(names('שיעור רביעית לפי החזון איש ולפי הגר״ח נאה'), ['חזון איש', 'חיים נאה']);
+  assert.deepEqual(names('מה כתב בקצות השולחן על קידוש?'), ['חיים נאה']);
+  assert.deepEqual(names('האם מותר לאכול לפני קידוש?'), []);
+  // "נאה" alone is just "nice".
+  assert.deepEqual(names('האם נאה להתפלל בבגד כזה?'), []);
 });

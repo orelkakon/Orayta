@@ -1,4 +1,4 @@
-import { classifyFailure } from './rules';
+import { classifyFailure, isMomentary } from './rules';
 import { callGroq, isGroqModel, GROQ_PREFIX } from './groq';
 
 // Server-only: the models behind רבי־בוט, all on free tiers — Gemini REST
@@ -118,8 +118,8 @@ export async function generateJson(models: string[], call: JsonCall, hooks: Mode
     if (budget < MIN_CALL_MS) { anyLive = true; break; }
     try {
       let r = await callOnce(model, key, call, budget);
-      // "Model overloaded" is usually momentary — one quick retry if time allows.
-      if (!r.ok && r.status === 503 && hooks.deadline - Date.now() > MIN_CALL_MS * 2) {
+      // Overload or a derailed generation is usually momentary — one quick retry if time allows.
+      if (!r.ok && isMomentary(r.status, r.body) && hooks.deadline - Date.now() > MIN_CALL_MS * 2) {
         r = await callOnce(model, key, call, Math.min(call.timeoutMs, hooks.deadline - Date.now()));
       }
       if (r.ok) return { value: r.value, model };

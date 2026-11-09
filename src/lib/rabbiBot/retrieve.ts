@@ -1,6 +1,7 @@
 import type { RabbiBotKind, RabbiBotPassage } from '@/types/rabbiBot';
 import { fetchText, searchRefs, SefariaText } from './sefaria';
 import { searchSikumim } from './sikumim';
+import { quotedAuthorities } from './authorities';
 import { excerpt, keywords, overlap } from './text';
 import { best, Candidate, fromSefaria, linkedCommentaries, searchPhrase, searchTerms, splitRemaCandidate, wikisource } from './sources';
 
@@ -37,7 +38,8 @@ const SEARCH_PATHS: Record<RabbiBotKind, { path: string; size: number }[]> = {
  * (dropped when they don't exist or, for halacha, share no words with the
  * question), Shulchan Arukh seifim found by the sources' term, their linked
  * commentaries, the rule / parallel cases that decide an unwritten case, the
- * site's own summaries, Sefaria full-text hits (exact for a quote being
+ * site's own summaries, books quoting a posek the question names whose own
+ * works aren't online (authorities.ts), Sefaria full-text hits (exact for a quote being
  * located; shortened phrases when a phrase finds nothing), and Hebrew Wikisource.
  * A Shulchan Arukh seif reaches the model as Maran's words and, separately, the Rema's glosses.
  */
@@ -52,7 +54,7 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
     ...(halacha ? [searchRefs(phrases[0] ?? question, 'Talmud', 2).then(refs => ({ refs, loose: false }))] : []),
   ];
 
-  const [planned, parallels, quoteHits, searchHits, ruleHits, termTexts, wiki, sikumim] = await Promise.all([
+  const [planned, parallels, quoteHits, searchHits, ruleHits, termTexts, wiki, sikumim, quoting] = await Promise.all([
     Promise.all(plan.refs.slice(0, 8).map(fetchText)),
     Promise.all(plan.parallels.filter(r => !plan.refs.includes(r)).slice(0, 4).map(fetchText)),
     plan.quote ? searchRefs(plan.quote, null, 5, 'exact') : Promise.resolve([]),
@@ -61,6 +63,7 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
     halacha ? searchTerms(plan.terms) : [],
     wikisource([plan.quote || plan.rewrite || question, ...phrases.slice(0, 1)], words),
     searchSikumim(words, 2, core),
+    quotedAuthorities(question, keywords(plan.terms.join(' ')), core),
   ]);
 
   // A planned ref that exists can still be the wrong siman — for halacha, keep
@@ -91,6 +94,7 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
   const ordered: Candidate[] = [
     ...anchors.flatMap(t => best(fromSefaria(t), words, 2)),
     ...valid.flatMap(t => best(fromSefaria(t), words, valid.length > 4 ? 1 : valid.length > 2 ? 2 : 3)),
+    ...quoting.flatMap(t => best(fromSefaria(t), words, 1)),
     ...decide.flatMap(t => best(fromSefaria(t), words, 2)),
     ...sikumim.map(s => ({ ref: `sikum:${s.id}`, heRef: s.heRef, book: s.book, text: s.text, url: s.url, origin: 'sikum' as const })),
     ...linked.flat(),

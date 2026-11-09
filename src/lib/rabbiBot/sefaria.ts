@@ -99,3 +99,18 @@ export async function searchRefs(query: string, path: string | string[] | null, 
     return ref ? [ref] : [];
   });
 }
+
+interface TextHit { _source?: { ref?: string; exact?: string } }
+
+/** Exact-phrase hits with their plain text, so they can be ranked before any of them is fetched. */
+export async function searchExactTexts(query: string, path: string, size: number): Promise<{ ref: string; text: string }[]> {
+  const d = await getJson<{ hits?: { hits?: TextHit[] } }>(`${BASE}/api/search-wrapper`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      query, type: 'text', field: 'exact', size, slop: 0,
+      filters: [path], filter_fields: ['path'], source_proj: ['ref', 'exact'],
+    }),
+  });
+  return (d?.hits?.hits ?? []).flatMap(h => (h._source?.ref ? [{ ref: h._source.ref, text: h._source.exact ?? '' }] : []));
+}

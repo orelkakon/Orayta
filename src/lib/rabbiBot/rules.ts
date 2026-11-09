@@ -8,7 +8,7 @@ export const QUESTION_MAX = 300;
 /** Question/answer text and IP hashes are erased after this; counts stay. */
 export const RETENTION_DAYS = 10;
 /** Bumped when answering changes, so cached answers from an older pipeline aren't reused. */
-export const ANSWER_VERSION = 6;
+export const ANSWER_VERSION = 7;
 
 export const TOPICS: readonly RabbiBotTopic[] =
   ['shabbat', 'tefila', 'brachot', 'kashrut', 'moadim', 'family', 'avelut', 'mitzvot', 'bein_adam', 'tanakh', 'talmud', 'machshava', 'other'];
@@ -73,4 +73,15 @@ export function classifyFailure(status: number, body: unknown): ModelFailure {
     return violations.some(v => /PerDay/i.test(v.quotaId ?? ''));
   });
   return daily ? 'daily' : 'rate';
+}
+
+/**
+ * A failure worth one more try on the same model: overloaded (503), output
+ * that wasn't JSON (502 from our parser) or Groq's "json_validate_failed" —
+ * Qwen now and then derails into a broken generation.
+ */
+export function isMomentary(status: number, body: unknown): boolean {
+  if (status === 503 || status === 502) return true;
+  const code = (body as { error?: { code?: unknown } } | null)?.error?.code;
+  return status === 400 && code === 'json_validate_failed';
 }

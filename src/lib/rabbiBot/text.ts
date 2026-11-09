@@ -10,7 +10,9 @@ const ENTITIES: Record<string, string> = { nbsp: ' ', quot: '"', amp: '&', lt: '
 export function stripHtml(html: string): string {
   return html
     .replace(/<sup[^>]*>[\s\S]*?<\/sup>/gi, '')
-    .replace(/<i[^>]*class="footnote"[^>]*>[\s\S]*?<\/i>/gi, '')
+    // A footnote stays (Peninei Halakhah gives the poskim's views there), fenced
+    // by gaps so no quote runs from the text into it.
+    .replace(/<i[^>]*class="footnote"[^>]*>([\s\S]*?)<\/i>/gi, ' … $1 … ')
     .replace(/<br\s*\/?>/gi, ' ')
     .replace(/<[^>]+>/g, '')
     .replace(/&(#\d+|[a-z]+);/gi, (m, e: string) => {
