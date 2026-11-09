@@ -16,12 +16,9 @@ const Card = styled.div`
   box-shadow: ${theme.shadows.sm};
   border: 1px solid ${theme.colors.borderLight};
   border-top: 3px solid ${theme.colors.secondary};
-  width: 100%;
-  max-width: 560px;
-  display: flex;
-  flex-direction: column;
-  gap: ${theme.spacing.lg};
-  align-items: center;
+  width: 100%; max-width: 720px; margin: 0 auto;
+  display: flex; flex-direction: column;
+  gap: ${theme.spacing.lg}; align-items: center;
 `;
 
 const CardTitle = styled.h2`

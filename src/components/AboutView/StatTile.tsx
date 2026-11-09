@@ -32,7 +32,7 @@ const fadeUp = keyframes`
   to   { opacity: 1; transform: none; }
 `;
 
-const Tile = styled.article<{ $tint: string; $size: TileSize; $variant: TileVariant; $index: number }>`
+const Tile = styled.article<{ $tint: string; $size: TileSize; $variant: TileVariant; $index: number; $shown: boolean }>`
   --tile-tint: ${p => p.$tint};
   --tile-ink: ${theme.colors.text};
   position: relative; overflow: hidden;
@@ -45,15 +45,16 @@ const Tile = styled.article<{ $tint: string; $size: TileSize; $variant: TileVari
     ${theme.colors.surface} 62%);
   border: 1px solid color-mix(in srgb, var(--tile-tint) 16%, ${theme.colors.borderLight});
   box-shadow: ${theme.shadows.sm}, inset 0 1px 0 color-mix(in srgb, #fff 14%, transparent);
-  animation: ${fadeUp} 0.55s ease both;
-  animation-delay: ${p => p.$index * 60}ms;
+  ${p => (p.$shown
+    ? css`animation: ${fadeUp} 0.55s ${theme.motion.outStrong} ${p.$index * 60}ms backwards;`
+    : css`opacity: 0;`)}
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 
   @media (hover: hover) {
     &:hover { transform: translateY(-3px); box-shadow: ${theme.shadows.md}; }
   }
   @media (prefers-reduced-motion: reduce) {
-    animation: none;
+    animation: none; opacity: 1;
     &:hover { transform: none; }
   }
 
@@ -116,12 +117,12 @@ const SubLabel = styled.div`
   color: color-mix(in srgb, var(--tile-ink) 52%, transparent);
 `;
 
-interface Props { config: StatTileConfig; value: number | null; index: number; failed?: boolean; }
+interface Props { config: StatTileConfig; value: number | null; index: number; failed?: boolean; shown?: boolean; }
 
-export default function StatTile({ config, value, index, failed = false }: Props) {
+export default function StatTile({ config, value, index, failed = false, shown = true }: Props) {
   const displayed = useAnimatedCount(value);
   return (
-    <Tile $tint={config.tint} $size={config.size} $variant={config.variant} $index={index}>
+    <Tile $tint={config.tint} $size={config.size} $variant={config.variant} $index={index} $shown={shown}>
       <Chip $hero={config.size === 'hero'} aria-hidden="true">
         <LineIcon name={config.icon} size={config.size === 'hero' ? 32 : 26} strokeWidth={1.7} />
       </Chip>

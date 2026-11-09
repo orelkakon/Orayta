@@ -7,8 +7,12 @@ export function formatHebrewDate(): string {
   }).format(new Date());
 }
 
+export function adminEmailConfigured(): boolean {
+  return !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD && process.env.CONTACT_EMAIL);
+}
+
 /** Sends an email to the site admin (CONTACT_EMAIL). No-op if env vars are missing. */
-export async function sendAdminEmail(subject: string, text: string, html: string): Promise<void> {
+export async function sendAdminEmail(subject: string, text: string, html: string, replyTo?: string): Promise<void> {
   const gmailUser = process.env.GMAIL_USER;
   const gmailPass = process.env.GMAIL_APP_PASSWORD;
   const toEmail   = process.env.CONTACT_EMAIL;
@@ -25,6 +29,7 @@ export async function sendAdminEmail(subject: string, text: string, html: string
   await transporter.sendMail({
     from: `"אורייתא" <${gmailUser}>`,
     to: toEmail,
+    replyTo,
     subject,
     text,
     html,

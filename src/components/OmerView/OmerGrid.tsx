@@ -1,10 +1,12 @@
 'use client';
 
+import { useRef } from 'react';
 import styled, { css, keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { dayToLetters } from '@/lib/hebrewDate';
 import { omerCount, SEFIROT } from '@/lib/omer';
+import OmerDayPanel from './OmerDayPanel';
 
 type CellState = 'done' | 'now' | 'missed' | 'future';
 
@@ -50,24 +52,20 @@ const Legend = styled.div`
   i { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
 `;
 
-const Detail = styled.div`
-  display: flex; flex-direction: column; gap: 4px; padding: ${theme.spacing.ms} ${theme.spacing.md};
-  border-radius: ${theme.radii.md}; background: ${theme.colors.surfaceAlt};
-  strong { font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.lg}; color: ${theme.colors.primary}; }
-  p { font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.md}; line-height: 1.8; color: ${theme.colors.text}; }
-  span { font-size: ${theme.fontSizes.sm}; font-weight: 700; color: ${theme.colors.secondary}; }
-`;
-
 interface Props {
   /** The count in focus (tonight / today); null out of season. */
   current: number | null;
   counted: number[];
   selected: number;
   onSelect: (day: number) => void;
+  /** Days up to this one can be ticked off from the map; null = none. */
+  markUpTo: number | null;
+  onToggle: (day: number) => void;
 }
 
-/** 7 weeks × 7 days, each week under its sefira; tap a day to read its count. */
-export default function OmerGrid({ current, counted, selected, onSelect }: Props) {
+/** 7 weeks × 7 days, each week under its sefira; tap a day to read its bracha and count. */
+export default function OmerGrid({ current, counted, selected, onSelect, markUpTo, onToggle }: Props) {
+  const panel = useRef<HTMLDivElement>(null);
   const done = new Set(counted);
   const stateOf = (d: number): CellState => {
     if (done.has(d)) return 'done';
@@ -75,7 +73,18 @@ export default function OmerGrid({ current, counted, selected, onSelect }: Props
     if (d === current) return 'now';
     return d < current ? 'missed' : 'future';
   };
-  const sel = omerCount(selected);
+
+  // Bring the reading into view when it starts below the fold (phones).
+  const pick = (d: number) => {
+    onSelect(d);
+    const el = panel.current;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top;
+    if (top > window.innerHeight - 160) {
+      const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      el.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+    }
+  };
 
   return (
     <Card aria-labelledby="omer-grid">
@@ -88,7 +97,7 @@ export default function OmerGrid({ current, counted, selected, onSelect }: Props
               const d = w * 7 + i + 1;
               const s = stateOf(d);
               return (
-                <Cell key={d} $s={s} $sel={d === selected} onClick={() => onSelect(d)}
+                <Cell key={d} $s={s} $sel={d === selected} onClick={() => pick(d)}
                   aria-pressed={d === selected} aria-current={s === 'now' ? 'date' : undefined}
                   aria-label={HE.OMER_CELL_ARIA(d, omerCount(d)?.sefira ?? '', s === 'done')}>
                   {dayToLetters(d).replace(/[׳״]/g, '')}
@@ -103,13 +112,9 @@ export default function OmerGrid({ current, counted, selected, onSelect }: Props
         {current !== null && <span><i style={{ border: `2px solid ${theme.colors.primary}` }} />{HE.OMER_LEGEND_NOW}</span>}
         {current !== null && <span><i style={{ background: theme.colors.surfaceAlt }} />{HE.OMER_LEGEND_MISSED}</span>}
       </Legend>
-      {sel && (
-        <Detail aria-live="polite">
-          <strong>{HE.OMER_DAY_N(sel.day)}</strong>
-          <p>{HE.OMER_HAYOM} {sel.text}</p>
-          <span>{sel.sefira}</span>
-        </Detail>
-      )}
+      <OmerDayPanel ref={panel} day={selected} onStep={d => onSelect(Math.min(49, Math.max(1, d)))}
+        marked={markUpTo !== null && selected <= markUpTo ? done.has(selected) : null}
+        onMark={() => onToggle(selected)} />
     </Card>
   );
 }

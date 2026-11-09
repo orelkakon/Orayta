@@ -84,7 +84,7 @@ export default function OmerView() {
           {header}{titles}
           <OmerOffSeason now={omer.now} />
         </Hero>
-        <OmerGrid current={null} counted={[]} selected={selected} onSelect={setSelected} />
+        <OmerGrid current={null} counted={[]} selected={selected} onSelect={setSelected} markUpTo={null} onToggle={() => {}} />
       </Page>
     );
   }
@@ -111,7 +111,8 @@ export default function OmerView() {
       )}
       {log.gap !== null && <Notice $tone="muted" role="note"><LineIcon name="info" size={20} /><span>{HE.OMER_GAP(log.gap)}</span></Notice>}
       <OmerNusach day={focus} />
-      <OmerGrid current={focus} counted={log.counted} selected={selected} onSelect={setSelected} />
+      <OmerGrid current={focus} counted={log.counted} selected={selected} onSelect={setSelected}
+        markUpTo={markDay} onToggle={log.toggle} />
     </Page>
   );
 }

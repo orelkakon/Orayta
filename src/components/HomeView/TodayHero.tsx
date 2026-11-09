@@ -1,5 +1,6 @@
 'use client';
 
+import { PointerEvent } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -11,6 +12,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { usePrayerDay } from '@/components/SiddurView/usePrayerDay';
 import { useMinute } from '@/components/common/useMinute';
 import SunArc from './SunArc';
+import HeroSky, { skyPhase } from './HeroSky';
 import { greeting, parashaLabel, sunInfo, weekdayName } from './todayInfo';
 
 /**
@@ -19,6 +21,7 @@ import { greeting, parashaLabel, sunInfo, weekdayName } from './todayInfo';
  * as the primary action. Deep espresso "night" surface in both themes.
  */
 const rise = keyframes`from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; }`;
+const sheen = keyframes`from { background-position: 120% 0; } to { background-position: -20% 0; }`;
 
 const Card = styled.section`
   position: relative; overflow: hidden; isolation: isolate;
@@ -41,16 +44,23 @@ const Eyebrow = styled.p`
   font-size: ${theme.fontSizes.sm}; font-weight: 500; color: ${theme.gilded.nightMuted};
 `;
 
+/* A gold light passes over the date once as the card opens. */
 const DateLine = styled.h2`
   margin-top: 4px;
   font-size: clamp(2rem, 1.5rem + 2.6vw, 2.8rem); line-height: 1.05; letter-spacing: -0.01em;
   color: ${theme.gilded.nightInk};
+  background: linear-gradient(100deg, ${theme.gilded.nightInk} 40%, ${theme.game.goldLight} 50%, ${theme.gilded.nightInk} 60%);
+  background-size: 250% 100%; background-position: -20% 0;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: ${sheen} 1.6s ${theme.motion.inOut} 0.5s both;
+  @media (prefers-reduced-motion: reduce) { animation: none; }
 `;
 
 const Year = styled.span`
   display: block; margin-top: 6px;
   font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.lg}; font-weight: 500;
-  color: ${theme.game.goldLight};
+  color: ${theme.game.goldLight}; -webkit-text-fill-color: ${theme.game.goldLight};
 `;
 
 const Tags = styled.div`display: flex; flex-wrap: wrap; gap: 6px; margin-top: ${theme.spacing.md};`;
@@ -113,8 +123,17 @@ export default function TodayHero({ parasha }: { parasha: string | null }) {
   const tags = [parashaLabel(parasha), ...occasionLabels(day)].filter((t): t is string => !!t);
   const service = HE.HOME_NOW_SERVICE[day.service];
 
+  // A soft gold light follows the mouse across the card (fine pointers only).
+  const onMove = (e: PointerEvent<HTMLElement>) => {
+    if (e.pointerType !== 'mouse') return;
+    const r = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty('--gx', `${e.clientX - r.left}px`);
+    e.currentTarget.style.setProperty('--gy', `${e.clientY - r.top}px`);
+  };
+
   return (
-    <Card aria-label={HE.HOME_TODAY_ARIA}>
+    <Card aria-label={HE.HOME_TODAY_ARIA} onPointerMove={onMove}>
+      <HeroSky phase={skyPhase(sun.progress)} progress={sun.progress} />
       <Top>
         <div>
           <Eyebrow>{greeting(now)} · {weekdayName(now)}</Eyebrow>

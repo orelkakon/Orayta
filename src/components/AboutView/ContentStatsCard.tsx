@@ -1,14 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { ContentStats, STAT_TILES } from './statTilesConfig';
 import StatTile from './StatTile';
+import { useInView } from './useScrollMotion';
 
 const Section = styled.section`
-  width: 100%; max-width: 560px;
+  width: 100%; max-width: 720px; margin: 0 auto;
   background: linear-gradient(175deg,
     ${theme.colors.surface} 0%,
     color-mix(in srgb, ${theme.colors.surfaceAlt} 55%, ${theme.colors.surface}) 100%);
@@ -64,6 +65,9 @@ export default function ContentStatsCard() {
   const [stats, setStats] = useState<ContentStats | null>(null);
 
   const [failed, setFailed] = useState(false);
+  // The counters run when the board is on screen, not while it's still below the fold.
+  const board = useRef<HTMLDivElement>(null);
+  const shown = useInView(board);
 
   // A cold database can be slow or fail once: time each try out and retry
   // with backoff instead of leaving the counters on "…" forever.
@@ -96,9 +100,9 @@ export default function ContentStatsCard() {
         <Title>{HE.STATS_CONTENT_TITLE}</Title>
         <Sub>{HE.CONTENT_STATS_SUB}</Sub>
       </Head>
-      <Board>
+      <Board ref={board}>
         {STAT_TILES.map((tile, i) => (
-          <StatTile key={tile.key} config={tile} value={stats ? stats[tile.key] : null} failed={failed} index={i} />
+          <StatTile key={tile.key} config={tile} value={stats && shown ? stats[tile.key] : null} failed={failed} index={i} shown={shown} />
         ))}
       </Board>
     </Section>

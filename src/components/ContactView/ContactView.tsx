@@ -1,187 +1,34 @@
 'use client';
 
-import { useState } from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { theme } from '@/lib/theme';
-import { HE } from '@/lib/hebrewTexts';
-import PageHeader from '@/components/ui/PageHeader';
-
-const fadeUp = keyframes`
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-`;
+import ContactHero from './ContactHero';
+import ContactForm from './ContactForm';
+import ContactDone from './ContactDone';
+import ContactAside from './ContactAside';
+import { useContactForm } from './useContactForm';
 
 const Page = styled.div`
-  display: flex; flex-direction: column; align-items: center;
-  gap: ${theme.spacing.xl}; padding: ${theme.spacing.xl} 0 ${theme.spacing.xxl};
-  animation: ${fadeUp} 0.4s ease;
-`;
-
-
-const Card = styled.div`
-  background: ${theme.colors.surface}; border-radius: ${theme.radii.lg};
-  padding: ${theme.spacing.xl}; box-shadow: ${theme.shadows.md};
-  border: 1px solid ${theme.colors.borderLight}; width: 100%; max-width: 520px;
+  width: 100%; max-width: 1000px; margin: 0 auto;
   display: flex; flex-direction: column; gap: ${theme.spacing.lg};
+  padding-bottom: ${theme.spacing.xl};
 `;
 
-const FieldLabel = styled.label`
-  display: block; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em;
-  color: ${theme.colors.textMuted}; margin-bottom: ${theme.spacing.xs};
+const Grid = styled.div`
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: ${theme.spacing.lg};
+  ${theme.up.md} { grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); align-items: start; }
 `;
 
-const Input = styled.input`
-  width: 100%; padding: ${theme.spacing.sm} ${theme.spacing.md};
-  border: 2px solid ${theme.colors.border}; border-radius: ${theme.radii.md};
-  font-size: 0.95rem; background: ${theme.colors.background}; color: ${theme.colors.text};
-  outline: none; transition: border-color 0.15s;
-  &:focus { border-color: ${theme.colors.primaryLight}; }
-`;
-
-const Textarea = styled.textarea`
-  width: 100%; padding: ${theme.spacing.sm} ${theme.spacing.md};
-  border: 2px solid ${theme.colors.border}; border-radius: ${theme.radii.md};
-  font-size: 0.95rem; background: ${theme.colors.background}; color: ${theme.colors.text};
-  outline: none; resize: vertical; min-height: 120px; font-family: inherit; line-height: 1.6;
-  transition: border-color 0.15s;
-  &:focus { border-color: ${theme.colors.primaryLight}; }
-`;
-
-const StarsRow = styled.div`display: flex; gap: 6px; direction: ltr;`;
-const Star = styled.button<{ $on: boolean }>`
-  font-size: 1.6rem; line-height: 1; transition: transform 0.1s;
-  color: ${p => (p.$on ? '#e0a800' : theme.colors.borderLight)};
-  &:hover { transform: scale(1.2); }
-`;
-
-const ChannelRow = styled.div`
-  display: flex; gap: ${theme.spacing.md};
-  @media (max-width: 480px) { flex-direction: column; }
-`;
-
-const WaBtn = styled.button`
-  flex: 1; padding: ${theme.spacing.md};
-  background: ${theme.brand.whatsapp}; color: ${theme.brand.whatsappText}; border-radius: ${theme.radii.md};
-  font-size: 1rem; font-weight: 700; display: flex; align-items: center;
-  justify-content: center; gap: ${theme.spacing.sm};
-  transition: transform 0.15s, box-shadow 0.15s;
-  &:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 18px #25D36640; }
-  &:disabled { opacity: 0.55; cursor: not-allowed; }
-`;
-
-const EmailBtn = styled.button`
-  flex: 1; padding: ${theme.spacing.md};
-  background: linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.primaryLight});
-  color: ${theme.colors.onPrimary}; border-radius: ${theme.radii.md}; font-size: 1rem; font-weight: 700;
-  display: flex; align-items: center; justify-content: center; gap: ${theme.spacing.sm};
-  transition: transform 0.15s, box-shadow 0.15s;
-  &:hover:not(:disabled) { transform: translateY(-2px); box-shadow: ${theme.shadows.md}; }
-  &:disabled { opacity: 0.55; cursor: not-allowed; }
-`;
-
-const SuccessBox = styled.div`
-  text-align: center; display: flex; flex-direction: column; align-items: center; gap: ${theme.spacing.md};
-`;
-const BigIcon = styled.div`font-size: 3rem;`;
-const SuccessTitle = styled.h2`font-size: 1.4rem; font-weight: 700; color: ${theme.colors.primary};`;
-const SuccessText = styled.p`font-size: 0.95rem; color: ${theme.colors.textMuted}; line-height: 1.6;`;
-const NewBtn = styled.button`
-  font-size: 0.9rem; color: ${theme.colors.primary}; font-weight: 600;
-  border-bottom: 1px dashed ${theme.colors.primary};
-  &:hover { opacity: 0.75; }
-`;
-const ErrMsg = styled.p`font-size: 0.85rem; color: ${theme.colors.error}; text-align: center;`;
-
+/** /contact — topic, message, optional reply details; sent by email or WhatsApp. */
 export default function ContactView() {
-  const [name, setName] = useState('');
-  const [message, setMessage] = useState('');
-  const [rating, setRating] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-  const [sent, setSent] = useState<'wa' | 'email' | null>(null);
-
-  const canSend = message.trim().length > 0;
-
-  const handleWA = async () => {
-    if (!canSend) return;
-    setLoading(true); setError(false);
-    try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim() || undefined, message, rating: rating || undefined, channel: 'wa' }),
-      });
-      const data = await res.json() as { ok?: boolean; waUrl?: string };
-      if (res.ok && data.waUrl) {
-        window.open(data.waUrl, '_blank');
-        setSent('wa');
-      } else {
-        setError(true);
-      }
-    } catch { setError(true); }
-    setLoading(false);
-  };
-
-  const handleEmail = async () => {
-    if (!canSend) return;
-    setLoading(true); setError(false);
-    try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim() || undefined, message, rating: rating || undefined, channel: 'email' }),
-      });
-      const data = await res.json() as { ok?: boolean };
-      if (res.ok && data.ok) { setSent('email'); }
-      else { setError(true); }
-    } catch { setError(true); }
-    setLoading(false);
-  };
-
-  const reset = () => { setName(''); setMessage(''); setRating(0); setSent(null); setError(false); };
-
+  const f = useContactForm();
   return (
     <Page>
-      <PageHeader icon="phone" title={HE.CONTACT_PAGE_TITLE} subtitle={HE.CONTACT_PAGE_SUBTITLE} />
-
-      <Card>
-        {sent ? (
-          <SuccessBox>
-            <BigIcon>{sent === 'wa' ? '💬' : '✅'}</BigIcon>
-            <SuccessTitle>{sent === 'wa' ? HE.CONTACT_WA_SUCCESS_TITLE : HE.CONTACT_EMAIL_SUCCESS_TITLE}</SuccessTitle>
-            <SuccessText>{sent === 'wa' ? HE.CONTACT_WA_SUCCESS_MSG : HE.CONTACT_SUCCESS_MSG}</SuccessText>
-            <NewBtn onClick={reset}>{HE.CONTACT_NEW}</NewBtn>
-          </SuccessBox>
-        ) : (
-          <>
-            <div>
-              <FieldLabel htmlFor="contact-name">{HE.CONTACT_FORM_NAME}</FieldLabel>
-              <Input id="contact-name" value={name} onChange={e => setName(e.target.value)} placeholder="שם (לא חובה)" />
-            </div>
-            <div>
-              <FieldLabel htmlFor="contact-msg">{HE.CONTACT_FORM_MESSAGE} *</FieldLabel>
-              <Textarea id="contact-msg" value={message} onChange={e => setMessage(e.target.value)} placeholder="כתוב/י כאן..." required />
-            </div>
-            <div>
-              <FieldLabel>{HE.CONTACT_FORM_RATING}</FieldLabel>
-              <StarsRow>
-                {[1, 2, 3, 4, 5].map(n => (
-                  <Star key={n} $on={n <= rating} type="button" onClick={() => setRating(r => r === n ? 0 : n)}>★</Star>
-                ))}
-              </StarsRow>
-            </div>
-            {error && <ErrMsg role="alert">{HE.CONTACT_SAVE_ERROR}</ErrMsg>}
-            <ChannelRow>
-              <WaBtn onClick={handleWA} disabled={loading || !canSend}>
-                💬 {HE.CONTACT_SEND_WA}
-              </WaBtn>
-              <EmailBtn onClick={handleEmail} disabled={loading || !canSend}>
-                📧 {HE.CONTACT_SEND_EMAIL}
-              </EmailBtn>
-            </ChannelRow>
-          </>
-        )}
-      </Card>
+      <ContactHero />
+      <Grid>
+        {f.sent ? <ContactDone sent={f.sent} onNew={f.reset} /> : <ContactForm f={f} />}
+        <ContactAside wa={f.directWa} />
+      </Grid>
     </Page>
   );
 }

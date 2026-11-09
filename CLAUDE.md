@@ -190,6 +190,11 @@ Kahoot-style live game for a shiur / Shabbat table. Anyone can host (no account)
 
 ---
 
+### 2p. צור קשר — `/contact`
+- Rules (`lib/contact.ts`, pure, tested): topic, message ≤2000, optional name / reply-to (email or phone) / rating, bidi chars stripped; `contactWaText` builds the WhatsApp draft. Mail body in `lib/contactMail.ts` (HTML-escaped; a reply-to email becomes the mail's Reply-To).
+- `POST /api/contact` saves the row and, for email, **awaits** the Gmail send before answering (a send left running after the response is cut off on Vercel); not configured / failed → 502 `mail`, and the page offers WhatsApp / mailto. Honeypot `website`, 5 / 10 min per IP.
+- WhatsApp: `GET /api/contact` returns the number; the button is a real `wa.me` link built on every keystroke — never `window.open` after an `await` (iOS blocks it). The click only logs the message (`keepalive`).
+
 ### 2k. תנאי שימוש, פרטיות ונגישות — `/legal`
 One page with three documents (anchors `#terms`, `#privacy`, `#accessibility`), linked from `Layout/SiteFooter.tsx` (every page with the app shell) and the "עוד" sheet and from the accessibility widget. Written to Israeli law: Privacy Protection Law incl. Amendment 13 (§11 notice: voluntary, purposes, controller, recipients, §13/§14 rights) and accessibility regulation 35ה (statement + coordinator contact, ת״י 5568 AA).
 

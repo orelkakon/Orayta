@@ -1,6 +1,6 @@
 'use client';
 
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import PushOptInCard from '@/components/Notifications/PushOptInCard';
@@ -45,6 +45,29 @@ const Side = styled(Column)`
   ${theme.up.wide} { display: flex; }
 `;
 
+const surface = keyframes`
+  from { opacity: 0; transform: translateY(36px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+`;
+
+/**
+ * Cards below the fold rise in as they scroll into view — a CSS scroll-driven
+ * animation (no JS, so nothing is hidden before hydration; browsers without
+ * it simply show the card). Empty wrappers (a card that renders nothing)
+ * collapse so they don't leave a gap.
+ */
+const Reveal = styled.div`
+  min-width: 0;
+  &:empty { display: none; }
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: ${surface} linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 80%;
+    }
+  }
+`;
+
 const Title = styled.h1`
   position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
 `;
@@ -60,13 +83,13 @@ export default function HomeView() {
       <Column>
         <TodayHero parasha={parasha} />
         <LiveBannerBlock />
-        <FeedTeaser />
-        <QuickAccess />
+        <Reveal><FeedTeaser /></Reveal>
+        <Reveal><QuickAccess /></Reveal>
       </Column>
       <Side>
-        <HomeNearbyHub />
-        <PushOptInCard />
-        <DedicateCard />
+        <Reveal><HomeNearbyHub /></Reveal>
+        <Reveal><PushOptInCard /></Reveal>
+        <Reveal><DedicateCard /></Reveal>
       </Side>
     </Layout>
   );

@@ -11,6 +11,8 @@ import { READER_HE } from './texts/reader';
 import { PRAYERS_HE } from './texts/prayers';
 import { TODAY_HE } from './texts/today';
 import { RABBI_BOT_HE } from './texts/rabbiBot';
+import { CONTACT_HE } from './texts/contact';
+import { ABOUT_HE } from './texts/about';
 
 export const HE = {
   APP_NAME: 'אורייתא',
@@ -232,28 +234,11 @@ export const HE = {
   ABOUT_SHARE_COPY: 'העתק קישור',
   ABOUT_SHARE_COPIED: '✓ הועתק!',
 
-  ABOUT_TITLE: 'אודות המערכת',
-  ABOUT_CREATOR_SECTION: 'יוצר',
   ABOUT_CREATOR_NAME: 'אוראל קקון',
   ABOUT_CREATOR_INITIALS: 'א.ק',
-  ABOUT_CREATOR_ROLE: 'פיתוח ועיצוב',
   ABOUT_CREATOR_EMAIL: 'orelkakonweb@gmail.com',
   ABOUT_VERSE: 'לקח טוב נתתי לכם, תורתי אל תעזובו',
   ABOUT_FOOTER: '© 2026 אוראל קקון · אורייתא',
-  ABOUT_FEATURES: [
-    { icon: 'sparkle', title: 'רגע של תורה', text: 'פיד TikTok-סגנון: ציטוטים, רבנים, גימטריות וסיכומים — גוללים ומגלים. כולל 3 תגובות, שמירת תכנים, שיתוף, מוזיקת רקע, יארצייטות והתאמה אישית של התכנים' },
-    { icon: 'openbook', title: 'תלמוד בבלי', text: 'ציטוטים מהתלמוד הבבלי, חיפוש ופילטור לפי מסכת ודף. ציטוט יכול להופיע במספר מקומות' },
-    { icon: 'users', title: 'רבנים וספרים', text: 'מאגר כרונולוגי של מאות דמויות יהודיות עם ציר זמן, מפה ותצוגת רשימה. לצידם ספרי קודש' },
-    { icon: 'pencil', title: 'סיכומי חומרים', text: 'תיעוד לימוד יומי לפי ספר: כותרת, תאריך ותוכן. חיפוש, מיון ושיתוף ב-WhatsApp' },
-    { icon: 'book', title: 'תכנים', text: 'סידור (עדות המזרח), תהילים מלא, תנ"ך, ברכות ועוד — הכל נטען חי מ-Sefaria' },
-    { icon: 'aleph', title: 'גימטריות', text: 'מאגר מילים עם ערכים גימטריים ומילים בעלות ערך שווה בזמן הקלדה' },
-    { icon: 'bulb', title: 'חידושים', text: 'הוסף חידוש תורה עם מקור ושם — נשמר ופתוח לחיפוש לכולם' },
-    { icon: 'cap', title: 'תרגול ומשחקים', text: 'עשרה מצבי חידון: ציטוטים, רבנים, גימטריות, ספרים ועוד. כולל רמזים ומעקב ניקוד' },
-    { icon: 'calendar', title: 'לוח יומי', text: 'זמני תפילה, מצפן ירושלים, דף יומי בבלי וירושלמי, רמב"ם יומי ואירועי לוח עברי' },
-    { icon: 'home', title: 'דף בית', text: 'מרכז ניווט עם כרטיסיות לכל מדורי המערכת, ציטוט מקראי יומי ושורת הקדשות' },
-    { icon: 'quill', title: 'צור קשר', text: 'פנייה ישירה ליוצר עם שאלה, הערה או משוב — כולל דירוג בכוכבים' },
-    { icon: 'moon', title: 'מצב לילה', text: 'החלפה בלחיצה אחת בין מצב יום ולילה — העדפה נשמרת במכשיר' },
-  ],
   ABOUT_COPYRIGHT_TITLE: 'זכויות ושיתוף',
   ABOUT_COPYRIGHT_TEXT: 'כל הזכויות שמורות © 2026 אוראל קקון · אורייתא. הקוד, העיצוב והמערכת מוגנים.',
   ABOUT_DIVINE_TEXT: 'המערכת נבנתה בחסדי השם יתברך',
@@ -465,25 +450,6 @@ export const HE = {
   STATS_CONTENT_TITLE: 'כמויות תוכן',
 
   SEARCH_CLEAR: 'נקה',
-
-  CONTACT_PAGE_TITLE: 'צור קשר',
-  CONTACT_PAGE_SUBTITLE: 'שאלות, הערות ומשוב — נשמח לשמוע',
-  CONTACT_FORM_NAME: 'שמך (אופציונלי)',
-  CONTACT_FORM_NAME_PLACEHOLDER: 'הזן שם...',
-  CONTACT_FORM_MESSAGE: 'הודעה',
-  CONTACT_FORM_MESSAGE_PLACEHOLDER: 'כתוב את הודעתך כאן...',
-  CONTACT_FORM_RATING: 'דירוג (אופציונלי)',
-  CONTACT_FORM_SUBMIT: 'שלח הודעה',
-  CONTACT_SUCCESS_TITLE: 'ההודעה נשלחה! 🎉',
-  CONTACT_SUCCESS_MSG: 'תודה רבה על הפנייה, נחזור אליך בהקדם האפשרי.',
-  CONTACT_WA_BTN: 'שלח גם ב-WhatsApp',
-  CONTACT_NEW: 'שלח הודעה נוספת',
-  CONTACT_SAVE_ERROR: 'שגיאה בשליחה, נסה שנית',
-  CONTACT_SEND_WA: 'שלח ב-WhatsApp',
-  CONTACT_SEND_EMAIL: 'שלח במייל',
-  CONTACT_WA_SUCCESS_TITLE: 'WhatsApp נפתח! 💬',
-  CONTACT_WA_SUCCESS_MSG: 'ההודעה מוכנה לשליחה ב-WhatsApp — פשוט לחץ שלח שם.',
-  CONTACT_EMAIL_SUCCESS_TITLE: 'המייל נשלח! 📧',
 
   DEDICATIONS_TITLE: 'הקדשות',
   DEDICATIONS_STRIP_SHOW: 'הצג רצועת הקדשות',
@@ -1372,7 +1338,9 @@ export const HE = {
   OMER_UNMARK: 'ביטול הסימון',
   OMER_STREAK: (n: number) => (n === 1 ? 'יום ראשון ברצף' : `${n} ימים ברצף`),
   OMER_GRID_TITLE: 'מפת הספירה',
-  OMER_GRID_HINT: 'הקישו על יום כדי לראות את הספירה שלו',
+  OMER_GRID_HINT: 'הקישו על יום — הברכה והנוסח שלו יופיעו מתחת למפה',
+  OMER_PREV_DAY: 'היום הקודם',
+  OMER_NEXT_DAY: 'היום הבא',
   OMER_WEEK: (sefira: string) => `שבוע ${sefira}`,
   OMER_LEGEND_DONE: 'נספר',
   OMER_LEGEND_NOW: 'הלילה',
@@ -1654,4 +1622,6 @@ export const HE = {
   ...PRAYERS_HE,
   ...TODAY_HE,
   ...RABBI_BOT_HE,
+  ...CONTACT_HE,
+  ...ABOUT_HE,
 };
