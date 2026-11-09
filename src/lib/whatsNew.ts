@@ -10,7 +10,7 @@ const STORAGE_KEY = 'orayta_whats_new';
 const SHOWN_AT_KEY = 'orayta_whats_new_at';
 
 /* Full-screen or focused flows where an announcement would get in the way. */
-const QUIET_PATHS = ['/play', '/login', '/ask', '/feed', '/admin', '/feed-videos'];
+const QUIET_PATHS = ['/play', '/login', '/ask', '/feed', '/admin', '/feed-videos', '/tehillim'];
 
 export function isQuietPath(pathname: string): boolean {
   return QUIET_PATHS.some(p => pathname === p || pathname.startsWith(`${p}/`));

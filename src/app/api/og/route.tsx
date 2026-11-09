@@ -5,6 +5,7 @@ import { FEED_TYPES } from '@/lib/feedLink';
 import { OgCard, OG_SIZE, cardTexts } from '@/lib/og/card';
 import { loadOgFonts } from '@/lib/og/fonts';
 import { isOgPageKey, pageSpec } from '@/lib/og/pages';
+import { tehillimSpec } from '@/lib/og/tehillim';
 import { askSpec, feedSpec, hilulaSpec, learnSpec, playSpec, rabbiSpec, siddurSpec, todaySpec } from '@/lib/og/dynamic';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +15,7 @@ export const dynamic = 'force-dynamic';
  * for the URLs pages declare. `p` picks the card; content cards take an id.
  * Cached at the CDN: a day for "today" cards, a week for everything else.
  */
-const DAILY = new Set(['hilula', 'today']);
+const DAILY = new Set(['hilula', 'today', 'tehillim']);
 const ID = /^[\w-]{1,40}$/;
 
 async function specFor(q: URLSearchParams): Promise<OgSpec> {
@@ -26,6 +27,7 @@ async function specFor(q: URLSearchParams): Promise<OgSpec> {
     }
     if (p === 'rabbi' && ID.test(id)) return (await rabbiSpec(id)) ?? pageSpec('rabbis');
     if (p === 'hilula') return await hilulaSpec();
+    if (p === 'tehillim' && q.get('s')) return (await tehillimSpec(q.get('s') ?? '')) ?? pageSpec('tehillim');
   } catch {
     // Database unreachable — the page card still makes a good preview.
   }

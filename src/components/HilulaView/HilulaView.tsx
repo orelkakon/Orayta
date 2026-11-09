@@ -75,6 +75,9 @@ export default function HilulaView() {
               <Chip key={p.n} as={Link} href={`/content?open=tehillim&chapter=${p.n}`}>{HE.HILULA_PERAK(p.label)}</Chip>
             ))}
           </Chips>
+          <QuietLink as={Link} href={`/tehillim/new?for=neshama&name=${encodeURIComponent(today.rabbis[0].name.slice(0, 40))}`}>
+            <LineIcon name="users" size={16} /> {HE.HILULA_TEHILLIM_SPLIT}
+          </QuietLink>
         </Panel>
       )}
 

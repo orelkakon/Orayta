@@ -19,8 +19,8 @@ const RabbiBotPanel = dynamic(() => import('./RabbiBotPanel'), { ssr: false });
 
 const WideSheet = styled(Sheet)`max-width: 640px; height: 88dvh;`;
 
-/* Full-screen experiences where a floating button would sit on content. */
-const HIDDEN = ['/play', '/ask', '/login', '/feed'];
+/* Full-screen experiences where a floating button would sit on content (and a reading's own page). */
+const HIDDEN = ['/play', '/ask', '/login', '/feed', '/tehillim'];
 
 /** Floating רבי־בוט button + its sheet, mounted once in ClientProviders. */
 export default function RabbiBotHost() {

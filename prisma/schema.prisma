@@ -350,3 +350,48 @@ model NearbySearch {
 
   @@index([createdAt])
 }
+
+// חלוקת תהילים — a shared reading for someone (refua, ilui neshama, …).
+// Public by its unlisted slug; the organizer manages it with a secret key
+// (only its sha256 is stored). Units are chapters (119 split by letters),
+// days of the month or the five books (lib/tehillim/units.ts).
+model TehillimCircle {
+  id         String          @id @default(cuid())
+  slug       String          @unique
+  manageHash String
+  purpose    String // refua | neshama | hatzlacha | zivug | banim | yeshua | shmira | other
+  names      String[]
+  title      String?
+  note       String?
+  mode       String // chapter | day | book
+  goal       Int             @default(1) // books to complete (0 = no limit)
+  endsAt     DateTime?
+  closed     Boolean         @default(false)
+  books      Int             @default(0) // completed rounds
+  ipHash     String
+  createdAt  DateTime        @default(now())
+  activeAt   DateTime        @default(now())
+  claims     TehillimClaim[]
+
+  @@index([ipHash, createdAt])
+  @@index([activeAt])
+}
+
+// One unit of one round, taken by an anonymous reader: held until read or
+// released (or the hold expires and it is handed to someone else).
+model TehillimClaim {
+  id         String         @id @default(cuid())
+  circleId   String
+  circle     TehillimCircle @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  round      Int
+  unit       Int
+  status     String // held | done
+  readerHash String
+  readerName String?
+  heldAt     DateTime       @default(now())
+  doneAt     DateTime?
+
+  @@unique([circleId, round, unit])
+  @@index([circleId, status])
+  @@index([doneAt])
+}

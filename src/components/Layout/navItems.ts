@@ -52,6 +52,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/siddur', label: HE.NAV_SIDDUR, icon: 'sunrise', keywords: 'שחרית מנחה ערבית' },
       { href: '/content', label: HE.NAV_PRAYERS, icon: 'book',
         keywords: 'ברכת המזון תהילים ברכות תפילת הדרך תנ״ך', match: p => p.startsWith('/content') },
+      { href: '/tehillim', label: HE.TH_NAV, icon: 'scroll', keywords: 'תהילים חלוקה רפואה עילוי נשמה ביחד קבוצה' },
       { href: '/hilula', label: HE.NAV_HILULA, icon: 'candle', keywords: 'יארצייט נר' },
       { href: '/omer', label: HE.NAV_OMER, icon: 'hourglass' },
     ],

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -11,6 +12,7 @@ import { Card, CardLink } from '@/components/ui/Card';
 import MoreGrid from '@/components/Layout/MoreGrid';
 import NowServiceCard from '@/components/Prayers/NowServiceCard';
 import type { NavItem } from '@/components/Layout/navItems';
+import { isNewFeature } from '@/lib/newBadges';
 
 /**
  * "תפילות" tab: the prayer that fits now on top, the everyday prayers one
@@ -46,7 +48,16 @@ const BookCard = styled(CardLink)`
   small { font-size: ${theme.fontSizes.xs}; color: ${theme.colors.textMuted}; line-height: 1.4; }
 `;
 
+const NewPill = styled.span`
+  margin-inline-start: 6px; padding: 1px 7px; border-radius: ${theme.radii.pill}; vertical-align: 3px;
+  font-family: ${theme.fonts.ui}; font-size: ${theme.fontSizes.xxs}; font-weight: 800;
+  background: ${theme.colors.accent}; color: ${theme.colors.onPrimary};
+`;
+
 export default function PrayersHub() {
+  // Date-based: decided after mount so the server render never disagrees.
+  const [fresh, setFresh] = useState(false);
+  useEffect(() => { setFresh(isNewFeature('/tehillim')); }, []);
   return (
     <Page>
       <div>
@@ -74,6 +85,11 @@ export default function PrayersHub() {
               <small>{s.desc}</small>
             </BookCard>
           ))}
+          <BookCard href="/tehillim" $interactive $tone="gold">
+            <span aria-hidden="true"><LineIcon name="users" size={22} strokeWidth={1.8} /></span>
+            <strong>{HE.TH_NAV}{fresh && <NewPill>{HE.NEW_BADGE}</NewPill>}</strong>
+            <small>{HE.PRAYERS_TH_DESC}</small>
+          </BookCard>
         </Grid>
       </section>
     </Page>

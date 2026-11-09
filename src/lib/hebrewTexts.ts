@@ -14,6 +14,8 @@ import { RABBI_BOT_HE } from './texts/rabbiBot';
 import { CONTACT_HE } from './texts/contact';
 import { ABOUT_HE } from './texts/about';
 import { OG_HE } from './texts/og';
+import { TEHILLIM_HE } from './texts/tehillim';
+import { TEHILLIM_CIRCLE_HE } from './texts/tehillimCircle';
 
 export const HE = {
   APP_NAME: 'אורייתא',
@@ -1136,6 +1138,7 @@ export const HE = {
   HILULA_TEHILLIM: 'אמירת תהילים',
   HILULA_TEHILLIM_HINT: 'פרקים שנוהגים לומר לעילוי נשמה:',
   HILULA_PERAK: (n: string) => `פרק ${n}`,
+  HILULA_TEHILLIM_SPLIT: 'פתיחת חלוקת תהילים לעילוי נשמתו — עם חברים',
   HILULA_BIO_MORE: 'לדף הרב',
   HILULA_NOTIFY: 'לקבל תזכורת בימי הילולה',
   HILULA_CANDLE_LABEL: 'נר נשמה',
@@ -1628,4 +1631,6 @@ export const HE = {
   ...CONTACT_HE,
   ...ABOUT_HE,
   ...OG_HE,
+  ...TEHILLIM_HE,
+  ...TEHILLIM_CIRCLE_HE,
 };

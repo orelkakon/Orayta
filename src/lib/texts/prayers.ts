@@ -19,5 +19,6 @@ export const PRAYERS_HE = {
   ] as { id: string; icon: string; label: string }[],
   PRAYERS_SIDDUR_MORE: 'עוד מהסידור',
   PRAYERS_TANAKH_TITLE: 'תהילים ותנ״ך',
+  PRAYERS_TH_DESC: 'קוראים יחד את כל הספר — לרפואה, לעילוי נשמה, לישועה',
   PRAYERS_READER_ARIA: (title: string) => `קריאה: ${title}`,
 };

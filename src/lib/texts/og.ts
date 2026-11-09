@@ -28,6 +28,7 @@ export const OG_HE = {
     contact: { eyebrow: 'צור קשר', title: 'נשמח לשמוע', subtitle: 'הצעות, תיקונים ושאלות — בטופס או בוואטסאפ' },
     about: { eyebrow: 'אודות', title: 'הסיפור של אורייתא', subtitle: 'מיזם תורני פתוח לכולם — לימוד, תפילה וחזרה' },
     legal: { eyebrow: 'מידע משפטי', title: 'תנאים ופרטיות', subtitle: 'תנאי שימוש, מדיניות פרטיות והצהרת נגישות' },
+    tehillim: { eyebrow: 'חלוקת תהילים', title: 'חלוקת תהילים', subtitle: 'קוראים יחד את כל ספר תהילים — כל אחד מקבל פרק משלו' },
     learn: { eyebrow: 'לימוד יומי', title: 'הלימוד היומי', subtitle: 'דף יומי, משנה, הלכה ורמב״ם — הטקסט המלא של היום' },
   } satisfies Record<string, OgPageText>,
 
@@ -45,6 +46,9 @@ export const OG_HE = {
   OG_TODAY_EYEBROW: 'היום באורייתא',
   OG_TODAY_SUB: 'הלימוד היומי, זמני היום, תפילה והילולות',
   OG_FEED_EYEBROW: 'רגע של תורה',
+  OG_TH_EYEBROW: (purpose: string) => `חלוקת תהילים · ${purpose}`,
+  OG_TH_SUB: (chapters: number, books: number) =>
+    chapters === 0 ? 'הצטרפו וקראו פרק — כ־3 דקות, בלי הרשמה' : `נקראו ${chapters} פרקים${books ? ` · ${books} ספרים הושלמו` : ''} · הצטרפו וקראו פרק`,
   OG_FEED_GEMATRIA: (value: number) => `בגימטריה ${value}`,
   OG_FEED_BOOK_BY: (author: string) => `מאת ${author}`,
 } as const;

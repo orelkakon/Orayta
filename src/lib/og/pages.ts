@@ -9,7 +9,7 @@ const ICONS: Record<OgPageKey, OgIconName> = {
   home: 'openbook', feed: 'sparkle', today: 'sun', ask: 'ask', play: 'target', siddur: 'sunrise',
   content: 'openbook', hilula: 'candle', omer: 'calendar', rabbis: 'users', study: 'scroll', quiz: 'target',
   sikumim: 'books', chidushim: 'bulb', gematria: 'sparkle', minyan: 'synagogue', mikveh: 'droplet',
-  kivrei: 'tomb', live: 'live', dedications: 'heart', contact: 'send', about: 'home', legal: 'info', learn: 'books',
+  kivrei: 'tomb', live: 'live', tehillim: 'scroll', dedications: 'heart', contact: 'send', about: 'home', legal: 'info', learn: 'books',
 };
 
 export const isOgPageKey = (k: string): k is OgPageKey => Object.prototype.hasOwnProperty.call(ICONS, k);
