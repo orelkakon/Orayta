@@ -19,6 +19,6 @@ export const RABBIS_TIMELINE_HE = {
   RABBIS_TL_ALIVE: 'שליט״א',
   RABBIS_TL_MORE: 'לכרטיס המלא',
   RABBIS_TL_CLOSE_VERSE: 'דּוֹר הֹלֵךְ וְדוֹר בָּא',
-  RABBIS_TL_CLOSE_SUB: 'והשלשלת נמשכת',
+  RABBIS_TL_CLOSE_SUB: 'והשרשרת נמשכת',
   RABBIS_TL_TOP: 'חזרה לראשית הציר',
 } as const;
