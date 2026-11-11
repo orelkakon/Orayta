@@ -8,6 +8,7 @@ import { useRabbiBot } from './useRabbiBot';
 import WelcomeCard from './WelcomeCard';
 import Composer from './Composer';
 import ThinkingStage from './ThinkingStage';
+import StreamingAnswer from './StreamingAnswer';
 import SpokenAnswer from './voice/SpokenAnswer';
 import Feedback from './Feedback';
 import ShareAnswer from './ShareAnswer';
@@ -44,7 +45,9 @@ export default function RabbiBotPanel({ idPrefix, sharedQuestion }: Props) {
       {state.phase === 'idle' && <Greeting><RabbiBotAvatar size={44} mood="happy" /><p>{HE.RB_GREETING}</p></Greeting>}
       {state.phase !== 'idle' && state.question && <Question>{state.question}</Question>}
 
-      {asking && <ThinkingStage steps={state.steps} />}
+      {asking && (state.partial
+        ? <StreamingAnswer answer={state.partial} idPrefix={idPrefix} />
+        : <ThinkingStage steps={state.steps} />)}
 
       {state.phase === 'done' && state.last && (
         <>

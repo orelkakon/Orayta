@@ -76,6 +76,8 @@ export type RabbiBotStep = 'plan' | 'search' | 'read' | 'answer' | 'verify';
 /** NDJSON lines streamed by POST /api/rabbi-bot/ask. */
 export type RabbiBotEvent =
   | { type: 'step'; step: RabbiBotStep; count?: number; books?: string[] }
+  /** The verified points so far of an answer still being written; `done` replaces it. */
+  | { type: 'partial'; answer: RabbiBotAnswer }
   | { type: 'done'; id: string; token: string; answer: RabbiBotAnswer }
   | { type: 'error'; error: RabbiBotError; resetAt?: string };
 

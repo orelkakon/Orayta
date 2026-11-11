@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { RabbiBotError, RabbiBotStep } from '@/types/rabbiBot';
+import type { RabbiBotAnswer, RabbiBotError, RabbiBotStep } from '@/types/rabbiBot';
 import { readBotLocal, writeBotLocal, streamAsk, sendFeedback, withHistory, LastAnswer } from '@/lib/rabbiBot/client';
 
 export type BotPhase = 'idle' | 'asking' | 'done' | 'error';
@@ -11,13 +11,15 @@ export interface BotState {
   welcomed: boolean;
   question: string;
   steps: { step: RabbiBotStep; count?: number; books?: string[] }[];
+  /** The verified points so far while the answer is still being written. */
+  partial: RabbiBotAnswer | null;
   last: LastAnswer | null;
   history: LastAnswer[];
   error: RabbiBotError | null;
   resetAt: string | null;
 }
 
-const INITIAL: BotState = { phase: 'idle', welcomed: true, question: '', steps: [], last: null, history: [], error: null, resetAt: null };
+const INITIAL: BotState = { phase: 'idle', welcomed: true, question: '', steps: [], partial: null, last: null, history: [], error: null, resetAt: null };
 
 /** State machine for one asker: welcome → ask (streamed steps) → answer → rate/report; earlier answers reopen from history. */
 export function useRabbiBot() {
@@ -42,18 +44,20 @@ export function useRabbiBot() {
   const ask = useCallback(async (question: string, website = '') => {
     if (busy.current) return;
     busy.current = true;
-    setS(prev => ({ ...prev, phase: 'asking', question, steps: [], error: null, resetAt: null }));
+    setS(prev => ({ ...prev, phase: 'asking', question, steps: [], partial: null, error: null, resetAt: null }));
     try {
       await streamAsk(question, e => {
         if (e.type === 'step') {
           setS(prev => ({ ...prev, steps: [...prev.steps.filter(x => x.step !== e.step), { step: e.step, count: e.count, books: e.books }] }));
+        } else if (e.type === 'partial') {
+          setS(prev => ({ ...prev, partial: e.answer }));
         } else if (e.type === 'done') {
           const last: LastAnswer = { question, id: e.id, token: e.token, answer: e.answer, rating: null, reported: false };
           const history = withHistory(readBotLocal().history, last);
           writeBotLocal({ last, history });
-          setS(prev => ({ ...prev, phase: 'done', last, history }));
+          setS(prev => ({ ...prev, phase: 'done', partial: null, last, history }));
         } else {
-          setS(prev => ({ ...prev, phase: 'error', error: e.error, resetAt: e.resetAt ?? null }));
+          setS(prev => ({ ...prev, phase: 'error', partial: null, error: e.error, resetAt: e.resetAt ?? null }));
         }
       }, website);
     } catch {

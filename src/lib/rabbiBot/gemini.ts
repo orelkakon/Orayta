@@ -1,5 +1,6 @@
 import { classifyFailure, isMomentary } from './rules';
 import { callGroq, isGroqModel, GROQ_PREFIX } from './groq';
+import { readSse } from './sse';
 
 // Server-only: the models behind רבי־בוט, all on free tiers — Gemini REST
 // (Google AI Studio, GEMINI_API_KEY) and Groq ("groq:" models, GROQ_API_KEY,
@@ -45,6 +46,8 @@ export interface JsonCall {
   compactUser?: string;
   schema: object;
   timeoutMs: number;
+  /** Streams the output: called with the text so far as it arrives (Gemini; Groq answers whole). */
+  onText?: (soFar: string) => void;
 }
 
 export interface ModelHooks {
@@ -76,8 +79,12 @@ function callOnce(model: string, key: string, call: JsonCall, timeoutMs: number)
   return isGroqModel(model) ? callGroq(model.slice(GROQ_PREFIX.length), key, call, timeoutMs) : callGemini(model, key, call, timeoutMs);
 }
 
+const partsText = (r: GenResponse | null) =>
+  r?.candidates?.[0]?.content?.parts?.filter(p => !p.thought).map(p => p.text ?? '').join('') ?? '';
+
 async function callGemini(model: string, key: string, call: JsonCall, timeoutMs: number): Promise<CallResult> {
-  const res = await fetch(`${API}/${model}:generateContent`, {
+  const stream = Boolean(call.onText);
+  const res = await fetch(`${API}/${model}:${stream ? 'streamGenerateContent?alt=sse' : 'generateContent'}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
     signal: AbortSignal.timeout(timeoutMs),
@@ -93,9 +100,18 @@ async function callGemini(model: string, key: string, call: JsonCall, timeoutMs:
       },
     }),
   });
-  const body = await res.json().catch(() => null) as unknown;
-  if (!res.ok) return { ok: false, status: res.status, body };
-  const text = (body as GenResponse).candidates?.[0]?.content?.parts?.filter(p => !p.thought).map(p => p.text ?? '').join('') ?? '';
+  if (!res.ok) return { ok: false, status: res.status, body: await res.json().catch(() => null) as unknown };
+  let text = '';
+  if (stream && res.body) {
+    await readSse(res.body, chunk => {
+      const add = partsText(chunk as GenResponse);
+      if (!add) return;
+      text += add;
+      call.onText?.(text);
+    });
+  } else {
+    text = partsText(await res.json().catch(() => null) as GenResponse | null);
+  }
   try {
     return { ok: true, value: JSON.parse(text) as unknown };
   } catch {

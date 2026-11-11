@@ -59,7 +59,8 @@ export async function POST(req: NextRequest) {
         } else {
           const skip = await loadExhausted();
           const hooks = { skip, onExhausted: (m: string) => markExhausted(m), deadline: started + BUDGET_MS };
-          const result = await askRabbiBot(v.text, hooks, (step, extra) => send({ type: 'step', step, ...extra }));
+          const result = await askRabbiBot(v.text, hooks, (step, extra) => send({ type: 'step', step, ...extra }),
+            answer => send({ type: 'partial', answer }));
           await finish(result.answer, result.model, false);
         }
       } catch (e) {

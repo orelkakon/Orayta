@@ -1,10 +1,12 @@
-import type { RabbiBotAnswer, RabbiBotKind, RabbiBotStep } from '@/types/rabbiBot';
+import type { RabbiBotAnswer, RabbiBotKind, RabbiBotPassage, RabbiBotStep, RabbiBotTopic } from '@/types/rabbiBot';
 import { generateJson, ModelHooks, answerModels } from './gemini';
 import { ANSWER_SYSTEM, ANSWER_SCHEMA, answerPrompt, fitPassages } from './prompts';
 import { makePlan, PLAN_CAPS } from './plan';
 import { retrieve } from './retrieve';
 import { verifyAnswer, fixedAnswer, RawAnswer } from './verify';
 import { isTopic } from './rules';
+import { partialAnswer } from './partial';
+import { worthSecondTry } from './retry';
 
 const strings = (v: unknown, max: number, len: number) =>
   (Array.isArray(v) ? v : []).filter((s): s is string => typeof s === 'string' && s.trim().length > 0)
@@ -19,10 +21,43 @@ export interface AskResult {
 }
 
 export type StepFn = (step: RabbiBotStep, extra?: { count?: number; books?: string[] }) => void;
+/** The verified part of an answer still being written (streamed). */
+export type PartialFn = (answer: RabbiBotAnswer) => void;
 
 const MAX_SHOWN_BOOKS = 10;
 /** Source text sent to small-input models (Groq): ~3k tokens, leaving room for its plan in the same minute. */
 const COMPACT_SOURCE_CHARS = 6000;
+/** A second answer attempt only starts with at least this much of the request's budget left. */
+const RETRY_MIN_MS = 15_000;
+
+/** A Torah question has no Sephardi/Ashkenazi split — a stray "ashkenaz" view is just a note. */
+function settle(a: RabbiBotAnswer, kind: RabbiBotKind): RabbiBotAnswer {
+  if (kind !== 'torah') return a;
+  return { ...a, points: a.points.map(pt => (pt.view === 'ashkenaz' ? { ...pt, view: 'note' } : pt)), dispute: false };
+}
+
+interface AnswerCall { question: string; kind: RabbiBotKind; topic: RabbiBotTopic; passages: RabbiBotPassage[]; understood: string }
+
+/**
+ * One answer attempt on `models`, streamed: each time a whole point arrives
+ * it is verified, and the verified points so far go to `onDraft`.
+ */
+async function answerOnce(models: string[], c: AnswerCall, hooks: ModelHooks, onDraft: PartialFn) {
+  let seen = 0;
+  const r = await generateJson(models, {
+    system: ANSWER_SYSTEM, user: answerPrompt(c.question, c.kind, c.passages, c.understood), schema: ANSWER_SCHEMA, timeoutMs: 22_000,
+    compactUser: answerPrompt(c.question, c.kind, fitPassages(c.passages, COMPACT_SOURCE_CHARS), c.understood),
+    onText: soFar => {
+      const raw = partialAnswer(soFar);
+      const count = Array.isArray(raw.points) ? raw.points.length : 0;
+      if (count <= seen) return;
+      seen = count;
+      const draft = settle(verifyAnswer(raw, c.passages, c.topic), c.kind);
+      if (draft.status === 'answered') onDraft(draft);
+    },
+  }, hooks);
+  return { model: r.model, answer: settle(verifyAnswer(r.value as RawAnswer, c.passages, c.topic), c.kind) };
+}
 
 /**
  * Question → plan (Groq ensemble or Gemini chain, plan.ts — restated in the sources' language, with the refs, terms,
@@ -31,7 +66,7 @@ const COMPACT_SOURCE_CHARS = 6000;
  * verification (code).
  * Throws NoModelError when no model is available.
  */
-export async function askRabbiBot(question: string, hooks: ModelHooks, onStep: StepFn): Promise<AskResult> {
+export async function askRabbiBot(question: string, hooks: ModelHooks, onStep: StepFn, onPartial: PartialFn = () => undefined): Promise<AskResult> {
   onStep('plan');
   const plan = await makePlan(question, hooks);
   const p = plan.plan;
@@ -58,17 +93,15 @@ export async function askRabbiBot(question: string, hooks: ModelHooks, onStep: S
   if (passages.length === 0) return { answer: { ...verifyAnswer({ status: 'not_found' }, [], topic), ...context }, model: plan.model };
 
   onStep('answer');
-  const answer = await generateJson(answerModels(), {
-    system: ANSWER_SYSTEM, user: answerPrompt(question, kind, passages, understood), schema: ANSWER_SCHEMA, timeoutMs: 22_000,
-    compactUser: answerPrompt(question, kind, fitPassages(passages, COMPACT_SOURCE_CHARS), understood),
-  }, hooks);
-
+  const call = { question, kind, topic, passages, understood };
+  const draft = (a: RabbiBotAnswer) => onPartial({ ...a, ...context, searched: passages.length });
+  let result = await answerOnce(answerModels(), call, hooks, draft);
   onStep('verify');
-  const verified = verifyAnswer(answer.value as RawAnswer, passages, topic);
-  // A Torah question has no Sephardi/Ashkenazi split — a stray "ashkenaz" view is just a note.
-  if (kind === 'torah') {
-    verified.points = verified.points.map(pt => (pt.view === 'ashkenaz' ? { ...pt, view: 'note' } : pt));
-    verified.dispute = false;
+  // A miss that looks like the model's (quotes not found, or nothing found in on-topic sources) gets the next model once.
+  if (worthSecondTry(result.answer, passages, question) && hooks.deadline - Date.now() > RETRY_MIN_MS) {
+    const chain = answerModels();
+    const second = await answerOnce(chain.slice(chain.indexOf(result.model) + 1), call, hooks, draft).catch(() => null);
+    if (second?.answer.status === 'answered') result = second;
   }
-  return { answer: { ...verified, ...context, searched: passages.length }, model: answer.model };
+  return { answer: { ...result.answer, ...context, searched: passages.length }, model: result.model };
 }

@@ -1,6 +1,7 @@
 /* רבי־בוט — answer extras, sharing, history and the admin's knowledge gaps. Spread into HE (src/lib/hebrewTexts.ts). */
 export const RABBI_BOT_HE = {
   RB_UNDERSTOOD: 'הבנתי שהשאלה היא:',
+  RB_STILL_WRITING: 'ממשיך לכתוב ולבדוק כל ציטוט מול המקור…',
   RB_MIC: 'שאלה בקול',
   RB_MIC_STOP: 'סיום — לתמלול',
   RB_MIC_CANCEL: 'ביטול ההקלטה',

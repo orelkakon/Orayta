@@ -1,6 +1,6 @@
 'use client';
 
-import styled from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import type { RabbiBotAnswer, RabbiBotView } from '@/types/rabbiBot';
@@ -25,7 +25,10 @@ const GroupTitle = styled.h3<{ $view: RabbiBotView }>`
   color: ${p => (p.$view === 'main' ? theme.colors.primary : theme.colors.textMuted)};
 `;
 const Points = styled.ul`margin: 0; padding-inline-start: 18px; display: flex; flex-direction: column; gap: ${theme.spacing.sm};`;
-const Point = styled.li<{ $active?: boolean }>`
+const arrive = keyframes`from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; }`;
+const Point = styled.li<{ $active?: boolean; $fresh?: boolean }>`
+  ${p => p.$fresh && css`animation: ${arrive} ${theme.motion.slow} ${theme.motion.outStrong} both;`}
+  @media (prefers-reduced-motion: reduce) { animation: none; }
   font-size: ${theme.fontSizes.md}; line-height: 1.65; color: ${theme.colors.text};
   margin-inline-start: -8px; padding: 2px 8px; border-radius: ${theme.radii.sm};
   background: ${p => (p.$active ? theme.colors.bgWarning : 'transparent')};
@@ -69,10 +72,12 @@ interface Props {
   idPrefix: string;
   /** Index (in answer.points) of the point being read aloud. */
   activePoint?: number;
+  /** Still being written: each point eases in as it arrives. */
+  streaming?: boolean;
 }
 
 /** The verified answer: short ruling, points by view with numbered cites, then the sources. */
-export default function AnswerView({ answer, idPrefix, activePoint }: Props) {
+export default function AnswerView({ answer, idPrefix, activePoint, streaming }: Props) {
   if (answer.status !== 'answered') {
     const [title, text] = answer.status === 'sensitive' ? [HE.RB_SENSITIVE_TITLE, HE.RB_SENSITIVE_TEXT]
       : answer.status === 'other' ? [HE.RB_OTHER_TITLE, HE.RB_OTHER_TEXT]
@@ -116,7 +121,7 @@ export default function AnswerView({ answer, idPrefix, activePoint }: Props) {
             <GroupTitle $view={view}>{viewLabels[view]}</GroupTitle>
             <Points>
               {pts.map(({ p, gi }) => (
-                <Point key={gi} $active={gi === activePoint}>
+                <Point key={gi} $active={gi === activePoint} $fresh={streaming}>
                   {p.derived && <Derived title={HE.RB_DERIVED_HINT}>{HE.RB_DERIVED_TAG}</Derived>}
                   {p.rule && <Derived title={HE.RB_RULE_HINT}>{HE.RB_RULE_TAG}</Derived>}
                   {p.text}

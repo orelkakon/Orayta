@@ -50,10 +50,11 @@ export async function fetchText(wanted: string): Promise<SefariaText | null> {
   // The Shulchan Arukh itself (not its commentaries) keeps the Rema's glosses marked — see splitRema.
   const clean = ref.startsWith('Shulchan Arukh, ') ? (h: string) => stripHtml(markRema(h)) : stripHtml;
   const first = d.sections?.length ? d.sections[d.sections.length - 1] : null;
-  // A range within one section ("Mishnah Berurah 671:31-33") → one segment per
+  // A range within one section ("Mishnah Berurah 671:31-33", or a whole siman as "…620:1-99",
+  // even when it holds a single seif) → one segment per
   // item with its own exact ref; a range of sections keeps the item's 1-based
   // position inside each section. Anything else stays one passage.
-  const ranged = Array.isArray(d.he) && d.he.length > 1 && first !== null && !d.isSpanning && /\d-\d/.test(ref);
+  const ranged = Array.isArray(d.he) && d.he.length > 0 && first !== null && !d.isSpanning && /\d-\d/.test(ref);
   const prefix = ref.replace(/\d+(-[\d:]+)?$/, '');
   const hePrefix = heRef.replace(/[^\s:]+(-\S+)?$/, '');
   const segments = !ranged || first === null

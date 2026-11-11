@@ -3,6 +3,7 @@
  * normalization, and locating a model-supplied quote inside a source.
  * No I/O — unit-tested in tests/rabbiBot.test.ts.
  */
+import { expandAbbrev, isAbbrev } from './abbrev';
 
 const ENTITIES: Record<string, string> = { nbsp: ' ', quot: '"', amp: '&', lt: '<', gt: '>', apos: "'", thinsp: ' ' };
 
@@ -86,8 +87,10 @@ const STOP = new Set([
 
 const isKeyword = (w: string) => w.length >= 3 && !STOP.has(w);
 
+/** The words worth matching on; an abbreviation ("ר״ח") counts as the words it stands for. */
 export function keywords(text: string): string[] {
-  return Array.from(new Set(tokenize(text).map(t => t.norm).filter(isKeyword)));
+  const words = tokenize(text).flatMap(t => (isAbbrev(t.raw) ? [t.norm, ...expandAbbrev(t.norm)] : [t.norm]));
+  return Array.from(new Set(words.filter(isKeyword)));
 }
 
 /**
@@ -103,10 +106,30 @@ export function fallbackPhrases(phrase: string, max = 2): string[] {
   return Array.from(new Set(pairs)).slice(0, max);
 }
 
-/** How many of `words` occur in `text` (prefix-tolerant: ב/ה/ו/ל/מ/ש/כ prefixes). */
+/**
+ * Spelling-tolerant form for matching (ranking only — never quoting): ו/י after
+ * the first letter dropped, so full and defective spellings meet
+ * (תפילה/תפלה, ויבוא/ויבא, מצווה/מצוה, אישה/אשה).
+ */
+export const skeleton = (w: string) => (w.length <= 2 ? w : w[0] + w.slice(1).replace(/[וי]/g, ''));
+
+const PREFIX = /^[בהולמשכ]/;
+
+/** Every word of `text` in skeleton form, also without a one-letter prefix (ב/ה/ו/ל/מ/ש/כ). */
+export function wordForms(text: string): Set<string> {
+  const out = new Set<string>();
+  tokenize(text).forEach(({ raw, norm }) => {
+    out.add(skeleton(norm));
+    if (norm.length >= 4 && PREFIX.test(norm)) out.add(skeleton(norm.slice(1)));
+    if (isAbbrev(raw)) expandAbbrev(norm).forEach(w => out.add(skeleton(w)));
+  });
+  return out;
+}
+
+/** How many of `words` occur in `text` (prefix- and spelling-tolerant, see wordForms). */
 export function overlap(text: string, words: string[]): number {
-  const toks = new Set(tokenize(text).map(t => t.norm));
-  return words.filter(w => toks.has(w) || Array.from(toks).some(t => t.length === w.length + 1 && t.endsWith(w))).length;
+  const forms = wordForms(text);
+  return words.filter(w => forms.has(skeleton(w))).length;
 }
 
 /** A Shulchan Arukh siman's own title, as its first seif opens ("זמן הדלקת נר חנוכה. ובו ב סעיפים: …"); '' when absent. */
@@ -118,13 +141,25 @@ export function simanTitle(seif: string): string {
 export function excerpt(text: string, words: string[], max: number): string {
   if (text.length <= max) return text;
   const toks = tokenize(text);
+  // Which of `words` each token stands for (-1: none) — computed once, then a
+  // sliding window counts the distinct words in it (linear in the text).
+  const index = new Map(words.map((w, i) => [skeleton(w), i]));
+  const which = toks.map(({ norm }) => index.get(skeleton(norm))
+    ?? (norm.length >= 4 && PREFIX.test(norm) ? index.get(skeleton(norm.slice(1))) : undefined) ?? -1);
+  const span = Math.max(20, Math.floor(max / 6));
+  const inWindow = new Map<number, number>();
+  const move = (i: number, d: number) => {
+    if (which[i] < 0) return;
+    const n = (inWindow.get(which[i]) ?? 0) + d;
+    if (n > 0) inWindow.set(which[i], n); else inWindow.delete(which[i]);
+  };
   let bestAt = 0;
   let bestScore = -1;
-  const span = Math.max(20, Math.floor(max / 6));
-  for (let i = 0; i < toks.length; i += 5) {
-    const window = toks.slice(i, i + span).map(t => t.raw).join(' ');
-    const s = overlap(window, words);
-    if (s > bestScore) { bestScore = s; bestAt = i; }
+  for (let i = 0; i < toks.length; i++) {
+    move(i, 1);
+    if (i >= span) move(i - span, -1);
+    const startAt = Math.max(0, i - span + 1);
+    if (inWindow.size > bestScore) { bestScore = inWindow.size; bestAt = startAt; }
   }
   const start = Math.max(0, bestAt - 10);
   let out = '';

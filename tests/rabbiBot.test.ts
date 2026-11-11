@@ -1,7 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { stripHtml, findQuote, questionKey, excerpt, keywords, fallbackPhrases, markRema, splitRema, simanTitle } from '@/lib/rabbiBot/text';
-import { splitRemaCandidate, seifWindows } from '@/lib/rabbiBot/sources';
+import { stripHtml, findQuote, questionKey, excerpt, keywords, fallbackPhrases, markRema, splitRema, simanTitle, overlap } from '@/lib/rabbiBot/text';
+import { splitRemaCandidate } from '@/lib/rabbiBot/sources';
+import { simanRanges, spellings, arukhHaShulchanRef } from '@/lib/rabbiBot/anchors';
+import { partialAnswer } from '@/lib/rabbiBot/partial';
+import { worthSecondTry } from '@/lib/rabbiBot/retry';
+import { scorer, wordWeights, impliedWords } from '@/lib/rabbiBot/rank';
 import { withHistory, LastAnswer } from '@/lib/rabbiBot/client';
 import { answerShareText } from '@/lib/rabbiBot/share';
 import { RLM } from '@/lib/siteUrl';
@@ -360,14 +364,72 @@ test('answerSpeech reads understood, short, points by view and sources', () => {
   assert.deepEqual(answerSpeech({ ...a, status: 'not_found' }), []);
 });
 
-test('seifWindows: one range per siman around its hits', () => {
+test('simanRanges: each distinct siman once, whole', () => {
   const SA = 'Shulchan Arukh, Orach Chayim';
-  assert.deepEqual(seifWindows([`${SA} 672:1`, `${SA} 671:3`, `${SA} 672:2`, `${SA} 611`]),
-    [`${SA} 672:1-5`, `${SA} 671:2-6`, `${SA} 611`]);
+  assert.deepEqual(simanRanges([`${SA} 672:1`, `${SA} 671:3`, `${SA} 672:2`, `${SA} 611`, `${SA} 128:2-4`]),
+    [`${SA} 672:1-99`, `${SA} 671:1-99`, `${SA} 611:1-99`, `${SA} 128:1-99`]);
+});
+
+test('impliedWords: the question\'s wording in the sources\' words', () => {
+  assert.deepEqual(impliedWords(['מתי', 'להדליק']), ['זמן']);
+  assert.deepEqual(impliedWords(['אישה', 'לחזור']), ['נשים', 'מחזירין']);
 });
 
 test('simanTitle reads the siman title off its first seif only', () => {
   assert.equal(simanTitle('זמן הדלקת נר חנוכה. ובו ב סעיפים: אין מדליקין'), 'זמן הדלקת נר חנוכה');
   assert.equal(simanTitle('סדר הדלקת נר חנוכה ומקום הנחתו. ובו ח סעיפים: צריך'), 'סדר הדלקת נר חנוכה ומקום הנחתו');
   assert.equal(simanTitle('שכח או הזיד ולא הדליק עם שקיעת החמה'), '');
+});
+
+test('overlap meets full and defective spelling, and a one-letter prefix', () => {
+  assert.equal(overlap('ואם לא אמר יעלה ויבא ברצה', ['ויבוא', 'יעלה']), 2);
+  assert.equal(overlap('קודם שיתפלל תפלת השחר', ['תפילת']), 1);
+  assert.equal(overlap('נשים חייבות בהבדלה', ['הבדלה', 'אישה']), 1);
+});
+
+test('wordWeights: the rare word outweighs the common ones', () => {
+  const texts = ['ברכת המזון על הפת', 'ברכת המזון בשבת', 'אורז שבשלו מברך בורא מיני מזונות', 'ברכת המזון לנשים'];
+  const rank = scorer(wordWeights(['ברכת', 'המזון', 'אורז'], texts, ['אורז']));
+  assert.ok(rank(texts[2]) > rank(texts[0]));
+});
+
+test('spellings adds the defective spelling only when it differs', () => {
+  assert.deepEqual(spellings('יעלה ויבוא מחזירין'), ['יעלה ויבוא מחזירין', 'יעלה ויבא מחזירין']);
+  assert.deepEqual(spellings('נשים הבדלה'), ['נשים הבדלה']);
+});
+
+test('abbreviations meet the words they stand for', () => {
+  assert.equal(overlap('ואומר יעלה ויבא ברצה … אבל לא אמרו שחרית בר"ח מחזירין אותו', ['ראש', 'חודש']), 2);
+  assert.deepEqual(keywords('שכחתי יעלה ויבוא בר״ח'), ['שכחתי', 'יעלה', 'ויבוא', 'ברח', 'ראש', 'חודש']);
+  assert.equal(overlap('רח בלי גרשיים', ['ראש']), 0);
+});
+
+test('partialAnswer reads only what is already closed', () => {
+  const full = JSON.stringify({ status: 'answered', short: 'עד עמוד השחר', dispute: false, points: [
+    { text: 'א { ב } "ג"', view: 'main', basis: 'explicit', cites: [{ id: 'S1', quote: 'מדליק והולך כל הלילה' }] },
+    { text: 'שני', view: 'note', basis: 'explicit', cites: [] },
+  ] });
+  const cut = full.slice(0, full.indexOf('שני') + 2);
+  const p = partialAnswer(cut);
+  assert.equal(p.status, 'answered');
+  assert.equal(p.short, 'עד עמוד השחר');
+  assert.equal((p.points as unknown[]).length, 1);
+  assert.equal((partialAnswer(full).points as unknown[]).length, 2);
+  assert.deepEqual(partialAnswer('{"status":"answ'), {});
+});
+
+test('worthSecondTry: only a miss that looks like the model\'s', () => {
+  const nf = { status: 'not_found' as const, short: '', points: [], sources: [], dispute: false, topic: 'moadim' as const, total: 0, verified: 0 };
+  const passage = (text: string) => ({ id: 'S1', ref: 'r', heRef: 'r', book: 'b', url: '', origin: 'sikum' as const, text });
+  const q = 'עד מתי אפשר להדליק נרות חנוכה?';
+  assert.equal(worthSecondTry(nf, [passage('זמן הדלקת נרות: מותר להדליק נרות חנוכה עד עמוד השחר')], q), true);
+  assert.equal(worthSecondTry(nf, [passage('הלכות שבת ותפילה')], q), false);
+  assert.equal(worthSecondTry({ ...nf, total: 2 }, [], q), true);
+  assert.equal(worthSecondTry({ ...nf, status: 'answered', verified: 1 }, [], q), false);
+});
+
+test('arukhHaShulchanRef: the same siman in the Arukh HaShulchan', () => {
+  assert.equal(arukhHaShulchanRef('Shulchan Arukh, Orach Chayim 672:1-99'), 'Arukh HaShulchan, Orach Chaim 672:1-99');
+  assert.equal(arukhHaShulchanRef("Shulchan Arukh, Yoreh De'ah 89:1"), "Arukh HaShulchan, Yoreh De'ah 89:1-99");
+  assert.equal(arukhHaShulchanRef('Mishnah Berurah 672:1'), null);
 });
