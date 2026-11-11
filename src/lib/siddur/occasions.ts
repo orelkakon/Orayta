@@ -60,7 +60,7 @@ const isAdar = (m: HebMonth) => m === 'Adar' || m === 'Adar II';
 const is = (h: HebDate, month: HebMonth, ...days: number[]) => h.month === month && days.includes(h.day);
 
 /** Day of Chanukah (25 Kislev … 2/3 Tevet), or null. */
-function chanukahDayOf(d: Date): number | null {
+export function chanukahDayOf(d: Date): number | null {
   for (let k = 0; k < 8; k++) {
     const h = hebrewDate(new Date(d.getTime() - k * DAY_MS));
     if (h && is(h, 'Kislev', 25)) return k + 1;

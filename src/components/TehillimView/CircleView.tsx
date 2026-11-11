@@ -16,6 +16,8 @@ import Activity from './circle/Activity';
 import SharePanel from './circle/SharePanel';
 import ManagePanel from './circle/ManagePanel';
 import ReadingSheet from './reading/ReadingSheet';
+import BookMoment from './moment/BookMoment';
+import { useBookMoment } from './moment/useBookMoment';
 import { Page, Muted, Night, Dedication, NightText } from './styles';
 
 /**
@@ -37,6 +39,7 @@ export default function CircleView({ slug }: { slug: string }) {
   const [error, setError] = useState('');
   const [pick, setPick] = useState<number | null>(null);
   const [fresh, setFresh] = useState(false);
+  const { moment, clear } = useBookMoment(state?.books ?? null);
 
   useEffect(() => {
     try { if (sessionStorage.getItem(FRESH_KEY) === slug) { setFresh(true); sessionStorage.removeItem(FRESH_KEY); } } catch {}
@@ -96,6 +99,7 @@ export default function CircleView({ slug }: { slug: string }) {
           <Button $variant="ghost" $size="md" onClick={() => setPick(null)}>{HE.CLOSE}</Button>
         </Pick>
       </Sheet>
+      {moment !== null && <BookMoment books={moment} purpose={state.purpose} names={state.names} onDone={clear} />}
       <ReadingSheet open={reading} onClose={() => setReading(false)} state={state} api={api} />
     </Page>
   );

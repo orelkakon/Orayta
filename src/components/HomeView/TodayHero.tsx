@@ -13,6 +13,7 @@ import { usePrayerDay } from '@/components/SiddurView/usePrayerDay';
 import { useMinute } from '@/components/common/useMinute';
 import SunArc from './SunArc';
 import ArkCurtain from './ArkCurtain';
+import ChanukahLights from './ChanukahLights';
 import HeroSky, { skyPhase } from './HeroSky';
 import { greeting, parashaLabel, sunInfo, weekdayName } from './todayInfo';
 
@@ -153,6 +154,7 @@ export default function TodayHero({ parasha }: { parasha: string | null }) {
       {tags.length > 0 && (
         <Tags>{tags.map((t, i) => <Tag key={t} style={{ '--i': i } as CSSProperties}>{t}</Tag>)}</Tags>
       )}
+      <ChanukahLights now={now} />
       <Rule />
       <Bottom>
         <Sun>

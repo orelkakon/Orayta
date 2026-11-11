@@ -46,9 +46,14 @@ export function rememberCircle(slug: string, heading: string, manageKey?: string
 
 export const forgetCircle = (slug: string) => { const v = read(); write({ ...v, circles: v.circles.filter(c => c.slug !== slug) }); };
 
+/** "משה בן שרה ושרה בת רחל" — the names, as one line. */
+export function namesLine(names: string[]): string {
+  return names.length <= 1 ? names[0] ?? '' : `${names.slice(0, -1).join(', ')} ו${names[names.length - 1]}`;
+}
+
 /** "לרפואת משה בן שרה ושרה בת רחל" — what the reading is for. */
 export function headingOf(purpose: TehillimPurpose, names: string[]): string {
-  const list = names.length <= 1 ? names[0] ?? '' : `${names.slice(0, -1).join(', ')} ו${names[names.length - 1]}`;
+  const list = namesLine(names);
   const prefix = HE.TH_PURPOSES[purpose].prefix;
   return prefix ? `${prefix} ${list}` : list;
 }

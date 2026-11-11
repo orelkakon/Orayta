@@ -97,4 +97,16 @@ export const TEHILLIM_CIRCLE_HE = {
     readers: 'קוראים ב־30 יום',
   },
   TH_NOT_FOUND_TEXT: 'אולי היא נמחקה, או שהקישור לא הועתק עד הסוף.',
+
+  /* A whole book completed — the full-screen moment */
+  TH_MOMENT_KICKER: (books: number) => (books <= 1 ? 'ספר תהילים שלם נקרא' : `נשלם ספר התהילים ה־${books}`),
+  TH_MOMENT_THANKS: 'ישר כח לכל הקוראים',
+  TH_MOMENT_FALLBACK: 'ספר תהילים',
+
+  /* After reading: the next steps */
+  TH_GROW_OWN: 'לפתוח חלוקת תהילים משלך',
+  TH_GROW_OWN_SUB: 'לרפואה, להצלחה או לעילוי נשמה — דקה, ומשתפים בקבוצה',
+  TH_GROW_INSTALL: 'אורייתא במסך הבית',
+  TH_GROW_INSTALL_SUB: 'התקנה בנגיעה — סידור, תהילים והלימוד היומי תמיד בהישג יד',
+  TH_GROW_INSTALL_IOS: 'שלושה צעדים קצרים — ואורייתא נפתחת כמו אפליקציה',
 } as const;

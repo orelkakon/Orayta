@@ -46,4 +46,18 @@ export const HOME_HE = {
   HOME_DEDICATE_TITLE: 'הקדישו את הלימוד',
   HOME_DEDICATE_SUB: 'לעילוי נשמה, לרפואה, להצלחה או לזיווג — ההקדשה תופיע באתר',
   HOME_DEDICATE_CTA: 'להקדשה',
+
+  /* Chanukah menorah in the home hero */
+  CHANUKAH_KICKER: 'חנוכה',
+  CHANUKAH_KICKER_LIT: 'חנוכה שמח',
+  CHANUKAH_ORDINALS: ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שביעי', 'שמיני'],
+  CHANUKAH_LIT: (ord: string) => `נר ${ord} של חנוכה`,
+  CHANUKAH_LIT_SUB: 'הנרות הללו קודש הם',
+  CHANUKAH_ZOT: 'זאת חנוכה',
+  CHANUKAH_WHEN: {
+    tonight: (ord: string) => `הערב מדליקים נר ${ord}`,
+    'before-shabbat': (ord: string) => `היום מדליקים נר ${ord}`,
+    motzash: (ord: string) => `במוצאי שבת מדליקים נר ${ord}`,
+  },
+  CHANUKAH_BEFORE_SHABBAT: 'לפני הדלקת נרות שבת',
 };

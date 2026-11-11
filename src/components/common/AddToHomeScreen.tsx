@@ -1,55 +1,20 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { LineIcon } from '@/components/common/LineIcons';
+import {
+  INSTALL_GUIDE_EVENT, bumpSnooze, initInstall, installMode, isSecondPlusVisitDay, isSnoozed,
+  isStandalone, promptInstall, subscribeInstall,
+} from '@/lib/install';
 
-interface BeforeInstallPromptEvent extends Event {
-  prompt(): Promise<void>;
-  userChoice: Promise<{ outcome: string }>;
-}
-
-const DAYS_KEY = 'orayta_a2hs_days';
-const SNOOZED_KEY = 'orayta_a2hs_snoozed';
-const DAY_MS = 24 * 60 * 60 * 1000;
-const INSTALLED_N = 99; // sentinel dismiss-count: app installed → year-long snooze
-
-function readSnooze(): { t: number; n: number } | null {
-  try {
-    const v: unknown = JSON.parse(localStorage.getItem(SNOOZED_KEY) ?? 'null');
-    if (typeof v === 'number') return { t: v, n: 1 }; // migrate old plain-timestamp value
-    const o = v as { t?: unknown; n?: unknown } | null;
-    return o && typeof o.t === 'number' && typeof o.n === 'number' ? { t: o.t, n: o.n } : null;
-  } catch { return null; }
-}
-const snoozeDays = (n: number) => (n >= INSTALLED_N ? 365 : n >= 2 ? 60 : 14);
-const writeSnooze = (n: number) => {
-  try { localStorage.setItem(SNOOZED_KEY, JSON.stringify({ t: Date.now(), n })); } catch { /* private mode */ }
-};
-const bumpSnooze = () => writeSnooze(Math.min((readSnooze()?.n ?? 0) + 1, INSTALLED_N - 1));
-function isSnoozed(): boolean {
-  const s = readSnooze();
-  return !!s && Date.now() - s.t < snoozeDays(s.n) * DAY_MS;
-}
-/** Record today as a visit day (cap 10) — the sheet only appears from the 2nd distinct day on. */
-function isSecondPlusVisitDay(): boolean {
-  try {
-    const raw = localStorage.getItem(DAYS_KEY);
-    const parsed: unknown = raw ? JSON.parse(raw) : [];
-    const days = Array.isArray(parsed) ? parsed.filter((d): d is string => typeof d === 'string') : [];
-    const d = new Date();
-    const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    if (!days.includes(today)) days.push(today);
-    localStorage.setItem(DAYS_KEY, JSON.stringify(days.slice(-10)));
-    return days.length >= 2;
-  } catch { return false; }
-}
-const isIosDevice = () =>
-  /iphone|ipod|ipad/i.test(navigator.userAgent) ||
-  (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.userAgent));
-
+/**
+ * The install sheet. It offers itself from the second visit day (then stays
+ * quiet for 14 / 60 days after a dismissal), and opens on demand as the iOS
+ * step-by-step guide when an "install" button asks (INSTALL_GUIDE_EVENT).
+ */
 const slideUp = keyframes`from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}`;
 const Backdrop = styled.div`position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:${theme.z.toast}`;
 const Sheet = styled.div`
@@ -105,58 +70,45 @@ const ShareGlyph = () => (
 );
 
 export default function AddToHomeScreen() {
-  const [bip, setBip] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
   const [guide, setGuide] = useState(false);
-  const [ios, setIos] = useState(false);
+  const asked = useRef(false); // opened by a button, not by us — closing it is not a "no"
 
   useEffect(() => {
-    if (window.matchMedia('(display-mode: standalone)').matches) return;
-    const nav = window.navigator as Navigator & { standalone?: boolean };
-    if (nav.standalone) return;
-    if (isSnoozed() || !isSecondPlusVisitDay()) return;
-
-    const onInstalled = () => { writeSnooze(INSTALLED_N); setVisible(false); setGuide(false); };
-    window.addEventListener('appinstalled', onInstalled);
+    if (isStandalone()) return;
+    initInstall();
+    const onGuide = () => { asked.current = true; setGuide(true); setVisible(true); };
+    window.addEventListener(INSTALL_GUIDE_EVENT, onGuide);
 
     let timer: number | undefined;
-    let revealed = false;
-    const reveal = () => { // show once, after a calm 2.5s — never mid-page-load
-      if (revealed) return;
-      revealed = true;
-      timer = window.setTimeout(() => setVisible(true), 2500);
+    const auto = !isSnoozed() && isSecondPlusVisitDay();
+    const sync = () => {
+      const mode = installMode();
+      if (!mode) { if (!asked.current) setVisible(false); return; }
+      // Show once, after a calm 2.5s — never mid-page-load.
+      if (auto && timer === undefined) timer = window.setTimeout(() => setVisible(true), 2500);
     };
-    const onBip = (e: Event) => { e.preventDefault(); setBip(e as BeforeInstallPromptEvent); reveal(); };
-
-    if (isIosDevice()) {
-      setIos(true); reveal();
-    } else {
-      // Chromium fires beforeinstallprompt before React mounts — layout.tsx parks it on window.__bip.
-      const early = (window as unknown as { __bip?: BeforeInstallPromptEvent }).__bip;
-      if (early) { setBip(early); reveal(); }
-      window.addEventListener('beforeinstallprompt', onBip);
-    }
+    sync();
+    const off = subscribeInstall(sync);
     return () => {
-      window.removeEventListener('appinstalled', onInstalled);
-      window.removeEventListener('beforeinstallprompt', onBip);
+      window.removeEventListener(INSTALL_GUIDE_EVENT, onGuide);
+      off();
       if (timer) window.clearTimeout(timer);
     };
   }, []);
 
   const dismiss = useCallback(() => {
-    bumpSnooze();
+    if (!asked.current) bumpSnooze();
+    asked.current = false;
     setVisible(false); setGuide(false);
   }, []);
 
   const install = useCallback(async () => {
-    if (ios) { setGuide(true); return; }
-    if (!bip) return;
-    await bip.prompt();
-    const { outcome } = await bip.userChoice;
-    if (outcome === 'accepted') writeSnooze(INSTALLED_N);
-    else bumpSnooze();
-    setVisible(false); setBip(null);
-  }, [ios, bip]);
+    if (installMode() === 'ios') { setGuide(true); return; }
+    const outcome = await promptInstall();
+    if (outcome === 'dismissed') bumpSnooze();
+    setVisible(false);
+  }, []);
 
   if (!visible) return null;
 

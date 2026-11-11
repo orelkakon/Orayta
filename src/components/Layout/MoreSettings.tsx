@@ -10,6 +10,8 @@ import SegmentedControl from '@/components/ui/SegmentedControl';
 import SwitchRow, { RowGroup } from '@/components/ui/Switch';
 import { openNotifications } from '@/lib/push/client';
 import { openAccessibility } from '@/lib/a11y';
+import { requestInstall } from '@/lib/install';
+import { useInstallMode } from '@/components/common/useInstallMode';
 import { GroupTitle } from './MoreGrid';
 
 /** Settings + account block at the bottom of the "עוד" sheet. */
@@ -57,6 +59,7 @@ interface Props {
 
 export default function MoreSettings({ isAdmin, onLogout, tickerOn, onTickerChange, onNavigate }: Props) {
   const { mode, setMode } = useDarkMode();
+  const install = useInstallMode();
   const chevron = <LineIcon name="chevron" size={18} />;
   return (
     <>
@@ -81,6 +84,11 @@ export default function MoreSettings({ isAdmin, onLogout, tickerOn, onTickerChan
         <ActionRow type="button" onClick={openAccessibility}>
           <LineIcon name="a11y" size={20} /><span>{HE.MORE_A11Y}</span>{chevron}
         </ActionRow>
+        {install && (
+          <ActionRow type="button" onClick={requestInstall}>
+            <LineIcon name="home" size={20} /><span>{HE.MORE_INSTALL}</span>{chevron}
+          </ActionRow>
+        )}
         <SwitchRow
           icon={<LineIcon name="candle" size={20} />}
           label={HE.MORE_TICKER}

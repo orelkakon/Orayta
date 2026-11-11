@@ -29,6 +29,7 @@ export const SHELL_HE = {
   MORE_THEME_SYSTEM: 'כמו במכשיר',
   MORE_NOTIFICATIONS: 'התראות ותזכורות',
   MORE_A11Y: 'הגדרות נגישות',
+  MORE_INSTALL: 'התקנת אורייתא במסך הבית',
   MORE_TICKER: 'רצועת הקדשות בדף הבית',
   MORE_ADMIN: 'ניהול',
 

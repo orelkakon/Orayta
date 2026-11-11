@@ -8,11 +8,13 @@ import { saveName, savedName } from '@/lib/tehillim/client';
 import { READER_NAME_MAX } from '@/lib/tehillim/rules';
 import { Button } from '@/components/ui/Button';
 import { LineIcon } from '@/components/common/LineIcons';
+import GrowthOffers from './GrowthOffers';
 
 /**
  * After "done": thanks, a bigger moment when a whole book was completed,
  * how much this device read here, an optional name for the next reads,
- * and the next unit in one tap.
+ * the next unit in one tap, and the offers to open a reading of one's own
+ * and to keep Orayta on the home screen.
  */
 export interface Finished { title: string; bookDone: boolean; read: number }
 
@@ -65,6 +67,7 @@ export default function DoneView({ finished, heading, busy, note, closed, onNext
         {!closed && <Button $variant="gold" $size="lg" $block disabled={busy} onClick={() => { keep(); onNext(); }}>{HE.TH_NEXT}</Button>}
         <Button $variant="ghost" $size="md" $block onClick={() => { keep(); onClose(); }}>{HE.TH_FINISH}</Button>
       </Actions>
+      <GrowthOffers />
     </Wrap>
   );
 }
