@@ -12,7 +12,7 @@ import { scorer, wordWeights, impliedWords } from '@/lib/rabbiBot/rank';
 import { withHistory, LastAnswer } from '@/lib/rabbiBot/client';
 import { answerShareText } from '@/lib/rabbiBot/share';
 import { RLM } from '@/lib/siteUrl';
-import { mergePlans } from '@/lib/rabbiBot/plan';
+import { mergePlans, needsSecondPlan } from '@/lib/rabbiBot/plan';
 import { strictSchema } from '@/lib/rabbiBot/groq';
 import { PLAN_SCHEMA, fitPassages } from '@/lib/rabbiBot/prompts';
 import { verifyAnswer } from '@/lib/rabbiBot/verify';
@@ -460,4 +460,11 @@ test('a main ruling resting only on Ashkenazi books is shown as theirs', () => {
   assert.deepEqual(v.points.map(x => x.view), ['ashkenaz', 'main']);
   assert.equal(v.dispute, true);
   assert.equal(isAshkenaziSource({ book: 'קיצור שולחן ערוך', origin: 'sikum' }), false);
+});
+
+test('needsSecondPlan: only a turned-away or empty plan asks for another planner', () => {
+  assert.equal(needsSecondPlan({ kind: 'halacha', refs: ['Shulchan Arukh, Orach Chayim 672:2'] }), false);
+  assert.equal(needsSecondPlan({ kind: 'halacha', refs: [] }), true);
+  assert.equal(needsSecondPlan({ kind: 'other' }), true);
+  assert.equal(needsSecondPlan({ kind: 'sensitive' }), false);
 });

@@ -65,25 +65,41 @@ export function mergePlans(plans: RawPlan[]): RawPlan {
 }
 
 /**
- * The plan for a question: the Groq ensemble in parallel, merged; when no
- * ensemble model is configured or all of them fail, the Gemini plan chain —
- * which also gets a say when part of the ensemble failed and the rest called
- * the question "other" (a lone gpt-oss turns away "how much is a log in liters").
+ * Whether a plan needs a second planner: it turned the question away
+ * ("other" — a lone model once turned away "how much is a log in liters") or
+ * found it answerable but named no ref to look in. "sensitive" stands. Pure — unit-tested.
+ */
+export function needsSecondPlan(p: RawPlan): boolean {
+  if (p.kind === 'sensitive') return false;
+  if (p.kind !== 'halacha' && p.kind !== 'torah') return true;
+  return list(p.refs).length === 0;
+}
+
+/**
+ * The plan for a question. The Groq planners run one at a time, cheapest
+ * first (Qwen ~2.4k tokens, gpt-oss ~4k with its reasoning; Groq allows 200k
+ * a day per model): the next one runs only when the plan so far needs a second
+ * opinion (needsSecondPlan), and their plans are merged. The table of
+ * contents in the message (planUser) is what grounds the siman now, so a
+ * second model is rarely worth its tokens. When none answers, or one failed
+ * and the rest still say "other", the Gemini plan chain decides.
  * `model` = the first model whose plan was used.
  */
 export async function makePlan(question: string, hooks: ModelHooks): Promise<{ plan: RawPlan; model: string }> {
   const call = { system: PLAN_SYSTEM, user: planUser(question), schema: PLAN_SCHEMA };
-  const ensemble = planEnsemble().filter(m => isConfigured(m) && !hooks.skip.has(m));
-  if (ensemble.length > 0) {
-    const results = await Promise.allSettled(ensemble.map(m => generateJson([m], { ...call, timeoutMs: ENSEMBLE_TIMEOUT_MS }, hooks)));
-    const done = results.flatMap(r => (r.status === 'fulfilled' ? [r.value] : []));
+  const planners = planEnsemble().filter(m => isConfigured(m) && !hooks.skip.has(m));
+  const done: { value: unknown; model: string }[] = [];
+  let failed = false;
+  for (const m of planners) {
+    const r = await generateJson([m], { ...call, timeoutMs: ENSEMBLE_TIMEOUT_MS }, hooks).catch(() => null);
+    if (r) done.push(r); else failed = true;
+    if (done.length > 0 && !needsSecondPlan(mergePlans(done.map(d => d.value as RawPlan)))) break;
+  }
+  if (done.length > 0) {
     const plan = mergePlans(done.map(d => d.value as RawPlan));
-    const partial = done.length < ensemble.length;
-    if (done.length > 0 && !(partial && plan.kind === 'other')) return { plan, model: done[0].model };
-    if (done.length > 0) {
-      const second = await generateJsonHedged(planModels(), { ...call, timeoutMs: 15_000 }, hooks, PLAN_HEDGE_MS).catch(() => null);
-      return second ? { plan: second.value as RawPlan, model: second.model } : { plan, model: done[0].model };
-    }
+    if (!(failed && plan.kind === 'other')) return { plan, model: done[0].model };
+    const second = await generateJsonHedged(planModels(), { ...call, timeoutMs: 15_000 }, hooks, PLAN_HEDGE_MS).catch(() => null);
+    return second ? { plan: second.value as RawPlan, model: second.model } : { plan, model: done[0].model };
   }
   const r = await generateJsonHedged(planModels(), { ...call, timeoutMs: 15_000 }, hooks, PLAN_HEDGE_MS);
   return { plan: r.value as RawPlan, model: r.model };

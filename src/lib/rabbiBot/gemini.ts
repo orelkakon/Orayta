@@ -6,14 +6,17 @@ import { readSse } from './sse';
 // (Google AI Studio, GEMINI_API_KEY) and Groq ("groq:" models, GROQ_API_KEY,
 // see groq.ts). Free quota is counted per model *name* (the Gemini flash
 // models allow ~20 requests a day each), so each step walks a chain of models.
-// Planning runs first on the Groq ensemble (plan.ts: two models in parallel,
-// merged — they miss different simanim), which leaves the scarce flash quota
+// Planning runs first on the Groq planners (plan.ts: one at a time, the next
+// only when the plan needs a second opinion), which leaves the scarce flash quota
 // to the answer; the Gemini plan chain is its fallback. The answer runs on the
 // strongest model that still has quota today: flash, then Groq's Qwen, then lite.
 const API = 'https://generativelanguage.googleapis.com/v1beta/models';
 
+// The plan's fallback when Groq is out: lite first — with the table of contents in its message a lite model
+// plans well, and each flash request it would take is one answer fewer that day.
 const DEFAULT_PLAN = [
-  'gemini-3-flash-preview', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite-preview', 'gemini-flash-lite-latest',
+  'gemini-3.1-flash-lite', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite-preview', 'gemini-flash-lite-latest',
+  'gemini-3-flash-preview', 'gemini-3.5-flash',
 ];
 // 3.8-flash (and flash-latest, which points at it) is strong but often slow — tried last among the flash models.
 // Qwen on Groq beat the lite models on halacha answers (and gpt-oss-120b, which
@@ -23,7 +26,8 @@ const DEFAULT_ANSWER = [
   'groq:qwen/qwen3.8-27b',
   'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.1-flash-lite-preview', 'gemini-flash-lite-latest',
 ];
-// Planned in parallel and merged: Qwen restates the question best, gpt-oss knows more simanim.
+// Planners in order, cheapest first: Qwen (~2.4k tokens a plan) restates the question best;
+// gpt-oss (~4k, it reasons) runs only when Qwen's plan needs a second opinion, and the two are merged.
 const DEFAULT_PLAN_ENSEMBLE = ['groq:qwen/qwen3.8-27b', 'groq:openai/gpt-oss-120b'];
 
 const fromEnv = (v: string | undefined, fallback: string[]) => {

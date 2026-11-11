@@ -9,9 +9,11 @@
  *   npx tsx scripts/rabbibot-eval.ts --only 3   # one case, with its passages listed
  *   npx tsx scripts/rabbibot-eval.ts --runs 3   # each case 3 times (the plan varies between runs)
  *
- * It spends the site's own free quota: each case is a plan on both Groq models
- * (~6.5k of their 200k tokens a day), and --answer a flash request (~20 a day
- * per model). Run it off-peak, and not many times a day.
+ * A one-off study tool, NOT a routine check: it spends the site's own free
+ * quota (each case is a plan on Groq — up to ~6.5k of its 200k tokens a day —
+ * and --answer a flash request, ~20 a day per model). It is deliberately not
+ * part of `npm test`, the pre-push check or any hook. Run it only when the
+ * site's owner asks for it.
  */
 import { makePlan, PLAN_CAPS, RawPlan } from '@/lib/rabbiBot/plan';
 import { retrieve, RetrievalPlan } from '@/lib/rabbiBot/retrieve';
