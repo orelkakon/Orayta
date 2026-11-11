@@ -84,7 +84,7 @@ export default function HeroOrbit() {
             ))}
           </g>
         </svg>
-        <Seal><OraytaLogo size={96} /></Seal>
+        <Seal><OraytaLogo size={96} animated /></Seal>
       </Inner>
     </Wrap>
   );

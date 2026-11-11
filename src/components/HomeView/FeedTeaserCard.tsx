@@ -6,10 +6,11 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { LineIcon } from '@/components/common/LineIcons';
 import { FEED_TYPE_STYLES } from '@/components/FeedView/feedTypes';
+import FeedMotif from '@/components/FeedView/motif/FeedMotif';
 import { feedExcerpt } from '@/lib/feedExcerpt';
 import type { FeedItem } from '@/types';
 
-/** Portrait mini-card in the feed's own visual language (type gradient + accent). */
+/** Portrait mini-card in the feed's own visual language (type gradient, accent, the post's motif). */
 export const cardShape = css`
   position: relative; flex-shrink: 0; overflow: hidden;
   width: 148px; height: 214px; border-radius: 20px;
@@ -63,6 +64,7 @@ export default function FeedTeaserCard({ item, onOpen }: Props) {
   const ex = feedExcerpt(item);
   return (
     <CardShape type="button" onClick={onOpen} style={{ background: style.bg }} aria-label={HE.HOME_FEED_ITEM_ARIA(style.label)}>
+      <FeedMotif type={item.type} id={item.id} accent={style.accent} live={false} strength={1.7} />
       <Glow $accent={style.accent} />
       <Kicker $accent={style.accent}><LineIcon name={style.icon} size={13} strokeWidth={2} />{style.label}</Kicker>
       {ex.image && <Portrait src={ex.image} alt="" loading="lazy" referrerPolicy="no-referrer" />}

@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { HE } from '@/lib/hebrewTexts';
+import { theme } from '@/lib/theme';
+import { FEED_GOLD } from './feedTypes';
 
 /* Length-aware type register: a 10-word aphorism earns display type; a long
    sugya settles into a quieter reading size. One size for both flattens the
@@ -34,6 +36,40 @@ export const MainText = styled.p<{ $len?: number }>`
 
 const ClickableText = styled(MainText)`cursor: pointer;`;
 
+/* Written in light: when the slide arrives, its words surface one after
+   another in the post's accent colour and settle into parchment white — a
+   scribe's line, not a fade. Leaving resets them at once, so they rewrite
+   on every return. Outside a feed slide (no data-v) they simply show. */
+const Word = styled.span`
+  display: inline-block;
+  [data-v='0'] & {
+    opacity: 0; transform: translate3d(0, 0.45em, 0);
+    color: rgb(var(--accent, ${FEED_GOLD}));
+  }
+  [data-v='1'] & {
+    transition: opacity 0.5s ${theme.motion.out} var(--d),
+                transform 0.7s ${theme.motion.out} var(--d),
+                color 1.3s ease var(--d);
+  }
+`;
+
+/** Only the words that can show inside the clamp get their own span. */
+const INK_WORDS = 90;
+
+function inkWords(text: string): React.ReactNode {
+  const parts = text.split(/(\s+)/);
+  const head: React.ReactNode[] = [];
+  let n = 0, i = 0;
+  for (; i < parts.length && n < INK_WORDS; i++) {
+    const p = parts[i];
+    if (!p) continue;
+    if (/^\s+$/.test(p)) { head.push(' '); continue; }
+    head.push(<Word key={i} style={{ '--d': `${160 + Math.min(n, 42) * 26}ms` } as CSSProperties}>{p}</Word>);
+    n++;
+  }
+  return <>{head}{parts.slice(i).join('')}</>;
+}
+
 const ReadMoreBtn = styled.button`
   -webkit-tap-highlight-color: transparent; appearance: none;
   background: transparent; backdrop-filter: blur(6px);
@@ -56,17 +92,19 @@ export default function ClampText({ text, onExpand }: Props) {
   const ref = useRef<HTMLParagraphElement>(null);
   const [truncated, setTruncated] = useState(false);
 
+  const words = useMemo(() => inkWords(text), [text]);
+
   useEffect(() => {
     const el = ref.current;
     if (el) setTruncated(el.scrollHeight > el.clientHeight + 2);
   }, [text]);
 
-  if (!truncated) return <MainText ref={ref} $len={text.length}>{text}</MainText>;
+  if (!truncated) return <MainText ref={ref} $len={text.length}>{words}</MainText>;
 
   const expand = (e: React.MouseEvent) => { e.stopPropagation(); onExpand(); };
   return (
     <>
-      <ClickableText ref={ref} $len={text.length} onClick={expand}>{text}</ClickableText>
+      <ClickableText ref={ref} $len={text.length} onClick={expand}>{words}</ClickableText>
       <ReadMoreBtn onClick={expand}>{HE.FEED_READ_MORE}</ReadMoreBtn>
     </>
   );

@@ -199,7 +199,7 @@ export default function LoginScreen() {
       <Orb1 /><Orb2 /><Orb3 /><Ring1 /><Ring2 />
       <Card>
         <CardBar />
-        <LogoWrap><OraytaLogo size={76} /></LogoWrap>
+        <LogoWrap><OraytaLogo size={76} animated /></LogoWrap>
         <AppName>{HE.APP_NAME}</AppName>
         <AdminBadge>🔒 {HE.LOGIN_ADMIN_BADGE}</AdminBadge>
         <AdminTitle>{HE.LOGIN_ADMIN_TITLE}</AdminTitle>

@@ -100,6 +100,9 @@ The page is "today in Orayta", in order of daily use:
   - Gestures (`useStoryGestures`): pull down to close (follows the finger), swipe or tap to move, hold to pause (the chrome fades).
   - A tap inside the video embed pauses the clock.
 - `TodayHero`: a dark "night" card with the greeting, the Hebrew date and year, the parasha and occasions, and a `SunArc` showing where the sun is in Jerusalem. Its CTA is the prayer that fits now (`/siddur/<service>`).
+  - Motion: `HeroSky` (stars / dawn / rays by the real sun) + `RisingLetters` (gold letters floating up); the gold rule draws in and the tags pop.
+  - `ArkCurtain` ("פתיחת ההיכל"): once a day (`orayta_ark_day`) a velvet פרוכת with a gold crown parts over the already-rendered hero, light spills out, gone after 1.9s. Skipped under reduced motion (OS or the a11y widget). The privacy policy mentions it.
+  - `HomeView` wraps it in `HeroDepth`: it sinks back as the page scrolls past (scroll-driven CSS, no JS).
 - Live strip, shown only while live.
 - `FeedTeaser`: today's first feed items (a per-day seed) as portrait cards. Tapping one hands the item to `/feed` via sessionStorage (`stashFeedStart` / `takeFeedStart` in `lib/feedExcerpt.ts`), so the feed opens on it.
 - `QuickAccess` (the `HE.HOME_QUICK` tiles), the nearby hub, the push card and `DedicateCard`.
@@ -147,6 +150,9 @@ Weekday services in נוסח עדות המזרח, read as one continuous text wi
 - **Header:** back, accessibility, settings, saved.
 - **Data:** `useFeedDeck` owns the persisted deck, paging, errors and the home hand-off; `FeedStatus` has the loading / error / empty slides.
 - **Reels** cover the screen on phones (a rounded 9:16 card on wide screens). They mount one screen ahead for preload, and unmount after being swiped away so playback stops.
+- **Living backdrops** (`FeedView/motif/`): each post gets two aurora lights + one of six motifs (daf, rosette, Magen David lattice, candle sparks, ring of letters, Sefer Torah column — `MOTIFS_BY_TYPE`, two per type), placed by a seed from the post key (`motifPaths.ts`, pure, tested). Only HTML layers animate (transform/opacity); loops pause while the slide is off screen (`data-live`). The home teaser cards show the same motif, still.
+- **Slide transitions** (`feedMotion.ts`): each slide publishes `view-timeline: --slide`; the content lifts away / rises in and the backdrop moves at half pace (parallax) on that timeline — exact at rest, no JS, absent where unsupported.
+- **Reading:** `FeedClampText` writes the text in word by word (accent colour → parchment) each time the slide arrives (`data-v` on `AnimBody`; first ~90 words only). Gematria values count up (`FeedCountUp`). Screenshots (`shareElementImage`) freeze all motion in the html2canvas clone and skip the SVG drawing (`data-html2canvas-ignore`).
 
 ### 2e. Feed comments (רגע של תורה)
 Public, anonymous comments (text + optional name/nickname) on every feed post — content items and reels (`itemType` = feed type or `'reel'`, `itemId` = the item/reel id). Model `FeedComment`.
@@ -479,6 +485,7 @@ The entire site is RTL (Hebrew). Use `direction: rtl` in styled components where
     - `guarded` = no dismiss from the backdrop or a body pull. Long-text forms use both, with buttons in `footer` and an auto-growing textarea (`common/useAutoGrow`). Example: `SikumEntryForm`, whose drafts are kept for edits too.
   - `Button` / `ButtonLink`, `IconButton` (≥44px hit area), `Card` / `CardLink` / `CardButton`.
   - `Chip` / `ChipRow`, `Badge`, `Skeleton` / `SkeletonText`, `SegmentedControl`, `SwitchRow` / `RowGroup`, `PageHeader` / `SectionHeader`.
+- **Logo:** `common/OraytaLogo` — a gilded medallion with an open Torah scroll and a כתר תורה. `animated` (header, login, about): the scroll unrolls as the rollers part, the crown settles, jewels twinkle, a sheen crosses now and then. Static elsewhere (icons, previews).
 - **Theme:** `ThemeContext` has a 3-way mode (light / dark / system); light is the default. It keeps `<meta name="theme-color">` on the chrome colour, and immersive screens override it with `useThemeColor`.
 - **Accessibility settings** open from the header button (`openAccessibility()`); bare routes get a floating button instead.
 

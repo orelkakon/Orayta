@@ -1,6 +1,6 @@
 'use client';
 
-import { PointerEvent } from 'react';
+import { CSSProperties, PointerEvent } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { usePrayerDay } from '@/components/SiddurView/usePrayerDay';
 import { useMinute } from '@/components/common/useMinute';
 import SunArc from './SunArc';
+import ArkCurtain from './ArkCurtain';
 import HeroSky, { skyPhase } from './HeroSky';
 import { greeting, parashaLabel, sunInfo, weekdayName } from './todayInfo';
 
@@ -65,7 +66,11 @@ const Year = styled.span`
 
 const Tags = styled.div`display: flex; flex-wrap: wrap; gap: 6px; margin-top: ${theme.spacing.md};`;
 
+const pop = keyframes`from { opacity: 0; transform: translateY(6px) scale(0.92); } to { opacity: 1; transform: none; }`;
+const draw = keyframes`from { transform: scaleX(0); } to { transform: none; }`;
+
 const Tag = styled.span`
+  animation: ${pop} 0.45s ${theme.motion.spring} calc(0.55s + var(--i) * 70ms) both;
   display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 11px;
   border-radius: ${theme.radii.pill};
   font-size: ${theme.fontSizes.xs}; font-weight: 700;
@@ -74,8 +79,11 @@ const Tag = styled.span`
   border: 1px solid ${theme.gilded.nightLine};
 `;
 
+/* The gold rule is drawn in from the right, like a pen stroke. */
 const Rule = styled.div`
   height: 1px; margin: ${theme.spacing.md} 0;
+  transform-origin: right center;
+  animation: ${draw} 1.1s ${theme.motion.outStrong} 0.45s both;
   background: linear-gradient(to left, ${theme.gilded.nightLine}, transparent);
 `;
 
@@ -134,6 +142,7 @@ export default function TodayHero({ parasha }: { parasha: string | null }) {
   return (
     <Card aria-label={HE.HOME_TODAY_ARIA} onPointerMove={onMove}>
       <HeroSky phase={skyPhase(sun.progress)} progress={sun.progress} />
+      <ArkCurtain />
       <Top>
         <div>
           <Eyebrow>{greeting(now)} · {weekdayName(now)}</Eyebrow>
@@ -142,7 +151,7 @@ export default function TodayHero({ parasha }: { parasha: string | null }) {
         <SunArc progress={sun.progress} />
       </Top>
       {tags.length > 0 && (
-        <Tags>{tags.map(t => <Tag key={t}>{t}</Tag>)}</Tags>
+        <Tags>{tags.map((t, i) => <Tag key={t} style={{ '--i': i } as CSSProperties}>{t}</Tag>)}</Tags>
       )}
       <Rule />
       <Bottom>

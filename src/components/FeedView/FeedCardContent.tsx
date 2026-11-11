@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { FeedItem, Citation, Rabbi, Book, Chidush, FeedGematriaData, FeedSikumData, RabbiCategory } from '@/types';
 import { CATEGORY_LABELS } from '@/lib/rabbisData';
 import ClampText from './FeedClampText';
+import CountUp from './FeedCountUp';
 import { FEED_TYPE_STYLES, FEED_GOLD } from './feedTypes';
 import { LineIcon } from '@/components/common/LineIcons';
 import { HE } from '@/lib/hebrewTexts';
@@ -18,6 +19,7 @@ export const BigWord = styled.div`
 const BigNum = styled.div`
   font-family: var(--font-frank, serif);
   font-size: clamp(3rem, 11vw, 4.5rem); font-weight: 900; line-height: 1;
+  font-variant-numeric: tabular-nums;
   background: linear-gradient(180deg, #FFFFFF 10%, rgba(${FEED_TYPE_STYLES.gematria.accent}, 0.8) 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 `;
@@ -174,7 +176,7 @@ export function renderContent(
   if (item.type === 'gematria') {
     const d = item.data as FeedGematriaData;
     const meta: MetaItem[] = d.matches.length > 0 ? [{ label: `ערך שווה: ${d.matches.join(' · ')}`, href: `/gematria?q=${encodeURIComponent(d.word)}` }] : [];
-    return { body: <><BigWord>{d.word}</BigWord><BigNum>{d.value}</BigNum><SubText>בגימטריה</SubText></>, meta, copyText: `${d.word} = ${d.value} בגימטריה` };
+    return { body: <><BigWord>{d.word}</BigWord><BigNum><CountUp value={d.value} /></BigNum><SubText>בגימטריה</SubText></>, meta, copyText: `${d.word} = ${d.value} בגימטריה` };
   }
   if (item.type === 'sikum') {
     const d = item.data as FeedSikumData;

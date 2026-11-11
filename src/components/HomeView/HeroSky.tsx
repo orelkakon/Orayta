@@ -3,10 +3,12 @@
 import { CSSProperties } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
+import RisingLetters from './RisingLetters';
 
 /**
  * The hero's sky, lit by where the sun really is in Jerusalem: stars and a
- * rare shooting star at night, warm light at dawn and dusk, slow rays by day.
+ * rare shooting star at night, warm light at dawn and dusk, slow rays by day,
+ * and gold letters rising through it at every hour.
  * Purely decorative (aria-hidden) and still under reduced motion.
  */
 export type SkyPhase = 'night' | 'dawn' | 'day' | 'dusk';
@@ -97,6 +99,7 @@ export default function HeroSky({ phase, progress }: { phase: SkyPhase; progress
         <Star key={i} className={s.big ? 'big' : undefined} $d={s.d} $t={s.t} style={{ left: `${s.x}%`, top: `${s.y}%` }} />
       ))}
       {phase === 'night' && <Shooting />}
+      <RisingLetters />
       <Glare />
     </Layer>
   );

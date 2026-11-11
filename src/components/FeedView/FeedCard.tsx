@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
-import styled, { keyframes } from 'styled-components';
+import React, { CSSProperties, useRef, useState, useEffect } from 'react';
+import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import type { FeedItem, FeedReaction, FeedCommentsTarget, Citation } from '@/types';
 import { renderContent, MetaChip, MetaChipLink } from './FeedCardContent';
@@ -12,26 +12,15 @@ import { FEED_TYPE_STYLES } from './feedTypes';
 import { LineIcon } from '@/components/common/LineIcons';
 import type { ReaderData } from './FeedReader';
 import { haptics } from '@/lib/haptics';
+import FeedMotif from './motif/FeedMotif';
+import { Depth, contentFlow } from './feedMotion';
 
 const Slide = styled.div<{ $bg: string }>`
   height: 100dvh; scroll-snap-align: start; flex-shrink: 0;
   background: ${p => p.$bg}; position: relative; overflow: hidden;
   display: flex; flex-direction: column;
   -webkit-tap-highlight-color: transparent;
-`;
-
-const breathe = keyframes`
-  0%, 100% { opacity: 0.55; transform: translateX(-50%) scale(1); }
-  50%      { opacity: 1; transform: translateX(-50%) scale(1.07); }
-`;
-
-// Soft accent-colored halo behind the content — gives each slide depth
-// and a candle-light warmth in the type's own color.
-const Aura = styled.div.attrs({ className: 'anim-loop' })<{ $accent: string }>`
-  position: absolute; top: -12%; left: 50%; transform: translateX(-50%);
-  width: 140vw; max-width: 900px; height: 58vh; pointer-events: none;
-  background: radial-gradient(ellipse at 50% 38%, rgba(${p => p.$accent}, 0.13) 0%, transparent 62%);
-  animation: ${breathe} 7s ease-in-out infinite;
+  @supports (view-timeline-name: --slide) { view-timeline: --slide block; }
 `;
 
 const Kicker = styled.div<{ $v: boolean }>`
@@ -62,6 +51,7 @@ const ContentArea = styled.div`
      rather than on the space beside the buttons. */
   padding: calc(104px + ${theme.safe.top}) 68px calc(112px + ${theme.safe.bottom}); gap: 13px;
   position: relative; z-index: 3;
+  ${contentFlow}
 `;
 
 const AnimBody = styled.div<{ $v: boolean }>`
@@ -141,8 +131,8 @@ export default function FeedCard({ item, reacted, isSaved, onReact, onBookmark, 
   };
 
   return (
-    <Slide $bg={cfg.bg} onClick={handleTap} ref={slideRef}>
-      <Aura $accent={cfg.accent} />
+    <Slide $bg={cfg.bg} onClick={handleTap} ref={slideRef} style={{ '--accent': cfg.accent } as CSSProperties}>
+      <Depth><FeedMotif type={item.type} id={item.id} accent={cfg.accent} live={visible} /></Depth>
       {hearts.map(h => <DoubleTapHeart key={h.id} {...h} />)}
       {imgPopup && (
         <ImgOverlay onClick={e => { e.stopPropagation(); setImgPopup(null); }}>
@@ -158,7 +148,7 @@ export default function FeedCard({ item, reacted, isSaved, onReact, onBookmark, 
         <KLine $accent={cfg.accent} $flip />
       </Kicker>
       <ContentArea>
-        <AnimBody $v={visible}>{body}</AnimBody>
+        <AnimBody $v={visible} data-v={visible ? 1 : 0}>{body}</AnimBody>
         {meta.length > 0 && (
           <MetaRow $v={visible} onClick={e => e.stopPropagation()}>
             {meta.map((m, i) => m.href

@@ -69,7 +69,7 @@ export default function AppHeader({ pathname, isAdmin, onLogout }: Props) {
     <Bar>
       <Inner>
         <Brand href="/" aria-label={HE.HEADER_HOME_ARIA}>
-          <OraytaLogo size={34} />
+          <OraytaLogo size={34} animated />
           <Words aria-hidden="true">
             <Name>{HE.APP_NAME}</Name>
             <Tagline>{HE.HEADER_TAGLINE}</Tagline>

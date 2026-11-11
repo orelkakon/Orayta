@@ -45,7 +45,16 @@ export function shareText(text: string): void {
 /** Render an element to a PNG and share it (or download it). */
 export async function shareElementImage(el: HTMLElement): Promise<void> {
   const { default: html2canvas } = await import('html2canvas');
-  const canvas = await html2canvas(el, { useCORS: true, scale: 2, backgroundColor: null });
+  const canvas = await html2canvas(el, {
+    useCORS: true, scale: 2, backgroundColor: null,
+    // Capture the resting frame: no entrance, scroll-linked or looping motion
+    // half-way through in the clone.
+    onclone: doc => {
+      const still = doc.createElement('style');
+      still.textContent = '*, *::before, *::after { animation: none !important; transition: none !important; }';
+      doc.head.appendChild(still);
+    },
+  });
   await new Promise<void>(resolve => canvas.toBlob(async blob => {
     if (!blob) { resolve(); return; }
     const file = new File([blob], 'orayta.png', { type: 'image/png' });

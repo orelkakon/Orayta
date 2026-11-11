@@ -68,6 +68,21 @@ const Reveal = styled.div`
   }
 `;
 
+const recede = keyframes`to { opacity: 0.3; transform: translate3d(0, 10%, 0) scale(0.93); }`;
+
+/* The hero sinks back under the header as the page scrolls past it —
+   depth instead of a flat slide-away. Same scroll-driven, no-JS approach. */
+const HeroDepth = styled.div`
+  min-width: 0;
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: ${recede} linear both;
+      animation-timeline: view();
+      animation-range: exit 0% exit 100%;
+    }
+  }
+`;
+
 const Title = styled.h1`
   position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
 `;
@@ -81,7 +96,7 @@ export default function HomeView() {
       <Title>{HE.APP_NAME}</Title>
       <Full><StoriesRow /></Full>
       <Column>
-        <TodayHero parasha={parasha} />
+        <HeroDepth><TodayHero parasha={parasha} /></HeroDepth>
         <LiveBannerBlock />
         <Reveal><FeedTeaser /></Reveal>
         <Reveal><QuickAccess /></Reveal>
