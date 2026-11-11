@@ -90,9 +90,28 @@ export async function wikisource(queries: string[], words: string[]): Promise<Ca
   });
 }
 
-/** Shulchan Arukh seifim that use the sources' own term for the subject. */
+/** Seifim before / after a term hit fetched with it: the term often sits in the siman's opening seif, the case asked about in the next one. */
+const NEIGHBOURS = { before: 1, after: 3 };
+
+/**
+ * Seif hits → one range per siman, from the first hit's previous seif to three
+ * past the last ("…672:1", "…672:2" → "…672:1-5"; Sefaria clamps it to the
+ * siman). Other refs pass through. Order of first appearance. Pure.
+ */
+export function seifWindows(refs: string[]): string[] {
+  const simanim = new Map<string, number[]>();
+  refs.forEach(r => {
+    const m = r.match(/^(.* \d+):(\d+)$/);
+    const key = m ? m[1] : r;
+    simanim.set(key, [...(simanim.get(key) ?? []), ...(m ? [Number(m[2])] : [])]);
+  });
+  return Array.from(simanim, ([siman, ns]) => (ns.length === 0 ? siman
+    : `${siman}:${Math.max(1, Math.min(...ns) - NEIGHBOURS.before)}-${Math.max(...ns) + NEIGHBOURS.after}`));
+}
+
+/** Shulchan Arukh seifim (with their neighbours) that use the sources' own term for the subject. */
 export async function searchTerms(terms: string[]): Promise<SefariaText[]> {
-  const refs = Array.from(new Set((await Promise.all(terms.slice(0, 4).map(t => searchRefs(t, SA_PATHS, 4)))).flat()));
+  const refs = seifWindows((await Promise.all(terms.slice(0, 4).map(t => searchRefs(t, SA_PATHS, 4)))).flat());
   const texts = await Promise.all(refs.slice(0, 4).map(fetchText));
   return texts.filter((t): t is SefariaText => t !== null);
 }

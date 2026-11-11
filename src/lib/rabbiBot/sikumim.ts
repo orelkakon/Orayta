@@ -15,11 +15,15 @@ export interface SikumHit {
 
 const MAX_TERMS = 6;
 const SCAN = 40;
+/** A word in the entry's title counts this much more than one in its body (the title names the subject). */
+const TITLE_WEIGHT = 2;
 
 /**
  * Best-matching summaries for the question's keywords: ≥ 2 shared words, at
  * least one of them from `core` (the plan's source-language words), so the
- * user's everyday wording alone never pulls in an unrelated summary.
+ * user's everyday wording alone never pulls in an unrelated summary. Title
+ * words weigh more — sibling entries of one chapter ("הלכות חנוכה - …") share
+ * the body's vocabulary, and the title says which of them is about the question.
  */
 export async function searchSikumim(words: string[], limit: number, core: string[] = words): Promise<SikumHit[]> {
   const terms = [...words].sort((a, b) => b.length - a.length).slice(0, MAX_TERMS);
@@ -33,9 +37,10 @@ export async function searchSikumim(words: string[], limit: number, core: string
   return rows
     .map(r => {
       const text = `${r.title ?? ''} ${r.text}`;
-      return { r, score: overlap(text, words), anchored: core.length === 0 || overlap(text, core) > 0 };
+      const body = overlap(text, words);
+      return { r, body, score: body + TITLE_WEIGHT * overlap(r.title ?? '', words), anchored: core.length === 0 || overlap(text, core) > 0 };
     })
-    .filter(x => x.score >= 2 && x.anchored)
+    .filter(x => x.body >= 2 && x.anchored)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
     .map(({ r }) => {

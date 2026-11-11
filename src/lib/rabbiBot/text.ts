@@ -109,6 +109,11 @@ export function overlap(text: string, words: string[]): number {
   return words.filter(w => toks.has(w) || Array.from(toks).some(t => t.length === w.length + 1 && t.endsWith(w))).length;
 }
 
+/** A Shulchan Arukh siman's own title, as its first seif opens ("זמן הדלקת נר חנוכה. ובו ב סעיפים: …"); '' when absent. */
+export function simanTitle(seif: string): string {
+  return seif.match(/^(.{3,80}?)\.? ובו [א-ת"״׳']{1,4} סעיפים:/)?.[1] ?? '';
+}
+
 /** Trim a long passage to a window around its best keyword hit. */
 export function excerpt(text: string, words: string[], max: number): string {
   if (text.length <= max) return text;

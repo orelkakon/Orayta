@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { stripHtml, findQuote, questionKey, excerpt, keywords, fallbackPhrases, markRema, splitRema } from '@/lib/rabbiBot/text';
-import { splitRemaCandidate } from '@/lib/rabbiBot/sources';
+import { stripHtml, findQuote, questionKey, excerpt, keywords, fallbackPhrases, markRema, splitRema, simanTitle } from '@/lib/rabbiBot/text';
+import { splitRemaCandidate, seifWindows } from '@/lib/rabbiBot/sources';
 import { withHistory, LastAnswer } from '@/lib/rabbiBot/client';
 import { answerShareText } from '@/lib/rabbiBot/share';
 import { RLM } from '@/lib/siteUrl';
@@ -358,4 +358,16 @@ test('answerSpeech reads understood, short, points by view and sources', () => {
   assert.ok(chunks.some(c => c.point === 0), 'point chunks carry their index');
   assert.ok(chunks[chunks.length - 1].text.startsWith('המקורות'));
   assert.deepEqual(answerSpeech({ ...a, status: 'not_found' }), []);
+});
+
+test('seifWindows: one range per siman around its hits', () => {
+  const SA = 'Shulchan Arukh, Orach Chayim';
+  assert.deepEqual(seifWindows([`${SA} 672:1`, `${SA} 671:3`, `${SA} 672:2`, `${SA} 611`]),
+    [`${SA} 672:1-5`, `${SA} 671:2-6`, `${SA} 611`]);
+});
+
+test('simanTitle reads the siman title off its first seif only', () => {
+  assert.equal(simanTitle('זמן הדלקת נר חנוכה. ובו ב סעיפים: אין מדליקין'), 'זמן הדלקת נר חנוכה');
+  assert.equal(simanTitle('סדר הדלקת נר חנוכה ומקום הנחתו. ובו ח סעיפים: צריך'), 'סדר הדלקת נר חנוכה ומקום הנחתו');
+  assert.equal(simanTitle('שכח או הזיד ולא הדליק עם שקיעת החמה'), '');
 });

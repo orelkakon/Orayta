@@ -3,7 +3,7 @@ import { fetchText, searchRefs, SefariaText } from './sefaria';
 import { searchSikumim } from './sikumim';
 import { quotedAuthorities } from './authorities';
 import { measureTexts } from './measures';
-import { excerpt, keywords, overlap } from './text';
+import { excerpt, keywords, overlap, simanTitle } from './text';
 import { best, Candidate, fromSefaria, linkedCommentaries, searchPhrase, searchTerms, splitRemaCandidate, wikisource } from './sources';
 
 export interface RetrievalPlan {
@@ -24,7 +24,13 @@ export interface RetrievalPlan {
 
 const MAX_PASSAGES = 18;
 const PASSAGE_CHARS = 1100;
+/** The site's own summaries are dense and reviewed — a whole short entry usually fits. */
+const SIKUM_CHARS = 1600;
 const MAX_ANCHORS = 2;
+/** A word in a siman's title counts this much more than one in its seifim (the title names the subject). */
+const TITLE_WEIGHT = 2;
+/** "Shulchan Arukh, Orach Chayim 672:1-4" / "…672:2" → "…672". */
+const simanOf = (ref: string) => ref.replace(/:[\d:-]+$/, '');
 /** A hit found only by a shortened phrase must share this many of the plan's words. */
 const LOOSE_MIN_OVERLAP = 2;
 
@@ -78,8 +84,15 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
   const decide = relevant(parallels);
   // The seifim the commentaries hang on: planned or found by the sources' own term.
   const known = new Set(valid.map(t => t.ref));
+  // Ranked by their best seif plus the siman's title (sibling simanim share the
+  // vocabulary — 671 "סדר הדלקת נר חנוכה" vs 672 "זמן הדלקת נר חנוכה"), one per siman.
+  const anchorScore = (t: SefariaText) => Math.max(...t.segments.map(x => overlap(x.text, words)))
+    + TITLE_WEIGHT * Math.max(0, ...t.segments.map(x => overlap(simanTitle(x.text), words)));
+  const simanim = new Set<string>();
   const anchors = [...valid.filter(t => t.ref.startsWith('Shulchan Arukh')), ...termTexts.filter(t => !known.has(t.ref))]
-    .sort((a, b) => score(b) - score(a)).slice(0, MAX_ANCHORS);
+    .sort((a, b) => anchorScore(b) - anchorScore(a) || b.segments.length - a.segments.length)
+    .filter(t => !simanim.has(simanOf(t.ref)) && simanim.add(simanOf(t.ref)))
+    .slice(0, MAX_ANCHORS);
   const strict = searchHits.filter(h => !h.loose).flatMap(h => h.refs);
   const loose = searchHits.filter(h => h.loose).flatMap(h => h.refs);
   const hitRefs = Array.from(new Set([...quoteHits, ...strict])).slice(0, 8);
@@ -96,11 +109,11 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
 
   const ordered: Candidate[] = [
     ...anchors.flatMap(t => best(fromSefaria(t), words, 2)),
+    ...sikumim.map(s => ({ ref: `sikum:${s.id}`, heRef: s.heRef, book: s.book, text: s.text, url: s.url, origin: 'sikum' as const })),
     ...valid.flatMap(t => best(fromSefaria(t), words, valid.length > 4 ? 1 : valid.length > 2 ? 2 : 3)),
     ...quoting.flatMap(t => best(fromSefaria(t), words, 1)),
     ...measures.flatMap(t => best(fromSefaria(t), words, 1)),
     ...decide.flatMap(t => best(fromSefaria(t), words, 2)),
-    ...sikumim.map(s => ({ ref: `sikum:${s.id}`, heRef: s.heRef, book: s.book, text: s.text, url: s.url, origin: 'sikum' as const })),
     ...linked.flat(),
     ...top(hits),
     ...top(ruleTexts),
@@ -113,7 +126,7 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
   for (const c of ordered.flatMap(splitRemaCandidate)) {
     if (seen.has(c.ref) || !c.text) continue;
     seen.add(c.ref);
-    out.push({ id: `S${out.length + 1}`, ref: c.ref, heRef: c.heRef, book: c.book, url: c.url, origin: c.origin, text: excerpt(c.text, words, PASSAGE_CHARS) });
+    out.push({ id: `S${out.length + 1}`, ref: c.ref, heRef: c.heRef, book: c.book, url: c.url, origin: c.origin, text: excerpt(c.text, words, c.origin === 'sikum' ? SIKUM_CHARS : PASSAGE_CHARS) });
     if (out.length >= MAX_PASSAGES) break;
   }
   return out;
