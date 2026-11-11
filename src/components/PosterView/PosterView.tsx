@@ -21,8 +21,9 @@ const PRINT_ID = 'poster-print';
 
 /* No viewport units in print: Safari resolves vh against the window, not the
    sheet, which printed the page small with empty sides. The sheet takes the
-   paper's full width and its height follows; a hair under A4's ratio, so
-   rounding can never push a second, blank page. */
+   paper's full width and its height follows — shorter than A4's ratio, so the
+   margins a browser adds (Safari's headers and footers) still leave it on one
+   page. */
 const PrintRules = createGlobalStyle`
   #${PRINT_ID} { display: none; }
   @media print {
@@ -34,7 +35,7 @@ const PrintRules = createGlobalStyle`
     }
     body > *:not(#${PRINT_ID}) { display: none !important; }
     #${PRINT_ID} { display: block; width: 100%; }
-    #${PRINT_ID} [data-poster] { width: 100%; aspect-ratio: 210 / 295; break-inside: avoid; }
+    #${PRINT_ID} [data-poster] { width: 100%; aspect-ratio: 210 / 280; break-inside: avoid; }
   }
 `;
 

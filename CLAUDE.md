@@ -41,7 +41,7 @@ Chronological directory of Jewish leaders and decision-makers across all generat
 
 **ציר הדורות** (`RabbisView/timeline/`, data shaping in `lib/rabbisTimeline.ts`, pure, tested): everyone on one line from the earliest figure to today, grouped by century (`buildTimeline`; empty centuries become a "חולפות כ־N שנה" break).
 - Phones: one rail on the start side; from tablets up the cards alternate around a centre rail.
-- Scroll-driven CSS only (no JS, `@supports (animation-timeline: view())` + no reduced motion): the rail fills with gold up to a "reading line" at 42% of the screen, each card settles in while entering (no fill mode, so nothing stays promoted), and the century's Hebrew numeral holds mid-screen as a watermark while its section crosses the line (`view-timeline: --century`). Without support: a plain line, static cards, a small numeral beside each heading.
+- Scroll-driven CSS only (no JS, `@supports (animation-timeline: view())` + no reduced motion): the rail fills with gold up to a "reading line" at 42% of the screen, and each card settles in while entering (no fill mode, so nothing stays promoted). Without support: a plain line and static cards. No century watermark — the user found it in the way.
 - A card opens its bio in place; "לכרטיס המלא" switches to the list filtered to that rabbi.
 
 ---
