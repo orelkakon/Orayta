@@ -19,14 +19,22 @@ import PosterSheet from './PosterSheet';
  */
 const PRINT_ID = 'poster-print';
 
+/* No viewport units in print: Safari resolves vh against the window, not the
+   sheet, which printed the page small with empty sides. The sheet takes the
+   paper's full width and its height follows; a hair under A4's ratio, so
+   rounding can never push a second, blank page. */
 const PrintRules = createGlobalStyle`
   #${PRINT_ID} { display: none; }
   @media print {
     @page { size: A4 portrait; margin: 0; }
-    html, body { background: ${theme.game.qrLight} !important; }
+    html, body {
+      background: ${theme.game.qrLight} !important;
+      width: auto !important; height: auto !important; min-height: 0 !important;
+      margin: 0 !important; padding: 0 !important; overflow: visible !important;
+    }
     body > *:not(#${PRINT_ID}) { display: none !important; }
-    #${PRINT_ID} { display: block; position: fixed; inset: 0; }
-    #${PRINT_ID} [data-poster] { width: min(100%, calc(100vh * 210 / 297)); margin-inline: auto; }
+    #${PRINT_ID} { display: block; width: 100%; }
+    #${PRINT_ID} [data-poster] { width: 100%; aspect-ratio: 210 / 295; break-inside: avoid; }
   }
 `;
 

@@ -224,7 +224,7 @@ Kahoot-style live game for a shiur / Shabbat table. Anyone can host (no account)
 ### 2r. דף לבית הכנסת — `/poster`
 A designed A4 page for a synagogue notice board: QR codes to `/minyan`, `/siddur`, `/tehillim` + a small one to the home page (`PosterView/`, texts in `lib/texts/poster.ts`).
 - `PosterSheet` is drawn entirely in `cqw`, so the on-screen preview and the printed page are one drawing at two scales; fixed paper colours (`theme.game.qr*`), same in both themes.
-- Printing: a second copy is portaled under `<body>` (`#poster-print`) and print CSS hides everything else (`@page A4, margin 0`) — one clean page whatever the shell holds. The button is `window.print()` (save as PDF from the dialog).
+- Printing: a second copy is portaled under `<body>` (`#poster-print`) and print CSS hides everything else (`@page A4, margin 0`) — one clean page whatever the shell holds. **No viewport units in the print rules** (Safari resolves `vh` against the window, not the sheet — the page printed small with empty sides): the sheet takes the paper's full width at 210/295. The button is `window.print()` (save as PDF from the dialog).
 - The optional synagogue name lives in component state only — never stored or sent. Codes point at `SITE_URL`.
 - `QrSvg` (`PlayView/QrCode.tsx`) is the bare code that fills its box.
 
