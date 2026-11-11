@@ -9,7 +9,7 @@ const DESC = 'מדריך כרונולוגי לגדולי ישראל — מדור
 const PATH = '/rabbis';
 
 interface Props {
-  searchParams: { q?: string; tab?: string };
+  searchParams: { q?: string; tab?: string; view?: string };
 }
 
 /** `?q=<exact name>` (links from רבי־בוט, kivrei, hilula) previews as that rabbi, with the portrait. */
@@ -29,7 +29,11 @@ export default function RabbisPage({ searchParams }: Props) {
   return (
     <>
       <SectionPing metric="rabbis" />
-      <RabbisAndBooksView initialTab={initialTab} initialSearch={searchParams.q ?? ''} />
+      <RabbisAndBooksView
+        initialTab={initialTab}
+        initialSearch={searchParams.q ?? ''}
+        initialView={searchParams.view === 'timeline' ? 'timeline' : undefined}
+      />
     </>
   );
 }

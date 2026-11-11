@@ -37,6 +37,13 @@ Chronological directory of Jewish leaders and decision-makers across all generat
 - Add, edit, delete any rabbi entry
 - RabbiForm modal with all fields
 
+**Views** (`SegmentedControl` under the page header): רשימה · ציר הדורות · מפה. `/rabbis?view=timeline` opens the timeline.
+
+**ציר הדורות** (`RabbisView/timeline/`, data shaping in `lib/rabbisTimeline.ts`, pure, tested): everyone on one line from the earliest figure to today, grouped by century (`buildTimeline`; empty centuries become a "חולפות כ־N שנה" break).
+- Phones: one rail on the start side; from tablets up the cards alternate around a centre rail.
+- Scroll-driven CSS only (no JS, `@supports (animation-timeline: view())` + no reduced motion): the rail fills with gold up to a "reading line" at 42% of the screen, each card settles in while entering (no fill mode, so nothing stays promoted), and the century's Hebrew numeral holds mid-screen as a watermark while its section crosses the line (`view-timeline: --century`). Without support: a plain line, static cards, a small numeral beside each heading.
+- A card opens its bio in place; "לכרטיס המלא" switches to the list filtered to that rabbi.
+
 ---
 
 ### 2b. שידור חי (Live Torah) — `/live`
@@ -103,6 +110,7 @@ The page is "today in Orayta", in order of daily use:
   - Motion: `HeroSky` (stars / dawn / rays by the real sun) + `RisingLetters` (gold letters floating up); the gold rule draws in and the tags pop.
   - `ArkCurtain` ("פתיחת ההיכל"): once a day (`orayta_ark_day`) a velvet פרוכת with a gold crown parts over the already-rendered hero, light spills out, gone after 1.9s. Skipped under reduced motion (OS or the a11y widget). The privacy policy mentions it.
   - `HomeView` wraps it in `HeroDepth`: it sinks back as the page scrolls past (scroll-driven CSS, no JS).
+  - `ChanukahLights`: on Chanukah (`lib/chanukah.ts`, pure, tested — the day begins at nightfall) a חנוכייה with tonight's candles burns in the hero. Preview any night with `/?chanukah=1…8`.
 - Live strip, shown only while live.
 - `FeedTeaser`: today's first feed items (a per-day seed) as portrait cards. Tapping one hands the item to `/feed` via sessionStorage (`stashFeedStart` / `takeFeedStart` in `lib/feedExcerpt.ts`), so the feed opens on it.
 - `QuickAccess` (the `HE.HOME_QUICK` tiles), the nearby hub, the push card and `DedicateCard`.
@@ -188,6 +196,8 @@ Shared Tehillim readings (refua, ilui neshama, …), built to beat tehilimyahad 
 - **Models** `TehillimCircle` (slug, manageHash, purpose, names[], title, note, mode, goal, endsAt, closed, books, activeAt) + `TehillimClaim`. Idle 180 days → deleted on the next create. Create: 6 / hour per hashed IP (admin exempt; admin readings get ipHash `admin` and are left out of the admin card).
 - **API:** `POST /api/tehillim`, `GET|PATCH|DELETE /api/tehillim/<slug>` (state per viewer, `lib/tehillim/server.ts` `viewState`, 1.5 s per-instance cache), `POST …/claim` `{unit?}`, `POST …/claim/<id>` `{action: done|release, name?}`, `GET /api/tehillim/text/<n>` (Sefaria via the data cache, cleaned to booklet text by `text.ts`: no teamim / paseq / {פ}, qere kept, ketiv dropped).
 - **UI** (`components/TehillimView/`): night hero with the dedication, progress ring + live numbers and the CTA; share panel (WhatsApp text with `whatsapp://`, native share, copy, QR — highlighted right after creating via sessionStorage `orayta_tehillim_fresh`); chapter map (tap a free unit); activity (24 h / 14 days bars, recent reads, names readers chose); organizer panel. Reading = full-screen `Sheet` (verses with gold numerals, text size, wake lock, hold timer, done / another / not now) → thanks view with "next" in one tap. Polls every 5 s visible / 60 s hidden. The bot FAB and the "what's new" announcement stay off `/tehillim*`.
+- **Book moment** (`TehillimView/moment/`): when a whole book closes, letters converge into the name the reading is for (once per completed book, `useBookMoment`; preview with `?moment=1`).
+- **Growth offers** (`reading/GrowthOffers.tsx`, on the thanks view): "open a reading of your own" and add-to-home-screen.
 - **Entry points:** nav (תפילות group), prayers hub card (with a "חדש" badge until 2027-02-28), hilula page ("open a reading for his neshama" → `/tehillim/new?for=neshama&name=`), OG card per reading (`lib/og/tehillim.ts`). Pages under `/tehillim/<slug>` are `noindex`. The privacy policy describes all of this.
 
 ### 2j. חידון קבוצתי (Group quiz) — `/play`
@@ -210,6 +220,16 @@ Kahoot-style live game for a shiur / Shabbat table. Anyone can host (no account)
 - Rules (`lib/contact.ts`, pure, tested): topic, message ≤2000, optional name / reply-to (email or phone) / rating, bidi chars stripped; `contactWaText` builds the WhatsApp draft. Mail body in `lib/contactMail.ts` (HTML-escaped; a reply-to email becomes the mail's Reply-To).
 - `POST /api/contact` saves the row and, for email, **awaits** the Gmail send before answering (a send left running after the response is cut off on Vercel); not configured / failed → 502 `mail`, and the page offers WhatsApp / mailto. Honeypot `website`, 5 / 10 min per IP.
 - WhatsApp: `GET /api/contact` returns the number; the button is a real `wa.me` link built on every keystroke — never `window.open` after an `await` (iOS blocks it). The click only logs the message (`keepalive`).
+
+### 2r. דף לבית הכנסת — `/poster`
+A designed A4 page for a synagogue notice board: QR codes to `/minyan`, `/siddur`, `/tehillim` + a small one to the home page (`PosterView/`, texts in `lib/texts/poster.ts`).
+- `PosterSheet` is drawn entirely in `cqw`, so the on-screen preview and the printed page are one drawing at two scales; fixed paper colours (`theme.game.qr*`), same in both themes.
+- Printing: a second copy is portaled under `<body>` (`#poster-print`) and print CSS hides everything else (`@page A4, margin 0`) — one clean page whatever the shell holds. The button is `window.print()` (save as PDF from the dialog).
+- The optional synagogue name lives in component state only — never stored or sent. Codes point at `SITE_URL`.
+- `QrSvg` (`PlayView/QrCode.tsx`) is the bare code that fills its box.
+
+### Install to the home screen
+`lib/install.ts` + `common/useInstallMode` + `common/AddToHomeScreen`: Chromium's `beforeinstallprompt` is parked on `window.__bip` and fired from a tap (native dialog); iOS gets the Safari guide. Besides the automatic sheet there is an always-available row in the "עוד" settings and on the Tehillim thanks view.
 
 ### Share previews (`og:image`) — `lib/og/`, `GET /api/og`
 Every public page declares its own preview image through `shareMeta(title, desc, path, params)` (`lib/og/meta.ts`) — a page that sets `openGraph` must bring its image (Next merges metadata per top-level key). `/api/og?p=<key>` renders one card system (`card.tsx`, 1200×630): night (espresso + gold) for pages, parchment for quoted text; emblem = line icon / portrait / game PIN.

@@ -3,14 +3,14 @@
 import { useState } from 'react';
 import { HE } from '@/lib/hebrewTexts';
 import StickyTabs, { TabBtn } from '@/components/common/StickyTabs';
-import RabbisView from '@/components/RabbisView/RabbisView';
+import RabbisView, { RabbisViewMode } from '@/components/RabbisView/RabbisView';
 import BooksView from '@/components/BooksView/BooksView';
 
 type Tab = 'rabbis' | 'books';
 
-interface Props { initialTab?: Tab; initialSearch?: string; }
+interface Props { initialTab?: Tab; initialSearch?: string; initialView?: RabbisViewMode; }
 
-export default function RabbisAndBooksView({ initialTab = 'rabbis', initialSearch = '' }: Props) {
+export default function RabbisAndBooksView({ initialTab = 'rabbis', initialSearch = '', initialView }: Props) {
   const [tab, setTab] = useState<Tab>(initialTab);
   const [rabbisKey, setRabbisKey] = useState(0);
   const [rabbisSearch, setRabbisSearch] = useState(initialSearch);
@@ -33,7 +33,7 @@ export default function RabbisAndBooksView({ initialTab = 'rabbis', initialSearc
       </>}
     >
       {tab === 'rabbis'
-        ? <RabbisView key={rabbisKey} initialSearch={rabbisSearch} />
+        ? <RabbisView key={rabbisKey} initialSearch={rabbisSearch} initialView={rabbisKey === 0 ? initialView : undefined} />
         : <BooksView onViewRabbi={handleViewRabbi} />
       }
     </StickyTabs>

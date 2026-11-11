@@ -16,6 +16,8 @@ import { ABOUT_HE } from './texts/about';
 import { OG_HE } from './texts/og';
 import { TEHILLIM_HE } from './texts/tehillim';
 import { TEHILLIM_CIRCLE_HE } from './texts/tehillimCircle';
+import { RABBIS_TIMELINE_HE } from './texts/rabbisTimeline';
+import { POSTER_HE } from './texts/poster';
 
 export const HE = {
   APP_NAME: 'אורייתא',
@@ -224,7 +226,7 @@ export const HE = {
   QUIZ_IMAGE_FILTER_TITLE: 'סנן לפי תקופה',
   QUIZ_IMAGE_FILTER_ALL: 'כל התקופות',
 
-  RABBIS_TIMELINE_VIEW: 'ציר זמן',
+  RABBIS_TIMELINE_VIEW: 'ציר הדורות',
   RABBIS_LIST_VIEW: 'רשימה',
   RABBIS_MAP_VIEW: 'מפה',
   RABBIS_VIEW_ARIA: 'תצוגת הרבנים',
@@ -1633,4 +1635,6 @@ export const HE = {
   ...OG_HE,
   ...TEHILLIM_HE,
   ...TEHILLIM_CIRCLE_HE,
+  ...RABBIS_TIMELINE_HE,
+  ...POSTER_HE,
 };

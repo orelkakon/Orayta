@@ -17,7 +17,8 @@ const Frame = styled.div<{ $size: number }>`
   svg { display: block; width: 100%; height: 100%; }
 `;
 
-export default function QrCode({ value, size = 180, label }: { value: string; size?: number; label: string }) {
+/** The bare code: fills its box, so the caller sizes and frames it. */
+export function QrSvg({ value }: { value: string }) {
   const { d, n } = useMemo(() => {
     const qr = qrcode(0, 'M');
     qr.addData(value);
@@ -31,10 +32,16 @@ export default function QrCode({ value, size = 180, label }: { value: string; si
   }, [value]);
 
   return (
+    <svg viewBox={`0 0 ${n} ${n}`} shapeRendering="crispEdges" aria-hidden>
+      <path d={d} fill={theme.game.qrDark} />
+    </svg>
+  );
+}
+
+export default function QrCode({ value, size = 180, label }: { value: string; size?: number; label: string }) {
+  return (
     <Frame $size={size} role="img" aria-label={label}>
-      <svg viewBox={`0 0 ${n} ${n}`} shapeRendering="crispEdges" aria-hidden>
-        <path d={d} fill={theme.game.qrDark} />
-      </svg>
+      <QrSvg value={value} />
     </Frame>
   );
 }

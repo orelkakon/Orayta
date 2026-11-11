@@ -5,13 +5,13 @@ import dynamic from 'next/dynamic';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
-import { Rabbi, RabbiCategory, Book } from '@/types';
-import { CATEGORY_LABELS, CATEGORY_ORDER, CATEGORY_COLORS } from '@/lib/rabbisData';
+import { Rabbi, Book } from '@/types';
 import { getJson, freshUrl, isAbort } from '@/lib/apiClient';
 import { useRole } from '@/components/common/RoleContext';
 import RabbiCard from './RabbiCard';
 import RabbiForm from './RabbiForm';
-import RabbisTimeline from './RabbisTimeline';
+import CategoryTabs from './CategoryTabs';
+import GenerationsTimeline from './timeline/GenerationsTimeline';
 import SearchField from '@/components/common/SearchField';
 import ListState, { InlineError } from '@/components/common/ListState';
 import PageHeader from '@/components/ui/PageHeader';
@@ -21,7 +21,7 @@ import { LineIcon } from '@/components/common/LineIcons';
 
 const RabbisMap = dynamic(() => import('./RabbisMapInner'), {
   ssr: false,
-  loading: () => <MapLoading>טוען מפה...</MapLoading>,
+  loading: () => <MapLoading>{HE.LOADING}</MapLoading>,
 });
 
 const MapLoading = styled.div`
@@ -30,11 +30,7 @@ const MapLoading = styled.div`
   border: 1px solid ${theme.colors.border}; border-radius: ${theme.radii.lg};
 `;
 
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${theme.spacing.lg};
-`;
+const Container = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg};`;
 
 const StickyBar = styled.div`
   position: sticky; top: var(--header-h, 56px); z-index: ${theme.z.sticky};
@@ -45,65 +41,29 @@ const StickyBar = styled.div`
   display: flex; flex-direction: column; gap: ${theme.spacing.sm};
 `;
 
-
-
-
-
-
-const CountBadge = styled.span`
-  font-size: 0.82rem;
-  color: ${theme.colors.textLight};
-`;
-
-
-const TabsScroll = styled.div`
-  display: flex;
-  gap: ${theme.spacing.sm};
-  overflow-x: auto;
-  padding-bottom: ${theme.spacing.xs};
-  scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
-`;
-
-const Tab = styled.button<{ $active: boolean; $color?: string }>`
-  flex-shrink: 0;
-  padding: ${theme.spacing.xs} ${theme.spacing.md};
-  border-radius: ${theme.radii.md};
-  font-size: 0.85rem;
-  font-weight: 600;
-  border: 2px solid ${({ $active, $color }) =>
-    $active ? ($color ?? theme.colors.primary) : theme.colors.borderLight};
-  background: ${({ $active, $color }) =>
-    $active ? `color-mix(in srgb, ${$color ?? theme.colors.primary} 10%, transparent)` : 'transparent'};
-  color: ${({ $active, $color }) =>
-    $active ? ($color ?? theme.colors.primary) : theme.colors.textMuted};
-  transition: all 0.15s;
-  &:hover {
-    border-color: ${({ $color }) => $color ?? theme.colors.primary};
-    color: ${({ $color }) => $color ?? theme.colors.primary};
-  }
-`;
+const CountBadge = styled.span`font-size: 0.82rem; color: ${theme.colors.textLight};`;
 
 const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: ${theme.spacing.lg};
-  @media (max-width: 700px) {
-    grid-template-columns: 1fr;
-  }
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: ${theme.spacing.lg};
+  @media (max-width: 700px) { grid-template-columns: 1fr; }
 `;
 
-/* Segment toggle — pill style, visually distinct from action buttons */
-type RabbisViewMode = 'list' | 'timeline' | 'map';
+export type RabbisViewMode = 'list' | 'timeline' | 'map';
+
+const VIEWS: { value: RabbisViewMode; label: string }[] = [
+  { value: 'list', label: HE.RABBIS_LIST_VIEW },
+  { value: 'timeline', label: HE.RABBIS_TIMELINE_VIEW },
+  { value: 'map', label: HE.RABBIS_MAP_VIEW },
+];
 
 const ViewSwitch = styled.div`
-  margin: -${theme.spacing.sm} 0 ${theme.spacing.xs};
+  margin: -${theme.spacing.sm} 0 -${theme.spacing.sm};
   ${theme.up.md} { max-width: 420px; }
 `;
 
-interface Props { initialSearch?: string; }
+interface Props { initialSearch?: string; initialView?: RabbisViewMode; }
 
-export default function RabbisView({ initialSearch = '' }: Props) {
+export default function RabbisView({ initialSearch = '', initialView = 'list' }: Props) {
   const [rabbis, setRabbis] = useState<Rabbi[]>([]);
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,7 +73,7 @@ export default function RabbisView({ initialSearch = '' }: Props) {
   const [search, setSearch] = useState(initialSearch);
   const [editRabbi, setEditRabbi] = useState<Rabbi | null>(null);
   const [addOpen, setAddOpen] = useState(false);
-  const [view, setView] = useState<RabbisViewMode>('list');
+  const [view, setView] = useState<RabbisViewMode>(initialView);
   const role = useRole();
 
   // Only the first load blanks the list for a spinner; refreshes after a
@@ -156,8 +116,13 @@ export default function RabbisView({ initialSearch = '' }: Props) {
     return list;
   }, [rabbis, category, search]);
 
-  const countFor = (cat: string) =>
-    rabbis.filter(r => cat === 'all' || r.category === cat).length;
+  // From the timeline to a person's full card: the list, narrowed to them.
+  const openCard = useCallback((rabbi: Rabbi) => {
+    setCategory('all');
+    setSearch(rabbi.name);
+    setView('list');
+    window.scrollTo({ top: 0 });
+  }, []);
 
   const handleDelete = async (rabbi: Rabbi) => {
     if (!window.confirm(HE.RABBI_DELETE_CONFIRM)) return;
@@ -178,73 +143,50 @@ export default function RabbisView({ initialSearch = '' }: Props) {
       )}
 
       <PageHeader
-          icon="users"
-          title={HE.RABBIS_TITLE}
-          subtitle={<>{HE.RABBIS_SUBTITLE}
-              {filtered.length > 0 && <CountBadge> {HE.RABBIS_COUNT(filtered.length)}</CountBadge>}</>}
-          actions={role === 'admin' ? <Button $size="sm" onClick={() => setAddOpen(true)}><LineIcon name="plus" size={17} strokeWidth={2.2} />{HE.RABBI_ADD_BTN}</Button> : undefined}
-        />
+        icon="users"
+        title={HE.RABBIS_TITLE}
+        subtitle={<>{HE.RABBIS_SUBTITLE}
+          {filtered.length > 0 && <CountBadge> {HE.RABBIS_COUNT(filtered.length)}</CountBadge>}</>}
+        actions={role === 'admin' ? <Button $size="sm" onClick={() => setAddOpen(true)}><LineIcon name="plus" size={17} strokeWidth={2.2} />{HE.RABBI_ADD_BTN}</Button> : undefined}
+      />
+
+      <ViewSwitch>
+        <SegmentedControl ariaLabel={HE.RABBIS_VIEW_ARIA} value={view} onChange={setView} options={VIEWS} />
+      </ViewSwitch>
 
       <StickyBar>
-
-        <SearchField
-          value={search}
-          onChange={setSearch}
-          placeholder={HE.RABBIS_SEARCH_PLACEHOLDER}
-        />
-
-        <TabsScroll>
-          <Tab $active={category === 'all'} onClick={() => setCategory('all')}>
-            {HE.RABBIS_FILTER_ALL} ({countFor('all')})
-          </Tab>
-          {CATEGORY_ORDER.map(cat => (
-            <Tab
-              key={cat}
-              $active={category === cat}
-              $color={CATEGORY_COLORS[cat]}
-              onClick={() => setCategory(cat)}
-            >
-              {CATEGORY_LABELS[cat]} ({countFor(cat)})
-            </Tab>
-          ))}
-        </TabsScroll>
+        <SearchField value={search} onChange={setSearch} placeholder={HE.RABBIS_SEARCH_PLACEHOLDER} />
+        <CategoryTabs rabbis={rabbis} value={category} onChange={setCategory} />
       </StickyBar>
 
       {deleteError && <InlineError role="alert">{HE.DELETE_ERROR}</InlineError>}
 
       {loading || loadError ? (
-        <ListState
-          loading={loading}
-          error={loadError}
-          emptyText={HE.RABBIS_EMPTY}
-          onRetry={() => load()}
-        />
+        <ListState loading={loading} error={loadError} emptyText={HE.RABBIS_EMPTY} onRetry={() => load()} />
       ) : (
         <>
-          {view === 'timeline' && <RabbisTimeline rabbis={filtered} />}
-          {view === 'map'      && <RabbisMap rabbis={filtered} />}
-          {view === 'list'     && (
+          {view === 'timeline' && <GenerationsTimeline rabbis={filtered} onOpen={openCard} />}
+          {view === 'map' && <RabbisMap rabbis={filtered} />}
+          {view !== 'map' && filtered.length === 0 && (
+            <ListState
+              loading={false}
+              error={false}
+              emptyText={rabbis.length > 0 && search.trim() ? HE.SEARCH_NO_RESULTS : HE.RABBIS_EMPTY}
+              onRetry={() => load()}
+            />
+          )}
+          {view === 'list' && filtered.length > 0 && (
             <Grid>
-              {filtered.length === 0
-                ? (
-                  <ListState
-                    loading={false}
-                    error={false}
-                    emptyText={rabbis.length > 0 && search.trim() ? HE.SEARCH_NO_RESULTS : HE.RABBIS_EMPTY}
-                    onRetry={() => load()}
-                  />
-                )
-                : filtered.map((r, i) => (
-                    <RabbiCard
-                      key={r.id}
-                      rabbi={r}
-                      index={i}
-                      books={books.filter(b => b.rabbiId === r.id).map(b => ({ id: b.id, title: b.title }))}
-                      onEdit={role === 'admin' ? () => setEditRabbi(r) : undefined}
-                      onDelete={role === 'admin' ? () => handleDelete(r) : undefined}
-                    />
-                  ))
-              }
+              {filtered.map((r, i) => (
+                <RabbiCard
+                  key={r.id}
+                  rabbi={r}
+                  index={i}
+                  books={books.filter(b => b.rabbiId === r.id).map(b => ({ id: b.id, title: b.title }))}
+                  onEdit={role === 'admin' ? () => setEditRabbi(r) : undefined}
+                  onDelete={role === 'admin' ? () => handleDelete(r) : undefined}
+                />
+              ))}
             </Grid>
           )}
         </>

@@ -69,6 +69,7 @@ export const NAV_GROUPS: NavGroup[] = [
     id: 'community', label: HE.NAV_GROUP_COMMUNITY,
     items: [
       { href: '/dedications', label: HE.NAV_DEDICATIONS, icon: 'candle', keywords: 'לעילוי נשמת רפואה' },
+      { href: '/poster', label: HE.NAV_POSTER, icon: 'synagogue', keywords: 'הדפסה לוח מודעות QR גבאי' },
       { href: '/contact', label: HE.NAV_CONTACT, icon: 'phone' },
       { href: '/about', label: HE.NAV_ABOUT, icon: 'info' },
     ],

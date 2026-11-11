@@ -38,6 +38,7 @@ const ROUTES: Route[] = [
   { path: '/kivrei',      changeFrequency: 'monthly', priority: 0.6 },
   { path: '/dedications', changeFrequency: 'weekly',  priority: 0.5 },
   { path: '/about',       changeFrequency: 'monthly', priority: 0.4 },
+  { path: '/poster',      changeFrequency: 'yearly',  priority: 0.3 },
   { path: '/contact',     changeFrequency: 'yearly',  priority: 0.3 },
   { path: '/legal',       changeFrequency: 'yearly',  priority: 0.2 },
 ];
