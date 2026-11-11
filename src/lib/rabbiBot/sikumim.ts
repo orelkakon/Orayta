@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db';
-import { overlap } from './text';
+import { overlap } from './match';
 
 // Server-only: the site's own book summaries (SikumEntry) as a source. They
 // are written and reviewed by the site's editor, so they count as reliable

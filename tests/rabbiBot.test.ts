@@ -1,10 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { stripHtml, findQuote, questionKey, excerpt, keywords, fallbackPhrases, markRema, splitRema, simanTitle, overlap } from '@/lib/rabbiBot/text';
+import { stripHtml, findQuote, questionKey, keywords, fallbackPhrases, markRema, splitRema, simanTitle } from '@/lib/rabbiBot/text';
+import { excerpt, overlap } from '@/lib/rabbiBot/match';
 import { splitRemaCandidate } from '@/lib/rabbiBot/sources';
 import { simanRanges, spellings, arukhHaShulchanRef } from '@/lib/rabbiBot/anchors';
 import { partialAnswer } from '@/lib/rabbiBot/partial';
 import { worthSecondTry } from '@/lib/rabbiBot/retry';
+import { tocMatches } from '@/lib/rabbiBot/toc';
+import { isAshkenaziSource } from '@/lib/rabbiBot/views';
 import { scorer, wordWeights, impliedWords } from '@/lib/rabbiBot/rank';
 import { withHistory, LastAnswer } from '@/lib/rabbiBot/client';
 import { answerShareText } from '@/lib/rabbiBot/share';
@@ -432,4 +435,29 @@ test('arukhHaShulchanRef: the same siman in the Arukh HaShulchan', () => {
   assert.equal(arukhHaShulchanRef('Shulchan Arukh, Orach Chayim 672:1-99'), 'Arukh HaShulchan, Orach Chaim 672:1-99');
   assert.equal(arukhHaShulchanRef("Shulchan Arukh, Yoreh De'ah 89:1"), "Arukh HaShulchan, Yoreh De'ah 89:1-99");
   assert.equal(arukhHaShulchanRef('Mishnah Berurah 672:1'), null);
+});
+
+test('tocMatches finds a siman by its title', () => {
+  const hits = tocMatches({ asked: keywords('עד מתי מדליקים נרות חנוכה?'), implied: ['זמן'] }, 5).map(m => m.ref);
+  assert.ok(hits.includes('Shulchan Arukh, Orach Chayim 672'));
+  const hallel = tocMatches({ asked: keywords('מברכים על הלל בראש חודש?') }, 3).map(m => m.ref);
+  assert.equal(hallel[0], 'Shulchan Arukh, Orach Chayim 422');
+});
+
+test('a prefixed question word meets the plain word in the source', () => {
+  assert.equal(overlap('נשים חייבות בהבדלה כמו שחייבות בקידוש', ['הבדלה']), 1);
+  assert.equal(overlap('דין הבדלה על היין', ['בהבדלה']), 1);
+});
+
+test('a main ruling resting only on Ashkenazi books is shown as theirs', () => {
+  const p = (id: string, book: string, text: string, origin: 'sefaria' | 'sikum' = 'sefaria') => ({ id, ref: id, heRef: book, book, url: '', origin, text });
+  const passages = [p('S1', 'משנה ברורה', 'נוהגין להדליק עם צאת הכוכבים ממש'), p('S2', 'שולחן ערוך, אורח חיים', 'מדליק והולך כל הלילה עד שיעלה עמוד השחר')];
+  const raw = { status: 'answered', short: 'x', points: [
+    { text: 'לפי המשנה ברורה מדליקים בצאת הכוכבים', view: 'main', basis: 'explicit', cites: [{ id: 'S1', quote: 'נוהגין להדליק עם צאת הכוכבים' }] },
+    { text: 'השולחן ערוך פוסק שמדליק כל הלילה', view: 'main', basis: 'explicit', cites: [{ id: 'S2', quote: 'מדליק והולך כל הלילה' }] },
+  ] };
+  const v = verifyAnswer(raw, passages, 'moadim');
+  assert.deepEqual(v.points.map(x => x.view), ['ashkenaz', 'main']);
+  assert.equal(v.dispute, true);
+  assert.equal(isAshkenaziSource({ book: 'קיצור שולחן ערוך', origin: 'sikum' }), false);
 });

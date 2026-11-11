@@ -30,10 +30,10 @@ const COMPACT_SOURCE_CHARS = 6000;
 /** A second answer attempt only starts with at least this much of the request's budget left. */
 const RETRY_MIN_MS = 15_000;
 
-/** A Torah question has no Sephardi/Ashkenazi split — a stray "ashkenaz" view is just a note. */
+/** A Torah question has no split between communities — a stray community view is just a note. */
 function settle(a: RabbiBotAnswer, kind: RabbiBotKind): RabbiBotAnswer {
   if (kind !== 'torah') return a;
-  return { ...a, points: a.points.map(pt => (pt.view === 'ashkenaz' ? { ...pt, view: 'note' } : pt)), dispute: false };
+  return { ...a, points: a.points.map(pt => (pt.view === 'ashkenaz' || pt.view === 'teiman' ? { ...pt, view: 'note' } : pt)), dispute: false };
 }
 
 interface AnswerCall { question: string; kind: RabbiBotKind; topic: RabbiBotTopic; passages: RabbiBotPassage[]; understood: string }

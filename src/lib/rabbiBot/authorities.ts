@@ -1,5 +1,6 @@
 import { fetchText, searchExactTexts, SefariaText } from './sefaria';
-import { keywords, overlap } from './text';
+import { keywords } from './text';
+import { overlap } from './match';
 
 // Server-side lookups for poskim whose own books are in no open library the bot
 // reads: Sefaria doesn't carry them, and Wikisource removed the Chazon Ish over

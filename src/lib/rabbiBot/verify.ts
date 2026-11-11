@@ -2,6 +2,7 @@ import type {
   RabbiBotAnswer, RabbiBotPassage, RabbiBotPoint, RabbiBotSource, RabbiBotTopic, RabbiBotView,
 } from '@/types/rabbiBot';
 import { findQuote } from './text';
+import { isAshkenaziSource } from './views';
 
 /** What the answering model returns (parsed JSON, untrusted). */
 export interface RawAnswer {
@@ -14,7 +15,7 @@ export interface RawAnswer {
 interface RawCite { id?: unknown; quote?: unknown }
 interface RawPoint { text?: unknown; view?: unknown; cites?: unknown; basis?: unknown; derived?: unknown }
 
-const VIEWS: RabbiBotView[] = ['main', 'ashkenaz', 'note'];
+const VIEWS: RabbiBotView[] = ['main', 'ashkenaz', 'teiman', 'note'];
 const MAX_POINTS = 8;
 const MAX_CITES = 4;
 const MIN_POINT_CHARS = 15;
@@ -55,7 +56,9 @@ export function verifyAnswer(raw: RawAnswer, passages: RabbiBotPassage[], topic:
     const rule = rp.basis === 'rule';
     const wanted = Array.isArray(rp.cites) ? Math.min(rp.cites.length, MAX_CITES) : 0;
     if (cites.length === 0 || ((derived || rule) && cites.length < wanted)) continue;
-    points.push({ text, view, cites, ...(rule ? { rule } : derived ? { derived } : {}) });
+    // A "main" (Sephardi) ruling must rest on more than Ashkenazi books — otherwise it is shown as theirs.
+    const ashkenaziOnly = view === 'main' && cites.every(c => isAshkenaziSource(sources[c.source]));
+    points.push({ text, view: ashkenaziOnly ? 'ashkenaz' : view, cites, ...(rule ? { rule } : derived ? { derived } : {}) });
   }
 
   const found = raw.status !== 'not_found' && points.length > 0;
@@ -67,7 +70,7 @@ export function verifyAnswer(raw: RawAnswer, passages: RabbiBotPassage[], topic:
     short: found ? str(raw.short, 500) : '',
     points: found ? points : [],
     sources: found ? sources : [],
-    dispute: found && (raw.dispute === true || points.some(p => p.view === 'ashkenaz')),
+    dispute: found && (raw.dispute === true || points.some(p => p.view === 'ashkenaz' || p.view === 'teiman')),
     topic,
     total: rawPoints.length,
     verified: points.length,

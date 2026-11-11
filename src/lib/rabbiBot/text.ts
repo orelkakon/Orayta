@@ -106,66 +106,9 @@ export function fallbackPhrases(phrase: string, max = 2): string[] {
   return Array.from(new Set(pairs)).slice(0, max);
 }
 
-/**
- * Spelling-tolerant form for matching (ranking only — never quoting): ו/י after
- * the first letter dropped, so full and defective spellings meet
- * (תפילה/תפלה, ויבוא/ויבא, מצווה/מצוה, אישה/אשה).
- */
-export const skeleton = (w: string) => (w.length <= 2 ? w : w[0] + w.slice(1).replace(/[וי]/g, ''));
-
-const PREFIX = /^[בהולמשכ]/;
-
-/** Every word of `text` in skeleton form, also without a one-letter prefix (ב/ה/ו/ל/מ/ש/כ). */
-export function wordForms(text: string): Set<string> {
-  const out = new Set<string>();
-  tokenize(text).forEach(({ raw, norm }) => {
-    out.add(skeleton(norm));
-    if (norm.length >= 4 && PREFIX.test(norm)) out.add(skeleton(norm.slice(1)));
-    if (isAbbrev(raw)) expandAbbrev(norm).forEach(w => out.add(skeleton(w)));
-  });
-  return out;
-}
-
-/** How many of `words` occur in `text` (prefix- and spelling-tolerant, see wordForms). */
-export function overlap(text: string, words: string[]): number {
-  const forms = wordForms(text);
-  return words.filter(w => forms.has(skeleton(w))).length;
-}
-
 /** A Shulchan Arukh siman's own title, as its first seif opens ("זמן הדלקת נר חנוכה. ובו ב סעיפים: …"); '' when absent. */
 export function simanTitle(seif: string): string {
   return seif.match(/^(.{3,80}?)\.? ובו [א-ת"״׳']{1,4} סעיפים:/)?.[1] ?? '';
-}
-
-/** Trim a long passage to a window around its best keyword hit. */
-export function excerpt(text: string, words: string[], max: number): string {
-  if (text.length <= max) return text;
-  const toks = tokenize(text);
-  // Which of `words` each token stands for (-1: none) — computed once, then a
-  // sliding window counts the distinct words in it (linear in the text).
-  const index = new Map(words.map((w, i) => [skeleton(w), i]));
-  const which = toks.map(({ norm }) => index.get(skeleton(norm))
-    ?? (norm.length >= 4 && PREFIX.test(norm) ? index.get(skeleton(norm.slice(1))) : undefined) ?? -1);
-  const span = Math.max(20, Math.floor(max / 6));
-  const inWindow = new Map<number, number>();
-  const move = (i: number, d: number) => {
-    if (which[i] < 0) return;
-    const n = (inWindow.get(which[i]) ?? 0) + d;
-    if (n > 0) inWindow.set(which[i], n); else inWindow.delete(which[i]);
-  };
-  let bestAt = 0;
-  let bestScore = -1;
-  for (let i = 0; i < toks.length; i++) {
-    move(i, 1);
-    if (i >= span) move(i - span, -1);
-    const startAt = Math.max(0, i - span + 1);
-    if (inWindow.size > bestScore) { bestScore = inWindow.size; bestAt = startAt; }
-  }
-  const start = Math.max(0, bestAt - 10);
-  let out = '';
-  let end = start;
-  for (; end < toks.length && out.length + toks[end].raw.length < max; end++) out += (out ? ' ' : '') + toks[end].raw;
-  return `${start > 0 ? '… ' : ''}${out}${end < toks.length ? ' …' : ''}`;
 }
 
 // ── The Rema inside a Shulchan Arukh seif ────────────────────────────────

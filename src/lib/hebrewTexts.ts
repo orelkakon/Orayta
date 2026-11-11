@@ -1525,16 +1525,26 @@ export const HE = {
   } as Record<string, string>,
   RB_STEP_READ: (n: number) => `בודק ${n} קטעים מהספרים`,
   RB_STEP_ARIA: (i: number, n: number, label: string) => `שלב ${i} מתוך ${n}: ${label}`,
+  // When the communities rule differently, each ruling is named by its community.
   RB_VIEW: {
-    main: 'להלכה — מרן ופוסקי הספרדים',
-    ashkenaz: 'מנהג אשכנז',
+    main: 'עדות המזרח — מרן ופוסקי הספרדים',
+    ashkenaz: 'עדות אשכנז — הרמ״א ופוסקי אשכנז',
+    teiman: 'יהדות תימן (בלדי) — הרמב״ם',
     note: 'רקע ומקור',
-  } as Record<string, string>,
+  },
+  // When everyone agrees there is nothing to tell apart.
+  RB_VIEW_AGREED: {
+    main: 'להלכה',
+    ashkenaz: 'עדות אשכנז',
+    teiman: 'יהדות תימן',
+    note: 'רקע ומקור',
+  },
   RB_VIEW_TORAH: {
     main: 'מן המקורות',
     ashkenaz: 'עוד מן המקורות',
+    teiman: 'עוד מן המקורות',
     note: 'עוד מן המקורות',
-  } as Record<string, string>,
+  },
   RB_DISPUTE: 'יש בזה דעות שונות. במקרה של ספק כדאי לשאול רב.',
   RB_VERIFIED_BADGE: 'כל ציטוט נבדק מול המקור',
   RB_DERIVED_BADGE: 'כולל מסקנה מתוך המקורות',

@@ -13,7 +13,7 @@ import { readSse } from './sse';
 const API = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 const DEFAULT_PLAN = [
-  'gemini-3-flash-preview', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest',
+  'gemini-3-flash-preview', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite-preview', 'gemini-flash-lite-latest',
 ];
 // 3.8-flash (and flash-latest, which points at it) is strong but often slow — tried last among the flash models.
 // Qwen on Groq beat the lite models on halacha answers (and gpt-oss-120b, which
@@ -21,7 +21,7 @@ const DEFAULT_PLAN = [
 const DEFAULT_ANSWER = [
   'gemini-3.5-flash', 'gemini-3-flash-preview', 'gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-flash-latest',
   'groq:qwen/qwen3.8-27b',
-  'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-flash-lite-latest',
+  'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.1-flash-lite-preview', 'gemini-flash-lite-latest',
 ];
 // Planned in parallel and merged: Qwen restates the question best, gpt-oss knows more simanim.
 const DEFAULT_PLAN_ENSEMBLE = ['groq:qwen/qwen3.8-27b', 'groq:openai/gpt-oss-120b'];

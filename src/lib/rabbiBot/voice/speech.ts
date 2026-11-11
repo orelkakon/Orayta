@@ -1,4 +1,5 @@
-import type { RabbiBotAnswer, RabbiBotView } from '@/types/rabbiBot';
+import type { RabbiBotAnswer } from '@/types/rabbiBot';
+import { VIEW_ORDER, viewLabels } from '../views';
 import { HE } from '@/lib/hebrewTexts';
 
 /**
@@ -10,7 +11,6 @@ import { HE } from '@/lib/hebrewTexts';
  */
 export interface SpeechChunk { text: string; point?: number }
 
-const VIEWS: RabbiBotView[] = ['main', 'ashkenaz', 'note'];
 const MAX_CHUNK = 180;
 const MAX_SOURCES = 5;
 
@@ -61,8 +61,8 @@ export function answerSpeech(answer: RabbiBotAnswer): SpeechChunk[] {
   if (answer.understood) add(`${HE.RB_UNDERSTOOD} ${answer.understood}.`);
   if (answer.byRule) add(`${HE.RB_BY_RULE_TITLE}. ${HE.RB_BY_RULE_TEXT}`);
   add(answer.short);
-  const labels = answer.kind === 'torah' ? HE.RB_VIEW_TORAH : HE.RB_VIEW;
-  for (const view of VIEWS) {
+  const labels = viewLabels(answer);
+  for (const view of VIEW_ORDER) {
     const points = answer.points.map((p, i) => ({ p, i })).filter(x => x.p.view === view);
     if (points.length === 0) continue;
     add(`${labels[view]}.`);

@@ -8,6 +8,10 @@
  *   npx tsx scripts/rabbibot-eval.ts --answer   # also answer (uses the production answer chain)
  *   npx tsx scripts/rabbibot-eval.ts --only 3   # one case, with its passages listed
  *   npx tsx scripts/rabbibot-eval.ts --runs 3   # each case 3 times (the plan varies between runs)
+ *
+ * It spends the site's own free quota: each case is a plan on both Groq models
+ * (~6.5k of their 200k tokens a day), and --answer a flash request (~20 a day
+ * per model). Run it off-peak, and not many times a day.
  */
 import { makePlan, PLAN_CAPS, RawPlan } from '@/lib/rabbiBot/plan';
 import { retrieve, RetrievalPlan } from '@/lib/rabbiBot/retrieve';
@@ -30,6 +34,15 @@ const CASES: Case[] = [
   { q: 'אשה חייבת בהבדלה?', expect: [`${SA}Orach Chayim 296:8`] },
   { q: 'מי אמר "אם אין אני לי מי לי"?', expect: ['Pirkei Avot 1:14'] },
   { q: 'כמה שנים מלך דוד?', expect: ['I Kings 2:11', 'II Samuel 5:4', 'I Chronicles 29:27'] },
+  // Other areas: Gemara, Tanakh counting, Choshen Mishpat, Even HaEzer, tzedakah, communities that differ, a typo.
+  { q: 'שנים אוחזין בטלית, מה הדין?', expect: ['Mishnah Bava Metzia 1:1', 'Bava Metzia 2a'] },
+  { q: 'כמה בנים היו ליעקב אבינו?', expect: ['Genesis 35:22', 'Genesis 35:23', 'Genesis 49:28'] },
+  { q: 'מצאתי ארנק ברחוב עם כסף, אני חייב להחזיר?', expect: [`${SA}Choshen Mishpat 259`, `${SA}Choshen Mishpat 260`, `${SA}Choshen Mishpat 262`] },
+  { q: 'כמה עדים צריך בקידושין?', expect: [`${SA}Even HaEzer 42`] },
+  { q: 'כמה צריך לתת מעשר כספים?', expect: [`${SA}Yoreh De'ah 249`] },
+  { q: 'מותר לאכול קטניות בפסח?', expect: [`${SA}Orach Chayim 453`] },
+  { q: 'מברכים על הלל בראש חודש?', expect: [`${SA}Orach Chayim 422`] },
+  { q: 'אפשר לשטות מים לפני תפילת שחרית?', expect: [`${SA}Orach Chayim 89`] },
 ];
 
 const args = process.argv.slice(2);

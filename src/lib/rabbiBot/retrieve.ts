@@ -3,10 +3,12 @@ import { fetchText, searchRefs, SefariaText } from './sefaria';
 import { searchSikumim } from './sikumim';
 import { quotedAuthorities } from './authorities';
 import { measureTexts } from './measures';
-import { excerpt, keywords, overlap, simanTitle } from './text';
+import { keywords, simanTitle } from './text';
+import { excerpt, overlap } from './match';
 import { best, Candidate, fromSefaria, linkedCommentaries, searchPhrase, splitRemaCandidate, wikisource } from './sources';
 import { arukhHaShulchanRef, shulchanArukhSimanim, spellings } from './anchors';
 import { impliedWords, ranker } from './rank';
+import { tocMatches } from './toc';
 
 export interface RetrievalPlan {
   kind: RabbiBotKind;
@@ -24,18 +26,28 @@ export interface RetrievalPlan {
   principles: string[];
 }
 
-const MAX_PASSAGES = 18;
+/**
+ * Passages sent to the answer model. Gemini's free quota counts requests, not
+ * tokens, so more context costs nothing but a little latency (~26 × 1,100
+ * chars ≈ 14k tokens); Groq gets only what fits its per-minute token limit
+ * (pipeline: fitPassages).
+ */
+const MAX_PASSAGES = 26;
 const PASSAGE_CHARS = 1100;
 /** The site's own summaries are dense and reviewed — a whole short entry usually fits. */
 const SIKUM_CHARS = 1600;
 /** Simanim whose best seifim go to the model; the first LINKED of them also bring their commentaries. */
 const MAX_ANCHORS = 3;
 const LINKED = 2;
+/** Simanim added by title (toc.ts) after the plan is known. */
+const TITLED = 3;
 /** A word in a siman's title counts this much more than one in its seifim (the title names the subject). */
 const TITLE_WEIGHT = 2;
 /** A hit found only by a shortened phrase must share this many of the plan's words. */
 const LOOSE_MIN_OVERLAP = 2;
 const isSA = (ref: string) => ref.startsWith('Shulchan Arukh, ');
+/** "…Orach Chayim 58:1-99", "…58:1", "…58" → "…Orach Chayim 58". */
+const simanOf = (ref: string) => ref.replace(/:[\d:-]+$/, '');
 
 /** Where full-text search looks, by question kind. */
 const SEARCH_PATHS: Record<RabbiBotKind, { path: string; size: number }[]> = {
@@ -68,6 +80,7 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
   const halacha = plan.kind === 'halacha';
   // The subject with the word the question implies ("יעלה ויבא" + "מחזירין") — how the ruling reads.
   const pairs = plan.terms.slice(0, 2).flatMap(t => implied.slice(0, 1).flatMap(w => spellings(`${t} ${w}`))).slice(0, 3);
+  const titled = halacha ? tocMatches({ asked: keywords(question), plan: core, implied }, TITLED).map(m => m.ref) : [];
   const searches = [
     ...phrases.flatMap(q => SEARCH_PATHS[plan.kind].map(s => searchPhrase(q, s.path, s.size))),
     ...(halacha ? [searchRefs(phrases[0] ?? question, 'Talmud', 2).then(refs => ({ refs, loose: false }))] : []),
@@ -79,7 +92,7 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
     plan.quote ? searchRefs(plan.quote, null, 5, 'exact') : Promise.resolve([]),
     Promise.all(searches),
     halacha ? Promise.all(plan.principles.slice(0, 2).map(p => searchRefs(p, 'Halakhah', 2))) : [],
-    halacha ? shulchanArukhSimanim(plan.refs, phrases, plan.terms, pairs) : [],
+    halacha ? shulchanArukhSimanim({ planned: plan.refs, pairs, titled, phrases, terms: plan.terms }) : [],
     wikisource([plan.quote || plan.rewrite || question, ...phrases.slice(0, 1)], words),
     searchSikumim(words, 2, core),
     quotedAuthorities(question, keywords(plan.terms.join(' ')), core),
@@ -102,7 +115,8 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
   // question (89:1 "לא יאכל גבינה… שש שעות"), so at least one of the plan's
   // simanim is kept, and a seif it names always goes in with its siman.
   const named = new Set(plan.refs);
-  const ranked = simanim.map(t => ({ t, s: anchorScore(t), named: t.segments.some(x => named.has(x.ref)) }))
+  const namedSimanim = new Set(plan.refs.filter(isSA).map(simanOf));
+  const ranked = simanim.map(t => ({ t, s: anchorScore(t), named: namedSimanim.has(simanOf(t.ref)) }))
     .filter(x => x.s > 0).sort((a, b) => b.s - a.s);
   const plannedSiman = ranked.find(x => x.named);
   const anchors = (plannedSiman && !ranked.slice(0, MAX_ANCHORS).includes(plannedSiman)

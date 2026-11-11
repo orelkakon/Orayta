@@ -47,13 +47,24 @@ export function spellings(phrase: string): string[] {
 }
 
 /**
- * Whole simanim from three leads: the seifim the plan names (often the
- * right siman but the wrong seif), the plan's phrases searched inside the
- * Shulchan Arukh itself (worded as it rules — "נשים חייבות בהבדלה" lands on the
- * seif), and the sources' term for the subject. Ranked by the caller.
- * `pairs` = the subject term with the word the question implies ("יעלה ויבא מחזירין").
+ * Whole simanim from five leads, most precise first: the seifim the plan
+ * names (often the right siman but the wrong seif), subject + ruling-verb
+ * pairs, simanim whose title matches, the plan's phrases searched inside the
+ * Shulchan Arukh itself (worded as it rules — "נשים חייבות בהבדלה" lands on
+ * the seif), and the sources' term for the subject. Ranked by the caller.
  */
-export async function shulchanArukhSimanim(planned: string[], phrases: string[], terms: string[], pairs: string[] = []): Promise<SefariaText[]> {
+export interface SimanLeads {
+  /** Refs the plan named (only Shulchan Arukh ones are used). */
+  planned: string[];
+  /** The subject term with the word the question implies ("יעלה ויבא מחזירין"). */
+  pairs: string[];
+  /** Simanim whose title matches the question and the plan's words (toc.ts). */
+  titled: string[];
+  phrases: string[];
+  terms: string[];
+}
+
+export async function shulchanArukhSimanim({ planned, pairs, titled, phrases, terms }: SimanLeads): Promise<SefariaText[]> {
   const [pairHits, phraseHits, termHits] = await Promise.all([
     Promise.all(pairs.map(p => searchRefs(p, SA_PATHS, PAIR_HITS))),
     Promise.all(phrases.map(p => searchRefs(p, SA_PATHS, HITS))),
@@ -61,7 +72,7 @@ export async function shulchanArukhSimanim(planned: string[], phrases: string[],
   ]);
   // A pair (the subject + the ruling's verb) is the most precise lead: all its hits go in right after the plan's own seifim.
   const leads = [
-    ...planned.filter(r => r.startsWith(SA_REF)), ...distinct(pairHits.flat()),
+    ...planned.filter(r => r.startsWith(SA_REF)), ...distinct(pairHits.flat()), ...titled,
     ...interleave([...phraseHits, ...termHits].map(distinct)),
   ];
   const texts = await Promise.all(simanRanges(leads).slice(0, MAX_SIMANIM).map(fetchText));

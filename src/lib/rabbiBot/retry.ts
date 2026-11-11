@@ -1,5 +1,6 @@
 import type { RabbiBotAnswer, RabbiBotPassage } from '@/types/rabbiBot';
-import { keywords, overlap } from './text';
+import { keywords } from './text';
+import { overlap } from './match';
 import { impliedWords } from './rank';
 
 /** A passage holding this share of the question's own words makes the sources look on topic. */

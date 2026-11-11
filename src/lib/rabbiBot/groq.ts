@@ -3,9 +3,11 @@ import type { CallResult, JsonCall } from './gemini';
 // Server-only: Groq's free tier (key in GROQ_API_KEY, no billing), an
 // OpenAI-compatible API with strict JSON-schema output. Its models sit in the
 // same chains as Gemini's under a "groq:" prefix (e.g. "groq:openai/gpt-oss-120b");
-// without a key they are skipped. Free limits are per model: 1,000 requests a
-// day and 7–8k input tokens a minute (≈ 0.5 token per Hebrew character), so
-// the answer step sends Groq a compact prompt (JsonCall.compactUser).
+// without a key they are skipped. Free limits are per model: 200,000 tokens a
+// day (TPD, a rolling window — the real ceiling: a plan costs ~2.4k tokens on
+// Qwen, ~4k on gpt-oss with its reasoning) and 7–8k input tokens a minute
+// (≈ 0.5 token per Hebrew character), so the answer step sends Groq a compact
+// prompt (JsonCall.compactUser).
 const API = 'https://api.groq.com/openai/v1/chat/completions';
 
 export const GROQ_PREFIX = 'groq:';

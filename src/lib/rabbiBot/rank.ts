@@ -1,4 +1,5 @@
-import { skeleton, tokenize, wordForms } from './text';
+import { tokenize } from './text';
+import { holds, skeleton, wordForms } from './match';
 
 /**
  * Passage ranking for רבי־בוט. Pure — unit-tested.
@@ -15,6 +16,8 @@ export type Score = (text: string) => number;
  */
 const ASKED_AS: Record<string, string[]> = {
   מתי: ['זמן'], כמה: ['שיעור'], איפה: ['מקום'], היכן: ['מקום'], איך: ['סדר'], לחזור: ['מחזירין'],
+  // Milk after meat is ruled as "גבינה אחר בשר" (YD 89).
+  חלב: ['גבינה'], חלבי: ['גבינה'],
   // The Shulchan Arukh rules for women in the plural ("נשים חייבות בהבדלה").
   אשה: ['נשים'], האשה: ['נשים'],
 };
@@ -36,10 +39,9 @@ export function wordWeights(words: string[], texts: string[], fromQuestion: stri
   const docs = texts.map(wordForms);
   const asked = new Set(fromQuestion.map(skeleton));
   return new Map(words.map(w => {
-    const k = skeleton(w);
-    const df = docs.filter(d => d.has(k)).length;
+    const df = docs.filter(d => holds(d, w)).length;
     const idf = Math.log(1 + (docs.length + 1) / (df + 1));
-    return [w, asked.has(k) ? idf * QUESTION_BOOST : idf];
+    return [w, asked.has(skeleton(w)) ? idf * QUESTION_BOOST : idf];
   }));
 }
 
@@ -48,13 +50,13 @@ export function wordWeights(words: string[], texts: string[], fromQuestion: stri
  * against `avgLen` (in words; 0 = no tempering). Memoized — rankings call it inside sorts.
  */
 export function scorer(weights: Map<string, number>, avgLen = 0): Score {
-  const keys = Array.from(weights, ([w, wt]) => [skeleton(w), wt] as const);
+  const keys = Array.from(weights);
   const memo = new Map<string, number>();
   return text => {
     const known = memo.get(text);
     if (known !== undefined) return known;
     const forms = wordForms(text);
-    const sum = keys.reduce((acc, [k, wt]) => (forms.has(k) ? acc + wt : acc), 0);
+    const sum = keys.reduce((acc, [w, wt]) => (holds(forms, w) ? acc + wt : acc), 0);
     const len = avgLen > 0 ? tokenize(text).length / avgLen : 1;
     const score = sum / (1 - LENGTH_NORM + LENGTH_NORM * len);
     memo.set(text, score);

@@ -8,8 +8,8 @@ export type RabbiBotTopic =
 /** A practical-law question, or general Torah knowledge (Tanakh, Talmud, who said, where it's written). */
 export type RabbiBotKind = 'halacha' | 'torah';
 
-/** Main ruling (Sephardi default: Maran + Sephardi poskim), the Ashkenazi view, or a side note. */
-export type RabbiBotView = 'main' | 'ashkenaz' | 'note';
+/** Main ruling (Sephardi default: Maran + Sephardi poskim), the Ashkenazi or Yemenite (Baladi — the Rambam) ruling where it differs, or a side note. */
+export type RabbiBotView = 'main' | 'ashkenaz' | 'teiman' | 'note';
 
 /** One retrieved source passage, numbered S1…Sn for the model. */
 export interface RabbiBotPassage {

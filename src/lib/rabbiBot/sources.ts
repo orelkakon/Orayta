@@ -2,7 +2,8 @@ import type { RabbiBotPassage } from '@/types/rabbiBot';
 import { fetchText, fetchLinks, searchRefs, sefariaUrl, SefariaText } from './sefaria';
 import { searchTitles, fetchPage } from './wikisource';
 import { HE } from '@/lib/hebrewTexts';
-import { fallbackPhrases, keywords, overlap, splitRema } from './text';
+import { fallbackPhrases, keywords, splitRema } from './text';
+import { overlap } from './match';
 import type { Score } from './rank';
 
 // Server-only: the individual source lookups retrieve() combines.

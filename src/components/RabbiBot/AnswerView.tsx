@@ -4,6 +4,7 @@ import styled, { css, keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import type { RabbiBotAnswer, RabbiBotView } from '@/types/rabbiBot';
+import { VIEW_ORDER, viewLabels } from '@/lib/rabbiBot/views';
 import SourceCard from './SourceCard';
 import { Card, CardTitle, Stack } from './styles';
 
@@ -60,7 +61,6 @@ const RuleNote = styled.div`
   & > b { font-weight: 800; }
 `;
 
-const VIEWS: RabbiBotView[] = ['main', 'ashkenaz', 'note'];
 
 function UnderstoodLine({ text }: { text?: string }) {
   if (!text) return null;
@@ -91,7 +91,7 @@ export default function AnswerView({ answer, idPrefix, activePoint, streaming }:
   }
 
   const domId = (i: number) => `${idPrefix}-src-${i}`;
-  const viewLabels = answer.kind === 'torah' ? HE.RB_VIEW_TORAH : HE.RB_VIEW;
+  const labels = viewLabels(answer);
   const jump = (i: number) => (e: React.MouseEvent) => {
     e.preventDefault();
     const el = document.getElementById(domId(i));
@@ -113,12 +113,12 @@ export default function AnswerView({ answer, idPrefix, activePoint, streaming }:
         {!answer.byRule && answer.points.some(p => p.rule) && <Badge $warn>🧩 {HE.RB_RULE_BADGE}</Badge>}
         {answer.dispute && <Badge $warn>⚖ {HE.RB_DISPUTE}</Badge>}
       </Badges>
-      {VIEWS.map(view => {
+      {VIEW_ORDER.map(view => {
         const pts = answer.points.map((p, gi) => ({ p, gi })).filter(x => x.p.view === view);
         if (pts.length === 0) return null;
         return (
           <Group key={view}>
-            <GroupTitle $view={view}>{viewLabels[view]}</GroupTitle>
+            <GroupTitle $view={view}>{labels[view]}</GroupTitle>
             <Points>
               {pts.map(({ p, gi }) => (
                 <Point key={gi} $active={gi === activePoint} $fresh={streaming}>
