@@ -60,4 +60,19 @@ export const HOME_HE = {
     motzash: (ord: string) => `במוצאי שבת מדליקים נר ${ord}`,
   },
   CHANUKAH_BEFORE_SHABBAT: 'לפני הדלקת נרות שבת',
+
+  /* Shabbat candles + times in the home hero (Friday until Shabbat ends) */
+  SHABBAT_KICKER_EREV: 'ערב שבת קודש',
+  SHABBAT_KICKER: 'שבת קודש',
+  SHABBAT_GREETING: 'שבת שלום ומבורך',
+  SHABBAT_COUNTDOWN: (h: number, m: number) => {
+    const hours = h === 1 ? 'שעה' : h === 2 ? 'שעתיים' : `${h} שעות`;
+    const mins = m === 1 ? 'דקה' : `${m} דק׳`;
+    if (h === 0) return `הדלקת נרות בעוד ${mins}`;
+    return m === 0 ? `הדלקת נרות בעוד ${hours}` : `הדלקת נרות בעוד ${hours} ו־${mins}`;
+  },
+  SHABBAT_CANDLES: 'הדלקת נרות',
+  SHABBAT_ENDS: 'צאת השבת',
+  SHABBAT_RT: 'ר״ת',
+  SHABBAT_TIMES_ARIA: 'זמני השבת בירושלים',
 };

@@ -20,7 +20,8 @@ export function weekdayName(now: Date): string {
   }
 }
 
-const timeFmt = (d: Date) =>
+/** 'HH:MM' in Jerusalem. */
+export const timeFmt = (d: Date) =>
   new Intl.DateTimeFormat('he-IL', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jerusalem' }).format(d);
 
 export interface SunInfo {

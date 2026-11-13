@@ -14,12 +14,15 @@ import { useMinute } from '@/components/common/useMinute';
 import SunArc from './SunArc';
 import ArkCurtain from './ArkCurtain';
 import ChanukahLights from './ChanukahLights';
+import ShabbatCandles from './ShabbatCandles';
+import ShabbatTimes, { useShabbatStatus } from './ShabbatTimes';
 import HeroSky, { skyPhase } from './HeroSky';
 import { greeting, parashaLabel, sunInfo, weekdayName } from './todayInfo';
 
 /**
  * Home's opening card: today in the Jewish calendar. Greeting, Hebrew date,
- * parasha and occasions, where the sun is, and the prayer that fits right now
+ * parasha and occasions, where the sun is (from Friday until Shabbat ends:
+ * the Shabbat candles and times instead), and the prayer that fits right now
  * as the primary action. Deep espresso "night" surface in both themes.
  */
 const rise = keyframes`from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; }`;
@@ -111,6 +114,7 @@ const SkelLine = styled(Skeleton)`background: ${theme.gilded.nightSkeleton};`;
 export default function TodayHero({ parasha }: { parasha: string | null }) {
   const now = useMinute();
   const day = usePrayerDay('auto');
+  const shabbat = useShabbatStatus(now);
 
   if (!now || !day) {
     return (
@@ -149,11 +153,12 @@ export default function TodayHero({ parasha }: { parasha: string | null }) {
           <Eyebrow>{greeting(now)} · {weekdayName(now)}</Eyebrow>
           <DateLine>{heb}{year > 0 && <Year>{yearToLetters(year)}</Year>}</DateLine>
         </div>
-        <SunArc progress={sun.progress} />
+        {shabbat ? <ShabbatCandles /> : <SunArc progress={sun.progress} />}
       </Top>
       {tags.length > 0 && (
         <Tags>{tags.map((t, i) => <Tag key={t} style={{ '--i': i } as CSSProperties}>{t}</Tag>)}</Tags>
       )}
+      {shabbat && <ShabbatTimes status={shabbat} />}
       <ChanukahLights now={now} />
       <Rule />
       <Bottom>

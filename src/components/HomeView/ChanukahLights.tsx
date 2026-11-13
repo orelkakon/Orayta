@@ -1,16 +1,17 @@
 'use client';
 
 import { CSSProperties, useMemo } from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { ChanukahStatus, candleSlot, chanukahStatus } from '@/lib/chanukah';
+import { Flame, Halo, Wick } from './Flame';
 
 /**
  * The home hero's menorah, on the eight days of Chanukah (and the eve): the
  * night's candles stand in it from the right, and at nightfall in Jerusalem
  * the shamash catches and lights them newest first. By day they wait unlit.
- * The drawing is a static SVG; only the flames (HTML) move.
+ * The drawing is a static SVG; only the flames (HTML, `./Flame`) move.
  * `/?chanukah=1…8` previews a night outside the season.
  */
 const VB_W = 180;
@@ -19,19 +20,6 @@ const CUP_Y = 40;
 const SHAMASH_Y = 26;
 const CANDLE_H = 14;
 const SLOT_X = Array.from({ length: 9 }, (_, i) => 14 + i * 19);
-const FLAME = 'radial-gradient(60% 70% at 50% 72%, #FFFBEA 0%, #FFD98A 42%, #F2994A 78%, rgba(242, 153, 74, 0) 100%)';
-const HALO = 'radial-gradient(closest-side, rgba(255, 205, 120, 0.5), rgba(255, 205, 120, 0))';
-
-const ignite = keyframes`
-  from { opacity: 0; transform: translate(-50%, -100%) scale(0); }
-  to { opacity: 1; transform: translate(-50%, -100%) scale(1); }
-`;
-const flicker = keyframes`
-  0%, 100% { transform: scale(1, 1) rotate(-2deg); }
-  30% { transform: scale(0.9, 1.1) rotate(2.5deg); }
-  62% { transform: scale(1.06, 0.93) rotate(-1deg); }
-`;
-const breathe = keyframes`from { opacity: 0.55; } to { opacity: 1; }`;
 
 const Wrap = styled.div`
   display: flex; align-items: center; justify-content: space-between; gap: ${theme.spacing.md};
@@ -49,21 +37,6 @@ const Sub = styled.p`margin-top: 2px; font-size: ${theme.fontSizes.sm}; color: $
 const Stage = styled.div`
   position: relative; flex-shrink: 0; width: clamp(140px, 40vw, 200px); aspect-ratio: ${VB_W} / ${VB_H};
   svg { display: block; width: 100%; height: 100%; overflow: visible; }
-`;
-const Wick = styled.span`
-  position: absolute; width: 4.6%; aspect-ratio: 7 / 13;
-  transform: translate(-50%, -100%); transform-origin: 50% 100%;
-  animation: ${ignite} 0.5s ${theme.motion.spring} var(--d) both;
-`;
-const Halo = styled.i.attrs({ className: 'anim-loop' })`
-  position: absolute; left: 50%; top: 40%; width: 420%; aspect-ratio: 1; margin: -210% 0 0 -210%;
-  border-radius: 50%; background: ${HALO};
-  animation: ${breathe} var(--t) ease-in-out var(--o) infinite alternate;
-`;
-const Flame = styled.i.attrs({ className: 'anim-loop' })`
-  position: absolute; inset: 0; border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
-  background: ${FLAME}; transform-origin: 50% 100%;
-  animation: ${flicker} var(--t) ease-in-out var(--o) infinite;
 `;
 
 function previewDay(): ChanukahStatus | null {
