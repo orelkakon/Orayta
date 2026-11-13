@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
+import { Honeypot } from '@/components/ui/Honeypot';
 import { HE } from '@/lib/hebrewTexts';
 import { COMMENT_NAME_MAX, COMMENT_TEXT_MAX, COMMENT_TEXT_MIN, normalizeCommentText } from '@/lib/feedComments';
 import { LineIcon } from '@/components/common/LineIcons';
@@ -51,8 +52,6 @@ const ErrorText = styled.span`color: rgba(255,150,140,0.95); font-weight: 700;`;
 const Note = styled.span`color: rgba(255,255,255,0.32);`;
 const Counter = styled.span<{ $warn: boolean }>`color: ${p => p.$warn ? 'rgba(255,170,120,0.95)' : 'rgba(255,255,255,0.32)'}; flex-shrink: 0;`;
 
-// Off-screen honeypot — bots fill every field, people never see this one.
-const Trap = styled.input`position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; left: -9999px;`;
 
 interface Props {
   onSubmit: (name: string, text: string, website: string) => Promise<string | null>;
@@ -99,7 +98,7 @@ export default function CommentComposer({ onSubmit }: Props) {
         placeholder={HE.COMMENTS_NAME_PLACEHOLDER} aria-label={HE.COMMENTS_NAME_PLACEHOLDER}
         autoComplete="nickname" enterKeyHint="next"
       />
-      <Trap tabIndex={-1} autoComplete="off" aria-hidden value={website} onChange={e => setWebsite(e.target.value)} name="website" />
+      <Honeypot tabIndex={-1} autoComplete="off" aria-hidden value={website} onChange={e => setWebsite(e.target.value)} name="website" />
       <Row>
         <TextArea
           ref={areaRef} rows={1} value={text}

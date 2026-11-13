@@ -54,5 +54,4 @@ export const Counter = styled.span<{ $over: boolean }>`
   color: ${p => (p.$over ? theme.colors.error : theme.colors.textLight)};
 `;
 
-/* Bots fill every field; people never see this one. */
-export const Honeypot = styled.input`position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0;`;
+export { Honeypot } from '@/components/ui/Honeypot';

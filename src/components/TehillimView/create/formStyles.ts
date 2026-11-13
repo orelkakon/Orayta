@@ -14,6 +14,9 @@ export const Input = styled.input`
   border: 1.5px solid ${theme.colors.border}; background: ${theme.colors.surface};
   transition: border-color ${theme.motion.fast};
   &:focus { outline: none; border-color: ${theme.colors.secondary}; }
+  /* iOS draws date fields at their own intrinsic width, past the column. */
+  &[type='date'] { -webkit-appearance: none; appearance: none; display: block; text-align: start; }
+  &::-webkit-date-and-time-value { text-align: start; }
 `;
 export const Area = styled.textarea`
   min-height: 88px; padding: ${theme.spacing.sm} ${theme.spacing.ms}; border-radius: ${theme.radii.md}; resize: vertical;
@@ -22,5 +25,4 @@ export const Area = styled.textarea`
   &:focus { outline: none; border-color: ${theme.colors.secondary}; }
 `;
 export const ErrorLine = styled.p`margin: 0; font-size: ${theme.fontSizes.sm}; font-weight: 600; color: ${theme.colors.error};`;
-/* Bots fill every field; people never see this one. */
-export const Honeypot = styled.input`position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0;`;
+export { Honeypot } from '@/components/ui/Honeypot';

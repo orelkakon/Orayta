@@ -75,6 +75,4 @@ export const Counter = styled.span<{ $near: boolean }>`
   color: ${p => (p.$near ? theme.colors.error : theme.colors.textLight)};
 `;
 
-export const Honeypot = styled.input`
-  position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; inset-inline-start: -9999px;
-`;
+export { Honeypot } from '@/components/ui/Honeypot';
