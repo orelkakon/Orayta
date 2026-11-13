@@ -86,16 +86,21 @@ export function jerusalemSunTimes(now: Date): SunTimes {
  * the evening. -0.833 is the visible sunrise/sunset; -8.5 is צאת הכוכבים.
  */
 export function jerusalemSunAt(now: Date, altitude: number): SunTimes {
+  return sunAt(now, altitude, LAT, LNG);
+}
+
+/** The same for any place in Israel (the date is taken in Israel time). */
+export function sunAt(now: Date, altitude: number, lat: number, lng: number): SunTimes {
   const [y, m, d] = new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(now).split('-').map(Number);
   const jDate = Date.UTC(y, m - 1, d, 12) / 86400000 + 2440587.5;
   const n = Math.round(jDate - 2451545.0 + 0.0008);
-  const jStar = n - LNG / 360;
+  const jStar = n - lng / 360;
   const M = (357.5291 + 0.98560028 * jStar) % 360;
   const C = 1.9148 * Math.sin(rad(M)) + 0.02 * Math.sin(rad(2 * M)) + 0.0003 * Math.sin(rad(3 * M));
   const lambda = (M + C + 180 + 102.9372) % 360;
   const jTransit = 2451545.0 + jStar + 0.0053 * Math.sin(rad(M)) - 0.0069 * Math.sin(rad(2 * lambda));
   const decl = Math.asin(Math.sin(rad(lambda)) * Math.sin(rad(23.4397)));
-  const cosW = (Math.sin(rad(altitude)) - Math.sin(rad(LAT)) * Math.sin(decl)) / (Math.cos(rad(LAT)) * Math.cos(decl));
+  const cosW = (Math.sin(rad(altitude)) - Math.sin(rad(lat)) * Math.sin(decl)) / (Math.cos(rad(lat)) * Math.cos(decl));
   const w = deg(Math.acos(Math.max(-1, Math.min(1, cosW))));
   return { sunrise: fromJulian(jTransit - w / 360), noon: fromJulian(jTransit), sunset: fromJulian(jTransit + w / 360) };
 }

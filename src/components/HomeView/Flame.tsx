@@ -2,6 +2,7 @@
 
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
+import { FLAME_STOPS, GLOW_STOPS, HALO_STOPS } from '@/lib/shabbatClip/palette';
 
 /**
  * The hero's candle flames, shared by the Chanukah menorah and the Shabbat
@@ -10,10 +11,11 @@ import { theme } from '@/lib/theme';
  * tip and `--d` (ignite delay), `--t` (flicker period), `--o` (phase offset);
  * its width comes from the stage's `--wick-w`.
  */
-export const FLAME = 'radial-gradient(60% 70% at 50% 72%, #FFFBEA 0%, #FFD98A 42%, #F2994A 78%, rgba(242, 153, 74, 0) 100%)';
-export const HALO = 'radial-gradient(closest-side, rgba(255, 205, 120, 0.5), rgba(255, 205, 120, 0))';
+const stops = (s: [number, string][]) => s.map(([o, c]) => `${c} ${o * 100}%`).join(', ');
+export const FLAME = `radial-gradient(60% 70% at 50% 72%, ${stops(FLAME_STOPS)})`;
+export const HALO = `radial-gradient(closest-side, ${stops(HALO_STOPS)})`;
 /** Candlelight spilling over the night card. */
-export const CANDLE_GLOW = 'radial-gradient(closest-side, rgba(255, 196, 120, 0.3), rgba(242, 153, 74, 0.1) 48%, rgba(242, 153, 74, 0))';
+export const CANDLE_GLOW = `radial-gradient(closest-side, ${stops(GLOW_STOPS)})`;
 
 export const ignite = keyframes`
   from { opacity: 0; transform: translate(-50%, -100%) scale(0); }

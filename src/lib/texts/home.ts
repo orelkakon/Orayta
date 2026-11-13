@@ -71,8 +71,40 @@ export const HOME_HE = {
     if (h === 0) return `הדלקת נרות בעוד ${mins}`;
     return m === 0 ? `הדלקת נרות בעוד ${hours}` : `הדלקת נרות בעוד ${hours} ו־${mins}`;
   },
-  SHABBAT_CANDLES: 'הדלקת נרות',
-  SHABBAT_ENDS: 'צאת השבת',
-  SHABBAT_RT: 'ר״ת',
-  SHABBAT_TIMES_ARIA: 'זמני השבת בירושלים',
+  SHABBAT_CITY: {
+    jerusalem: 'ירושלים', telaviv: 'תל אביב', haifa: 'חיפה', beersheva: 'באר שבע', tzfat: 'צפת', eilat: 'אילת',
+  } as Record<string, string>,
+  SHABBAT_IN: 'כניסה',
+  SHABBAT_OUT: 'יציאה',
+  SHABBAT_TIMES_ARIA: 'זמני כניסת השבת ויציאתה',
+  SHABBAT_DAY_ARIA: (pct: number) => `עברו ${pct}% מהיום עד הדלקת הנרות`,
+
+  /* Shabbat share clip (Fridays) */
+  SHABBAT_SHARE_CTA: 'שתפו את זמני השבת',
+  SHABBAT_SHARE_CTA_SUB: 'סרטון קצר לסטטוס ולסטורי',
+  SHABBAT_SHARE_TITLE: 'זמני שבת לשיתוף',
+  SHABBAT_SHARE_MAKING: 'מכינים את הסרטון…',
+  SHABBAT_SHARE_SEND: 'שיתוף הסרטון',
+  SHABBAT_SHARE_SEND_IMAGE: 'שיתוף התמונה',
+  SHABBAT_SHARE_SAVE: 'שמירה',
+  SHABBAT_SHARE_WA: 'שליחת הזמנים בהודעה',
+  SHABBAT_SHARE_HINT: 'בחלון השיתוף בחרו וואטסאפ לסטטוס, או אינסטגרם לסטורי',
+  SHABBAT_SHARE_IMAGE_NOTE: 'המכשיר הזה לא מייצר סרטון — הכנו תמונה מעוצבת במקומו',
+  SHABBAT_SHARE_ERROR: 'לא הצלחנו להכין את הקובץ',
+  SHABBAT_SHARE_RETRY: 'לנסות שוב',
+  SHABBAT_SHARE_PREVIEW_ARIA: 'תצוגה מקדימה של סרטון זמני השבת',
+  SHABBAT_WA_TEXT: (title: string, date: string, rows: string[], url: string) =>
+    `🕯️🕯️ *${title}*\n${date}\n\n${rows.join('\n')}\n\nשבת שלום ומבורך!\n${url}`,
+  SHABBAT_WA_TITLE: (parasha: string | null) => (parasha ? `זמני שבת ${parasha}` : 'זמני שבת'),
+  SHABBAT_WA_ROW: (city: string, candles: string, ends: string) => `${city}: כניסה ${candles} · יציאה ${ends}`,
+
+  /* The clip itself */
+  SHABBAT_CLIP_BSD: 'בס״ד',
+  SHABBAT_CLIP_KICKER: 'ערב שבת קודש',
+  SHABBAT_CLIP_TITLE: 'שבת שלום',
+  SHABBAT_CLIP_SUB: 'ומבורך',
+  SHABBAT_CLIP_CITY: 'עיר',
+  SHABBAT_CLIP_IN: 'כניסת שבת',
+  SHABBAT_CLIP_OUT: 'צאת שבת',
+  SHABBAT_CLIP_FOOT: 'אורייתא · זמני השבת בכל שבוע',
 };
