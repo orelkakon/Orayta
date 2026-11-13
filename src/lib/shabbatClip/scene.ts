@@ -8,14 +8,21 @@ import {
 } from './paint';
 
 /**
- * One frame of the Shabbat clip (1080×1920, 9:16), as a function of time:
- * the gilded frame draws in, the parasha and date rise, the candles catch
+ * One frame of the Shabbat clip (1080×1920, 9:16), as a function of time.
+ * It opens on a cover — the finished scene, flames alive — because the first
+ * frame is the thumbnail WhatsApp and Instagram show before anyone taps; the
+ * cover then pushes in and dims into the night, and the story plays: the
+ * gilded frame draws in, the parasha and date rise, the candles catch
  * right then left and their light fills the night, "שבת שלום" arrives with a
  * pass of light, then the cities' times slide in row by row; the flames keep
- * living until the end. The header and the table stay inside Instagram's
- * story safe zone.
+ * living until the end — on the cover's own image, so a loop is seamless.
+ * The header and the table stay inside Instagram's story safe zone.
  */
-export const DURATION = 8;
+/** Seconds the cover holds before the story starts, the last of them fading out. */
+export const COVER = 1;
+const COVER_FADE = 0.4;
+export const STORY = 8;
+export const DURATION = COVER + STORY;
 export interface Fonts { serif: string; sans: string }
 
 type Ctx = CanvasRenderingContext2D;
@@ -118,7 +125,7 @@ function footer(ctx: Ctx, t: number, f: Fonts) {
   });
 }
 
-export function drawFrame(ctx: Ctx, t: number, d: ClipData, f: Fonts) {
+function drawStory(ctx: Ctx, t: number, d: ClipData, f: Fonts) {
   ctx.direction = 'rtl';
   ctx.textBaseline = 'alphabetic';
   paintNight(ctx, t);
@@ -134,6 +141,32 @@ export function drawFrame(ctx: Ctx, t: number, d: ClipData, f: Fonts) {
   title(ctx, t, f);
   table(ctx, t, d, f);
   footer(ctx, t, f);
+}
+
+let layer: HTMLCanvasElement | null = null;
+
+/** The cover over the story's first moment: it pushes in a little while it fades. */
+function coverFade(ctx: Ctx, t: number, k: number, d: ClipData, f: Fonts) {
+  drawStory(ctx, 0, d, f);
+  layer ??= document.createElement('canvas');
+  layer.width = W; layer.height = H;
+  const lc = layer.getContext('2d');
+  if (!lc) return;
+  drawStory(lc, STORY + t, d, f);
+  const s = 1 + 0.05 * easeOut(k);
+  ctx.save();
+  ctx.globalAlpha = 1 - easeOut(k);
+  ctx.translate(CX, H / 2); ctx.scale(s, s); ctx.translate(-CX, -H / 2);
+  ctx.drawImage(layer, 0, 0);
+  ctx.restore();
+}
+
+export function drawFrame(ctx: Ctx, t: number, d: ClipData, f: Fonts) {
+  if (t >= COVER) { drawStory(ctx, t - COVER, d, f); return; }
+  const k = seg(t, COVER - COVER_FADE, COVER);
+  // The cover is the story's end state with the clock still running, so the flames flicker.
+  if (k <= 0) drawStory(ctx, STORY + t, d, f);
+  else coverFade(ctx, t, k, d, f);
 }
 
 export { H, W };
