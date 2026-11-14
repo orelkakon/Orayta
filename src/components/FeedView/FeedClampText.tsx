@@ -51,6 +51,8 @@ const Word = styled.span`
                 transform 0.7s ${theme.motion.out} var(--d),
                 color 1.3s ease var(--d);
   }
+  /* Measuring: a word still waiting below its line would count as overflow. */
+  [data-measure] & { transform: none !important; }
 `;
 
 /** Only the words that can show inside the clamp get their own span. */
@@ -86,6 +88,18 @@ interface Props {
   onExpand: () => void;
 }
 
+/**
+ * True only when lines are really hidden behind the clamp. Transformed words
+ * count toward scrollHeight, and the words wait 0.45em low until their slide
+ * arrives — so they are measured in place, inside one synchronous read.
+ */
+function overflows(el: HTMLElement): boolean {
+  el.setAttribute('data-measure', '');
+  const over = el.scrollHeight > el.clientHeight + 2;
+  el.removeAttribute('data-measure');
+  return over;
+}
+
 // Clamped feed text: when the text overflows its 7-line clamp it becomes
 // clickable and shows a "read more" affordance that opens the full-text reader.
 export default function ClampText({ text, onExpand }: Props) {
@@ -94,10 +108,19 @@ export default function ClampText({ text, onExpand }: Props) {
 
   const words = useMemo(() => inkWords(text), [text]);
 
+  // Re-measured when the width changes and once the fonts have loaded (the
+  // fallback serif is wider, so it can wrap into an extra line).
   useEffect(() => {
     const el = ref.current;
-    if (el) setTruncated(el.scrollHeight > el.clientHeight + 2);
-  }, [text]);
+    if (!el) return;
+    let alive = true;
+    const check = () => { if (alive && ref.current) setTruncated(overflows(ref.current)); };
+    check();
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(check);
+    ro?.observe(el);
+    document.fonts?.ready.then(check).catch(() => {});
+    return () => { alive = false; ro?.disconnect(); };
+  }, [text, truncated]);
 
   if (!truncated) return <MainText ref={ref} $len={text.length}>{words}</MainText>;
 
