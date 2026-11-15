@@ -5,6 +5,8 @@ import { stripUtm, withShareUtm } from '../src/lib/audience/shareUtm';
 import { addDays, computeDeviceStats, isUuid, validFirstDay } from '../src/lib/audience/devices';
 import { computeSourceStats } from '../src/lib/audience/sourceStats';
 import type { DeviceRow } from '../src/types/audience';
+import { Prisma } from '@prisma/client';
+import { isMissingTable } from '../src/lib/audience/missingTable';
 
 const OWN = 'orayta-eight.vercel.app';
 const cls = (ref: string, utmSource = '') => classifySource({ host: referrerHost(ref), ownHost: OWN, utmSource });
@@ -141,4 +143,15 @@ test('source stats: per-source windows and top campaigns', () => {
   assert.equal(out.campaigns.length, 2);
   assert.deepEqual(out.campaigns[0], { utmSource: 'whatsapp', utmCampaign: 'tehillim', week: 4, month: 4 });
   assert.equal(out.since, addDays(TODAY, -40));
+});
+
+test('only "table does not exist" counts as the empty state', () => {
+  const known = (code: string, meta?: Record<string, unknown>) =>
+    new Prisma.PrismaClientKnownRequestError('x', { code, clientVersion: '5', meta });
+  assert.ok(isMissingTable(known('P2021')));
+  assert.ok(isMissingTable(known('P2010', { code: '42P01' })), 'raw query on a missing relation');
+  assert.ok(!isMissingTable(known('P2010', { code: '42703' })), 'missing column is a real error');
+  assert.ok(!isMissingTable(known('P2002')), 'unique violation');
+  assert.ok(!isMissingTable(known('P1001')), 'database unreachable');
+  assert.ok(!isMissingTable(new Error('timeout')));
 });

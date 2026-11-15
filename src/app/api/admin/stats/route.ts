@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 import { isAdmin } from '@/lib/auth';
 import { dayKeys } from '@/lib/adminStatsUtils';
 import { getCommentStats } from '@/lib/adminCommentStats';
-import { quietly } from '@/lib/audience/server';
+import { orMissing } from '@/lib/audience/server';
 import { DAILY_METRICS } from '@/types';
 import type { AdminStats, AdminDailyRow, DailyMetric } from '@/types';
 
@@ -13,13 +13,15 @@ const DAYS = 30;
 const COUNTER_KEYS = ['questions', 'feedSaves', 'whatsappShares', 'storyShares', 'telegramShares'];
 const METRICS = DAILY_METRICS;
 
-/** Distinct devices active in [from, to] — null while DeviceDay doesn't exist. */
+/** Distinct devices active in [from, to] — null while DeviceDay doesn't exist.
+ *  Other DB errors are logged (orMissing) and the KPI keeps its old number;
+ *  the audience card on the same page reports the failure. */
 async function uniqueDevices(from: string, to: string): Promise<number | null> {
-  return quietly(async () => {
+  return orMissing(async () => {
     const rows = await prisma.$queryRaw<{ n: number }[]>`
       SELECT COUNT(DISTINCT "idHash")::int AS n FROM "DeviceDay" WHERE "day" >= ${from} AND "day" <= ${to}`;
     return rows[0]?.n ?? 0;
-  }, null);
+  }, null).catch(() => null);
 }
 
 export async function GET(req: NextRequest) {

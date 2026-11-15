@@ -7,7 +7,7 @@
 
 import type { DailyMetric } from '@/types';
 import { isAdminBrowser } from './adminBrowser';
-import { trackArrival } from './audience/client';
+import { israelDay, trackArrival } from './audience/client';
 
 export type TrackMetric = DailyMetric;
 export { isAdminBrowser };
@@ -33,14 +33,14 @@ function firstTime(storage: Storage, key: string, value: string): boolean {
   }
 }
 
-/** Counts once per device per calendar day — daily active users. */
+/** Counts once per device per Israel calendar day — daily active users. */
 export function trackDaily(metric: TrackMetric) {
   if (isAdminBrowser()) return;
   // Source + device pings first: the device ping reads the old daily-users
   // marker to tell a brand-new device from one counted before the id existed.
   if (metric === 'users') trackArrival();
-  const today = new Date().toLocaleDateString('en-CA');
-  if (firstTime(localStorage, `orayta_track_day_${metric}`, today)) post(metric);
+  // Israel day, like the server's DailyStat buckets and the device ping.
+  if (firstTime(localStorage, `orayta_track_day_${metric}`, israelDay())) post(metric);
 }
 
 /** Counts once per browsing session — section entries. */

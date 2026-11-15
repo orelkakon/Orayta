@@ -69,6 +69,7 @@ export const ADMIN_AUDIENCE_HE = {
   // Shared
   AUD_SINCE: (d: string) => `נאסף מ־${d}`,
   AUD_NO_TABLE: 'הטבלה עוד לא קיימת במסד הנתונים. הנתונים יופיעו אחרי שתוחל.',
+  AUD_ERROR: 'שגיאה בקריאת הנתונים ממסד הנתונים. הפרטים נרשמו ביומן השרת (Vercel).',
 
   // Group quiz
   PLAYC_TITLE: 'חידון קבוצתי',
