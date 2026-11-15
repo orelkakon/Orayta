@@ -578,6 +578,17 @@ No seed scripts — all data is already in the production database.
 
 ---
 
+## GitHub Actions runs (@claude)
+
+`.github/workflows/claude.yml` runs Claude Code when an issue, comment or review mentions `@claude` (people with write access, plus the one bot named in the repo variable `CLAUDE_ALLOWED_BOT`). Work often comes from the owner's assistant bot and is done while nobody is at a computer. In every such run:
+
+- **Never write to the production database.** No `prisma db push`, `prisma migrate`, `npm run db:push`, scripts that connect to the DB, or anything else that writes to it. The runner has no `DATABASE_URL`, so don't go looking for one. Schema changes go in the PR (`prisma/schema.prisma` + the SQL to apply, in the PR description), and the owner applies them at merge time.
+- **Never print secrets** (env vars, tokens, `.env*` contents), not in logs, comments, commits or PR text. **Don't touch Vercel**: no settings, env vars or deploys.
+- **Every change goes through a PR** from a new branch. Before opening it, run `npm ci`, `npm run lint`, `npx tsc --noEmit`, `npm test` and `npm run build`, and make them pass. If one can't pass in the runner for a reason outside the change (e.g. the build needs a DB), say so in the PR rather than hiding it.
+- **Don't merge** unless the issue or comment explicitly says the merge is approved. Never push to `main` directly.
+- **Report back in the issue/PR:** what you built, the PR link, and anything the owner must do by hand (schema to apply, env vars to add, data to import, manual checks on the iPhone).
+- The rules below and the conventions above (Hebrew strings in `HE`, 200-line files, no `any`, theme tokens) apply as usual. Since nobody can be asked mid-run, make the reasonable choice, then list your assumptions in the report.
+
 ## Rules
 
 - TypeScript only, no `any` types
