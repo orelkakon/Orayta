@@ -5,7 +5,8 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { haptics } from '@/lib/haptics';
-import { joinUrl } from './playClient';
+import { joinShareUrl } from './playClient';
+import type { ShareChannel } from '@/lib/audience/shareUtm';
 import { GhostButton, press } from './playStyles';
 
 /**
@@ -30,9 +31,9 @@ const WhatsApp = styled.button`
 
 /** Plain lines — each starts with Hebrew, so WhatsApp renders them RTL by itself
     (invisible RLM marks made some WhatsApp builds drop the prefilled text). */
-export function inviteText(code: string, total: number, seconds: number): string {
+export function inviteText(code: string, total: number, seconds: number, channel: ShareChannel): string {
   const spaced = `${code.slice(0, 3)} ${code.slice(3)}`;
-  return HE.PLAY_INVITE_LINES(spaced, joinUrl(code), total, seconds).join('\n');
+  return HE.PLAY_INVITE_LINES(spaced, joinShareUrl(code, channel), total, seconds).join('\n');
 }
 
 /** Phones: the app's own scheme opens the contact picker with the text ready.
@@ -59,20 +60,20 @@ function Copy({ label, text }: { label: string; text: string }) {
 interface Props { code: string; total: number; seconds: number; }
 
 export default function InviteActions({ code, total, seconds }: Props) {
-  const text = inviteText(code, total, seconds);
+  const text = (ch: ShareChannel) => inviteText(code, total, seconds, ch);
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
   return (
     <Row>
-      <WhatsApp type="button" onClick={() => openWhatsApp(text)}>
+      <WhatsApp type="button" onClick={() => openWhatsApp(text('whatsapp'))}>
         💬 {HE.PLAY_SHARE_WA}
       </WhatsApp>
       {canShare && (
-        <GhostButton type="button" onClick={() => { void navigator.share({ text }).catch(() => undefined); }}>
+        <GhostButton type="button" onClick={() => { void navigator.share({ text: text('native') }).catch(() => undefined); }}>
           📤 {HE.PLAY_SHARE_NATIVE}
         </GhostButton>
       )}
-      <Copy label={HE.PLAY_COPY_INVITE} text={text} />
-      <Copy label={HE.PLAY_COPY_LINK} text={joinUrl(code)} />
+      <Copy label={HE.PLAY_COPY_INVITE} text={text('copy')} />
+      <Copy label={HE.PLAY_COPY_LINK} text={joinShareUrl(code, 'copy')} />
       <Copy label={HE.PLAY_COPY_CODE} text={code} />
     </Row>
   );

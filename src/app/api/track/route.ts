@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { isAdmin } from '@/lib/auth';
+import { DAILY_METRICS } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
-const METRICS = [
-  'users', 'feed', 'content', 'today', 'pwa',
-  'stories', 'quiz', 'rabbis', 'study', 'sikumim', 'chidushim', 'gematria', 'live',
-] as const;
-type Metric = (typeof METRICS)[number];
+const METRICS: readonly string[] = DAILY_METRICS;
 
 function todayKey(): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(new Date());
@@ -19,7 +16,7 @@ export async function POST(req: NextRequest) {
   if (isAdmin(req)) return NextResponse.json({ ok: true });
   const body = (await req.json().catch(() => null)) as { metric?: string } | null;
   const metric = body?.metric;
-  if (!metric || !METRICS.includes(metric as Metric)) {
+  if (!metric || !METRICS.includes(metric)) {
     return NextResponse.json({ error: 'bad metric' }, { status: 400 });
   }
   const day = todayKey();

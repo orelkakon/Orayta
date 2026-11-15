@@ -1,6 +1,7 @@
 import type { RabbiBotAnswer } from '@/types/rabbiBot';
 import { HE } from '@/lib/hebrewTexts';
 import { SITE_URL, RLM, clip } from '@/lib/siteUrl';
+import { withShareUtm, ShareChannel } from '@/lib/audience/shareUtm';
 
 const MAX_POINTS = 4;
 
@@ -10,7 +11,7 @@ const MAX_POINTS = 4;
  * to /ask. Every line starts with RLM so Hebrew lines that open with a bullet or
  * a parenthesis keep right-to-left order. Pure — unit-tested.
  */
-export function answerShareText(question: string, a: RabbiBotAnswer): string {
+export function answerShareText(question: string, a: RabbiBotAnswer, channel: ShareChannel = 'native'): string {
   const refs = (cites: { source: number }[]) =>
     Array.from(new Set(cites.map(c => a.sources[c.source]?.heRef).filter(Boolean))).join(', ');
   const points = a.points.slice(0, MAX_POINTS).map(p => `• ${clip(p.text, 220)}${p.cites.length ? ` (${refs(p.cites)})` : ''}`);
@@ -24,7 +25,7 @@ export function answerShareText(question: string, a: RabbiBotAnswer): string {
     '',
     HE.RB_SHARE_SIG,
     // The question's own link: previews as the question and asks it on arrival.
-    `${SITE_URL}/ask?q=${encodeURIComponent(question.trim())}`,
+    withShareUtm(`${SITE_URL}/ask?q=${encodeURIComponent(question.trim())}`, 'ask', channel),
   ];
   return lines.map(l => (l ? `${RLM}${l}` : l)).join('\n');
 }

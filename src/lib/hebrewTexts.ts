@@ -22,6 +22,7 @@ import { SIKUM_EDITOR_HE } from './texts/sikumEditor';
 import { PLACE_HE } from './texts/place';
 import { PARASHA_HE } from './texts/parasha';
 import { INTERESTS_HE } from './texts/interests';
+import { ADMIN_AUDIENCE_HE } from './texts/adminAudience';
 
 export const HE = {
   APP_NAME: 'אורייתא',
@@ -1634,6 +1635,7 @@ export const HE = {
   ...WHATS_NEW_HE,
   ...NEARBY_HE,
   ...NEARBY_STATS_HE,
+  ...ADMIN_AUDIENCE_HE,
   ...SHELL_HE,
   ...HOME_HE,
   ...STORIES_HE,

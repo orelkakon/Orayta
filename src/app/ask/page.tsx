@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import RabbiBotPage from '@/components/RabbiBot/RabbiBotPage';
 import { HE } from '@/lib/hebrewTexts';
 import { shareMeta } from '@/lib/og/meta';
+import SectionPing from '@/components/common/SectionPing';
 
 const PATH = '/ask';
 
@@ -21,5 +22,10 @@ export function generateMetadata({ searchParams }: Props): Metadata {
 }
 
 export default function AskPage({ searchParams }: Props) {
-  return <RabbiBotPage sharedQuestion={sharedQuestion(searchParams.q)} />;
+  return (
+    <>
+      <SectionPing metric="ask" />
+      <RabbiBotPage sharedQuestion={sharedQuestion(searchParams.q)} />
+    </>
+  );
 }

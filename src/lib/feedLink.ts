@@ -1,5 +1,6 @@
 import type { FeedItemType } from '@/types';
 import { SITE_URL } from '@/lib/siteUrl';
+import { withShareUtm, ShareChannel } from '@/lib/audience/shareUtm';
 
 /**
  * A link that opens the feed on one item (`/feed?i=<type>.<id>`), so a shared
@@ -8,6 +9,10 @@ import { SITE_URL } from '@/lib/siteUrl';
 export const FEED_TYPES: readonly FeedItemType[] = ['citation', 'rabbi', 'book', 'chidush', 'gematria', 'sikum'];
 
 export const feedItemUrl = (type: FeedItemType, id: string) => `${SITE_URL}/feed?i=${type}.${id}`;
+
+/** The same link as shared from the feed, tagged with where it went. */
+export const feedShareUrl = (type: FeedItemType, id: string, channel: ShareChannel) =>
+  withShareUtm(feedItemUrl(type, id), 'feed', channel);
 
 export function parseFeedLink(v: unknown): { type: FeedItemType; id: string } | null {
   if (typeof v !== 'string') return null;

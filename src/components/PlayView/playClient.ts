@@ -1,4 +1,5 @@
 import type { PlayErrorCode, PlayHostAction, PlayJoinResponse } from '@/types/play';
+import { withShareUtm, ShareChannel } from '@/lib/audience/shareUtm';
 
 /**
  * Client side of the group quiz: per-device identities (host key / player
@@ -71,5 +72,8 @@ export const hostAction = (code: string, hostKey: string, action: PlayHostAction
 
 export const joinUrl = (code: string) =>
   `${typeof window !== 'undefined' ? window.location.origin : ''}/play?code=${code}`;
+
+/** The invite link as shared, tagged with where it went (QR codes use joinUrl). */
+export const joinShareUrl = (code: string, channel: ShareChannel) => withShareUtm(joinUrl(code), 'play', channel);
 
 export const displayHost = () => (typeof window !== 'undefined' ? window.location.host : '');

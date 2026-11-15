@@ -52,15 +52,15 @@ export default function FeedShareSheet({ item, slide, onClose }: Props) {
 
   const options = item ? [
     { icon: 'send', tone: theme.colors.primary, title: HE.FEED_SHARE_SEND, sub: HE.FEED_SHARE_SEND_SUB,
-      act: () => { shareText(feedShareText(item)); onClose(); } },
+      act: () => { shareText(ch => feedShareText(item, ch)); onClose(); } },
     { icon: copied ? 'check' : 'copy', tone: theme.colors.success, title: copied ? HE.FEED_SHARE_COPIED : HE.FEED_SHARE_COPY, sub: HE.FEED_SHARE_COPY_SUB,
       act: async () => {
-        await navigator.clipboard?.writeText(feedShareText(item)).catch(() => {});
+        await navigator.clipboard?.writeText(feedShareText(item, 'copy')).catch(() => {});
         setCopied(true);
         window.setTimeout(() => { setCopied(false); onClose(); }, 900);
       } },
     { icon: 'camera', tone: theme.brand.instagram, title: HE.FEED_SHARE_STORY, sub: HE.FEED_SHARE_STORY_SUB,
-      act: async () => { await shareStory(feedStory(item)); onClose(); } },
+      act: async () => { await shareStory(feedStory(item), 'feed'); onClose(); } },
     { icon: 'download', tone: theme.colors.secondaryText, title: HE.FEED_SHARE_IMAGE, sub: HE.FEED_SHARE_IMAGE_SUB,
       act: async () => { onClose(); if (slide) await shareElementImage(slide); } },
   ] : [];

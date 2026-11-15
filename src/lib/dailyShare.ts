@@ -3,6 +3,7 @@ import { HE } from './hebrewTexts';
 import { trackShare } from './shareCounter';
 import { shareStory } from './storyShare';
 import { SITE_URL } from './siteUrl';
+import { withShareUtm, ShareChannel } from './audience/shareUtm';
 
 export interface DailySikum {
   id: string; title: string | null; text: string; date: string;
@@ -23,7 +24,7 @@ export interface DailyShareData {
  * only), with the FULL text of every item. Length is fine: the message goes
  * through the native share sheet, not through a length-limited wa.me URL.
  */
-export function buildDailyShareMessage(d: DailyShareData): string {
+export function buildDailyShareMessage(d: DailyShareData, channel: ShareChannel = 'native'): string {
   const parts: string[] = [];
 
   parts.push(`📖 *${HE.DAILY_SHARE_TITLE}*${d.hebrewDate ? ` — ${d.hebrewDate}` : ''}`);
@@ -54,7 +55,7 @@ export function buildDailyShareMessage(d: DailyShareData): string {
     parts.push(`*${HE.YAHRZEIT_BADGE} ${HE.DAILY_SHARE_TODAY}:* ${d.yahrzeitNames.join(', ')}`);
   }
 
-  parts.push(`${HE.DAILY_SHARE_LINK_LABEL}: ${SITE_URL}/today`);
+  parts.push(`${HE.DAILY_SHARE_LINK_LABEL}: ${withShareUtm(`${SITE_URL}/today`, 'today', channel)}`);
 
   return parts.join('\n\n');
 }
@@ -90,7 +91,7 @@ export function shareDailyToStory(d: DailyShareData): Promise<void> {
     badge: HE.DAILY_SHARE_TITLE,
     title: d.hebrewDate || undefined,
     text: parts.join('\n\n'),
-  });
+  }, 'today');
 }
 
 /**
@@ -100,8 +101,8 @@ export function shareDailyToStory(d: DailyShareData): Promise<void> {
  * wa.me link only as a fallback for browsers without navigator.share.
  */
 export function shareDailyToWhatsApp(d: DailyShareData): void {
-  const text = buildDailyShareMessage(d);
-  const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  const text = buildDailyShareMessage(d, 'native');
+  const waUrl = `https://wa.me/?text=${encodeURIComponent(buildDailyShareMessage(d, 'whatsapp'))}`;
   if (typeof navigator !== 'undefined' && navigator.share) {
     navigator.share({ text, title: HE.DAILY_SHARE_TITLE }).then(() => trackShare()).catch(err => {
       if ((err as Error)?.name !== 'AbortError') {

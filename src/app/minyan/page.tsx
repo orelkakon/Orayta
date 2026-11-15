@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import MinyanView from '@/components/MinyanView/MinyanView';
 import { shareMeta } from '@/lib/og/meta';
+import SectionPing from '@/components/common/SectionPing';
 
 const TITLE = 'מניין קרוב';
 const DESC = 'מצאו בתי כנסת ומניינים קרובים אליכם על המפה — עם זמני תפילה מדווחים ומאומתים, ניווט ב-Google Maps או Waze וחיוג מהיר.';
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 export default function MinyanPage() {
   return (
     <>
+      <SectionPing metric="minyan" />
       <MinyanView />
     </>
   );

@@ -204,7 +204,9 @@ test('answerShareText: question, answer, sources and link, every line RTL', () =
   assert.ok(lines.every(l => l.startsWith(RLM)));
   assert.ok(text.includes('לא זוכר אם הטבלתי') && text.includes('יטבילנו בלא ברכה') && text.includes('מקור S1 · מקור S2'));
   assert.ok(text.includes('(מקור S1, מקור S2)'), 'each point names where it comes from');
-  assert.ok(text.trimEnd().endsWith(`/ask?q=${encodeURIComponent('לא זוכר אם הטבלתי')}`), 'links to the question itself');
+  assert.ok(text.includes(`/ask?q=${encodeURIComponent('לא זוכר אם הטבלתי')}&`), 'links to the question itself');
+  assert.ok(text.trimEnd().endsWith('utm_medium=share&utm_campaign=ask'), 'native share: medium + campaign only');
+  assert.ok(answerShareText('שאלה', a, 'whatsapp').includes('&utm_source=whatsapp&utm_medium=share&utm_campaign=ask'));
 });
 
 // ── Groq + the planning ensemble ─────────────────────────────────────────

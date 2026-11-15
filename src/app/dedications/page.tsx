@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import DedicationsView from '@/components/DedicationsView/DedicationsView';
 import { shareMeta } from '@/lib/og/meta';
+import SectionPing from '@/components/common/SectionPing';
 
 const TITLE = 'הקדשות';
 const DESC = 'הקדשת הלימוד באתר לעילוי נשמת, לרפואה שלמה או להצלחה. שלחו בקשת הקדשה, וההקדשה תוצג ללומדים באתר ובפיד רגע של תורה לזכות מי שנקבע.';
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 export default function DedicationsPage() {
   return (
     <>
+      <SectionPing metric="dedications" />
       <DedicationsView />
     </>
   );

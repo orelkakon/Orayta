@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import AboutView from '@/components/AboutView/AboutView';
 import { shareMeta } from '@/lib/og/meta';
+import SectionPing from '@/components/common/SectionPing';
 
 const TITLE = 'אודות';
 const DESC = 'על אורייתא — מיזם ללימוד, חזרה ותרגול של מקורות יהודיים. מה כולל האתר, כמה תוכן נאסף בו עד היום, מי עומד מאחוריו וכיצד אפשר לשתף אותו עם אחרים.';
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <>
+      <SectionPing metric="about" />
       <AboutView />
     </>
   );

@@ -8,6 +8,7 @@ import SpeakButton from '@/components/common/SpeakButton';
 import { trackShare } from '@/lib/shareCounter';
 import { shareStory, chidushStory } from '@/lib/storyShare';
 import { SITE_URL, RLM, shareTextSmart } from '@/lib/siteUrl';
+import { withShareUtm, ShareChannel } from '@/lib/audience/shareUtm';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(10px); }
@@ -116,7 +117,7 @@ interface Props {
   onDelete?: () => void;
 }
 
-function buildShareText(chidush: Chidush): string {
+function buildShareText(chidush: Chidush, channel: ShareChannel): string {
   const lines: string[] = [];
   if (chidush.author) lines.push(`👤 *${chidush.author}*`);
   if (chidush.source) lines.push(`📖 ${chidush.source}`);
@@ -124,7 +125,7 @@ function buildShareText(chidush: Chidush): string {
   lines.push(chidush.text);
   lines.push('');
   lines.push('_שיתוף מאורייתא 📖_');
-  return `${RLM}${lines.join('\n')}\n${SITE_URL}`;
+  return `${RLM}${lines.join('\n')}\n${withShareUtm(SITE_URL, 'chidushim', channel)}`;
 }
 
 export default function ChidushCard({ chidush, index, onEdit, onDelete }: Props) {
@@ -140,10 +141,10 @@ export default function ChidushCard({ chidush, index, onEdit, onDelete }: Props)
         {hasAuthor && <Chip>👤 {chidush.author}</Chip>}
         {hasSource && <Chip>📖 {chidush.source}</Chip>}
         {!hasMeta && <UnknownSource>{HE.CHIDUSH_UNKNOWN_SOURCE}</UnknownSource>}
-        <ShareBtn onClick={() => { trackShare(); void shareTextSmart(buildShareText(chidush)); }}>
+        <ShareBtn onClick={() => { trackShare(); void shareTextSmart(ch => buildShareText(chidush, ch)); }}>
           💬 {HE.CHIDUSH_SHARE_WA}
         </ShareBtn>
-        <StoryBtn onClick={() => shareStory(chidushStory(chidush))}>
+        <StoryBtn onClick={() => shareStory(chidushStory(chidush), 'chidushim')}>
           📸 {HE.STORY_SHARE_IG}
         </StoryBtn>
       </MetaRow>

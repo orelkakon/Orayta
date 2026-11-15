@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import ContactView from '@/components/ContactView/ContactView';
 import { shareMeta } from '@/lib/og/meta';
+import SectionPing from '@/components/common/SectionPing';
 
 const TITLE = 'צור קשר';
 const DESC = 'נשמח לשמוע מכם — הצעות לתוכן חדש, דיווח על טעות במקור, שאלות או כל מחשבה על האתר. שלחו הודעה דרך הטופס ונחזור אליכם בהקדם האפשרי.';
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <>
+      <SectionPing metric="contact" />
       <ContactView />
     </>
   );

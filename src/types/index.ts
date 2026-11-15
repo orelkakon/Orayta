@@ -234,7 +234,17 @@ export type FeedSlide = FeedItem | FeedDedicationSlide | FeedReelSlide | FeedSea
 /** Every per-day metric stored in DailyStat and shown in the admin panel. */
 export type DailyMetric =
   | 'users' | 'feed' | 'content' | 'today' | 'pwa'
-  | 'stories' | 'quiz' | 'rabbis' | 'study' | 'sikumim' | 'chidushim' | 'gematria' | 'live';
+  | 'stories' | 'quiz' | 'rabbis' | 'study' | 'sikumim' | 'chidushim' | 'gematria' | 'live'
+  | 'home' | 'play' | 'hilula' | 'dedications' | 'tehillim' | 'minyan' | 'mikveh' | 'kivrei'
+  | 'about' | 'contact' | 'ask';
+
+/** Every DailyMetric, in one place for the API whitelist and the dashboard. */
+export const DAILY_METRICS: readonly DailyMetric[] = [
+  'users', 'feed', 'content', 'today', 'pwa',
+  'stories', 'quiz', 'rabbis', 'study', 'sikumim', 'chidushim', 'gematria', 'live',
+  'home', 'play', 'hilula', 'dedications', 'tehillim', 'minyan', 'mikveh', 'kivrei',
+  'about', 'contact', 'ask',
+];
 
 export interface AdminDailyRow extends Record<DailyMetric, number> {
   day: string;
@@ -244,11 +254,15 @@ export interface AdminStats {
   visits: number;
   questions: number;
   saves: number;
-  shares: { wa: number; story: number };
+  shares: { wa: number; story: number; tg: number };
   reactions: { total: number; heart: number; fire: number; spark: number };
   comments: AdminCommentStats;
   totals: Record<DailyMetric, number>;
   daily: AdminDailyRow[];
+  /** Real unique devices in the last 7 days / the 7 before; null until DeviceDay exists. */
+  devices: { week: number; prevWeek: number } | null;
+  /** Group-quiz games created (DailyStat 'games', counted since `since`). */
+  games: { today: number; week: number; month: number; total: number; since: string | null };
 }
 
 /** A post as the admin sees it in comment stats: what it is + a short preview. */

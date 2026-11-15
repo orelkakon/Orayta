@@ -4,6 +4,7 @@ import JoinView from '@/components/PlayView/JoinView';
 import { shareMeta } from '@/lib/og/meta';
 import { isCode } from '@/lib/play/rules';
 import { HE } from '@/lib/hebrewTexts';
+import SectionPing from '@/components/common/SectionPing';
 
 const TITLE = 'חידון קבוצתי';
 const DESC = 'משחק חידון חי לשיעור, לשולחן שבת ולחברותא — המנחה מקרין, וכולם עונים מהטלפון על שאלות בתלמוד, גדולי ישראל וגימטריה.';
@@ -22,5 +23,10 @@ export function generateMetadata({ searchParams }: Props): Metadata {
 }
 
 export default function PlayPage() {
-  return <Suspense><JoinView /></Suspense>;
+  return (
+    <>
+      <SectionPing metric="play" />
+      <Suspense><JoinView /></Suspense>
+    </>
+  );
 }

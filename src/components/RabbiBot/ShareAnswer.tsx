@@ -21,13 +21,12 @@ export default function ShareAnswer({ question, answer }: { question: string; an
   const timer = useRef<number>();
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
-  const text = () => answerShareText(question, answer);
   const share = () => {
     trackShare('wa');
-    void shareTextSmart(text(), HE.RB_NAME);
+    void shareTextSmart(ch => answerShareText(question, answer, ch), HE.RB_NAME);
   };
   const copy = () => {
-    void navigator.clipboard?.writeText(text()).then(() => {
+    void navigator.clipboard?.writeText(answerShareText(question, answer, 'copy')).then(() => {
       setCopied(true);
       window.clearTimeout(timer.current);
       timer.current = window.setTimeout(() => setCopied(false), COPIED_MS);

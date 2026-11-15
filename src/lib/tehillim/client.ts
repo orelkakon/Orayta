@@ -1,6 +1,7 @@
 import type { TehillimPurpose, TehillimState } from '@/types/tehillim';
 import { HE } from '@/lib/hebrewTexts';
 import { SITE_URL } from '@/lib/siteUrl';
+import { withShareUtm, ShareChannel } from '@/lib/audience/shareUtm';
 
 /**
  * This device's side of חלוקת תהילים (localStorage `orayta_tehillim`): the
@@ -61,8 +62,11 @@ export function headingOf(purpose: TehillimPurpose, names: string[]): string {
 export const circleUrl = (slug: string) => `${SITE_URL}/tehillim/${slug}`;
 export const manageUrl = (slug: string, key: string) => `${circleUrl(slug)}#m=${key}`;
 
-export function shareText(state: Pick<TehillimState, 'slug' | 'purpose' | 'names' | 'stats'>): string {
-  return HE.TH_SHARE_LINES(headingOf(state.purpose, state.names), circleUrl(state.slug), state.stats.chapters).join('\n');
+/** The reading's link as shared, tagged with where it went (QR codes stay clean). */
+export const circleShareUrl = (slug: string, channel: ShareChannel) => withShareUtm(circleUrl(slug), 'tehillim', channel);
+
+export function shareText(state: Pick<TehillimState, 'slug' | 'purpose' | 'names' | 'stats'>, channel: ShareChannel): string {
+  return HE.TH_SHARE_LINES(headingOf(state.purpose, state.names), circleShareUrl(state.slug, channel), state.stats.chapters).join('\n');
 }
 
 /** API call with this device's reader (and organizer) key. */

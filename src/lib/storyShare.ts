@@ -4,6 +4,7 @@ import { trackShare } from './shareCounter';
 import { renderStoryImage, StoryContent } from './storyImage';
 import { renderStoryTemplate } from './storyTemplate';
 import { SITE_URL } from './siteUrl';
+import { withShareUtm, ShareCampaign } from './audience/shareUtm';
 
 /**
  * Generates the story image and opens the NATIVE share sheet with the file
@@ -17,19 +18,20 @@ import { SITE_URL } from './siteUrl';
  * URL is pre-copied for pasting inside Instagram. Must run synchronously in
  * the click gesture — mobile browsers reject clipboard writes after an await.
  */
-function copySiteUrl(): void {
+function copySiteUrl(campaign: ShareCampaign): void {
+  const url = withShareUtm(SITE_URL, campaign, 'instagram');
   try {
     if (navigator.clipboard?.writeText) {
-      void navigator.clipboard.writeText(SITE_URL).catch(() => copySiteUrlLegacy());
+      void navigator.clipboard.writeText(url).catch(() => copySiteUrlLegacy(url));
     } else {
-      copySiteUrlLegacy();
+      copySiteUrlLegacy(url);
     }
   } catch { /* non-blocking */ }
 }
 
-function copySiteUrlLegacy(): void {
+function copySiteUrlLegacy(url: string): void {
   const ta = document.createElement('textarea');
-  ta.value = SITE_URL;
+  ta.value = url;
   ta.style.position = 'fixed';
   ta.style.opacity = '0';
   document.body.appendChild(ta);
@@ -39,15 +41,16 @@ function copySiteUrlLegacy(): void {
   ta.remove();
 }
 
-export async function shareStory(content: StoryContent): Promise<void> {
-  copySiteUrl();
+/** `campaign` = the section shared from (utm_campaign of the copied link). */
+export async function shareStory(content: StoryContent, campaign: ShareCampaign = 'stories'): Promise<void> {
+  copySiteUrl(campaign);
   const blob = await renderStoryImage(content);
   await shareImageBlob(blob, content.badge);
 }
 
 /** The empty branded story template — for composing posts inside Instagram. */
 export async function shareTemplateStory(): Promise<void> {
-  copySiteUrl();
+  copySiteUrl('about');
   const blob = await renderStoryTemplate();
   await shareImageBlob(blob, HE.ABOUT_TEMPLATE_BTN);
 }
