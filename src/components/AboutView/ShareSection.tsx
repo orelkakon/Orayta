@@ -7,6 +7,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { trackShare } from '@/lib/shareCounter';
 import { shareStory, inviteStory, shareTemplateStory } from '@/lib/storyShare';
 import { SITE_URL, RLM } from '@/lib/siteUrl';
+import { withShareUtm, ShareChannel } from '@/lib/audience/shareUtm';
 import { ShareGlyphs } from './shareGlyphs';
 
 const Card = styled.div`
@@ -115,8 +116,9 @@ export default function ShareSection() {
     setCanNative(typeof navigator !== 'undefined' && !!navigator.share);
   }, []);
 
-  const url  = typeof window !== 'undefined' ? window.location.origin : SITE_URL;
-  const text = `${RLM}${HE.APP_NAME}\n${RLM}${HE.APP_SUBTITLE}\n${url}`;
+  const urlFor = (ch: ShareChannel) => withShareUtm(`${typeof window !== 'undefined' ? window.location.origin : SITE_URL}/`, 'about', ch);
+  const textFor = (ch: ShareChannel) => `${RLM}${HE.APP_NAME}\n${RLM}${HE.APP_SUBTITLE}\n${urlFor(ch)}`;
+  const url = urlFor('copy');
 
   const copyLegacy = () => {
     const ta = document.createElement('textarea');
@@ -130,14 +132,11 @@ export default function ShareSection() {
     ta.remove();
   };
 
-  const markCopied = () => {
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2200);
-  };
+  const markCopied = () => { setCopied(true); setTimeout(() => setCopied(false), 2200); };
 
-  const handleNative   = () => { navigator.share({ title: HE.APP_NAME, text: `${RLM}${HE.APP_SUBTITLE}`, url }).catch(() => {}); };
-  const handleWhatsApp = () => { trackShare(); window.open(`https://api.whatsapp.com/send/?text=${encodeURIComponent(text)}`, '_blank'); };
-  const handleTelegram = () => { trackShare('tg'); window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank'); };
+  const handleNative   = () => { navigator.share({ title: HE.APP_NAME, text: `${RLM}${HE.APP_SUBTITLE}`, url: urlFor('native') }).catch(() => {}); };
+  const handleWhatsApp = () => { trackShare(); window.open(`https://api.whatsapp.com/send/?text=${encodeURIComponent(textFor('whatsapp'))}`, '_blank'); };
+  const handleTelegram = () => { trackShare('tg'); window.open(`https://t.me/share/url?url=${encodeURIComponent(urlFor('telegram'))}&text=${encodeURIComponent(textFor('telegram'))}`, '_blank'); };
   const handleCopy     = () => {
     void navigator.clipboard.writeText(url).then(markCopied).catch(() => {
       copyLegacy();
@@ -156,7 +155,7 @@ export default function ShareSection() {
     },
     {
       key: 'ig', label: HE.ABOUT_SHARE_INSTAGRAM, glyph: ShareGlyphs.instagram,
-      bg: IG_GRADIENT, glow: 'rgba(221,42,123,0.35)', onClick: () => { void shareStory(inviteStory()); },
+      bg: IG_GRADIENT, glow: 'rgba(221,42,123,0.35)', onClick: () => { void shareStory(inviteStory(), 'about'); },
     },
     {
       key: 'tpl', label: HE.ABOUT_TEMPLATE_BTN, glyph: ShareGlyphs.template,

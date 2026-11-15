@@ -1,13 +1,14 @@
 import type { Book, Chidush, Citation, FeedGematriaData, FeedItem, FeedSikumData, Rabbi } from '@/types';
 import { HE } from '@/lib/hebrewTexts';
 import { RLM, clip } from '@/lib/siteUrl';
-import { feedItemUrl } from '@/lib/feedLink';
+import { feedShareUrl } from '@/lib/feedLink';
+import type { ShareChannel } from '@/lib/audience/shareUtm';
 import { trackShare } from '@/lib/shareCounter';
 
 /** The WhatsApp-ready text for a feed item, signed with the site link. */
-export function feedShareText(item: FeedItem): string {
+export function feedShareText(item: FeedItem, channel: ShareChannel = 'native'): string {
   // The post's own link: its preview shows this post and opens the feed on it.
-  const sig = `\n— ${HE.APP_NAME}\n${feedItemUrl(item.type, item.id)}`;
+  const sig = `\n— ${HE.APP_NAME}\n${feedShareUrl(item.type, item.id, channel)}`;
   const d = item.data;
   let text = sig;
   if (item.type === 'citation') {
@@ -27,11 +28,12 @@ export function feedShareText(item: FeedItem): string {
   return `${RLM}${text}`;
 }
 
-/** Native share sheet when available, WhatsApp otherwise. */
-export function shareText(text: string): void {
-  const toWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+/** Native share sheet when available, WhatsApp otherwise. `textFor` gets the
+ *  channel so the link can say where it was sent. */
+export function shareText(textFor: (channel: ShareChannel) => string): void {
+  const toWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(textFor('whatsapp'))}`, '_blank');
   if (typeof navigator !== 'undefined' && navigator.share) {
-    navigator.share({ text, title: HE.FEED_TITLE }).then(() => trackShare()).catch(err => {
+    navigator.share({ text: textFor('native'), title: HE.FEED_TITLE }).then(() => trackShare()).catch(err => {
       if ((err as Error)?.name === 'AbortError') return;
       trackShare();
       toWhatsApp();

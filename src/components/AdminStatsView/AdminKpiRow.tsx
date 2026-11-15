@@ -56,16 +56,26 @@ export default function AdminKpiRow({ stats }: { stats: AdminStats }) {
   const usersYesterday = daily[daily.length - 2]?.users ?? 0;
   const usersWeek = sumLast(daily, 'users', 7);
   const usersPrevWeek = sumLast(daily, 'users', 7, 7);
+  const fmt = (n: number) => n.toLocaleString('he-IL');
+  // Real 7-day uniques once DeviceDay exists; the old sum of daily counts
+  // stays visible underneath so its history keeps its meaning.
+  const weekTile: TileData = stats.devices
+    ? {
+      icon: 'users', label: HE.ADMIN_DEVICES_WEEK, value: stats.devices.week,
+      delta: computeDelta(stats.devices.week, stats.devices.prevWeek), deltaLabel: HE.ADMIN_WEEK_VS_PREV,
+      sub: HE.ADMIN_USERS_WEEK_SUM(fmt(usersWeek)),
+    }
+    : {
+      icon: 'users', label: HE.ADMIN_USERS_WEEK, value: usersWeek,
+      delta: computeDelta(usersWeek, usersPrevWeek), deltaLabel: HE.ADMIN_WEEK_VS_PREV,
+    };
 
   const tiles: TileData[] = [
     {
       icon: 'user', label: HE.ADMIN_USERS_TODAY, value: usersToday,
       delta: computeDelta(usersToday, usersYesterday), deltaLabel: HE.ADMIN_VS_YESTERDAY,
     },
-    {
-      icon: 'users', label: HE.ADMIN_USERS_WEEK, value: usersWeek,
-      delta: computeDelta(usersWeek, usersPrevWeek), deltaLabel: HE.ADMIN_WEEK_VS_PREV,
-    },
+    weekTile,
     { icon: 'eye', label: HE.ADMIN_VISITS_TOTAL, value: stats.visits, sub: HE.ADMIN_VISITS_TOTAL_SUB },
     { icon: 'home', label: HE.ADMIN_PWA_INSTALLS, value: stats.totals.pwa },
   ];
@@ -75,7 +85,7 @@ export default function AdminKpiRow({ stats }: { stats: AdminStats }) {
       {tiles.map(t => (
         <Tile key={t.label}>
           <IconWrap><LineIcon name={t.icon} size={19} strokeWidth={1.8} /></IconWrap>
-          <Value>{t.value.toLocaleString('he-IL')}</Value>
+          <Value>{fmt(t.value)}</Value>
           <Label>{t.label}</Label>
           {t.delta && (
             <div><DeltaTag $dir={t.delta.dir}>{t.delta.text}</DeltaTag> <Sub>{t.deltaLabel}</Sub></div>

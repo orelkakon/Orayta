@@ -6,7 +6,7 @@ import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { haptics } from '@/lib/haptics';
 import type { TehillimState } from '@/types/tehillim';
-import { circleUrl, shareText } from '@/lib/tehillim/client';
+import { circleShareUrl, circleUrl, shareText } from '@/lib/tehillim/client';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { LineIcon } from '@/components/common/LineIcons';
@@ -41,11 +41,10 @@ function openWhatsApp(text: string): void {
 export default function SharePanel({ state, fresh }: { state: TehillimState; fresh: boolean }) {
   const [copied, setCopied] = useState(false);
   const [qr, setQr] = useState(false);
-  const text = shareText(state);
   const url = circleUrl(state.slug);
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
   const copy = () => {
-    void navigator.clipboard?.writeText(url).then(() => {
+    void navigator.clipboard?.writeText(circleShareUrl(state.slug, 'copy')).then(() => {
       haptics.success();
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1800);
@@ -57,9 +56,9 @@ export default function SharePanel({ state, fresh }: { state: TehillimState; fre
       <Highlight $pad="md" $fresh={fresh}>
         {fresh && <Lead>✨ {HE.TH_JUST_CREATED}</Lead>}
         <Row>
-          <WhatsApp $size="md" onClick={() => openWhatsApp(text)}><LineIcon name="send" size={18} /> {HE.TH_SHARE_WA}</WhatsApp>
+          <WhatsApp $size="md" onClick={() => openWhatsApp(shareText(state, 'whatsapp'))}><LineIcon name="send" size={18} /> {HE.TH_SHARE_WA}</WhatsApp>
           {canShare && (
-            <Button $variant="secondary" $size="md" onClick={() => { void navigator.share({ text }).catch(() => undefined); }}>
+            <Button $variant="secondary" $size="md" onClick={() => { void navigator.share({ text: shareText(state, 'native') }).catch(() => undefined); }}>
               <LineIcon name="share" size={18} /> {HE.TH_SHARE_MORE}
             </Button>
           )}

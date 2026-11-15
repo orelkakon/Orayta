@@ -5,6 +5,7 @@ import { isAdmin } from '@/lib/auth';
 import { generateCode, validateSettings } from '@/lib/play/rules';
 import { questionsFor } from '@/lib/play/questionsServer';
 import { hashKey, newKey, playError, playIpHash, NO_STORE } from '@/lib/play/server';
+import { jerusalemDay } from '@/lib/adminStatsUtils';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,6 +13,18 @@ export const dynamic = 'force-dynamic';
 // creation is rate-limited per IP; old games are swept on every create.
 const CREATE_PER_HOUR = 10;
 const KEEP_MS = 3 * 86400_000;
+
+/** Games are swept after 3 days, so the admin's game counts live in DailyStat
+ *  ('games', server-side only). The admin's own games aren't counted. */
+async function countGame(req: NextRequest): Promise<void> {
+  if (isAdmin(req)) return;
+  const day = jerusalemDay(new Date());
+  await prisma.dailyStat.upsert({
+    where: { day_metric: { day, metric: 'games' } },
+    update: { count: { increment: 1 } },
+    create: { day, metric: 'games', count: 1 },
+  }).catch(() => undefined);
+}
 
 export async function POST(req: NextRequest) {
   let body: unknown;
@@ -42,6 +55,7 @@ export async function POST(req: NextRequest) {
           ipHash,
         },
       });
+      await countGame(req);
       return NextResponse.json({ code, hostKey }, { headers: NO_STORE });
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') continue;

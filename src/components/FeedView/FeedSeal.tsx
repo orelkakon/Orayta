@@ -6,6 +6,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { haptics } from '@/lib/haptics';
 import { markSealed } from '@/lib/feedDaily';
 import { shareTextSmart, SITE_URL, RLM } from '@/lib/siteUrl';
+import { withShareUtm } from '@/lib/audience/shareUtm';
 import { shareStory, sealStory } from '@/lib/storyShare';
 import { formatHebrewDate } from '@/lib/hebrewDate';
 
@@ -196,7 +197,7 @@ export default function FeedSeal({ days, best, viewed }: Props) {
   const heb = formatHebrewDate(new Date(), true);
 
   const share = () => {
-    void shareTextSmart(`${RLM}${HE.FEED_SEAL_SHARE_TEXT(days)}\n${SITE_URL}`, HE.FEED_TITLE);
+    void shareTextSmart(ch => `${RLM}${HE.FEED_SEAL_SHARE_TEXT(days)}\n${withShareUtm(SITE_URL, 'feed', ch)}`, HE.FEED_TITLE);
   };
 
   return (
@@ -226,7 +227,7 @@ export default function FeedSeal({ days, best, viewed }: Props) {
       <Reveal $v={v} $d="0.85s">
         <BtnRow>
           <ShareBtn onClick={share}>{HE.FEED_SEAL_SHARE}</ShareBtn>
-          <StoryBtn onClick={() => void shareStory(sealStory(days))}>{HE.FEED_SEAL_STORY}</StoryBtn>
+          <StoryBtn onClick={() => void shareStory(sealStory(days), 'feed')}>{HE.FEED_SEAL_STORY}</StoryBtn>
         </BtnRow>
       </Reveal>
       <Continue>{HE.FEED_SEAL_CONTINUE}<span>↓</span></Continue>

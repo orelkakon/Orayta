@@ -5,6 +5,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { isSlug } from '@/lib/tehillim/rules';
 import { ogDay, shareMeta } from '@/lib/og/meta';
 import { tehillimSpec } from '@/lib/og/tehillim';
+import SectionPing from '@/components/common/SectionPing';
 
 interface Props { params: { slug: string } }
 
@@ -22,5 +23,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default function CirclePage({ params }: Props) {
   if (!isSlug(params.slug)) notFound();
-  return <CircleView slug={params.slug} />;
+  return (
+    <>
+      <SectionPing metric="tehillim" />
+      <CircleView slug={params.slug} />
+    </>
+  );
 }

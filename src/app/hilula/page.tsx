@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import HilulaView from '@/components/HilulaView/HilulaView';
 import { HE } from '@/lib/hebrewTexts';
 import { ogDay, shareMeta } from '@/lib/og/meta';
+import SectionPing from '@/components/common/SectionPing';
 
 const PATH = '/hilula';
 
@@ -20,6 +21,7 @@ export function generateMetadata(): Metadata {
 export default function HilulaPage() {
   return (
     <>
+      <SectionPing metric="hilula" />
       <HilulaView />
     </>
   );

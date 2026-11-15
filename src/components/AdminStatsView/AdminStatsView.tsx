@@ -15,6 +15,8 @@ import AdminRabbiBotCard from './rabbiBot/AdminRabbiBotCard';
 import AdminNearbyCard from './nearby/AdminNearbyCard';
 import AdminTehillimCard from './AdminTehillimCard';
 import AdminHomeSettings from './AdminHomeSettings';
+import AdminAudience from './audience/AdminAudience';
+import AdminPlayCard from './AdminPlayCard';
 import PageHeader from '@/components/ui/PageHeader';
 
 const fadeUp = keyframes`
@@ -61,7 +63,9 @@ export default function AdminStatsView() {
       <PageHeader icon="chart" title={HE.ADMIN_STATS_TITLE} subtitle={HE.ADMIN_STATS_SUBTITLE} />
       <AdminKpiRow stats={stats} />
       <AdminUsersChart daily={stats.daily} />
+      <AdminAudience />
       <AdminBreakdown stats={stats} />
+      <AdminPlayCard games={stats.games} />
       <AdminCommentsCard comments={stats.comments} />
       <AdminRabbiBotCard />
       <AdminTehillimCard />

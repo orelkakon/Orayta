@@ -6,6 +6,7 @@ import { HE } from '@/lib/hebrewTexts';
 import { PURPOSES, NAME_MAX } from '@/lib/tehillim/rules';
 import type { TehillimPurpose } from '@/types/tehillim';
 import { shareMeta } from '@/lib/og/meta';
+import SectionPing from '@/components/common/SectionPing';
 
 export const metadata: Metadata = {
   title: HE.TH_NEW_TITLE,
@@ -22,6 +23,7 @@ export default function NewTehillimPage({ searchParams }: Props) {
   const name = (searchParams.name ?? '').slice(0, NAME_MAX);
   return (
     <Page>
+      <SectionPing metric="tehillim" />
       <PageHeader title={HE.TH_NEW_TITLE} subtitle={HE.TH_NEW_SUB} icon="scroll" />
       <CreateForm initialPurpose={purpose} initialName={name} />
     </Page>

@@ -168,6 +168,30 @@ model DailyStat {
   @@id([day, metric])
 }
 
+// Where browser sessions came from — daily aggregates only, no per-visitor
+// rows. '' = no UTM value. Written by POST /api/track/source.
+model TrafficSourceDaily {
+  day         String // 'YYYY-MM-DD' in Asia/Jerusalem
+  source      String // instagram | whatsapp | telegram | facebook | google | other-search | direct | internal | other
+  utmSource   String @default("")
+  utmCampaign String @default("")
+  count       Int    @default(0)
+
+  @@id([day, source, utmSource, utmCampaign])
+}
+
+// One row per active device per day: sha256(random localStorage id + STATS_SALT).
+// firstDay = the day the device was first seen (null = before the id existed).
+// Rows older than 90 days are deleted. Written by POST /api/track/device.
+model DeviceDay {
+  day      String // 'YYYY-MM-DD' in Asia/Jerusalem
+  idHash   String
+  firstDay String?
+
+  @@id([day, idHash])
+  @@index([day])
+}
+
 model AppConfig {
   key   String @id
   value String

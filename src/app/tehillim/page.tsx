@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import TehillimHome from '@/components/TehillimView/TehillimHome';
 import { HE } from '@/lib/hebrewTexts';
 import { shareMeta } from '@/lib/og/meta';
+import SectionPing from '@/components/common/SectionPing';
 
 const PATH = '/tehillim';
 
@@ -13,5 +14,10 @@ export const metadata: Metadata = {
 };
 
 export default function TehillimPage() {
-  return <TehillimHome />;
+  return (
+    <>
+      <SectionPing metric="tehillim" />
+      <TehillimHome />
+    </>
+  );
 }

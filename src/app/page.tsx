@@ -1,5 +1,11 @@
 import HomeView from '@/components/HomeView/HomeView';
+import SectionPing from '@/components/common/SectionPing';
 
 export default function HomePage() {
-  return <HomeView />;
+  return (
+    <>
+      <SectionPing metric="home" />
+      <HomeView />
+    </>
+  );
 }

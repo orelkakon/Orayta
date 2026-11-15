@@ -8,6 +8,7 @@ import { shareTextSmart } from '@/lib/siteUrl';
 import type { PlayMe } from '@/types/play';
 import Confetti from '../Confetti';
 import { Center, GhostButton, GoldButton, Pill, Sub, Title, popIn, reduced } from '../playStyles';
+import { withShareUtm } from '@/lib/audience/shareUtm';
 
 const Medal = styled.div`
   font-size: 6rem;
@@ -29,7 +30,7 @@ export default function PlayerFinal({ me }: { me: PlayMe }) {
       <Pill>{HE.PLAY_POINTS(me.score)}</Pill>
       <Sub>{HE.PLAY_THANKS}</Sub>
       <Row>
-        <GoldButton type="button" onClick={() => { void shareTextSmart(`${HE.PLAY_SHARE_TEXT(me.rank, me.score)}\n${window.location.origin}/play`); }}>
+        <GoldButton type="button" onClick={() => { void shareTextSmart(ch => `${HE.PLAY_SHARE_TEXT(me.rank, me.score)}\n${withShareUtm(`${window.location.origin}/play`, 'play', ch)}`); }}>
           {HE.PLAY_SHARE}
         </GoldButton>
         <Link href="/play"><GhostButton as="span">{HE.PLAY_JOIN_TITLE}</GhostButton></Link>

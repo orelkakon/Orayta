@@ -5,6 +5,7 @@ import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { SITE_URL } from '@/lib/siteUrl';
+import { withShareUtm } from '@/lib/audience/shareUtm';
 import { trackShare } from '@/lib/shareCounter';
 import type { ShabbatStatus } from '@/lib/shabbat';
 import { clipData, shareText } from '@/lib/shabbatClip/data';
@@ -55,7 +56,7 @@ export default function ShabbatShareSheet({ open, status, parasha, onClose }: Pr
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   const clip = useShabbatClip(open, canvas, data);
   const ready = clip.phase === 'ready' && clip.file && clip.url;
-  const wa = `https://wa.me/?text=${encodeURIComponent(shareText(data, SITE_URL))}`;
+  const wa = `https://wa.me/?text=${encodeURIComponent(shareText(data, withShareUtm(SITE_URL, 'shabbat', 'whatsapp')))}`;
 
   const save = () => {
     if (!clip.url || !clip.file) return;

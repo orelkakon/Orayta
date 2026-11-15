@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import KivreiView from '@/components/KivreiView/KivreiView';
 import { shareMeta } from '@/lib/og/meta';
+import SectionPing from '@/components/common/SectionPing';
 
 const TITLE = 'קברי צדיקים באזור';
 const DESC = 'ציוני קברי צדיקים סביבכם על המפה — מי הצדיק, תאריך ההילולא, הסבר קצר, קישור לוויקיפדיה וניווט ב-Waze או Google Maps.';
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 export default function KivreiPage() {
   return (
     <>
+      <SectionPing metric="kivrei" />
       <KivreiView />
     </>
   );
