@@ -19,6 +19,7 @@ import { TEHILLIM_CIRCLE_HE } from './texts/tehillimCircle';
 import { RABBIS_TIMELINE_HE } from './texts/rabbisTimeline';
 import { POSTER_HE } from './texts/poster';
 import { SIKUM_EDITOR_HE } from './texts/sikumEditor';
+import { PLACE_HE } from './texts/place';
 
 export const HE = {
   APP_NAME: 'אורייתא',
@@ -280,8 +281,6 @@ export const HE = {
   TODAY_TZEIT: 'צאת הכוכבים',
   TODAY_TZEIT_RT: 'צאת הכוכבים (ר״ת)',
   TODAY_CHATZOT_NIGHT: 'חצות הלילה',
-  TODAY_SHABBAT_TLV: 'תל אביב',
-  TODAY_SHABBAT_JLM: 'ירושלים',
   TODAY_SHABBAT_IN: 'כניסה',
   TODAY_SHABBAT_OUT: 'יציאה',
   TODAY_COMPASS_TITLE: 'כיוון לירושלים',
@@ -1649,4 +1648,5 @@ export const HE = {
   ...RABBIS_TIMELINE_HE,
   ...POSTER_HE,
   ...SIKUM_EDITOR_HE,
+  ...PLACE_HE,
 };

@@ -15,6 +15,9 @@ import EventsCard from './EventsCard';
 import PushOptInCard from '@/components/Notifications/PushOptInCard';
 import DailySection from './DailySection';
 import ShabbatTimes from './ShabbatTimes';
+import PlaceChip from './PlaceChip';
+import { placeFromGps, readPlace, savePlace } from '@/lib/myPlace';
+import { useMyPlace } from '@/components/Place/useMyPlace';
 
 export interface GeoLocation { lat: number; lon: number; tz: string; }
 export type LocState = 'loading' | 'granted' | 'denied';
@@ -37,8 +40,12 @@ interface ShabbatItem { title: string; category: string; }
 interface ShabbatResp { items?: ShabbatItem[]; }
 
 export default function TodayView() {
-  const [location, setLocation] = useState<GeoLocation | null>(null);
-  const [locState, setLocState] = useState<LocState>('loading');
+  const { place, ready } = useMyPlace();
+  const [gpsLocation, setGpsLocation] = useState<GeoLocation | null>(null);
+  const [gpsState, setGpsState] = useState<LocState>('loading');
+  // "המקום שלי" wins; without one, ask the browser once and keep the answer as the place.
+  const location: GeoLocation | null = place ? { lat: place.lat, lon: place.lng, tz: place.tz } : gpsLocation;
+  const locState: LocState = place ? 'granted' : gpsState;
   const [hebrewDate, setHebrewDate] = useState('');
   const [parasha, setParasha] = useState('');
 
@@ -63,30 +70,31 @@ export default function TodayView() {
 
   const requestLocation = () => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      setLocState('denied');
+      setGpsState('denied');
       return;
     }
-    setLocState('loading');
+    setGpsState('loading');
     navigator.geolocation.getCurrentPosition(
       pos => {
-        setLocation({
-          lat: pos.coords.latitude,
-          lon: pos.coords.longitude,
-          tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        });
-        setLocState('granted');
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        setGpsLocation({ lat: pos.coords.latitude, lon: pos.coords.longitude, tz });
+        setGpsState('granted');
+        if (!readPlace()) savePlace(placeFromGps(pos.coords.latitude, pos.coords.longitude, tz));
       },
-      () => setLocState('denied'),
+      () => setGpsState('denied'),
       { timeout: 10000, maximumAge: 0 }
     );
   };
 
-  useEffect(() => { requestLocation(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (ready && !readPlace()) requestLocation();
+  }, [ready]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Container>
       <PageHeader icon="calendar" title={HE.TODAY_TITLE} subtitle={subtitle} />
-      {dayIdx === 5 && <ShabbatTimes date={dateStr} />}
+      {place && <PlaceChip place={place} />}
+      {dayIdx === 5 && ready && <ShabbatTimes date={dateStr} place={place} />}
       <Grid>
         <Col>
           <ZmanimCard location={location} locState={locState} date={dateStr} onRetry={requestLocation} />

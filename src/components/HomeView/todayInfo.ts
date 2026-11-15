@@ -1,5 +1,5 @@
 import { HE } from '@/lib/hebrewTexts';
-import { jerusalemSunTimes } from '@/lib/siddur/calendar';
+import { sunAt } from '@/lib/siddur/calendar';
 
 /** Pure helpers for the home "today" hero. */
 
@@ -31,15 +31,20 @@ export interface SunInfo {
   label: string;
 }
 
-export function sunInfo(now: Date): SunInfo {
-  const { sunrise, sunset } = jerusalemSunTimes(now);
+/** Jerusalem, where the hero's sun stands when the visitor has no place in Israel. */
+export const JERUSALEM = { lat: 31.778, lng: 35.235 };
+const SUNSET_ALT = -0.833;
+
+export function sunInfo(now: Date, at: { lat: number; lng: number } = JERUSALEM): SunInfo {
+  const sunTimes = (d: Date) => sunAt(d, SUNSET_ALT, at.lat, at.lng);
+  const { sunrise, sunset } = sunTimes(now);
   const t = now.getTime();
   if (t < sunrise.getTime()) return { progress: null, label: HE.HOME_SUNRISE_AT(timeFmt(sunrise)) };
   if (t < sunset.getTime()) {
     const progress = (t - sunrise.getTime()) / (sunset.getTime() - sunrise.getTime());
     return { progress, label: HE.HOME_SUNSET_AT(timeFmt(sunset)) };
   }
-  const tomorrow = jerusalemSunTimes(new Date(t + 86400000));
+  const tomorrow = sunTimes(new Date(t + 86400000));
   return { progress: null, label: HE.HOME_SUNRISE_AT(timeFmt(tomorrow.sunrise)) };
 }
 

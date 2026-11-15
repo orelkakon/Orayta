@@ -10,6 +10,7 @@ import SegmentedControl from '@/components/ui/SegmentedControl';
 import SwitchRow, { RowGroup } from '@/components/ui/Switch';
 import { openNotifications } from '@/lib/push/client';
 import { openAccessibility } from '@/lib/a11y';
+import { openPlacePicker } from '@/lib/myPlace';
 import { requestInstall } from '@/lib/install';
 import { useInstallMode } from '@/components/common/useInstallMode';
 import { GroupTitle } from './MoreGrid';
@@ -80,6 +81,9 @@ export default function MoreSettings({ isAdmin, onLogout, tickerOn, onTickerChan
         </ThemeRow>
         <ActionRow type="button" onClick={openNotifications}>
           <LineIcon name="bell" size={20} /><span>{HE.MORE_NOTIFICATIONS}</span>{chevron}
+        </ActionRow>
+        <ActionRow type="button" onClick={openPlacePicker}>
+          <LineIcon name="pin" size={20} /><span>{HE.PLACE_MORE_ROW}</span>{chevron}
         </ActionRow>
         <ActionRow type="button" onClick={openAccessibility}>
           <LineIcon name="a11y" size={20} /><span>{HE.MORE_A11Y}</span>{chevron}

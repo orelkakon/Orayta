@@ -103,7 +103,7 @@ export default function CityTable({ cities, lit }: { cities: CityTimes[]; lit: b
         <div role="row" style={{ display: 'contents' }}>
           <Cell role="columnheader" />
           {cities.map((c, i) => (
-            <Cell key={c.id} role="columnheader" $sep={i > 0}><City>{HE.SHABBAT_CITY[c.id]}</City></Cell>
+            <Cell key={c.id} role="columnheader" $sep={i > 0}><City>{c.name ?? HE.SHABBAT_CITY[c.id]}</City></Cell>
           ))}
         </div>
         {rows.map((r, ri) => (

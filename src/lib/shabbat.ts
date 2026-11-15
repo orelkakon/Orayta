@@ -1,4 +1,5 @@
 import { jerusalemSunTimes, sunAt } from '@/lib/siddur/calendar';
+import { candlesMinutes } from '@/lib/myPlace';
 
 /**
  * Shabbat in the home hero: from Friday morning until Shabbat goes out, by the
@@ -8,12 +9,16 @@ import { jerusalemSunTimes, sunAt } from '@/lib/siddur/calendar';
  * minutes (as in `push/holy.ts` and `chanukah.ts`), Haifa 30, elsewhere 20 —
  * and Shabbat ends at צאת הכוכבים, the sun 8.5° below the horizon on
  * Saturday. Checked against Hebcal for every city (±1 min, winter and summer).
- * The hero's phase and countdown follow Jerusalem.
+ * The hero's phase and countdown follow the visitor's place ("המקום שלי",
+ * `lib/myPlace.ts`) when it is in Israel, otherwise Jerusalem.
  */
 export type ShabbatPhase = 'erev' | 'shabbat';
 export type CityId = 'jerusalem' | 'telaviv' | 'haifa' | 'beersheva' | 'tzfat' | 'eilat';
 
-export interface ShabbatCity { id: CityId; lat: number; lng: number; candlesMin: number }
+/** `mine` = the visitor's own place, named by `name`. */
+export type CityKey = CityId | 'mine';
+
+export interface ShabbatCity { id: CityKey; lat: number; lng: number; candlesMin: number; name?: string }
 
 /** The hero shows the first two; the shared clip shows all. */
 export const SHABBAT_CITIES: ShabbatCity[] = [
@@ -25,17 +30,20 @@ export const SHABBAT_CITIES: ShabbatCity[] = [
   { id: 'eilat', lat: 29.5581, lng: 34.9482, candlesMin: 20 },
 ];
 
-export interface CityTimes { id: CityId; candles: Date; ends: Date }
+export interface CityTimes { id: CityKey; candles: Date; ends: Date; name?: string }
 
 export interface ShabbatStatus {
   phase: ShabbatPhase;
-  /** Jerusalem's times (the hero's clock). */
+  /** The hero's clock: the visitor's place, or Jerusalem. */
   candles: Date;
   ends: Date;
+  /** The six fixed cities (the shared clip). */
   cities: CityTimes[];
-  /** Whole minutes left until candle lighting in Jerusalem (0 once Shabbat has come in). */
+  /** The two the hero's luach shows: the visitor's place + Jerusalem, or Jerusalem + Tel Aviv. */
+  heroCities: CityTimes[];
+  /** Whole minutes left until candle lighting there (0 once Shabbat has come in). */
   minutesToCandles: number;
-  /** 0…1: Friday's daylight from sunrise to Jerusalem's candle lighting. */
+  /** 0…1: Friday's daylight from sunrise to candle lighting there. */
   dayProgress: number;
 }
 
@@ -59,6 +67,7 @@ export function cityTimes(friday: Date, city: ShabbatCity): CityTimes {
   const ends = sunAt(saturday, TZEIT_ALTITUDE, city.lat, city.lng).sunset.getTime();
   return {
     id: city.id,
+    ...(city.name ? { name: city.name } : {}),
     candles: new Date(Math.floor((fri.sunset.getTime() - city.candlesMin * MIN) / MIN) * MIN),
     ends: new Date(Math.round(ends / MIN) * MIN),
   };
@@ -66,31 +75,42 @@ export function cityTimes(friday: Date, city: ShabbatCity): CityTimes {
 
 export const allCityTimes = (friday: Date) => SHABBAT_CITIES.map(c => cityTimes(friday, c));
 
-/** Null outside Friday and Shabbat (and once Shabbat has gone out in Jerusalem). */
-export function shabbatStatus(now: Date): ShabbatStatus | null {
+/** The visitor's place as a Shabbat city (its candle-lighting custom by name). */
+export const placeCity = (p: { lat: number; lng: number; name: string }): ShabbatCity =>
+  ({ id: 'mine', lat: p.lat, lng: p.lng, candlesMin: candlesMinutes(p.name), name: p.name });
+
+/**
+ * Null outside Friday and Shabbat (and once Shabbat has gone out at the hero's
+ * place). `mine` = the visitor's place in Israel; without it, Jerusalem.
+ */
+export function shabbatStatus(now: Date, mine?: ShabbatCity): ShabbatStatus | null {
   const wd = weekdayOf(now);
   if (wd !== 5 && wd !== 6) return null;
   const friday = wd === 5 ? now : new Date(jerusalemSunTimes(now).noon.getTime() - DAY_MS);
   const cities = allCityTimes(friday);
-  const { candles, ends } = cities[0];
+  const isJerusalem = !mine || mine.name === 'ירושלים';
+  const local = isJerusalem ? cities[0] : cityTimes(friday, mine);
+  const heroCities = isJerusalem ? [cities[0], cities[1]] : [local, cities[0]];
+  const { candles, ends } = local;
   const t = now.getTime();
   if (t >= ends.getTime()) return null;
   const left = Math.max(0, Math.ceil((candles.getTime() - t) / MIN));
-  const sunrise = jerusalemSunTimes(friday).sunrise.getTime();
+  const at = mine ?? SHABBAT_CITIES[0];
+  const sunrise = sunAt(friday, SUNSET_ALTITUDE, at.lat, at.lng).sunrise.getTime();
   const dayProgress = Math.min(1, Math.max(0, (t - sunrise) / (candles.getTime() - sunrise)));
-  return { phase: left > 0 ? 'erev' : 'shabbat', candles, ends, cities, minutesToCandles: left, dayProgress };
+  return { phase: left > 0 ? 'erev' : 'shabbat', candles, ends, cities, heroCities, minutesToCandles: left, dayProgress };
 }
 
 /**
  * `/?shabbat=1` previews the hero as if today were Friday at this same clock
  * time; `?shabbat=2` as if Shabbat had just come in.
  */
-export function shabbatPreview(now: Date, mode: number): ShabbatStatus | null {
+export function shabbatPreview(now: Date, mode: number, mine?: ShabbatCity): ShabbatStatus | null {
   if (mode !== 1 && mode !== 2) return null;
   const ahead = (5 - weekdayOf(now) + 7) % 7;
   const friday = new Date(now.getTime() + ahead * DAY_MS);
-  if (mode === 1) return shabbatStatus(friday);
-  return shabbatStatus(new Date(cityTimes(friday, SHABBAT_CITIES[0]).candles.getTime() + 30 * MIN));
+  if (mode === 1) return shabbatStatus(friday, mine);
+  return shabbatStatus(new Date(cityTimes(friday, mine ?? SHABBAT_CITIES[0]).candles.getTime() + 30 * MIN), mine);
 }
 
 /** Hours and minutes until candle lighting, for the countdown. */

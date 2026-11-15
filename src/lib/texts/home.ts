@@ -9,7 +9,6 @@ export const HOME_HE = {
   HOME_PARASHA: (name: string) => `פרשת ${name}`,
   HOME_SUNRISE_AT: (t: string) => `הנץ ${t}`,
   HOME_SUNSET_AT: (t: string) => `שקיעה ${t}`,
-  HOME_SUN_PLACE: 'ירושלים',
   HOME_NOW_PRAY: (service: string) => `עכשיו: ${service}`,
   HOME_NOW_SERVICE: { shacharit: 'שחרית', mincha: 'מנחה', arvit: 'ערבית' } as Record<string, string>,
   HOME_TODAY_CTA: 'הלימוד היומי',

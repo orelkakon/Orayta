@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
-import { ShabbatStatus, countdownParts, shabbatPreview, shabbatStatus } from '@/lib/shabbat';
+import { ShabbatCity, ShabbatStatus, countdownParts, shabbatPreview, shabbatStatus } from '@/lib/shabbat';
 import { LineIcon } from '@/components/common/LineIcons';
 import CityTable from './CityTable';
 
@@ -13,9 +13,9 @@ const ShabbatShareSheet = dynamic(() => import('./ShabbatShareSheet'), { ssr: fa
 
 /**
  * The hero's Shabbat block, from Friday until Shabbat goes out: a live
- * countdown to candle lighting (the hero's clock ticks each minute) over a
- * thin line of Friday's remaining daylight, then "שבת שלום"; Jerusalem and
- * Tel Aviv times in a gilded luach; and on Friday a button that makes a short
+ * countdown to candle lighting at the visitor's place (the hero's clock ticks each minute) over a
+ * thin line of Friday's remaining daylight, then "שבת שלום"; the visitor's place + Jerusalem
+ * (or Jerusalem + Tel Aviv) in a gilded luach; and on Friday a button that makes a short
  * Shabbat-times clip to share. `/?shabbat=1` previews Friday at this clock
  * time, `=2` just after candle lighting.
  */
@@ -25,13 +25,12 @@ function previewMode(): number {
 }
 
 /** The hero's Shabbat status (or the URL preview); null outside Friday/Shabbat or before the clock is known. */
-export function useShabbatStatus(now: Date | null): ShabbatStatus | null {
+export function useShabbatStatus(now: Date | null, mine?: ShabbatCity): ShabbatStatus | null {
   const preview = useMemo(() => (typeof window === 'undefined' ? 0 : previewMode()), []);
   if (!now) return null;
-  return preview ? shabbatPreview(now, preview) : shabbatStatus(now);
+  return preview ? shabbatPreview(now, preview, mine) : shabbatStatus(now, mine);
 }
 
-const HERO_CITIES = 2;
 const grow = keyframes`from { transform: scaleX(0); } to { transform: scaleX(var(--p)); }`;
 const fadeIn = keyframes`from { opacity: 0; } to { opacity: 1; }`;
 const shimmer = keyframes`from { background-position: 200% 0; } to { background-position: -100% 0; }`;
@@ -105,7 +104,7 @@ export default function ShabbatTimes({ status, parasha }: Props) {
           <Fill /><Tip />
         </Track>
       )}
-      <CityTable cities={status.cities.slice(0, HERO_CITIES)} lit={!erev} />
+      <CityTable cities={status.heroCities} lit={!erev} />
       {erev && (
         <>
           <ShareBtn type="button" onClick={() => { setMounted(true); setSharing(true); }}>

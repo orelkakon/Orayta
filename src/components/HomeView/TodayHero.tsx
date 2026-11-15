@@ -18,6 +18,9 @@ import ShabbatCandles from './shabbat/ShabbatCandles';
 import ShabbatTimes, { useShabbatStatus } from './shabbat/ShabbatTimes';
 import HeroSky, { skyPhase } from './HeroSky';
 import { greeting, parashaLabel, sunInfo, weekdayName } from './todayInfo';
+import { inIsrael, openPlacePicker } from '@/lib/myPlace';
+import { placeCity } from '@/lib/shabbat';
+import { useMyPlace } from '@/components/Place/useMyPlace';
 
 /**
  * Home's opening card: today in the Jewish calendar. Greeting, Hebrew date,
@@ -101,6 +104,13 @@ const Sun = styled.p`
   font-variant-numeric: tabular-nums;
 `;
 
+/* The place the sun is computed for — tap to change "המקום שלי". */
+const PlaceBtn = styled.button`
+  display: inline-flex; align-items: center; gap: 3px; min-height: 32px; padding: 0 2px;
+  font: inherit; color: ${theme.game.goldLight};
+  text-decoration: underline dotted; text-underline-offset: 3px;
+`;
+
 const Actions = styled.div`display: flex; gap: ${theme.spacing.sm}; flex-wrap: wrap;`;
 
 const GhostOnNight = styled(ButtonLink)`
@@ -114,7 +124,9 @@ const SkelLine = styled(Skeleton)`background: ${theme.gilded.nightSkeleton};`;
 export default function TodayHero({ parasha }: { parasha: string | null }) {
   const now = useMinute();
   const day = usePrayerDay('auto');
-  const shabbat = useShabbatStatus(now);
+  const { place } = useMyPlace();
+  const local = inIsrael(place) ? place : null;
+  const shabbat = useShabbatStatus(now, local ? placeCity(local) : undefined);
 
   if (!now || !day) {
     return (
@@ -127,7 +139,8 @@ export default function TodayHero({ parasha }: { parasha: string | null }) {
     );
   }
 
-  const sun = sunInfo(now);
+  const sun = sunInfo(now, local ?? undefined);
+  const placeName = local?.name ?? HE.PLACE_DEFAULT;
   const heb = formatHebrewDate(day.at);
   const year = (() => {
     try { return Number(new Intl.DateTimeFormat('en-u-ca-hebrew', { year: 'numeric' }).format(day.at).replace(/\D/g, '')); }
@@ -164,7 +177,10 @@ export default function TodayHero({ parasha }: { parasha: string | null }) {
       <Bottom>
         <Sun>
           <LineIcon name={sun.progress === null ? 'sunrise' : 'sun'} size={16} />
-          {sun.label} · {HE.HOME_SUN_PLACE}
+          {sun.label} ·
+          <PlaceBtn type="button" onClick={openPlacePicker} aria-label={HE.PLACE_CHANGE_ARIA(placeName)}>
+            <LineIcon name="pin" size={13} />{placeName}
+          </PlaceBtn>
         </Sun>
         <Actions>
           <ButtonLink href={`/siddur/${day.service}`} $variant="gold">

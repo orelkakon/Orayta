@@ -8,6 +8,7 @@ import AccessibilityWidget from './AccessibilityWidget';
 import NotificationsHost from '@/components/Notifications/NotificationsHost';
 import RabbiBotHost from '@/components/RabbiBot/RabbiBotHost';
 import WhatsNewHost from '@/components/WhatsNew/WhatsNewHost';
+import PlaceHost from '@/components/Place/PlaceHost';
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
@@ -20,6 +21,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
           <NotificationsHost />
           <RabbiBotHost />
           <WhatsNewHost />
+          <PlaceHost />
         </RoleProvider>
       </ThemeProvider>
     </StyledComponentsRegistry>
