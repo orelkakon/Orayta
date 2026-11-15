@@ -1,90 +1,98 @@
 'use client';
 
-import { useState, useEffect, useId, useRef } from 'react';
+import { useState, useId, useRef } from 'react';
 import { HE } from '@/lib/hebrewTexts';
 import Modal from '@/components/common/Modal';
 import { Button } from '@/components/ui/Button';
 import { useAutoGrow } from '@/components/common/useAutoGrow';
 import { SikumEntry } from '@/types';
-import { DraftData, DraftFields, draftScope, loadDraft, saveDraft, clearDraft, countWords } from './sikumDraft';
-import {
-  Form, Label, TextLabel, Input, Textarea, TwoCol, RangeToggle, DraftBadge, ErrorMsg, FootRow, WordCount,
-} from './SikumEntryForm.styles';
+import { countWords, readingMinutes } from '@/lib/sikum/typography';
+import { useEntryForm } from './editor/useEntryForm';
+import { useDictation } from './editor/useDictation';
+import { usePunctuate } from './editor/usePunctuate';
+import { insertAtCaret } from './editor/insertText';
+import MetaFields from './editor/MetaFields';
+import WritingToolbar from './editor/WritingToolbar';
+import { Form, TextLabel, Textarea, DraftBadge, ErrorMsg, SavedMsg, FootRow, Status } from './SikumEntryForm.styles';
 
-function toDateInput(d: string) { return new Date(d).toISOString().slice(0, 10); }
-const todayStr = () => new Date().toISOString().slice(0, 10);
-
-function initialFields(entry?: SikumEntry): DraftFields {
-  return {
-    title: entry?.title ?? '',
-    text: entry?.text ?? '',
-    date: entry ? toDateInput(entry.date) : todayStr(),
-    dateEnd: entry?.dateEnd ? toDateInput(entry.dateEnd) : '',
-    isRange: !!entry?.dateEnd,
-    location: entry?.location ?? '',
-  };
+/**
+ * The summary editor — built for writing on an iPhone: a full-screen sheet
+ * above the keyboard, the writing toolbar (dictation, ״ ׳ –, punctuation)
+ * pinned on top of the keyboard, a draft kept on the device at every
+ * keystroke (closing never loses text), suggestions for the next summary and
+ * "save + next" for a run of summaries. Typography is fixed by the server.
+ */
+interface Props {
+  entry?: SikumEntry;
+  bookId: string;
+  bookName: string;
+  entries: SikumEntry[];
+  onClose: () => void;
+  onSaved: () => void;
 }
 
-const sameFields = (a: DraftFields, b: DraftFields) =>
-  (Object.keys(a) as (keyof DraftFields)[]).every(k => a[k] === b[k]);
-
-interface Props { entry?: SikumEntry; bookId: string; onClose: () => void; onSaved: () => void; }
-
-export default function SikumEntryForm({ entry, bookId, onClose, onSaved }: Props) {
-  const scope = draftScope(bookId, entry);
-  const [original] = useState(() => initialFields(entry));
-  const [draft] = useState<DraftData | null>(() => loadDraft(scope, entry));
-  const start = draft ?? original;
-
-  const [title,    setTitle]    = useState(start.title);
-  const [text,     setText]     = useState(start.text);
-  const [date,     setDate]     = useState(start.date);
-  const [dateEnd,  setDateEnd]  = useState(start.dateEnd);
-  const [isRange,  setIsRange]  = useState(start.isRange);
-  const [location, setLocation] = useState(start.location);
-  const [error,    setError]    = useState('');
-  const [saving,   setSaving]   = useState(false);
+export default function SikumEntryForm({ entry, bookId, bookName, entries, onClose, onSaved }: Props) {
+  const form = useEntryForm(bookId, entries, entry);
+  const { fields, set, setText } = form;
+  const [error, setError] = useState('');
+  const [savedNext, setSavedNext] = useState(false);
   const formId = useId();
   const textRef = useRef<HTMLTextAreaElement>(null);
-  useAutoGrow(textRef, text);
+  const titleRef = useRef<HTMLInputElement>(null);
+  useAutoGrow(textRef, fields.text);
 
-  useEffect(() => {
-    const fields = { title, text, date, dateEnd, isRange, location };
-    if (entry && sameFields(fields, original)) clearDraft(scope);
-    else saveDraft(scope, fields);
-  }, [entry, original, scope, title, text, date, dateEnd, isRange, location]);
+  const dictation = useDictation(textRef, setText, { book: bookName, title: fields.title });
+  const punct = usePunctuate(textRef, setText);
+  const busy = form.saving || dictation.recording || dictation.pending > 0;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!text.trim()) { setError(HE.ERROR_REQUIRED); return; }
-    setSaving(true);
-    try {
-      const url = entry ? `/api/sikum-entries/${entry.id}` : '/api/sikum-entries';
-      const res = await fetch(url, {
-        method: entry ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookId, title, text, date, dateEnd: isRange ? dateEnd : null, location }),
-      });
-      if (!res.ok) throw new Error();
-      clearDraft(scope);
-      onSaved(); onClose();
-    } catch {
-      setError(HE.SIKUMIM_ENTRY_SAVE_ERROR);
-    } finally { setSaving(false); }
+  const submit = async (next: boolean) => {
+    if (busy) return;
+    setError('');
+    const r = await form.save(next);
+    if (r === 'empty') { setError(HE.ERROR_REQUIRED); return; }
+    if (r === 'error') { setError(HE.SIKUMIM_ENTRY_SAVE_ERROR); return; }
+    onSaved();
+    if (!next) { onClose(); return; }
+    punct.clear();
+    setSavedNext(true);
+    setTimeout(() => setSavedNext(false), 2600);
+    titleRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
   };
 
-  // ⌘/Ctrl+Enter saves from inside the text.
-  const onTextKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); e.currentTarget.form?.requestSubmit(); }
+  const onSymbol = (s: string) => {
+    const title = titleRef.current;
+    if (title && document.activeElement === title) {
+      const a = title.selectionStart ?? title.value.length;
+      const b = title.selectionEnd ?? a;
+      set('title', title.value.slice(0, a) + s + title.value.slice(b));
+      requestAnimationFrame(() => { try { title.setSelectionRange(a + s.length, a + s.length); } catch {} });
+      return;
+    }
+    if (textRef.current) insertAtCaret(textRef.current, setText, () => s);
   };
 
-  const words = countWords(text);
+  const words = countWords(fields.text);
+  const p = punct.status;
   const footer = (<>
+    <WritingToolbar
+      hasText={!!fields.text.trim()}
+      onSymbol={onSymbol}
+      dictation={{ ...dictation, denied: dictation.state === 'denied', error: dictation.state === 'error' }}
+      punct={{
+        busy: p.kind === 'busy', done: p.kind === 'done' && p.after === fields.text,
+        error: p.kind === 'error' ? p.text : null, run: () => void punct.run(), undo: punct.undo, clear: punct.clear,
+      }}
+    />
     {error && <ErrorMsg role="alert">{error}</ErrorMsg>}
+    {savedNext && <SavedMsg role="status">{HE.SE_SAVED_NEXT}</SavedMsg>}
     <FootRow>
-      <WordCount aria-live="polite">{words > 0 && `${words.toLocaleString('he-IL')} ${HE.SIKUMIM_WORDS}`}</WordCount>
-      <Button $variant="ghost" onClick={() => { clearDraft(scope); onClose(); }}>{HE.CANCEL}</Button>
-      <Button type="submit" form={formId} $variant="primary" disabled={saving}>{HE.SIKUMIM_ENTRY_FORM_SAVE}</Button>
+      <Status aria-live="polite">
+        {words > 0 && <span>{words.toLocaleString('he-IL')} {HE.SIKUMIM_WORDS} · {HE.SE_READ_MIN(readingMinutes(words))}</span>}
+        {form.dirty && <span>{form.saving ? HE.SE_SAVING : `✓ ${HE.SE_AUTOSAVED}`}</span>}
+      </Status>
+      <Button $variant="ghost" onClick={onClose}>{HE.CLOSE}</Button>
+      {!entry && <Button $variant="tonal" disabled={busy} onClick={() => void submit(true)}>{HE.SE_SAVE_NEXT}</Button>}
+      <Button type="submit" form={formId} $variant="primary" disabled={busy}>{HE.SIKUMIM_ENTRY_FORM_SAVE}</Button>
     </FootRow>
   </>);
 
@@ -97,43 +105,25 @@ export default function SikumEntryForm({ entry, bookId, onClose, onSaved }: Prop
       full
       guarded
     >
-      <Form id={formId} onSubmit={handleSubmit}>
-        {draft && draft.text && <DraftBadge>✏️ {HE.SIKUMIM_DRAFT_RESTORED}</DraftBadge>}
-        <TwoCol>
-          <Label>
-            {HE.SIKUMIM_ENTRY_FORM_TITLE}
-            <Input value={title} onChange={e => setTitle(e.target.value)} placeholder={HE.SIKUMIM_ENTRY_FORM_TITLE_PLACEHOLDER} />
-          </Label>
-          <Label>
-            {HE.SIKUMIM_ENTRY_FORM_DATE}
-            <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
-          </Label>
-        </TwoCol>
-        <TwoCol>
-          <RangeToggle>
-            <input type="checkbox" checked={isRange} onChange={e => setIsRange(e.target.checked)} />
-            {HE.SIKUMIM_ENTRY_FORM_RANGE_TOGGLE}
-          </RangeToggle>
-          {isRange && (
-            <Label>
-              {HE.SIKUMIM_ENTRY_FORM_DATE_END}
-              <Input type="date" value={dateEnd} min={date} onChange={e => setDateEnd(e.target.value)} />
-            </Label>
-          )}
-        </TwoCol>
-        <Label>
-          {HE.SIKUMIM_ENTRY_FORM_LOCATION}
-          <Input value={location} onChange={e => setLocation(e.target.value)} placeholder={HE.SIKUMIM_ENTRY_FORM_LOCATION_PLACEHOLDER} />
-        </Label>
+      <Form id={formId} onSubmit={e => { e.preventDefault(); void submit(false); }}>
+        {form.draft && form.draft.text && (
+          <DraftBadge>
+            ✏️ {HE.SIKUMIM_DRAFT_RESTORED}
+            <button type="button" onClick={form.discardDraft}>{HE.SE_DRAFT_DISCARD}</button>
+          </DraftBadge>
+        )}
+        <MetaFields fields={fields} set={set} suggestions={form.suggestions} titleRef={titleRef} textRef={textRef} />
         <TextLabel>
           {HE.SIKUMIM_ENTRY_FORM_TEXT} *
           <Textarea
             ref={textRef}
-            value={text}
-            onChange={e => setText(e.target.value)}
-            onKeyDown={onTextKey}
+            value={fields.text}
+            onChange={e => { setText(e.target.value); if (p.kind === 'error') punct.clear(); }}
+            onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); void submit(false); } }}
             placeholder={HE.SIKUMIM_ENTRY_FORM_TEXT_PLACEHOLDER}
-            autoFocus={!entry}
+            spellCheck
+            autoCorrect="on"
+            dir="rtl"
           />
         </TextLabel>
       </Form>

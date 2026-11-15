@@ -46,7 +46,7 @@ const Track = styled.div`
 
 const clock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
-function Waveform({ levelRef }: { levelRef: MutableRefObject<number> }) {
+export function Waveform({ levelRef }: { levelRef: MutableRefObject<number> }) {
   const bars = useRef<(HTMLSpanElement | null)[]>([]);
   useEffect(() => {
     const history = new Array<number>(BARS).fill(0);

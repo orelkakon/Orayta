@@ -10,18 +10,19 @@ const TIMEOUT_MS = 20_000;
 
 export type TranscribeResult = { ok: true; text: string } | { ok: false; error: 'unavailable' | 'busy' };
 
-export async function transcribe(audio: Blob, ext: string): Promise<TranscribeResult> {
+/** `prompt` steers spelling and style (default: the halachic question vocabulary). */
+export async function transcribe(audio: Blob, ext: string, prompt = WHISPER_PROMPT): Promise<TranscribeResult> {
   const key = process.env.GROQ_API_KEY;
   if (!key) return { ok: false, error: 'unavailable' };
   let busy = false;
   for (const model of MODELS) {
     const form = new FormData();
-    form.append('file', audio, `question.${ext}`);
+    form.append('file', audio, `audio.${ext}`);
     form.append('model', model);
     form.append('language', 'he');
     form.append('temperature', '0');
     form.append('response_format', 'json');
-    form.append('prompt', WHISPER_PROMPT);
+    form.append('prompt', prompt);
     try {
       const res = await fetch(API, {
         method: 'POST', headers: { Authorization: `Bearer ${key}` }, body: form,

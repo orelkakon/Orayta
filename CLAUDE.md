@@ -221,6 +221,15 @@ Kahoot-style live game for a shiur / Shabbat table. Anyone can host (no account)
 
 ---
 
+### 2s. כתיבת סיכומים (summary editor) — `/sikumim`, admin
+The owner writes every summary **on an iPhone (home-screen app), never on a computer** — design the editor for that.
+- **Editor** (`SikumimView/SikumEntryForm.tsx` + `editor/`): full-screen guarded sheet above the keyboard. The footer is the keyboard's accessory row: `WritingToolbar` (dictation, ״ ׳ –, "סדר פיסוק", ↶ last dictated piece) + word count / reading time / "נשמר במכשיר" + סגור · שמור + הבא · שמור. Toolbar buttons cancel mousedown so the keyboard stays open. Inserts go through `insertText.ts` (`execCommand('insertText')` when focused, so native undo works; otherwise set through React).
+- **Drafts** (`sikumDraft.ts`): written on every change, 14 days; closing keeps them — only a save or "התחל מחדש" clears one.
+- **Suggestions** (`lib/sikum/suggest.ts`, pure, tested): the next title / location from the last summary written in the book (סימן רל״ז → רל״ח – , משנה ז → ח, כז → כח, a range continues from its end). A bare Hebrew word is a number only when marked or after a counter word, and only in canonical spelling. "שמור + הבא" keeps the date and starts the next one.
+- **Dictation** (`editor/useSegmentRecorder.ts` + `useDictation.ts`): one mic stream cut into pieces at pauses (a new MediaRecorder per piece, opened when the last closes — iOS won't run two), each sent to `POST /api/sikum-entries/transcribe` (admin, Whisper with `dictationPrompt`: vocabulary + book + title + the words before the caret), inserted in order at the caret via `joinDictation` ("פסקה חדשה" → line break, echoes of the prompt dropped). Silent pieces are dropped unless the level meter is dead. Wake lock while recording. Audio is never stored.
+- **Punctuation** (`lib/sikum/punctuate.ts`): `POST /api/sikum-entries/punctuate` runs the lite Gemini chain (Groq Qwen last, shared quota bookkeeping with רבי־בוט); the result is accepted only with exactly the writer's words (`sameWords`), else `changed`. Selection or the whole text; one-tap undo.
+- **Typography on save** (`lib/sikum/typography.ts` via `entryInput.ts`, pure, tested): invisible bidi marks stripped, `"`/`'` after Hebrew letters → ״ ׳, spaced hyphen → –, spacing around punctuation, ≤1 blank line. Words never change.
+
 ### 2p. צור קשר — `/contact`
 - Rules (`lib/contact.ts`, pure, tested): topic, message ≤2000, optional name / reply-to (email or phone) / rating, bidi chars stripped; `contactWaText` builds the WhatsApp draft. Mail body in `lib/contactMail.ts` (HTML-escaped; a reply-to email becomes the mail's Reply-To).
 - `POST /api/contact` saves the row and, for email, **awaits** the Gmail send before answering (a send left running after the response is cut off on Vercel); not configured / failed → 502 `mail`, and the page offers WhatsApp / mailto. Honeypot `website`, 5 / 10 min per IP.

@@ -18,6 +18,7 @@ import { TEHILLIM_HE } from './texts/tehillim';
 import { TEHILLIM_CIRCLE_HE } from './texts/tehillimCircle';
 import { RABBIS_TIMELINE_HE } from './texts/rabbisTimeline';
 import { POSTER_HE } from './texts/poster';
+import { SIKUM_EDITOR_HE } from './texts/sikumEditor';
 
 export const HE = {
   APP_NAME: 'אורייתא',
@@ -402,7 +403,7 @@ export const HE = {
   SIKUMIM_TITLE: 'סיכומי חומרים',
   SIKUMIM_SUBTITLE: 'סיכומי לימוד יומיים לפי ספר',
   SIKUMIM_SEARCH_PLACEHOLDER: 'חיפוש לפי שם ספר או סופר...',
-  SIKUMIM_SEARCH_ENTRIES_PLACEHOLDER: 'חיפוש לפי כותרת...',
+  SIKUMIM_SEARCH_ENTRIES_PLACEHOLDER: 'חיפוש בכותרת, בתוכן או במיקום...',
   SIKUMIM_BOOKS_EMPTY: 'עדיין אין ספרים — הוסף ספר כדי להתחיל',
   SIKUMIM_ADD_BOOK_BTN: 'ספר חדש',
   SIKUMIM_BOOK_FORM_ADD_TITLE: 'הוסף ספר חדש',
@@ -1647,4 +1648,5 @@ export const HE = {
   ...TEHILLIM_CIRCLE_HE,
   ...RABBIS_TIMELINE_HE,
   ...POSTER_HE,
+  ...SIKUM_EDITOR_HE,
 };
