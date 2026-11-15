@@ -2,7 +2,7 @@
 
 import { ReactNode } from 'react';
 import Link from 'next/link';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { LineIcon } from '@/components/common/LineIcons';
 
@@ -73,15 +73,25 @@ const SectionTitle = styled.h2`
   font-size: ${theme.fontSizes.xl}; line-height: 1.2; color: ${theme.colors.text};
 `;
 
-const SectionAction = styled(Link)`
+const sectionActionCss = css`
   display: inline-flex; align-items: center; gap: 2px; min-height: 36px;
   font-size: ${theme.fontSizes.sm}; font-weight: 600; color: ${theme.colors.secondaryText};
   transition: opacity 0.15s ease;
   &:active { opacity: 0.6; }
 `;
+const SectionAction = styled(Link)`${sectionActionCss}`;
+const SectionButton = styled.button`${sectionActionCss} gap: 4px;`;
 
-/** Section heading with an optional "see all" link. */
-export function SectionHeader({ title, action, id }: { title: ReactNode; action?: { href: string; label: string }; id?: string }) {
+interface SectionHeaderProps {
+  title: ReactNode;
+  action?: { href: string; label: string };
+  /** A button instead of a link (e.g. "התאמה" opening a sheet). */
+  button?: { label: string; icon?: string; onClick: () => void };
+  id?: string;
+}
+
+/** Section heading with an optional "see all" link or action button. */
+export function SectionHeader({ title, action, button, id }: SectionHeaderProps) {
   return (
     <SectionWrap>
       <SectionTitle id={id}>{title}</SectionTitle>
@@ -89,6 +99,11 @@ export function SectionHeader({ title, action, id }: { title: ReactNode; action?
         <SectionAction href={action.href}>
           {action.label}<LineIcon name="chevron" size={16} strokeWidth={2} />
         </SectionAction>
+      )}
+      {button && (
+        <SectionButton type="button" onClick={button.onClick}>
+          {button.icon && <LineIcon name={button.icon} size={15} strokeWidth={2} />}{button.label}
+        </SectionButton>
       )}
     </SectionWrap>
   );

@@ -1,3 +1,5 @@
+import type { Tile } from '@/lib/interests';
+
 /* Home screen — spread into HE (src/lib/hebrewTexts.ts). */
 export const HOME_HE = {
   HOME_GREETING_DAWN: 'לילה טוב',
@@ -26,15 +28,15 @@ export const HOME_HE = {
 
   HOME_QUICK_TITLE: 'גישה מהירה',
   HOME_QUICK: [
-    { href: '/siddur', icon: 'sunrise', label: 'סידור' },
-    { href: '/content?open=birkhat-hamazon', icon: 'bread', label: 'ברכת המזון' },
-    { href: '/content?open=tehillim', icon: 'scroll', label: 'תהילים' },
-    { href: '/ask', icon: 'ask', label: 'רבי־בוט' },
-    { href: '/study', icon: 'openbook', label: 'תלמוד' },
-    { href: '/rabbis', icon: 'users', label: 'רבנים' },
-    { href: '/sikumim', icon: 'pencil', label: 'סיכומים' },
-    { href: '/quiz', icon: 'target', label: 'תרגול' },
-  ] as { href: string; icon: string; label: string }[],
+    { href: '/siddur', icon: 'sunrise', label: 'סידור', tags: ['prayer'] },
+    { href: '/content?open=birkhat-hamazon', icon: 'bread', label: 'ברכת המזון', tags: ['prayer'] },
+    { href: '/content?open=tehillim', icon: 'scroll', label: 'תהילים', tags: ['prayer'] },
+    { href: '/ask', icon: 'ask', label: 'רבי־בוט', tags: ['knowledge'] },
+    { href: '/study', icon: 'openbook', label: 'תלמוד', tags: ['learning'] },
+    { href: '/rabbis', icon: 'users', label: 'רבנים', tags: ['knowledge', 'learning'] },
+    { href: '/sikumim', icon: 'pencil', label: 'סיכומים', tags: ['learning'] },
+    { href: '/quiz', icon: 'target', label: 'תרגול', tags: ['knowledge'] },
+  ] as Tile[],
 
   HOME_LEARN_TITLE: 'הלימוד של היום',
   HOME_LEARN_ALL: 'לוח יומי',

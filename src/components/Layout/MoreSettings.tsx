@@ -11,6 +11,8 @@ import SwitchRow, { RowGroup } from '@/components/ui/Switch';
 import { openNotifications } from '@/lib/push/client';
 import { openAccessibility } from '@/lib/a11y';
 import { openPlacePicker } from '@/lib/myPlace';
+import { openInterests } from '@/lib/interests';
+import { useInterests } from '@/components/Interests/useInterests';
 import { requestInstall } from '@/lib/install';
 import { useInstallMode } from '@/components/common/useInstallMode';
 import { GroupTitle } from './MoreGrid';
@@ -61,6 +63,7 @@ interface Props {
 export default function MoreSettings({ isAdmin, onLogout, tickerOn, onTickerChange, onNavigate }: Props) {
   const { mode, setMode } = useDarkMode();
   const install = useInstallMode();
+  const interests = useInterests();
   const chevron = <LineIcon name="chevron" size={18} />;
   return (
     <>
@@ -82,6 +85,11 @@ export default function MoreSettings({ isAdmin, onLogout, tickerOn, onTickerChan
         <ActionRow type="button" onClick={openNotifications}>
           <LineIcon name="bell" size={20} /><span>{HE.MORE_NOTIFICATIONS}</span>{chevron}
         </ActionRow>
+        {interests.enabled && (
+          <ActionRow type="button" onClick={openInterests}>
+            <LineIcon name="sliders" size={20} /><span>{HE.INTERESTS_MORE_ROW}</span>{chevron}
+          </ActionRow>
+        )}
         <ActionRow type="button" onClick={openPlacePicker}>
           <LineIcon name="pin" size={20} /><span>{HE.PLACE_MORE_ROW}</span>{chevron}
         </ActionRow>

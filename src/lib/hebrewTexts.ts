@@ -21,6 +21,7 @@ import { POSTER_HE } from './texts/poster';
 import { SIKUM_EDITOR_HE } from './texts/sikumEditor';
 import { PLACE_HE } from './texts/place';
 import { PARASHA_HE } from './texts/parasha';
+import { INTERESTS_HE } from './texts/interests';
 
 export const HE = {
   APP_NAME: 'אורייתא',
@@ -1651,4 +1652,5 @@ export const HE = {
   ...SIKUM_EDITOR_HE,
   ...PLACE_HE,
   ...PARASHA_HE,
+  ...INTERESTS_HE,
 };

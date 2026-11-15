@@ -12,11 +12,29 @@ import FeedTeaser from './FeedTeaser';
 import QuickAccess from './QuickAccess';
 import HomeNearbyHub from './HomeNearbyHub';
 import DedicateCard from './DedicateCard';
+import InterestsCard from '@/components/Interests/InterestsCard';
+import { activeInterests, useInterests } from '@/components/Interests/useInterests';
+import { Block, orderBlocks } from '@/lib/interests';
+
+type MainKey = 'feed' | 'quick';
+type SideKey = 'nearby' | 'push' | 'dedicate';
+
+/* What each movable block serves; with interests picked, the matching ones rise (lib/interests.ts). */
+const MAIN: Block<MainKey>[] = [
+  { key: 'feed', tags: ['learning'] },
+  { key: 'quick', tags: ['prayer', 'knowledge'] },
+];
+const SIDE: Block<SideKey>[] = [
+  { key: 'nearby', tags: ['community', 'prayer'] },
+  { key: 'push', tags: [] },
+  { key: 'dedicate', tags: ['community'] },
+];
 
 /**
  * Home = "today in Orayta". Phones: one calm column in order of daily use —
  * stories, today (date · prayer now), a taste of the feed, quick tools,
- * nearby, dedications. Tablets put the side cards in pairs;
+ * nearby, dedications. With interests picked (and personalisation on — the
+ * admin can switch it off for everyone) the blocks and tiles that fit rise. Tablets put the side cards in pairs;
  * desktop splits into a main column and a side column under the stories.
  */
 const Layout = styled.div`
@@ -90,6 +108,19 @@ const Title = styled.h1`
 export default function HomeView() {
   const { load } = useLearnToday();
   const parasha = load.state === 'ready' ? load.data.parasha : null;
+  const interests = useInterests();
+  const picked = activeInterests(interests);
+  const askInterests = interests.enabled && interests.ready && !interests.prefs.asked;
+
+  const main: Record<MainKey, JSX.Element> = {
+    feed: <FeedTeaser />,
+    quick: <QuickAccess picked={picked} editable={interests.enabled} />,
+  };
+  const side: Record<SideKey, JSX.Element> = {
+    nearby: <HomeNearbyHub />,
+    push: <PushOptInCard />,
+    dedicate: <DedicateCard />,
+  };
 
   return (
     <Layout>
@@ -98,13 +129,11 @@ export default function HomeView() {
       <Column>
         <HeroDepth><TodayHero parasha={parasha} /></HeroDepth>
         <LiveBannerBlock />
-        <Reveal><FeedTeaser /></Reveal>
-        <Reveal><QuickAccess /></Reveal>
+        {askInterests && <InterestsCard />}
+        {orderBlocks(MAIN, picked).map(k => <Reveal key={k}>{main[k]}</Reveal>)}
       </Column>
       <Side>
-        <Reveal><HomeNearbyHub /></Reveal>
-        <Reveal><PushOptInCard /></Reveal>
-        <Reveal><DedicateCard /></Reveal>
+        {orderBlocks(SIDE, picked).map(k => <Reveal key={k}>{side[k]}</Reveal>)}
       </Side>
     </Layout>
   );

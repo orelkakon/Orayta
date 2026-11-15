@@ -14,6 +14,7 @@ import AdminPushCard from './AdminPushCard';
 import AdminRabbiBotCard from './rabbiBot/AdminRabbiBotCard';
 import AdminNearbyCard from './nearby/AdminNearbyCard';
 import AdminTehillimCard from './AdminTehillimCard';
+import AdminHomeSettings from './AdminHomeSettings';
 import PageHeader from '@/components/ui/PageHeader';
 
 const fadeUp = keyframes`
@@ -66,6 +67,7 @@ export default function AdminStatsView() {
       <AdminTehillimCard />
       <AdminNearbyCard />
       <AdminPushCard />
+      <AdminHomeSettings />
     </Page>
   );
 }
