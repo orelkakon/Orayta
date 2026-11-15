@@ -3,22 +3,21 @@
 import { useState, useId, useRef } from 'react';
 import { HE } from '@/lib/hebrewTexts';
 import Modal from '@/components/common/Modal';
-import { Button } from '@/components/ui/Button';
 import { useAutoGrow } from '@/components/common/useAutoGrow';
 import { SikumEntry } from '@/types';
-import { countWords, readingMinutes } from '@/lib/sikum/typography';
+import { countWords } from '@/lib/sikum/typography';
 import { useEntryForm } from './editor/useEntryForm';
 import { useDictation } from './editor/useDictation';
 import { usePunctuate } from './editor/usePunctuate';
 import { insertAtCaret } from './editor/insertText';
 import MetaFields from './editor/MetaFields';
 import WritingToolbar from './editor/WritingToolbar';
-import { Form, TextLabel, Textarea, DraftBadge, ErrorMsg, SavedMsg, FootRow, Status } from './SikumEntryForm.styles';
+import { Form, TextLabel, TextHead, Textarea, DraftBadge, ErrorMsg, SavedMsg, Status, HeadBtn } from './SikumEntryForm.styles';
 
 /**
  * The summary editor — built for writing on an iPhone: a full-screen sheet
- * above the keyboard, the writing toolbar (dictation, ״ ׳ –, punctuation)
- * pinned on top of the keyboard, a draft kept on the device at every
+ * above the keyboard, save in the title bar (as in iOS), the writing toolbar
+ * (dictation, ״ ׳ –, punctuation) as the one row on top of the keyboard, a draft kept on the device at every
  * keystroke (closing never loses text), suggestions for the next summary and
  * "save + next" for a run of summaries. Typography is fixed by the server.
  */
@@ -73,7 +72,15 @@ export default function SikumEntryForm({ entry, bookId, bookName, entries, onClo
 
   const words = countWords(fields.text);
   const p = punct.status;
+  const actions = (<>
+    {!entry && <HeadBtn $variant="tonal" $size="sm" disabled={busy} onClick={() => void submit(true)}>{HE.SE_SAVE_NEXT}</HeadBtn>}
+    <HeadBtn type="submit" form={formId} $variant="primary" $size="sm" disabled={busy}>
+      {form.saving ? HE.SE_SAVING : HE.SIKUMIM_ENTRY_FORM_SAVE}
+    </HeadBtn>
+  </>);
   const footer = (<>
+    {error && <ErrorMsg role="alert">{error}</ErrorMsg>}
+    {savedNext && <SavedMsg role="status">{HE.SE_SAVED_NEXT}</SavedMsg>}
     <WritingToolbar
       hasText={!!fields.text.trim()}
       onSymbol={onSymbol}
@@ -83,17 +90,6 @@ export default function SikumEntryForm({ entry, bookId, bookName, entries, onClo
         error: p.kind === 'error' ? p.text : null, run: () => void punct.run(), undo: punct.undo, clear: punct.clear,
       }}
     />
-    {error && <ErrorMsg role="alert">{error}</ErrorMsg>}
-    {savedNext && <SavedMsg role="status">{HE.SE_SAVED_NEXT}</SavedMsg>}
-    <FootRow>
-      <Status aria-live="polite">
-        {words > 0 && <span>{words.toLocaleString('he-IL')} {HE.SIKUMIM_WORDS} · {HE.SE_READ_MIN(readingMinutes(words))}</span>}
-        {form.dirty && <span>{form.saving ? HE.SE_SAVING : `✓ ${HE.SE_AUTOSAVED}`}</span>}
-      </Status>
-      <Button $variant="ghost" onClick={onClose}>{HE.CLOSE}</Button>
-      {!entry && <Button $variant="tonal" disabled={busy} onClick={() => void submit(true)}>{HE.SE_SAVE_NEXT}</Button>}
-      <Button type="submit" form={formId} $variant="primary" disabled={busy}>{HE.SIKUMIM_ENTRY_FORM_SAVE}</Button>
-    </FootRow>
   </>);
 
   return (
@@ -101,6 +97,7 @@ export default function SikumEntryForm({ entry, bookId, bookName, entries, onClo
       onClose={onClose}
       title={entry ? HE.SIKUMIM_ENTRY_FORM_EDIT_TITLE : HE.SIKUMIM_ENTRY_FORM_ADD_TITLE}
       footer={footer}
+      actions={actions}
       maxWidth={820}
       full
       guarded
@@ -114,7 +111,14 @@ export default function SikumEntryForm({ entry, bookId, bookName, entries, onClo
         )}
         <MetaFields fields={fields} set={set} suggestions={form.suggestions} titleRef={titleRef} textRef={textRef} />
         <TextLabel>
-          {HE.SIKUMIM_ENTRY_FORM_TEXT} *
+          <TextHead>
+            <span>{HE.SIKUMIM_ENTRY_FORM_TEXT}</span>
+            <Status aria-live="polite">
+              {words > 0 && `${words.toLocaleString('he-IL')} ${HE.SIKUMIM_WORDS}`}
+              {words > 0 && form.dirty && ' · '}
+              {form.dirty && `✓ ${HE.SE_AUTOSAVED}`}
+            </Status>
+          </TextHead>
           <Textarea
             ref={textRef}
             value={fields.text}

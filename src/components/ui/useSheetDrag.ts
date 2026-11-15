@@ -56,7 +56,9 @@ export function useSheetDrag(
       const body = scroller.current;
       const target = e.target as Element;
       fromBody = !!body && body.contains(target);
-      tracking = !(fromBody && body && (!bodyDrag || ownsTheGesture(target, body)));
+      // The footer holds buttons and toolbars (an editor's sits on the keyboard) — never a drag handle.
+      const fromFoot = !!target.closest('[data-sheet-foot]');
+      tracking = !fromFoot && !(fromBody && body && (!bodyDrag || ownsTheGesture(target, body)));
       startY = e.touches[0].clientY;
       startT = performance.now();
       dy = 0; decided = false; dragging = false;

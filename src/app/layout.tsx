@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Frank_Ruhl_Libre, Heebo } from 'next/font/google';
 import ClientProviders from '@/components/common/ClientProviders';
 import AppShell from '@/components/Layout/AppShell';
-import { THEME_BOOT_SCRIPT } from '@/lib/themeBoot';
+import { THEME_BOOT_SCRIPT, IOS_VIEWPORT_SCRIPT } from '@/lib/themeBoot';
 import { ogImageUrl } from '@/lib/og/meta';
 
 const frankRuhl = Frank_Ruhl_Libre({
@@ -55,7 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="he" dir="rtl" className={`${frankRuhl.variable} ${heebo.variable}`}>
       <head>
         {/* Prevent dark-mode flash: read localStorage before first paint */}
-        <script dangerouslySetInnerHTML={{ __html: `${THEME_BOOT_SCRIPT};window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__bip=e});` }} />
+        <script dangerouslySetInnerHTML={{ __html: `${THEME_BOOT_SCRIPT};${IOS_VIEWPORT_SCRIPT};window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__bip=e});` }} />
       </head>
       <body>
         <ClientProviders>

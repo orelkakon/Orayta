@@ -62,7 +62,7 @@ export default function WritingToolbar({ dictation: d, punct: p, onSymbol, hasTe
         <Bar>
           <MicTool type="button" onClick={d.start} aria-label={HE.SE_MIC}>
             <LineIcon name="mic" size={20} strokeWidth={1.9} />
-            <span>{d.pending ? HE.SE_TRANSCRIBING(d.pending) : HE.SE_MIC}</span>
+            <span>{d.pending ? HE.SE_WRITING : HE.SE_MIC_SHORT}</span>
           </MicTool>
           <Group>
             {SYMBOLS.map(([s, label]) => (
@@ -71,10 +71,10 @@ export default function WritingToolbar({ dictation: d, punct: p, onSymbol, hasTe
             {d.canUndo && <Tool type="button" onMouseDown={keepFocus} onClick={d.undoLast} aria-label={HE.SE_UNDO_PIECE}>↶</Tool>}
             <Tool
               type="button" $wide onMouseDown={keepFocus} onClick={p.run}
-              disabled={!hasText || p.busy} aria-busy={p.busy}
+              disabled={!hasText || p.busy} aria-busy={p.busy} aria-label={HE.SE_PUNCTUATE}
             >
               <LineIcon name="sparkle" size={17} strokeWidth={1.8} />
-              {p.busy ? HE.SE_PUNCTUATING : HE.SE_PUNCTUATE}
+              <span>{p.busy ? HE.SE_PUNCTUATING : HE.SE_PUNCTUATE_SHORT}</span>
             </Tool>
           </Group>
         </Bar>

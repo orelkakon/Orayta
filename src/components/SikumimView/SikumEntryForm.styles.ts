@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
+import { Button } from '@/components/ui/Button';
 
 const field = `
   border: 1px solid ${theme.colors.border}; border-radius: ${theme.radii.md};
@@ -17,9 +18,6 @@ export const Label = styled.label`
   display: flex; flex-direction: column; gap: ${theme.spacing.xs}; min-width: 0;
   font-size: 0.9rem; font-weight: 600; color: ${theme.colors.text};
 `;
-export const LabelRow = styled.div`
-  display: flex; align-items: center; justify-content: space-between; gap: ${theme.spacing.xs}; min-height: 32px;
-`;
 export const TextLabel = styled(Label)`flex: 1 0 auto;`;
 export const Input = styled.input`
   ${field}
@@ -31,19 +29,10 @@ export const Textarea = styled.textarea`
   ${field}
   flex: 1 0 auto; min-height: 220px; resize: none; overflow: hidden;
   padding: ${theme.spacing.md};
-  font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.lg}; line-height: 1.85;
+  /* 18px beats the phones' global 16px rule — writing in the serif face needs the size. */
+  font-family: ${theme.fonts.body}; font-size: ${theme.fontSizes.lg} !important; line-height: 1.85;
   font-weight: 400;
   ${theme.up.md} { min-height: 320px; }
-`;
-// Date + location side by side, even on a phone.
-export const MetaRow = styled.div`
-  display: grid; grid-template-columns: 1fr 1fr; gap: ${theme.spacing.sm}; align-items: end;
-`;
-export const RangeToggle = styled.label`
-  display: flex; align-items: center; gap: ${theme.spacing.sm}; min-height: 44px;
-  font-size: 0.85rem; color: ${theme.colors.textMuted}; cursor: pointer;
-  user-select: none; -webkit-tap-highlight-color: transparent;
-  input[type="checkbox"] { accent-color: ${theme.colors.primary}; width: 20px; height: 20px; }
 `;
 export const Chips = styled.div`
   display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-width: 0;
@@ -58,11 +47,14 @@ export const DraftBadge = styled.div`
 `;
 export const ErrorMsg = styled.p`font-size: 0.85rem; color: ${theme.colors.error}; margin-bottom: ${theme.spacing.xs};`;
 export const SavedMsg = styled.p`font-size: 0.85rem; color: ${theme.colors.success}; font-weight: 600; margin-bottom: ${theme.spacing.xs};`;
-export const FootRow = styled.div`
-  display: flex; align-items: center; gap: ${theme.spacing.xs};
+export const TextHead = styled.span`
+  display: flex; align-items: baseline; justify-content: space-between; gap: ${theme.spacing.sm};
 `;
 export const Status = styled.span`
-  flex: 1; min-width: 0; display: flex; flex-direction: column;
-  font-size: ${theme.fontSizes.xs}; color: ${theme.colors.textMuted}; line-height: 1.35;
-  font-variant-numeric: tabular-nums;
+  min-width: 0; font-size: ${theme.fontSizes.xs}; font-weight: 500; color: ${theme.colors.textMuted};
+  font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+`;
+/** Save buttons in the sheet's title bar. */
+export const HeadBtn = styled(Button)`
+  flex: none; min-height: 40px; padding: 0 14px; font-weight: 700;
 `;

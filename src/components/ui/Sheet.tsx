@@ -128,11 +128,13 @@ export interface SheetProps {
   full?: boolean;
   /** No dismiss from a backdrop tap or a pull on the body. */
   guarded?: boolean;
+  /** Buttons in the title bar before the close button (an editor's "save", as in iOS). */
+  actions?: ReactNode;
 }
 
 export default function Sheet({
   open, onClose, title, ariaLabel, children, footer, maxWidth = 560, tall = false, padded = true,
-  full = false, guarded = false,
+  full = false, guarded = false, actions,
 }: SheetProps) {
   const { mounted, shown } = usePresence(open, EXIT_MS);
   const [isSheet, setIsSheet] = useState(false);
@@ -175,13 +177,14 @@ export default function Sheet({
         {title && (
           <Head>
             <Title id={titleId}>{title}</Title>
+            {actions}
             <IconButton $variant="tonal" $size="sm" onClick={onClose} aria-label={HE.CLOSE}>
               <LineIcon name="close" size={18} strokeWidth={2} />
             </IconButton>
           </Head>
         )}
         <Body ref={body} $pad={padded} $full={full}>{children}</Body>
-        {footer && <Foot>{footer}</Foot>}
+        {footer && <Foot data-sheet-foot="">{footer}</Foot>}
       </Panel>
     </>,
     document.body,

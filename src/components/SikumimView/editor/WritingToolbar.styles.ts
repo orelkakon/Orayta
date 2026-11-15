@@ -4,8 +4,7 @@ import { theme } from '@/lib/theme';
 const pulse = keyframes`0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, ${theme.colors.error} 45%, transparent); } 50% { box-shadow: 0 0 0 7px transparent; }`;
 
 export const Bar = styled.div`
-  display: flex; align-items: center; gap: ${theme.spacing.xs};
-  margin-bottom: ${theme.spacing.sm}; min-height: 44px;
+  display: flex; align-items: center; gap: ${theme.spacing.xs}; min-height: 44px;
 `;
 export const Group = styled.div`
   flex: 1; min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: 4px;
@@ -19,6 +18,8 @@ export const Tool = styled.button<{ $wide?: boolean }>`
   -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none;
   &:active:not(:disabled) { transform: scale(0.94); background: ${theme.colors.borderLight}; }
   &:disabled { opacity: 0.45; }
+  /* Narrow phones: the punctuation tool keeps only its icon. */
+  @media (max-width: 389px) { span { display: none; } padding: 0; }
   transition: transform 0.12s ${theme.motion.outStrong};
 `;
 export const MicTool = styled.button<{ $live?: boolean }>`
@@ -35,6 +36,7 @@ export const MicTool = styled.button<{ $live?: boolean }>`
   `}
   &:active { transform: scale(0.95); }
   transition: transform 0.12s ${theme.motion.outStrong};
+  @media (max-width: 389px) { span { display: none; } padding: 0; width: 44px; }
 `;
 export const Live = styled.div`flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;`;
 export const LiveText = styled.div`display: flex; align-items: center; gap: ${theme.spacing.sm}; height: 26px;`;
