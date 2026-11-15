@@ -1,13 +1,11 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
+import { dayParam, israelDayKey } from '@/lib/daily/day';
+import { dailySikum } from '@/lib/daily/server';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
-  const entries = await prisma.sikumEntry.findMany({
-    include: { book: { select: { name: true, author: true } } },
-  });
-  if (entries.length === 0) return NextResponse.json(null);
-  const DAY = Math.floor(Date.now() / 86400000);
-  return NextResponse.json(entries[DAY % entries.length]);
+/** The summary of the day (Israel date, or `?date=YYYY-MM-DD`). */
+export async function GET(req: NextRequest) {
+  const key = dayParam(req.nextUrl.searchParams) ?? israelDayKey();
+  return NextResponse.json(await dailySikum(key));
 }
