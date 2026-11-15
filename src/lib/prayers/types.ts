@@ -26,4 +26,6 @@ export interface SiddurSection {
   groups?: StaticGroup[];
   parts?: SiddurPart[];
   jump?: SiddurJump;
+  /** Credit line under the text, for a version whose license asks for one. */
+  source?: string;
 }

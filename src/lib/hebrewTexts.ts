@@ -826,6 +826,7 @@ export const HE = {
   SIDDUR_TODAY_ONLY: 'רק המזמור של היום',
   SIDDUR_NEXT: 'הבא:',
   SIDDUR_SOURCE: 'הנוסח: סידור עדות המזרח, ספריא (Sefaria)',
+  SIDDUR_SOURCE_MANNA: 'הנוסח: סידור נוסח ספרד, מהדורת מצודה (1981), ספריא (Sefaria) · CC BY',
   SIDDUR_WHEN_ASERET: 'נאמר בעשרת ימי תשובה',
   SIDDUR_WHEN_MON_THU: 'נאמר בימי שני וחמישי',
   SIDDUR_WHEN_NOT_MON_THU: 'בשני וחמישי ממשיכים ב״והוא רחום״',

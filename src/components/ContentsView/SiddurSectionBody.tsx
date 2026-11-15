@@ -16,8 +16,11 @@ const PartTitle = styled.h3`
   padding-bottom: 6px; border-bottom: 1px solid color-mix(in srgb, ${theme.colors.gold} 40%, transparent);
 `;
 
+const Source = styled.p`font-size: ${theme.fontSizes.xs}; color: ${theme.colors.textLight};`;
+
 /** Renders one SiddurSection by its kind: multi-part, Sefaria or static. */
 export default function SiddurSectionBody({ section }: { section: SiddurSection }) {
+  const source = section.source ? <Source>{section.source}</Source> : null;
   if (section.parts) {
     return (
       <>
@@ -27,9 +30,10 @@ export default function SiddurSectionBody({ section }: { section: SiddurSection 
             <SefariaPrayerView sefariaRef={p.sefariaRef} />
           </PartBlock>
         ))}
+        {source}
       </>
     );
   }
-  if (section.sefariaRef) return <SefariaPrayerView sefariaRef={section.sefariaRef} jump={section.jump} />;
+  if (section.sefariaRef) return <><SefariaPrayerView sefariaRef={section.sefariaRef} jump={section.jump} />{source}</>;
   return <StaticGroupsView groups={section.groups ?? []} />;
 }
