@@ -23,9 +23,10 @@ export type QuestionCheck =
   | { ok: true; text: string }
   | { ok: false; error: 'too_short' | 'too_long' | 'link' };
 
-export function validateQuestion(raw: unknown): QuestionCheck {
+/** `min`: a follow-up may be as short as "ולמה?" (followUp.ts FOLLOW_MIN). */
+export function validateQuestion(raw: unknown, min = QUESTION_MIN): QuestionCheck {
   const text = normalizeCommentText(typeof raw === 'string' ? raw : '').replace(/\s+/g, ' ');
-  if (text.length < QUESTION_MIN) return { ok: false, error: 'too_short' };
+  if (text.length < min) return { ok: false, error: 'too_short' };
   if (text.length > QUESTION_MAX) return { ok: false, error: 'too_long' };
   if (LINK_RE.test(text)) return { ok: false, error: 'link' };
   return { ok: true, text };

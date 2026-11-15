@@ -4,6 +4,7 @@ import type { RabbiBotEvent, RabbiBotAnswer } from '@/types/rabbiBot';
 import { validateQuestion, quotaResetAt, ANSWER_VERSION } from '@/lib/rabbiBot/rules';
 import { questionKey } from '@/lib/rabbiBot/text';
 import { askRabbiBot } from '@/lib/rabbiBot/pipeline';
+import { FOLLOW_MIN, followUpKey, parseFollowUp } from '@/lib/rabbiBot/followUp';
 import { NoModelError } from '@/lib/rabbiBot/gemini';
 import { loadExhausted, markExhausted, pruneMailClaims } from '@/lib/rabbiBot/quota';
 import {
@@ -22,13 +23,15 @@ const json = (body: RabbiBotEvent, status: number) => NextResponse.json(body, { 
  * Public: ask רבי־בוט a question. Validated, rate-limited per hashed IP, and
  * answered from cache when the same question was answered well recently.
  * Streams NDJSON progress (RabbiBotEvent) ending with `done` or `error`.
+ * `followUp` (optional) = the previous turn, making this a follow-up question.
  */
 export async function POST(req: NextRequest) {
-  const body = await req.json().catch(() => null) as { question?: unknown; website?: unknown } | null;
+  const body = await req.json().catch(() => null) as { question?: unknown; website?: unknown; followUp?: unknown } | null;
   if (!body || (typeof body.website === 'string' && body.website.trim())) {
     return json({ type: 'error', error: 'bad_request' }, 400);
   }
-  const v = validateQuestion(body.question);
+  const followUp = parseFollowUp(body.followUp);
+  const v = validateQuestion(body.question, followUp ? FOLLOW_MIN : undefined);
   if (!v.ok) return json({ type: 'error', error: v.error }, 400);
 
   const ipHash = botIpHash(req);
@@ -38,7 +41,10 @@ export async function POST(req: NextRequest) {
   await purgeOld();
   if (!admin && await isRateLimited(ipHash)) return json({ type: 'error', error: 'rate_limited' }, 429);
 
-  const qHash = `v${ANSWER_VERSION}:${questionKey(v.text)}`;
+  // A follow-up is cached under the turn it follows, so "ובשבת?" after one question never answers another.
+  const qHash = followUp
+    ? `v${ANSWER_VERSION}:${questionKey(followUpKey(followUp))} ⟶ ${questionKey(v.text)}`
+    : `v${ANSWER_VERSION}:${questionKey(v.text)}`;
   const started = Date.now();
   const cached = await findCached(qHash);
   const encoder = new TextEncoder();
@@ -49,7 +55,8 @@ export async function POST(req: NextRequest) {
       const finish = async (answer: RabbiBotAnswer, model: string | null, fromCache: boolean) => {
         if (admin) { send({ type: 'done', id: '', token: '', answer }); return; }
         const id = await saveQuestion({
-          question: v.text, qHash, ipHash, answer, model, cached: fromCache, latencyMs: Date.now() - started,
+          // A follow-up is logged as the complete question it was resolved into (readable in the admin lists).
+          question: answer.standalone || v.text, qHash, ipHash, answer, model, cached: fromCache, latencyMs: Date.now() - started,
         });
         send({ type: 'done', id, token: signQuestionToken(id), answer });
       };
@@ -60,7 +67,7 @@ export async function POST(req: NextRequest) {
           const skip = await loadExhausted();
           const hooks = { skip, onExhausted: (m: string) => markExhausted(m), deadline: started + BUDGET_MS };
           const result = await askRabbiBot(v.text, hooks, (step, extra) => send({ type: 'step', step, ...extra }),
-            answer => send({ type: 'partial', answer }));
+            answer => send({ type: 'partial', answer }), followUp);
           await finish(result.answer, result.model, false);
         }
       } catch (e) {

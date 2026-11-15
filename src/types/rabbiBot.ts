@@ -40,6 +40,8 @@ export interface RabbiBotPoint {
 }
 
 export interface RabbiBotSource {
+  /** Sefaria ref (missing on older answers and non-Sefaria sources) — sent back with a follow-up. */
+  ref?: string;
   heRef: string;
   book: string;
   url: string;
@@ -69,6 +71,16 @@ export interface RabbiBotAnswer {
   byRule?: boolean;
   /** Books the retrieved passages came from (the admin's knowledge-gap list). */
   searchedBooks?: string[];
+  /** A follow-up resolved into a complete question (shared instead of the elliptical wording). */
+  standalone?: string;
+}
+
+/** The previous turn sent with a follow-up question. */
+export interface RabbiBotFollowUp {
+  question: string;
+  understood: string;
+  short: string;
+  refs: string[];
 }
 
 export type RabbiBotStep = 'plan' | 'search' | 'read' | 'answer' | 'verify';

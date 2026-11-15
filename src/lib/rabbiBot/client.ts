@@ -1,4 +1,4 @@
-import type { RabbiBotAnswer, RabbiBotEvent } from '@/types/rabbiBot';
+import type { RabbiBotAnswer, RabbiBotEvent, RabbiBotFollowUp } from '@/types/rabbiBot';
 
 // Client-only helpers: open the floating panel from anywhere, the per-device
 // memory (welcome accepted, the answer on screen, the last few answers), and
@@ -23,6 +23,8 @@ export interface LastAnswer {
   answer: RabbiBotAnswer;
   rating: number | null;
   reported: boolean;
+  /** Asked as a follow-up to this question. */
+  followOf?: string;
 }
 
 export interface BotLocal {
@@ -31,23 +33,45 @@ export interface BotLocal {
   last: LastAnswer | null;
   /** The device's latest answers, newest first. */
   history: LastAnswer[];
+  /** Earlier turns of the conversation on screen, oldest first (follow-ups). */
+  thread: LastAnswer[];
 }
 
 export const HISTORY_MAX = 5;
+/** Earlier turns kept above a follow-up. */
+export const THREAD_MAX = 4;
+
+/** The question as it stands alone: a follow-up's resolved wording, else what was asked. Pure. */
+export const fullQuestion = (a: LastAnswer) => a.answer.standalone || a.question;
 
 /** `item` first, replacing an older copy of the same answer (id) or question, capped. Pure. */
 export function withHistory(list: LastAnswer[], item: LastAnswer, max = HISTORY_MAX): LastAnswer[] {
-  const same = (x: LastAnswer) => (item.id && x.id === item.id) || x.question.trim() === item.question.trim();
+  const same = (x: LastAnswer) => (item.id && x.id === item.id) || fullQuestion(x).trim() === fullQuestion(item).trim();
   return [item, ...list.filter(x => !same(x))].slice(0, max);
+}
+
+/** A follow-up makes sense after a real answer or a "not found" (not after a fixed reply). Pure. */
+export const canFollowUp = (a: LastAnswer | null) => !!a && (a.answer.status === 'answered' || a.answer.status === 'not_found');
+
+/** The previous turn as sent with a follow-up (its refs = the Sefaria sources it cited). Pure. */
+export function followUpFrom(a: LastAnswer): RabbiBotFollowUp {
+  return {
+    question: fullQuestion(a),
+    understood: a.answer.understood ?? '',
+    short: a.answer.short,
+    refs: Array.from(new Set(a.answer.sources.map(s => s.ref).filter((r): r is string => !!r))).slice(0, 4),
+  };
 }
 
 export function readBotLocal(): BotLocal {
   try {
     const v = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null') as Partial<BotLocal> | null;
-    const history = Array.isArray(v?.history) ? v.history.filter(h => h && typeof h.question === 'string' && h.answer) : [];
-    return { welcomed: v?.welcomed === true, last: v?.last ?? null, history: history.slice(0, HISTORY_MAX) };
+    const ok = (h: LastAnswer | null | undefined): h is LastAnswer => !!h && typeof h.question === 'string' && !!h.answer;
+    const history = Array.isArray(v?.history) ? v.history.filter(ok) : [];
+    const thread = Array.isArray(v?.thread) ? v.thread.filter(ok) : [];
+    return { welcomed: v?.welcomed === true, last: v?.last ?? null, history: history.slice(0, HISTORY_MAX), thread: thread.slice(-THREAD_MAX) };
   } catch {
-    return { welcomed: false, last: null, history: [] };
+    return { welcomed: false, last: null, history: [], thread: [] };
   }
 }
 
@@ -57,12 +81,14 @@ export function writeBotLocal(patch: Partial<BotLocal>): void {
   } catch { /* storage blocked — the session still works */ }
 }
 
-/** POSTs the question and feeds each streamed event to `onEvent`. */
-export async function streamAsk(question: string, onEvent: (e: RabbiBotEvent) => void, website = ''): Promise<void> {
+/** POSTs the question (with the previous turn, for a follow-up) and feeds each streamed event to `onEvent`. */
+export async function streamAsk(
+  question: string, onEvent: (e: RabbiBotEvent) => void, website = '', followUp: RabbiBotFollowUp | null = null,
+): Promise<void> {
   const res = await fetch('/api/rabbi-bot/ask', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question, website }),
+    body: JSON.stringify(followUp ? { question, website, followUp } : { question, website }),
   });
   if (!res.body) {
     onEvent({ type: 'error', error: 'unavailable' });

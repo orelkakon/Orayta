@@ -1,5 +1,11 @@
 /* רבי־בוט — answer extras, sharing, history and the admin's knowledge gaps. Spread into HE (src/lib/hebrewTexts.ts). */
 export const RABBI_BOT_HE = {
+  RB_FOLLOW_TITLE: 'שאלת המשך',
+  RB_FOLLOW_SUB: 'אפשר לשאול בקצרה על התשובה — "ובשבת?", "מה המקור?", "ומה לאשכנזים?"',
+  RB_FOLLOW_PLACEHOLDER: 'שאלת המשך על התשובה…',
+  RB_FOLLOW_LABEL: 'שאלת המשך',
+  RB_THREAD_ARIA: 'השאלות הקודמות בשיחה',
+  RB_THREAD_NOT_FOUND: 'לא נמצאה תשובה מאומתת במקורות.',
   RB_UNDERSTOOD: 'הבנתי שהשאלה היא:',
   RB_STILL_WRITING: 'ממשיך לכתוב ולבדוק כל ציטוט מול המקור…',
   RB_MIC: 'שאלה בקול',

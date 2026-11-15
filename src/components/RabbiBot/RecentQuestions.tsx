@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
 import { LineIcon } from '@/components/common/LineIcons';
+import { fullQuestion } from '@/lib/rabbiBot/client';
 import type { LastAnswer } from '@/lib/rabbiBot/client';
 import { LinkBtn } from './styles';
 
@@ -45,9 +46,9 @@ export default function RecentQuestions({ items, onOpen, onClear }: Props) {
       <List>
         {items.map(h => (
           <li key={`${h.id}|${h.question}`}>
-            <Item type="button" onClick={() => onOpen(h)} aria-label={HE.RB_HISTORY_OPEN(h.question)}>
+            <Item type="button" onClick={() => onOpen(h)} aria-label={HE.RB_HISTORY_OPEN(fullQuestion(h))}>
               <LineIcon name="ask" size={17} />
-              <Text>{h.question}</Text>
+              <Text>{fullQuestion(h)}</Text>
               <Status $ok={h.answer.status === 'answered'}>{HE.RB_HISTORY_STATUS[h.answer.status] ?? ''}</Status>
             </Item>
           </li>

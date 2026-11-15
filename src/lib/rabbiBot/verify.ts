@@ -46,7 +46,7 @@ export function verifyAnswer(raw: RawAnswer, passages: RabbiBotPassage[], topic:
       if (!p || !quote) return [];
       if (!sourceIndex.has(p.id)) {
         sourceIndex.set(p.id, sources.length);
-        sources.push({ heRef: p.heRef, book: p.book, url: p.url, text: p.text, origin: p.origin });
+        sources.push({ ...(p.origin === 'sefaria' ? { ref: p.ref.replace(/\|.*$/, '') } : {}), heRef: p.heRef, book: p.book, url: p.url, text: p.text, origin: p.origin });
       }
       return [{ source: sourceIndex.get(p.id) as number, quote }];
     });

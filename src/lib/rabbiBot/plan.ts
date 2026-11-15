@@ -1,5 +1,7 @@
 import { generateJson, generateJsonHedged, ModelHooks, planEnsemble, planModels, isConfigured } from './gemini';
-import { PLAN_SYSTEM, PLAN_SCHEMA } from './prompts';
+import type { RabbiBotFollowUp } from '@/types/rabbiBot';
+import { PLAN_SYSTEM, PLAN_SCHEMA, FOLLOWUP_PLAN_RULES, PLAN_SCHEMA_FOLLOWUP } from './prompts';
+import { followUpContext } from './followUp';
 import { tocMatches, tocLines } from './toc';
 import { keywords } from './text';
 import { impliedWords } from './rank';
@@ -8,6 +10,8 @@ import { impliedWords } from './rank';
 export interface RawPlan {
   kind?: unknown; topic?: unknown; refs?: unknown; searches?: unknown; terms?: unknown; quote?: unknown;
   rewrite?: unknown; parallels?: unknown; principles?: unknown;
+  /** Follow-ups only: the question resolved into a complete one. */
+  standalone?: unknown;
 }
 
 /** How many of each list a merged plan keeps (the pipeline caps them again). */
@@ -23,17 +27,22 @@ const TOC_CANDIDATES = 10;
  * planner picks a siman instead of recalling a number (alone it named the
  * right siman in 3 of 13 test questions). ~300 tokens.
  */
-export function planUser(question: string): string {
-  const asked = keywords(question);
+export function planUser(question: string, tocBasis = question): string {
+  const asked = keywords(tocBasis);
   const candidates = tocMatches({ asked, implied: impliedWords(asked) }, TOC_CANDIDATES);
   return candidates.length ? `${question}\n\n${PLAN_TOC_HEADER}\n${tocLines(candidates)}` : question;
+}
+
+/** A follow-up's planner message: the previous turn, the follow-up, and simanim matching both. */
+export function followUpPlanUser(question: string, f: RabbiBotFollowUp): string {
+  return planUser(`${followUpContext(f)}\nFollow-up question: ${question}`, `${f.understood || f.question} ${question}`);
 }
 const PLAN_TOC_HEADER = 'Shulchan Arukh simanim whose titles share words with the question (found by keyword — some are unrelated):';
 /** A plan slower than this gets a second model racing it (Gemini fallback chain). */
 const PLAN_HEDGE_MS = 7000;
 
 const list = (v: unknown) => (Array.isArray(v) ? v.filter((s): s is string => typeof s === 'string' && s.trim().length > 0) : []);
-const firstText = (plans: RawPlan[], key: 'quote' | 'rewrite') =>
+const firstText = (plans: RawPlan[], key: 'quote' | 'rewrite' | 'standalone') =>
   plans.map(p => p[key]).find((v): v is string => typeof v === 'string' && v.trim().length > 0) ?? '';
 
 /** a1, b1, a2, b2, … without repeats — each plan's best guesses first. */
@@ -60,7 +69,7 @@ export function mergePlans(plans: RawPlan[]): RawPlan {
     kind: lead.kind, topic: lead.topic,
     refs: merged('refs'), parallels: merged('parallels'), searches: merged('searches'),
     terms: merged('terms'), principles: merged('principles'),
-    quote: firstText(plans, 'quote'), rewrite: firstText(plans, 'rewrite'),
+    quote: firstText(plans, 'quote'), rewrite: firstText(plans, 'rewrite'), standalone: firstText(plans, 'standalone'),
   };
 }
 
@@ -83,10 +92,14 @@ export function needsSecondPlan(p: RawPlan): boolean {
  * contents in the message (planUser) is what grounds the siman now, so a
  * second model is rarely worth its tokens. When none answers, or one failed
  * and the rest still say "other", the Gemini plan chain decides.
- * `model` = the first model whose plan was used.
+ * `model` = the first model whose plan was used. A follow-up (`followUp` =
+ * the previous turn) is planned with the earlier exchange in view and also
+ * returns `standalone`, the follow-up resolved into a complete question.
  */
-export async function makePlan(question: string, hooks: ModelHooks): Promise<{ plan: RawPlan; model: string }> {
-  const call = { system: PLAN_SYSTEM, user: planUser(question), schema: PLAN_SCHEMA };
+export async function makePlan(question: string, hooks: ModelHooks, followUp: RabbiBotFollowUp | null = null): Promise<{ plan: RawPlan; model: string }> {
+  const call = followUp
+    ? { system: PLAN_SYSTEM + FOLLOWUP_PLAN_RULES, user: followUpPlanUser(question, followUp), schema: PLAN_SCHEMA_FOLLOWUP }
+    : { system: PLAN_SYSTEM, user: planUser(question), schema: PLAN_SCHEMA };
   const planners = planEnsemble().filter(m => isConfigured(m) && !hooks.skip.has(m));
   const done: { value: unknown; model: string }[] = [];
   let failed = false;

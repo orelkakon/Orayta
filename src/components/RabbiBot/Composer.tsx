@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { HE } from '@/lib/hebrewTexts';
 import { LineIcon } from '@/components/common/LineIcons';
 import { QUESTION_MAX, validateQuestion } from '@/lib/rabbiBot/rules';
+import { FOLLOW_MIN } from '@/lib/rabbiBot/followUp';
 import { Disclaimer } from './styles';
 import { canRecord } from './voice/useRecorder';
 import { useVoiceQuestion } from './voice/useVoiceQuestion';
@@ -13,6 +14,8 @@ import { Action, Box, Counter, Form, Honeypot, Input, Meta, VoiceNote } from './
 interface Props {
   disabled: boolean;
   initial?: string;
+  /** Follow-up box: its own placeholder and label, shorter questions allowed. */
+  followUp?: boolean;
   /** `voice`: the question was spoken — the answer is then read aloud. */
   onAsk: (question: string, website: string, voice: boolean) => void;
 }
@@ -21,12 +24,13 @@ interface Props {
  * The question box. Empty, its round button is a microphone (speak → the
  * transcript lands here for a look → send); with text it becomes "send".
  */
-export default function Composer({ disabled, initial = '', onAsk }: Props) {
+export default function Composer({ disabled, initial = '', followUp = false, onAsk }: Props) {
   const [text, setText] = useState(initial);
   const [website, setWebsite] = useState('');
   const [spoken, setSpoken] = useState(false);
   const [mic, setMic] = useState(false);
-  const valid = validateQuestion(text).ok;
+  const min = followUp ? FOLLOW_MIN : undefined;
+  const valid = validateQuestion(text, min).ok;
 
   useEffect(() => { setMic(canRecord()); }, []);
 
@@ -39,7 +43,7 @@ export default function Composer({ disabled, initial = '', onAsk }: Props) {
   const live = voice.phase !== 'idle';
 
   const submit = () => {
-    const v = validateQuestion(text);
+    const v = validateQuestion(text, min);
     if (v.ok && !disabled) onAsk(v.text, website, spoken);
   };
 
@@ -63,8 +67,8 @@ export default function Composer({ disabled, initial = '', onAsk }: Props) {
               value={text}
               maxLength={QUESTION_MAX + 20}
               rows={2}
-              placeholder={HE.RB_PLACEHOLDER}
-              aria-label={HE.RB_INPUT_LABEL}
+              placeholder={followUp ? HE.RB_FOLLOW_PLACEHOLDER : HE.RB_PLACEHOLDER}
+              aria-label={followUp ? HE.RB_FOLLOW_LABEL : HE.RB_INPUT_LABEL}
               enterKeyHint="send"
               onChange={e => { setText(e.target.value); if (!e.target.value.trim()) setSpoken(false); voice.clearNote(); }}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}

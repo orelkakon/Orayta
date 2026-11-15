@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { HE } from '@/lib/hebrewTexts';
 import { QuietBtn, ErrorLine } from '@/components/Notifications/sheetStyles';
 import { LineIcon } from '@/components/common/LineIcons';
@@ -13,6 +13,9 @@ import SpokenAnswer from './voice/SpokenAnswer';
 import Feedback from './Feedback';
 import ShareAnswer from './ShareAnswer';
 import RecentQuestions from './RecentQuestions';
+import ThreadTurns from './ThreadTurns';
+import FollowUpBox from './FollowUpBox';
+import { canFollowUp, fullQuestion } from '@/lib/rabbiBot/client';
 import RabbiBotAvatar from './RabbiBotAvatar';
 import { Card, Greeting, Question, Stack } from './styles';
 import { useSharedQuestion } from './useSharedQuestion';
@@ -30,10 +33,16 @@ interface Props {
 
 /** The whole רבי־בוט flow; hosted by the floating sheet and by /ask. */
 export default function RabbiBotPanel({ idPrefix, sharedQuestion }: Props) {
-  const { state, loaded, acceptWelcome, ask, reset, reopen, clearHistory, feedback } = useRabbiBot();
+  const { state, loaded, acceptWelcome, ask, followUp, reset, reopen, clearHistory, feedback } = useRabbiBot();
   useSharedQuestion(sharedQuestion, loaded && state.welcomed, state.history, ask, reopen);
   // A spoken question gets its answer read aloud when it arrives.
   const [spokenAsk, setSpokenAsk] = useState<string | null>(null);
+  // A follow-up starts below the thread: bring its question into view.
+  const questionRef = useRef<HTMLDivElement>(null);
+  const followingUp = state.phase === 'asking' && state.followUp !== null;
+  useEffect(() => {
+    if (followingUp) questionRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }, [followingUp]);
 
   if (!state.welcomed) return <WelcomeCard onAccept={acceptWelcome} />;
 
@@ -43,7 +52,8 @@ export default function RabbiBotPanel({ idPrefix, sharedQuestion }: Props) {
   return (
     <Stack>
       {state.phase === 'idle' && <Greeting><RabbiBotAvatar size={44} mood="happy" /><p>{HE.RB_GREETING}</p></Greeting>}
-      {state.phase !== 'idle' && state.question && <Question>{state.question}</Question>}
+      {state.phase !== 'idle' && <ThreadTurns turns={state.thread} />}
+      {state.phase !== 'idle' && state.question && <Question ref={questionRef}>{state.question}</Question>}
 
       {asking && (state.partial
         ? <StreamingAnswer answer={state.partial} idPrefix={idPrefix} />
@@ -52,8 +62,11 @@ export default function RabbiBotPanel({ idPrefix, sharedQuestion }: Props) {
       {state.phase === 'done' && state.last && (
         <>
           <SpokenAnswer answer={state.last.answer} idPrefix={idPrefix} autoPlay={spokenAsk === state.last.question} />
-          {state.last.answer.status === 'answered' && <ShareAnswer question={state.last.question} answer={state.last.answer} />}
+          {state.last.answer.status === 'answered' && <ShareAnswer question={fullQuestion(state.last)} answer={state.last.answer} />}
           <Feedback rating={state.last.rating} reported={state.last.reported} onFeedback={feedback} />
+          {canFollowUp(state.last) && (
+            <FollowUpBox key={state.last.id || state.last.question} onAsk={(q, website, voice) => { setSpokenAsk(voice ? q : null); followUp(q, website); }} />
+          )}
           <QuietBtn type="button" onClick={reset}><LineIcon name="ask" size={18} /> {HE.RB_NEW_QUESTION}</QuietBtn>
         </>
       )}
@@ -69,8 +82,12 @@ export default function RabbiBotPanel({ idPrefix, sharedQuestion }: Props) {
           key={state.phase === 'error' ? 'retry' : 'new'}
           disabled={asking || state.error === 'quota'}
           initial={state.phase === 'error' ? state.question : ''}
-          onAsk={(q, website, voice) => { setSpokenAsk(voice ? q : null); void ask(q, website); }}
+          followUp={state.phase === 'error' && !!state.followUp}
+          onAsk={(q, website, voice) => { setSpokenAsk(voice ? q : null); void ask(q, website, state.phase === 'error' ? state.followUp : null); }}
         />
+      )}
+      {state.phase === 'error' && state.followUp && (
+        <QuietBtn type="button" onClick={reset}><LineIcon name="ask" size={18} /> {HE.RB_NEW_QUESTION}</QuietBtn>
       )}
 
       {state.phase === 'idle' && <RecentQuestions items={state.history} onOpen={reopen} onClear={clearHistory} />}

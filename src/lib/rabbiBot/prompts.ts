@@ -49,6 +49,19 @@ export const PLAN_SCHEMA = {
   required: ['kind', 'topic', 'refs', 'searches', 'terms', 'quote', 'rewrite', 'parallels', 'principles'],
 };
 
+/** Appended to PLAN_SYSTEM when the question follows up on a previous exchange. */
+export const FOLLOWUP_PLAN_RULES = `
+
+FOLLOW-UP: this question follows a previous exchange, shown above it ("Previous question", its restatement, the short answer). A follow-up is often elliptical ("ובשבת?", "ומה לאשכנזים?", "ואם כבר בירך?", "מה המקור?", "למה?").
+standalone: first rewrite the follow-up as ONE complete, self-contained Hebrew question in plain words, understandable without the previous exchange — keep every detail the follow-up gives, and take from the previous question only what the follow-up leaves out (its subject, its case). "מה המקור?" / "למה?" ask for the source / the reason of the previous answer: say so explicitly with its subject. If the follow-up opens a new, unrelated subject, standalone is the follow-up itself.
+Then every other field (kind, topic, refs, searches, terms, rewrite, parallels, principles) is about the standalone question. Thanks or chit-chat ("תודה", "יפה") is kind "other", with standalone = the follow-up.`;
+
+export const PLAN_SCHEMA_FOLLOWUP = {
+  ...PLAN_SCHEMA,
+  properties: { ...PLAN_SCHEMA.properties, standalone: { type: 'string' } },
+  required: [...PLAN_SCHEMA.required, 'standalone'],
+};
+
 export const ANSWER_SYSTEM = `You are "רבי־בוט", who answers Hebrew questions on Jewish law and Torah ONLY from the numbered source passages given (S1, S2, …). You never use outside knowledge.
 
 Rules:
@@ -114,8 +127,16 @@ export function fitPassages(passages: RabbiBotPassage[], maxChars: number): Rabb
   });
 }
 
-export function answerPrompt(question: string, kind: 'halacha' | 'torah', passages: RabbiBotPassage[], understood = ''): string {
+/** A follow-up's background for the answer model: the earlier turn, never to be answered again. */
+export interface AnswerBackground { previousQuestion: string; previousShort: string; asked: string }
+
+export function answerPrompt(
+  question: string, kind: 'halacha' | 'torah', passages: RabbiBotPassage[], understood = '', bg?: AnswerBackground,
+): string {
   const body = passages.map(p => `[${p.id}] ${p.origin === 'sikum' ? 'סיכום: ' : ''}${p.heRef}\n${p.text}`).join('\n\n');
   const restated = understood ? `\nהשאלה בלשון הספרים: ${understood}` : '';
-  return `סוג השאלה: ${kind === 'halacha' ? 'הלכה' : 'תורה'}\nשאלה: ${question}${restated}\n\nמקורות:\n\n${body}`;
+  const before = bg
+    ? `רקע (שאלת המשך — לא לענות שוב על השאלה הקודמת, רק על השאלה הנוכחית):\nשאלה קודמת: ${bg.previousQuestion}${bg.previousShort ? `\nתשובה קודמת בקצרה: ${bg.previousShort}` : ''}\nשאלת ההמשך כפי שנשאלה: ${bg.asked}\n\n`
+    : '';
+  return `${before}סוג השאלה: ${kind === 'halacha' ? 'הלכה' : 'תורה'}\nשאלה: ${question}${restated}\n\nמקורות:\n\n${body}`;
 }

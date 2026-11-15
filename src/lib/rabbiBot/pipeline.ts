@@ -1,6 +1,8 @@
-import type { RabbiBotAnswer, RabbiBotKind, RabbiBotPassage, RabbiBotStep, RabbiBotTopic } from '@/types/rabbiBot';
+import type { RabbiBotAnswer, RabbiBotFollowUp, RabbiBotKind, RabbiBotPassage, RabbiBotStep, RabbiBotTopic } from '@/types/rabbiBot';
 import { generateJson, ModelHooks, answerModels } from './gemini';
-import { ANSWER_SYSTEM, ANSWER_SCHEMA, answerPrompt, fitPassages } from './prompts';
+import { ANSWER_SYSTEM, ANSWER_SCHEMA, AnswerBackground, answerPrompt, fitPassages } from './prompts';
+import { withPriorRefs } from './followUp';
+import { QUESTION_MAX } from './rules';
 import { makePlan, PLAN_CAPS } from './plan';
 import { retrieve } from './retrieve';
 import { verifyAnswer, fixedAnswer, RawAnswer } from './verify';
@@ -36,7 +38,10 @@ function settle(a: RabbiBotAnswer, kind: RabbiBotKind): RabbiBotAnswer {
   return { ...a, points: a.points.map(pt => (pt.view === 'ashkenaz' || pt.view === 'teiman' ? { ...pt, view: 'note' } : pt)), dispute: false };
 }
 
-interface AnswerCall { question: string; kind: RabbiBotKind; topic: RabbiBotTopic; passages: RabbiBotPassage[]; understood: string }
+interface AnswerCall {
+  question: string; kind: RabbiBotKind; topic: RabbiBotTopic; passages: RabbiBotPassage[]; understood: string;
+  background?: AnswerBackground;
+}
 
 /**
  * One answer attempt on `models`, streamed: each time a whole point arrives
@@ -45,8 +50,8 @@ interface AnswerCall { question: string; kind: RabbiBotKind; topic: RabbiBotTopi
 async function answerOnce(models: string[], c: AnswerCall, hooks: ModelHooks, onDraft: PartialFn) {
   let seen = 0;
   const r = await generateJson(models, {
-    system: ANSWER_SYSTEM, user: answerPrompt(c.question, c.kind, c.passages, c.understood), schema: ANSWER_SCHEMA, timeoutMs: 22_000,
-    compactUser: answerPrompt(c.question, c.kind, fitPassages(c.passages, COMPACT_SOURCE_CHARS), c.understood),
+    system: ANSWER_SYSTEM, user: answerPrompt(c.question, c.kind, c.passages, c.understood, c.background), schema: ANSWER_SCHEMA, timeoutMs: 22_000,
+    compactUser: answerPrompt(c.question, c.kind, fitPassages(c.passages, COMPACT_SOURCE_CHARS), c.understood, c.background),
     onText: soFar => {
       const raw = partialAnswer(soFar);
       const count = Array.isArray(raw.points) ? raw.points.length : 0;
@@ -65,11 +70,20 @@ async function answerOnce(models: string[], c: AnswerCall, hooks: ModelHooks, on
  * Wikisource, the site's summaries) → answer (best model with quota) → quote
  * verification (code).
  * Throws NoModelError when no model is available.
+ *
+ * A follow-up (`followUp` = the previous turn) is resolved by the planner
+ * into a complete question (`standalone`), which then drives retrieval and
+ * the answer; the previous answer's refs join the planned ones.
  */
-export async function askRabbiBot(question: string, hooks: ModelHooks, onStep: StepFn, onPartial: PartialFn = () => undefined): Promise<AskResult> {
+export async function askRabbiBot(
+  asked: string, hooks: ModelHooks, onStep: StepFn, onPartial: PartialFn = () => undefined,
+  followUp: RabbiBotFollowUp | null = null,
+): Promise<AskResult> {
   onStep('plan');
-  const plan = await makePlan(question, hooks);
+  const plan = await makePlan(asked, hooks, followUp);
   const p = plan.plan;
+  const standalone = followUp ? text(p.standalone, QUESTION_MAX) || asked : '';
+  const question = standalone || asked;
   const topic = isTopic(p.topic) ? p.topic : 'other';
   if (p.kind === 'sensitive') return { answer: fixedAnswer('sensitive', topic), model: plan.model };
   if (p.kind !== 'halacha' && p.kind !== 'torah') return { answer: fixedAnswer('other', topic), model: plan.model };
@@ -77,9 +91,10 @@ export async function askRabbiBot(question: string, hooks: ModelHooks, onStep: S
 
   onStep('search');
   const understood = text(p.rewrite, REWRITE_MAX);
+  const planned = strings(p.refs, PLAN_CAPS.refs, 120);
   const passages = await retrieve(question, {
     kind,
-    refs: strings(p.refs, PLAN_CAPS.refs, 120),
+    refs: followUp ? withPriorRefs(planned, followUp.refs, PLAN_CAPS.refs + 2) : planned,
     searches: strings(p.searches, PLAN_CAPS.searches, 80),
     terms: strings(p.terms, PLAN_CAPS.terms, 40),
     quote: text(p.quote, 120),
@@ -88,12 +103,13 @@ export async function askRabbiBot(question: string, hooks: ModelHooks, onStep: S
     principles: strings(p.principles, PLAN_CAPS.principles, 60),
   });
   const books = Array.from(new Set(passages.map(x => x.book))).slice(0, MAX_SHOWN_BOOKS);
-  const context = { kind, understood: understood || undefined, searchedBooks: books };
+  const context = { kind, understood: understood || undefined, searchedBooks: books, ...(standalone ? { standalone } : {}) };
   onStep('read', { count: passages.length, books });
   if (passages.length === 0) return { answer: { ...verifyAnswer({ status: 'not_found' }, [], topic), ...context }, model: plan.model };
 
   onStep('answer');
-  const call = { question, kind, topic, passages, understood };
+  const background = followUp ? { previousQuestion: followUp.understood || followUp.question, previousShort: followUp.short, asked } : undefined;
+  const call = { question, kind, topic, passages, understood, background };
   const draft = (a: RabbiBotAnswer) => onPartial({ ...a, ...context, searched: passages.length });
   let result = await answerOnce(answerModels(), call, hooks, draft);
   onStep('verify');
