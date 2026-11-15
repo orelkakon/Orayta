@@ -136,7 +136,7 @@ export function storyCta(story: DailyStory): StoryCta | null {
     case 'rabbiQuiz':return { label: HE.STORY_CTA_WHO, href: '/rabbis' };
     case 'citation': return { label: HE.STORY_CTA_CITATION, href: '/study' };
     case 'reel':     return { label: HE.STORY_CTA_REEL, href: '/feed' };
-    case 'parasha':  return { label: HE.STORY_CTA_PARASHA, href: story.data.url, external: true };
+    case 'parasha':  return { label: HE.STORY_CTA_PARASHA, href: '/parasha', external: false };
     case 'sikum':    return { label: HE.STORY_CTA_SIKUM, href: '/sikumim' };
     case 'quiz':     return { label: HE.STORY_CTA_QUIZ, href: '/quiz' };
     case 'chidush':  return { label: HE.STORY_CTA_CHIDUSH, href: '/chidushim' };

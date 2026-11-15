@@ -1,6 +1,7 @@
 'use client';
 
 import { CSSProperties, PointerEvent } from 'react';
+import Link from 'next/link';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -18,7 +19,8 @@ import ShabbatCandles from './shabbat/ShabbatCandles';
 import ShabbatTimes, { useShabbatStatus } from './shabbat/ShabbatTimes';
 import HeroSky, { skyPhase } from './HeroSky';
 import { greeting, parashaLabel, sunInfo, weekdayName } from './todayInfo';
-import { inIsrael, openPlacePicker } from '@/lib/myPlace';
+import { inIsrael } from '@/lib/myPlace';
+import HeroSunLine from './HeroSunLine';
 import { placeCity } from '@/lib/shabbat';
 import { useMyPlace } from '@/components/Place/useMyPlace';
 
@@ -98,19 +100,6 @@ const Bottom = styled.div`
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: ${theme.spacing.sm};
 `;
 
-const Sun = styled.p`
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: ${theme.fontSizes.sm}; color: ${theme.gilded.nightMuted};
-  font-variant-numeric: tabular-nums;
-`;
-
-/* The place the sun is computed for — tap to change "המקום שלי". */
-const PlaceBtn = styled.button`
-  display: inline-flex; align-items: center; gap: 3px; min-height: 32px; padding: 0 2px;
-  font: inherit; color: ${theme.game.goldLight};
-  text-decoration: underline dotted; text-underline-offset: 3px;
-`;
-
 const Actions = styled.div`display: flex; gap: ${theme.spacing.sm}; flex-wrap: wrap;`;
 
 const GhostOnNight = styled(ButtonLink)`
@@ -146,7 +135,9 @@ export default function TodayHero({ parasha }: { parasha: string | null }) {
     try { return Number(new Intl.DateTimeFormat('en-u-ca-hebrew', { year: 'numeric' }).format(day.at).replace(/\D/g, '')); }
     catch { return 0; }
   })();
-  const tags = [parashaLabel(parasha), ...occasionLabels(day)].filter((t): t is string => !!t);
+  const parashaTag = parashaLabel(parasha);
+  const tags = occasionLabels(day);
+  const tagCount = tags.length + (parashaTag ? 1 : 0);
   const service = HE.HOME_NOW_SERVICE[day.service];
 
   // A soft gold light follows the mouse across the card (fine pointers only).
@@ -168,20 +159,21 @@ export default function TodayHero({ parasha }: { parasha: string | null }) {
         </div>
         {shabbat ? <ShabbatCandles /> : <SunArc progress={sun.progress} />}
       </Top>
-      {tags.length > 0 && (
-        <Tags>{tags.map((t, i) => <Tag key={t} style={{ '--i': i } as CSSProperties}>{t}</Tag>)}</Tags>
+      {tagCount > 0 && (
+        <Tags>
+          {parashaTag && (
+            <Tag as={Link} href="/parasha" style={{ '--i': 0 } as CSSProperties} aria-label={HE.PARASHA_TAG_ARIA(parashaTag)}>
+              {parashaTag}<LineIcon name="chevronBack" size={12} strokeWidth={2.4} />
+            </Tag>
+          )}
+          {tags.map((t, i) => <Tag key={t} style={{ '--i': i + (parashaTag ? 1 : 0) } as CSSProperties}>{t}</Tag>)}
+        </Tags>
       )}
       {shabbat && <ShabbatTimes status={shabbat} parasha={parashaLabel(parasha)} />}
       <ChanukahLights now={now} />
       <Rule />
       <Bottom>
-        <Sun>
-          <LineIcon name={sun.progress === null ? 'sunrise' : 'sun'} size={16} />
-          {sun.label} ·
-          <PlaceBtn type="button" onClick={openPlacePicker} aria-label={HE.PLACE_CHANGE_ARIA(placeName)}>
-            <LineIcon name="pin" size={13} />{placeName}
-          </PlaceBtn>
-        </Sun>
+        <HeroSunLine sun={sun} place={placeName} />
         <Actions>
           <ButtonLink href={`/siddur/${day.service}`} $variant="gold">
             <LineIcon name={day.service === 'arvit' ? 'moon' : 'sunrise'} size={18} strokeWidth={1.9} />

@@ -49,3 +49,33 @@ export interface LearnText {
   explained: boolean;
   blocks: LearnBlock[];
 }
+
+/** One aliya of the week's reading. */
+export interface ParashaAliya { label: string; ref: string; heRef: string; }
+
+/** GET /api/parasha — this week's parasha (Sefaria calendar, Sephardi haftara). */
+export interface ParashaWeek {
+  /** Israel date asked for, YYYY-MM-DD. */
+  date: string;
+  /** "ויצא" — on festival weeks the festival reading's name. */
+  name: string;
+  ref: string;
+  heRef: string;
+  book: string | null;
+  /** Sefaria's short Hebrew summary (null when it has none). */
+  summary: string | null;
+  aliyot: ParashaAliya[];
+  haftarah: { ref: string; heRef: string } | null;
+  url: string;
+}
+
+/** GET /api/parasha/text — one part of the week's reading. */
+export interface ParashaText {
+  ref: string;
+  heRef: string;
+  url: string;
+  version: string | null;
+  license: string | null;
+  numbered: boolean;
+  blocks: LearnBlock[];
+}

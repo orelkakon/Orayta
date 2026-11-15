@@ -1,0 +1,22 @@
+/* Weekly parasha page (/parasha) — spread into HE (src/lib/hebrewTexts.ts). */
+export const PARASHA_HE = {
+  PARASHA_EYEBROW: 'פרשת השבוע',
+  PARASHA_TITLE: (name: string) => `פרשת ${name}`,
+  PARASHA_BOOK: (book: string) => `ספר ${book}`,
+  PARASHA_SUMMARY: 'בקצרה',
+  PARASHA_SUMMARY_CREDIT: 'התקציר מתוך ספריא',
+  PARASHA_INSIGHT: 'רעיון לשבת',
+  PARASHA_READING: 'קריאת התורה',
+  PARASHA_READ_ALL: 'כל הפרשה',
+  PARASHA_HAFTARAH: 'הפטרה',
+  PARASHA_HAFTARAH_CUSTOM: 'מנהג ספרדים ועדות המזרח',
+  PARASHA_ASK: 'שאלה על הפרשה?',
+  PARASHA_ASK_SUB: 'רבי־בוט עונה מתוך המקורות',
+  PARASHA_ERROR: 'לא הצלחנו לטעון את פרשת השבוע. נסו שוב בעוד רגע.',
+  PARASHA_RETRY: 'לנסות שוב',
+  PARASHA_TEXT_ERROR: 'לא הצלחנו לטעון את הטקסט.',
+  PARASHA_SOURCE: 'הטקסט מתוך ספריא',
+  PARASHA_OPEN_SEFARIA: 'לפתוח בספריא',
+  PARASHA_READER_ARIA: (title: string) => `קריאה: ${title}`,
+  PARASHA_TAG_ARIA: (label: string) => `${label} — לעמוד הפרשה`,
+};

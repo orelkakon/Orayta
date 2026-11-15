@@ -149,6 +149,12 @@ Weekday services in נוסח עדות המזרח, read as one continuous text wi
   - `useReaderPrefs` holds text size (`orayta_siddur_font`), reading mode (regular/sepia/night via `html[data-reading]`, `orayta_reader_mode`) and keep-awake (`orayta_reader_awake`, `useWakeLock`). `ReaderSettingsSheet` edits them.
   - All Sefaria HTML rendered client-side goes through `sanitizeSiddurHtml`.
 
+### 2f-1. פרשת השבוע — `/parasha`
+Reached by tapping the parasha (home hero tag, `/today` subtitle, the parasha story) — not in the nav.
+- **Data** (`lib/parasha/server.ts`): Sefaria's calendar with `custom=sephardi` (Sephardi haftara) → name, Hebrew summary (`description.he`), aliyot (`extraDetails.aliyot`, 7 + maftir, named by `aliyaLabels`), Torah refs in Hebrew (`heTorahRef`, pure, tested in `tests/parasha.test.ts`).
+- **API:** `GET /api/parasha?date=` and `GET /api/parasha/text?date=&part=<aliya>|h|all` — only refs from that week's calendar are fetched (never an arbitrary ref). Text without cantillation (`bookletVerse`), through `toBlocks`.
+- **UI** (`components/ParashaView/`): night hero + "כל הפרשה", the story insight as "רעיון לשבת" (`storiesContent/parashot.ts`), Sefaria's summary (credited), aliyot + haftara rows, "ask רבי־בוט". `?part=` opens the reader (hub-reader bar, `LearnTextView`, reader prefs, next aliya) so back returns to the overview.
+
 ### 2g. ספירת העומר — `/omer`
 - **Logic** (`src/lib/omer.ts`, pure, tested in `tests/omer.test.ts`): `omerDayOf(hebDate)` lives in `siddur/occasions.ts` (16 Nisan … 5 Sivan → 1–49; `PrayerDay.omerDay`). `omerStatus(now)` uses Jerusalem sunset/dawn: after sunset the count is tonight's (next Hebrew day); by day `today` = last night's count (forgot → count without bracha) and `tonight` = the coming one. `getOmerDay(date)` = tonight's count (push reminders use it). `omerCount(n)` builds the Edot HaMizrach wording + sefira (verified against Sefaria's 49 lines; Sefaria has a nikud typo on day 15).
 - **Siddur:** arvit section `omer` (`when: 'omer'`) from Sefaria node `Counting_of_the_Omer`: 2–4 opening + bracha, per day n count = segment 3n+3 and sefira 3n+4 as 49 `only` parts (`when: 'omer-<n>'`), 152–161 הרחמן/למנצח/אנא בכח.

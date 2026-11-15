@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import styled from 'styled-components';
 import { theme } from '@/lib/theme';
 import { HE } from '@/lib/hebrewTexts';
@@ -32,6 +33,11 @@ const Container = styled.div`display: flex; flex-direction: column; gap: ${theme
 const Grid = styled.div`
   display: grid; grid-template-columns: minmax(0, 1fr); gap: ${theme.spacing.lg}; align-items: start;
   ${theme.up.md} { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+`;
+
+const ParashaLink = styled(Link)`
+  color: ${theme.colors.secondary}; font-weight: 600;
+  text-decoration: underline dotted; text-underline-offset: 3px;
 `;
 
 const Col = styled.div`display: flex; flex-direction: column; gap: ${theme.spacing.lg}; min-width: 0;`;
@@ -66,7 +72,10 @@ export default function TodayView() {
 
   const dayIdx = today.getDay();
   const weekday = dayIdx === 6 ? HE.TODAY_SHABBAT : HE.TODAY_WEEKDAY(HE.TODAY_DAYS[dayIdx]);
-  const subtitle = hebrewDate ? `${hebrewDate} · ${HE.TODAY_DAY_LINE(weekday, parasha)}` : HE.TODAY_SUBTITLE;
+  // The parasha links to its page (/parasha).
+  const subtitle = hebrewDate
+    ? <>{hebrewDate} · {weekday}{parasha && <> · <ParashaLink href="/parasha">{parasha}</ParashaLink></>}</>
+    : HE.TODAY_SUBTITLE;
 
   const requestLocation = () => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {

@@ -51,7 +51,7 @@ const Explain = styled.p`
 `;
 
 /** Today's portion: optional block headings (פרק / עמוד), numbered segments, Steinsaltz under each. */
-function LearnTextView({ text }: { text: LearnText }) {
+function LearnTextView({ text }: { text: Pick<LearnText, 'blocks' | 'numbered'> }) {
   return (
     <Column>
       {text.blocks.map((b, bi) => (
