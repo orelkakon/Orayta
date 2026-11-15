@@ -1,25 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/auth';
-import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
-import { getMasechetSeder, sederIndex, masechetIndex, dafToNumber } from '@/lib/hebrewData';
+import { getMasechetSeder } from '@/lib/hebrewData';
+import { sortCitations } from '@/lib/citationsSort';
 
 export const dynamic = 'force-dynamic';
-
-type CitationWithLocations = Prisma.CitationGetPayload<{ include: { locations: true } }>;
-
-function sortCitations(list: CitationWithLocations[]): CitationWithLocations[] {
-  return [...list].sort((a, b) => {
-    const la = a.locations[0];
-    const lb = b.locations[0];
-    if (!la || !lb) return 0;
-    const sd = sederIndex(la.seder) - sederIndex(lb.seder);
-    if (sd !== 0) return sd;
-    const md = masechetIndex(la.masechet) - masechetIndex(lb.masechet);
-    if (md !== 0) return md;
-    return dafToNumber(la.daf) - dafToNumber(lb.daf);
-  });
-}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

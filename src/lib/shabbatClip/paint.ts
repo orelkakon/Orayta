@@ -77,6 +77,11 @@ export function paintGlow(ctx: Ctx, t: number, x: number, y: number, at: number)
   ctx.restore();
 }
 
+/** Path2D maker: the DOM's in the browser; the server swaps in its canvas
+ *  library's (lib/storyRender) since Node has no global Path2D. */
+let makePath = (d: string): Path2D => new Path2D(d);
+export function setPathMaker(make: (d: string) => Path2D): void { makePath = make; }
+
 function partFill(ctx: Ctx, p: StickPart): string | CanvasGradient {
   const grad = (stops: [number, string][]) => addStops(ctx.createLinearGradient(-p.hw, 0, p.hw, 0), stops);
   if (p.kind === 'metal') return grad(METAL_STOPS);
@@ -90,7 +95,7 @@ export function paintCandlestick(ctx: Ctx, x: number, y: number, s: number) {
   ctx.save();
   ctx.translate(x, y); ctx.scale(s, s); ctx.lineCap = 'round';
   for (const p of STICK_PARTS) {
-    const path = new Path2D(p.d);
+    const path = makePath(p.d);
     if (p.kind === 'engrave' || p.kind === 'wick') {
       ctx.strokeStyle = p.kind === 'wick' ? WICK : ENGRAVE;
       ctx.lineWidth = p.kind === 'wick' ? 0.9 : 0.5;

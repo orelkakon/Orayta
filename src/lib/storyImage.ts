@@ -98,16 +98,14 @@ export function drawBackground(ctx: CanvasRenderingContext2D, accent: string): v
 const BODY_TOP = 470;
 const BODY_HEIGHT = 1085;
 
-export async function renderStoryImage(content: StoryContent): Promise<Blob> {
-  const serif = cssVar('--font-frank', "'Frank Ruhl Libre', Georgia, serif");
-  const sans = cssVar('--font-heebo', "'Heebo', system-ui, sans-serif");
-  await loadFonts(serif, sans);
+export interface StoryFonts { serif: string; sans: string }
 
-  const canvas = document.createElement('canvas');
-  canvas.width = W;
-  canvas.height = H;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('canvas 2d context unavailable');
+/**
+ * Draws the whole card on a 1080×1920 context. Shared by the browser
+ * (renderStoryImage, the "שתף בסטורי" buttons) and the server
+ * (lib/storyRender, /api/story/daily.png), so the two never drift.
+ */
+export function drawStoryCard(ctx: CanvasRenderingContext2D, content: StoryContent, { serif, sans }: StoryFonts): void {
   ctx.direction = 'rtl';
   ctx.textAlign = 'center';
 
@@ -180,6 +178,19 @@ export async function renderStoryImage(content: StoryContent): Promise<Blob> {
   ctx.fillStyle = GOLD_DIM;
   ctx.font = `600 32px ${sans}`;
   ctx.fillText(SITE, W / 2, H - 250);
+}
+
+export async function renderStoryImage(content: StoryContent): Promise<Blob> {
+  const serif = cssVar('--font-frank', "'Frank Ruhl Libre', Georgia, serif");
+  const sans = cssVar('--font-heebo', "'Heebo', system-ui, sans-serif");
+  await loadFonts(serif, sans);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('canvas 2d context unavailable');
+  drawStoryCard(ctx, content, { serif, sans });
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(b => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png');

@@ -10,13 +10,15 @@ import type { RabbiCategory } from '@/types';
 import { matchYahrzeitRabbis, HebDateParts } from '@/lib/yahrzeit';
 import { formatHebrewDate } from '@/lib/hebrewDate';
 import { shareDailyToWhatsApp, shareDailyToStory, DailySikum } from '@/lib/dailyShare';
+import { israelDayKey, pickForDay } from '@/lib/daily/day';
 import { LineIcon } from '@/components/common/LineIcons';
 import ExpandableSnippet from './ExpandableSnippet';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 
-const DAY = Math.floor(Date.now() / 86400000);
-const pick = <T,>(arr: T[]): T | null => arr.length ? arr[DAY % arr.length] : null;
+// The day's item by the Israel date — the same pick as /api/story/daily.png.
+const DAY_KEY = israelDayKey();
+const pick = <T,>(arr: T[]): T | null => pickForDay(arr, DAY_KEY);
 
 type HebConverterResp = HebDateParts;
 
@@ -74,7 +76,7 @@ export default function DailySection() {
     void Promise.allSettled([
       fetch('/api/rabbis').then(r => r.json()) as Promise<Rabbi[]>,
       fetch('/api/citations').then(r => r.json()) as Promise<Citation[]>,
-      fetch('/api/sikum-entries/daily').then(r => r.json()) as Promise<DailySikum | null>,
+      fetch(`/api/sikum-entries/daily?date=${DAY_KEY}`).then(r => r.json()) as Promise<DailySikum | null>,
       fetch('/api/chidushim').then(r => r.json()) as Promise<Chidush[]>,
       fetch(`https://www.hebcal.com/converter?cfg=json&date=${dateStr}&g2h=1&strict=1`)
         .then(r => r.json() as Promise<HebConverterResp>),
