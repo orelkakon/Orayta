@@ -27,8 +27,6 @@ export const BookTitle = styled.h1`
 
 export const BookAuthor = styled.span`font-size: 0.95rem; color: ${theme.colors.textMuted}; margin-right: ${theme.spacing.sm};`;
 
-export const ControlRow = styled.div`display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: ${theme.spacing.sm};`;
-
 export const SortBtn = styled.button<{ $active?: boolean }>`
   font-size: 0.82rem; padding: 5px 14px; border-radius: ${'9999px'};
   border: 1px solid ${({ $active }) => ($active ? theme.colors.primary : theme.colors.border)};
@@ -36,8 +34,6 @@ export const SortBtn = styled.button<{ $active?: boolean }>`
   color: ${({ $active }) => ($active ? theme.colors.primary : theme.colors.textMuted)};
   font-weight: ${({ $active }) => ($active ? '700' : '400')};
 `;
-
-export const SortRow = styled.div`display: flex; gap: ${theme.spacing.xs};`;
 
 export const AddBtn = styled.button`
   padding: ${theme.spacing.sm} ${theme.spacing.lg};

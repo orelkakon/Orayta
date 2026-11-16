@@ -11,15 +11,14 @@ import SikumEntryCard from './SikumEntryCard';
 import SikumEntryForm from './SikumEntryForm';
 import SikumEntryModal from './SikumEntryModal';
 import SikumCubesGrid from './SikumCubesGrid';
+import SikumEntriesControls, { useSikumOrderPref } from './SikumEntriesControls';
+import { sortEntries } from '@/lib/sikum/order';
 import SearchField from '@/components/common/SearchField';
 import ListState, { InlineError } from '@/components/common/ListState';
 
 import {
-  Container, StickyBar, HeaderRow, BackBtn, BookTitle, BookAuthor, ControlRow, SortBtn, SortRow, AddBtn, List,
+  Container, StickyBar, HeaderRow, BackBtn, BookTitle, BookAuthor, AddBtn, List,
 } from './SikumEntriesView.styles';
-
-type SortDir = 'desc' | 'asc';
-type ViewMode = 'list' | 'grid';
 
 interface Props {
   book: SikumBook;
@@ -32,8 +31,7 @@ export default function SikumEntriesView({ book, initialEntryId, onBack }: Props
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [sortDir, setSortDir] = useState<SortDir>('desc');
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [{ sort, view: viewMode }, setOrder] = useSikumOrderPref(book.id);
   const [search, setSearch] = useState('');
   const [addOpen, setAddOpen] = useState(false);
   const [editEntry, setEditEntry] = useState<SikumEntry | null>(null);
@@ -60,13 +58,10 @@ export default function SikumEntriesView({ book, initialEntryId, onBack }: Props
 
   const sorted = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return [...entries]
-      .filter(e => !q || [e.title, e.text, e.location].some(f => (f ?? '').toLowerCase().includes(q)))
-      .sort((a, b) => {
-        const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
-        return sortDir === 'desc' ? -diff : diff;
-      });
-  }, [entries, sortDir, search]);
+    const found = entries
+      .filter(e => !q || [e.title, e.text, e.location].some(f => (f ?? '').toLowerCase().includes(q)));
+    return sortEntries(found, sort);
+  }, [entries, sort, search]);
 
   const handleDelete = async (entry: SikumEntry) => {
     if (!window.confirm(HE.SIKUMIM_ENTRY_DELETE_CONFIRM)) return;
@@ -118,24 +113,7 @@ export default function SikumEntriesView({ book, initialEntryId, onBack }: Props
 
         <SearchField value={search} onChange={setSearch} placeholder={HE.SIKUMIM_SEARCH_ENTRIES_PLACEHOLDER} />
 
-        <ControlRow>
-          <SortRow>
-            <SortBtn $active={sortDir === 'desc'} onClick={() => setSortDir('desc')}>
-              {HE.SIKUMIM_SORT_DESC}
-            </SortBtn>
-            <SortBtn $active={sortDir === 'asc'} onClick={() => setSortDir('asc')}>
-              {HE.SIKUMIM_SORT_ASC}
-            </SortBtn>
-          </SortRow>
-          <SortRow>
-            <SortBtn $active={viewMode === 'list'} onClick={() => setViewMode('list')}>
-              ☰ {HE.SIKUMIM_VIEW_LIST}
-            </SortBtn>
-            <SortBtn $active={viewMode === 'grid'} onClick={() => setViewMode('grid')}>
-              ▦ {HE.SIKUMIM_VIEW_GRID}
-            </SortBtn>
-          </SortRow>
-        </ControlRow>
+        <SikumEntriesControls sort={sort} view={viewMode} onChange={setOrder} />
       </StickyBar>
 
       {deleteError && <InlineError role="alert">{deleteError}</InlineError>}

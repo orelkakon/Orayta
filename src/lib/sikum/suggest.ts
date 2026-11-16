@@ -7,7 +7,7 @@ import { toHebrewNumeral } from '@/lib/hebrewNumerals';
  * counts as a number only when it is marked (רל״ז, ז׳) or follows a counter
  * word (פרק ז), and only in its canonical spelling — "וירא" is never 217.
  */
-const COUNTERS = new Set([
+export const COUNTERS = new Set([
   'פרק', 'משנה', 'סימן', 'סעיף', 'דף', 'עמוד', 'הלכה', 'הלכות', 'פסוק', 'אות', 'מאמר', 'שער', 'חלק',
   'מצוה', 'מצווה', 'תורה', 'סעיפים', 'סימנים', 'פרקים', 'משניות', 'עמ׳', 'דפים', 'יום', 'שיעור', 'מספר',
 ]);
