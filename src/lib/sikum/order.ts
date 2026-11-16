@@ -117,8 +117,9 @@ export function isRunningCount(keys: Part[][]): boolean {
   return clashes <= Math.floor(sections.size / 10);
 }
 
-export type SikumSort = 'desc' | 'asc' | 'order';
-export const SIKUM_SORTS: SikumSort[] = ['desc', 'asc', 'order'];
+/** Sort by the date written or by the book's own order; each can run either way. */
+export type SikumSortKey = 'date' | 'order';
+export const SIKUM_SORT_KEYS: SikumSortKey[] = ['date', 'order'];
 
 interface Sortable { title: string | null; location: string | null; date: string }
 
@@ -130,14 +131,16 @@ const tier = (k: Part[], k2: Part[]) => (intro(k) || (!k.length && intro(k2)) ? 
 const ordered = (k: Part[]) => k.some(p => ('num' in p && p.counted) || 'place' in p);
 
 /**
- * Entries in the chosen order. "order" reads the field that carries the
- * book's order — the title ("סימן י״א") or the location ("פרק ג"), whichever
- * more summaries number or name — and breaks ties with the other one. An
- * introduction goes first, a summary with nothing to sort by last.
+ * Entries in the chosen order. "date" = newest first; reversed = oldest first.
+ * "order" reads the field that carries the book's order — the title
+ * ("סימן י״א") or the location ("פרק ג"), whichever more summaries number or
+ * name — and breaks ties with the other one. An introduction goes first.
+ * Reversed = the exact mirror (end of the book first, the introduction last),
+ * except that summaries with nothing to sort by stay at the bottom both ways.
  */
-export function sortEntries<T extends Sortable>(entries: T[], sort: SikumSort): T[] {
-  if (sort !== 'order') {
-    const dir = sort === 'desc' ? -1 : 1;
+export function sortEntries<T extends Sortable>(entries: T[], by: SikumSortKey, reverse = false): T[] {
+  if (by === 'date') {
+    const dir = reverse ? 1 : -1;
     return [...entries].sort((a, b) => dir * (time(a) - time(b)));
   }
   const titles = entries.map(e => orderKey(field(e, 'title')));
@@ -145,14 +148,19 @@ export function sortEntries<T extends Sortable>(entries: T[], sort: SikumSort): 
   const byTitle = titles.filter(ordered).length >= places.filter(ordered).length;
   const keyed = entries.map((e, i) => {
     const k = byTitle ? titles[i] : places[i];
-    return { e, k, n: counted(k), k2: byTitle ? places[i] : titles[i] };
+    const k2 = byTitle ? places[i] : titles[i];
+    return { e, k, n: counted(k), k2, t: tier(k, k2) };
   });
   const running = isRunningCount(keyed.map(x => x.k));
-  return keyed.sort((a, b) =>
-    tier(a.k, a.k2) - tier(b.k, b.k2)
+  const sorted = keyed.sort((a, b) =>
+    a.t - b.t
     || (running ? (b.n.length ? 1 : 0) - (a.n.length ? 1 : 0) || compareKeys(a.n, b.n) : 0)
     || compareKeys(a.k, b.k)
     || compareKeys(a.k2, b.k2)
     || time(a.e) - time(b.e),
-  ).map(x => x.e);
+  );
+  const out = reverse
+    ? [...sorted.filter(x => x.t < 2).reverse(), ...sorted.filter(x => x.t === 2)]
+    : sorted;
+  return out.map(x => x.e);
 }

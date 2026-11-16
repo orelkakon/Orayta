@@ -11,7 +11,8 @@ import SikumEntryCard from './SikumEntryCard';
 import SikumEntryForm from './SikumEntryForm';
 import SikumEntryModal from './SikumEntryModal';
 import SikumCubesGrid from './SikumCubesGrid';
-import SikumEntriesControls, { useSikumOrderPref } from './SikumEntriesControls';
+import SikumEntriesControls from './SikumEntriesControls';
+import { useSikumOrderPref } from './useSikumOrderPref';
 import { sortEntries } from '@/lib/sikum/order';
 import SearchField from '@/components/common/SearchField';
 import ListState, { InlineError } from '@/components/common/ListState';
@@ -31,7 +32,8 @@ export default function SikumEntriesView({ book, initialEntryId, onBack }: Props
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [{ sort, view: viewMode }, setOrder] = useSikumOrderPref(book.id);
+  const { pref, flipSeen, pickSort, setView } = useSikumOrderPref(book.id);
+  const viewMode = pref.view;
   const [search, setSearch] = useState('');
   const [addOpen, setAddOpen] = useState(false);
   const [editEntry, setEditEntry] = useState<SikumEntry | null>(null);
@@ -60,8 +62,8 @@ export default function SikumEntriesView({ book, initialEntryId, onBack }: Props
     const q = search.trim().toLowerCase();
     const found = entries
       .filter(e => !q || [e.title, e.text, e.location].some(f => (f ?? '').toLowerCase().includes(q)));
-    return sortEntries(found, sort);
-  }, [entries, sort, search]);
+    return sortEntries(found, pref.by, pref.rev[pref.by]);
+  }, [entries, pref, search]);
 
   const handleDelete = async (entry: SikumEntry) => {
     if (!window.confirm(HE.SIKUMIM_ENTRY_DELETE_CONFIRM)) return;
@@ -113,7 +115,7 @@ export default function SikumEntriesView({ book, initialEntryId, onBack }: Props
 
         <SearchField value={search} onChange={setSearch} placeholder={HE.SIKUMIM_SEARCH_ENTRIES_PLACEHOLDER} />
 
-        <SikumEntriesControls sort={sort} view={viewMode} onChange={setOrder} />
+        <SikumEntriesControls pref={pref} flipSeen={flipSeen} onPickSort={pickSort} onView={setView} />
       </StickyBar>
 
       {deleteError && <InlineError role="alert">{deleteError}</InlineError>}

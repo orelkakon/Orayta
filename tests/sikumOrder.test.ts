@@ -44,8 +44,14 @@ test('the order may live in the location field, titles break ties', () => {
 
 test('date orders', () => {
   const input = [mk('a', null, '2026-01-02'), mk('b', null, '2026-01-03'), mk('c', null, '2026-01-01')];
-  assert.deepEqual(titles(sortEntries(input, 'desc')), ['b', 'a', 'c']);
-  assert.deepEqual(titles(sortEntries(input, 'asc')), ['c', 'a', 'b']);
+  assert.deepEqual(titles(sortEntries(input, 'date')), ['b', 'a', 'c']);
+  assert.deepEqual(titles(sortEntries(input, 'date', true)), ['c', 'a', 'b']);
+});
+
+test('reversed order mirrors the book, unsortable summaries stay last', () => {
+  const input = [mk('סימן ב'), mk('הקדמה'), mk(null), mk('סימן י״א'), mk('סימן א')];
+  assert.deepEqual(titles(sortEntries(input, 'order')), ['הקדמה', 'סימן א', 'סימן ב', 'סימן י״א', null]);
+  assert.deepEqual(titles(sortEntries(input, 'order', true)), ['סימן י״א', 'סימן ב', 'סימן א', 'הקדמה', null]);
 });
 
 test('parashot sort in Torah order, whatever the spelling', () => {
