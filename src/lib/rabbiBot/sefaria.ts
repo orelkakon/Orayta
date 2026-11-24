@@ -1,5 +1,6 @@
 import { toHebrewNumeral } from '@/lib/hebrewNumerals';
 import { stripHtml, markRema } from './text';
+import { createGate, MAX_IN_FLIGHT, retryDelay } from './sefariaGate';
 
 // Server-only: Sefaria's public API (no key). Texts are cached by Next's data
 // cache — a seif never changes — searches are not.
@@ -20,12 +21,38 @@ interface V1Text {
   sections?: number[]; toSections?: number[]; isSpanning?: boolean; spanningRefs?: string[];
 }
 
-async function getJson<T>(url: string, init?: RequestInit & { next?: { revalidate: number } }): Promise<T | null> {
+const gate = createGate(MAX_IN_FLIGHT);
+
+type Attempt<T> = { ok: true; value: T } | { ok: false; status: number; retryAfter: string | null };
+
+/** One attempt: the parsed body, or the status that failed it (0 = no response, -1 = timed out). */
+async function attempt<T>(url: string, init?: RequestInit & { next?: { revalidate: number } }): Promise<Attempt<T>> {
   try {
     const res = await fetch(url, { ...init, signal: AbortSignal.timeout(TIMEOUT_MS) });
-    return res.ok ? await res.json() as T : null;
-  } catch {
-    return null;
+    if (res.ok) return { ok: true, value: await res.json() as T };
+    return { ok: false, status: res.status, retryAfter: res.headers.get('retry-after') };
+  } catch (e) {
+    return { ok: false, status: e instanceof Error && e.name === 'TimeoutError' ? -1 : 0, retryAfter: null };
+  }
+}
+
+/**
+ * GET/POST through the gate (sefariaGate.ts): a 429 / 5xx is retried after a
+ * backoff instead of passing for "no such text". null = missing or given up.
+ */
+async function getJson<T>(url: string, init?: RequestInit & { next?: { revalidate: number } }): Promise<T | null> {
+  const start = Date.now();
+  for (let n = 0; ; n++) {
+    const r = await gate.run(() => attempt<T>(url, init));
+    if (r.ok) return r.value;
+    if (r.status === 404 || r.status === 400) return null;
+    const wait = retryDelay(r.status, n, r.retryAfter, Date.now() - start);
+    if (wait === null) {
+      console.warn(`[sefaria] gave up (${r.status}) after ${n + 1} tries: ${url.slice(BASE.length, BASE.length + 90)}`);
+      return null;
+    }
+    if (r.status === 429) gate.pause(wait);
+    await new Promise(res => setTimeout(res, wait));
   }
 }
 

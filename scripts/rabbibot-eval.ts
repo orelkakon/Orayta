@@ -28,6 +28,8 @@ const SA = 'Shulchan Arukh, ';
 const CASES: Case[] = [
   { q: 'עד מתי אפשר להדליק נרות חנוכה?', expect: [`${SA}Orach Chayim 672:2`] },
   { q: 'מה מברכים על אורז?', expect: [`${SA}Orach Chayim 208:7`] },
+  // Went unanswered when Sefaria throttled (429) the search that finds it — see sefariaGate.ts.
+  { q: 'מה מברכים על מים?', expect: [`${SA}Orach Chayim 204:7`] },
   { q: 'כמה זמן צריך לחכות בין בשר לחלב?', expect: [`${SA}Yoreh De'ah 89:1`] },
   { q: 'מותר לשתות קפה לפני תפילת שחרית?', expect: [`${SA}Orach Chayim 89:3`] },
   { q: 'שכחתי יעלה ויבוא בשחרית של ראש חודש, צריך לחזור?', expect: [`${SA}Orach Chayim 422:1`] },
