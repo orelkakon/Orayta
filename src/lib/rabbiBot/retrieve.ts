@@ -8,7 +8,8 @@ import { excerpt, overlap } from './match';
 import { best, Candidate, fromSefaria, linkedCommentaries, searchPhrase, splitRemaCandidate, wikisource } from './sources';
 import { arukhHaShulchanRef, shulchanArukhSimanim, spellings } from './anchors';
 import { impliedWords, ranker } from './rank';
-import { tocMatches } from './toc';
+import { saIndex } from './saCorpus';
+import { findSimanim } from './saFinder';
 
 export interface RetrievalPlan {
   kind: RabbiBotKind;
@@ -39,8 +40,11 @@ const SIKUM_CHARS = 1600;
 /** Simanim whose best seifim go to the model; the first LINKED of them also bring their commentaries. */
 const MAX_ANCHORS = 3;
 const LINKED = 2;
-/** Simanim added by title (toc.ts) after the plan is known. */
+/** Simanim the full-text search (saFinder.ts) adds once the plan is known, and how deep its ranking is read. */
 const TITLED = 3;
+const FOUND_DEPTH = 30;
+/** Reciprocal-rank fusion constant: low, since only a handful of simanim compete. */
+const RRF_K = 2;
 /** A word in a siman's title counts this much more than one in its seifim (the title names the subject). */
 const TITLE_WEIGHT = 2;
 /** A hit found only by a shortened phrase must share this many of the plan's words. */
@@ -80,7 +84,10 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
   const halacha = plan.kind === 'halacha';
   // The subject with the word the question implies ("יעלה ויבא" + "מחזירין") — how the ruling reads.
   const pairs = plan.terms.slice(0, 2).flatMap(t => implied.slice(0, 1).flatMap(w => spellings(`${t} ${w}`))).slice(0, 3);
-  const titled = halacha ? tocMatches({ asked: keywords(question), plan: core, implied }, TITLED).map(m => m.ref) : [];
+  const index = halacha ? await saIndex() : null;
+  const found = index ? findSimanim(index, question, [...core, ...implied], FOUND_DEPTH) : [];
+  const titled = found.slice(0, TITLED).map(h => h.siman);
+  const foundRank = new Map(found.map((h, i) => [h.siman, i]));
   const searches = [
     ...phrases.flatMap(q => SEARCH_PATHS[plan.kind].map(s => searchPhrase(q, s.path, s.size))),
     ...(halacha ? [searchRefs(phrases[0] ?? question, 'Talmud', 2).then(refs => ({ refs, loose: false }))] : []),
@@ -92,7 +99,7 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
     plan.quote ? searchRefs(plan.quote, null, 5, 'exact') : Promise.resolve([]),
     Promise.all(searches),
     halacha ? Promise.all(plan.principles.slice(0, 2).map(p => searchRefs(p, 'Halakhah', 2))) : [],
-    halacha ? shulchanArukhSimanim({ planned: plan.refs, pairs, titled, phrases, terms: plan.terms }) : [],
+    halacha ? shulchanArukhSimanim({ planned: plan.refs, pairs, titled, phrases, terms: plan.terms, context: found.map(h => h.siman) }) : [],
     wikisource([plan.quote || plan.rewrite || question, ...phrases.slice(0, 1)], words),
     searchSikumim(words, 2, core),
     quotedAuthorities(question, keywords(plan.terms.join(' ')), core),
@@ -114,10 +121,14 @@ export async function retrieve(question: string, plan: RetrievalPlan): Promise<R
   // The plan's own seifim: a well-known ruling may share few words with the
   // question (89:1 "לא יאכל גבינה… שש שעות"), so at least one of the plan's
   // simanim is kept, and a seif it names always goes in with its siman.
-  const named = new Set(plan.refs);
+  // The search's best seif of its top simanim goes in too (the seif that says "השותה מים").
+  const named = new Set([...plan.refs, ...found.slice(0, LINKED).map(h => h.seifim[0])]);
   const namedSimanim = new Set(plan.refs.filter(isSA).map(simanOf));
-  const ranked = simanim.map(t => ({ t, s: anchorScore(t), named: namedSimanim.has(simanOf(t.ref)) }))
+  // Two rankings, fused: the passages' words (anchorScore) and the full-text search over the whole Shulchan Arukh.
+  const byWords = simanim.map(t => ({ t, s: anchorScore(t), named: namedSimanim.has(simanOf(t.ref)) }))
     .filter(x => x.s > 0).sort((a, b) => b.s - a.s);
+  const fused = (x: { t: SefariaText }, i: number) => 1 / (RRF_K + i) + 1 / (RRF_K + (foundRank.get(simanOf(x.t.ref)) ?? FOUND_DEPTH));
+  const ranked = byWords.map((x, i) => ({ ...x, f: fused(x, i) })).sort((a, b) => b.f - a.f);
   const plannedSiman = ranked.find(x => x.named);
   const anchors = (plannedSiman && !ranked.slice(0, MAX_ANCHORS).includes(plannedSiman)
     ? [ranked[0], plannedSiman, ...ranked.slice(1, MAX_ANCHORS - 1)] : ranked.slice(0, MAX_ANCHORS)).map(x => x.t);

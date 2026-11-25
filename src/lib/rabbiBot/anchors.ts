@@ -1,4 +1,6 @@
 import { fetchText, searchRefs, SefariaText } from './sefaria';
+import { saIndex } from './saCorpus';
+import { phraseSeifim } from './saFinder';
 
 // Server-only: the Shulchan Arukh simanim a halacha question may sit in.
 
@@ -11,6 +13,8 @@ const SA_REF = 'Shulchan Arukh, ';
 const HITS = 8;
 /** A pair is precise, so it may bring more: its few real hits hide among the repeats. */
 const PAIR_HITS = 20;
+/** Seifim per lead from the local search (no repeats there). */
+const LOCAL_HITS = 4;
 const MAX_SIMANIM = 10;
 /** Past the longest siman — Sefaria clamps a range to the siman's end. */
 const WHOLE = 99;
@@ -49,27 +53,41 @@ export function spellings(phrase: string): string[] {
 /**
  * Whole simanim from five leads, most precise first: the seifim the plan
  * names (often the right siman but the wrong seif), subject + ruling-verb
- * pairs, simanim whose title matches, the plan's phrases searched inside the
- * Shulchan Arukh itself (worded as it rules — "נשים חייבות בהבדלה" lands on
- * the seif), and the sources' term for the subject. Ranked by the caller.
+ * pairs, the simanim a full-text search of the question and plan finds
+ * (saFinder.ts), the plan's phrases searched inside the Shulchan Arukh itself
+ * (worded as it rules — "נשים חייבות בהבדלה" lands on the seif), and the
+ * sources' term for the subject. Searched locally; the texts come from the
+ * local corpus (fetchText). Ranked by the caller.
  */
 export interface SimanLeads {
   /** Refs the plan named (only Shulchan Arukh ones are used). */
   planned: string[];
   /** The subject term with the word the question implies ("יעלה ויבא מחזירין"). */
   pairs: string[];
-  /** Simanim whose title matches the question and the plan's words (toc.ts). */
+  /** The simanim a full-text search of the question and the plan's words finds (saFinder.ts). */
   titled: string[];
   phrases: string[];
   terms: string[];
+  /** The simanim the whole question is about, best first — a phrase found in many places keeps these first. */
+  context?: string[];
 }
 
-export async function shulchanArukhSimanim({ planned, pairs, titled, phrases, terms }: SimanLeads): Promise<SefariaText[]> {
-  const [pairHits, phraseHits, termHits] = await Promise.all([
+/** The leads' seifim: from the local Shulchan Arukh (saFinder.ts), or Sefaria's search when the corpus is missing. */
+async function leadHits(pairs: string[], phrases: string[], terms: string[], context: string[]): Promise<[string[][], string[][], string[][]]> {
+  const index = await saIndex();
+  if (index) {
+    const local = (list: string[]) => list.map(p => phraseSeifim(index, p, LOCAL_HITS, context));
+    return [local(pairs), local(phrases), local(terms.slice(0, 4))];
+  }
+  return Promise.all([
     Promise.all(pairs.map(p => searchRefs(p, SA_PATHS, PAIR_HITS))),
     Promise.all(phrases.map(p => searchRefs(p, SA_PATHS, HITS))),
     Promise.all(terms.slice(0, 4).map(t => searchRefs(t, SA_PATHS, HITS))),
   ]);
+}
+
+export async function shulchanArukhSimanim({ planned, pairs, titled, phrases, terms, context = [] }: SimanLeads): Promise<SefariaText[]> {
+  const [pairHits, phraseHits, termHits] = await leadHits(pairs, phrases, terms, context);
   // A pair (the subject + the ruling's verb) is the most precise lead: all its hits go in right after the plan's own seifim.
   const leads = [
     ...planned.filter(r => r.startsWith(SA_REF)), ...distinct(pairHits.flat()), ...titled,

@@ -4,6 +4,7 @@ import type { RabbiBotEvent, RabbiBotAnswer } from '@/types/rabbiBot';
 import { validateQuestion, quotaResetAt, ANSWER_VERSION } from '@/lib/rabbiBot/rules';
 import { questionKey } from '@/lib/rabbiBot/text';
 import { askRabbiBot } from '@/lib/rabbiBot/pipeline';
+import { saIndex } from '@/lib/rabbiBot/saCorpus';
 import { FOLLOW_MIN, followUpKey, parseFollowUp } from '@/lib/rabbiBot/followUp';
 import { NoModelError } from '@/lib/rabbiBot/gemini';
 import { loadExhausted, markExhausted, pruneMailClaims } from '@/lib/rabbiBot/quota';
@@ -30,6 +31,8 @@ export async function POST(req: NextRequest) {
   if (!body || (typeof body.website === 'string' && body.website.trim())) {
     return json({ type: 'error', error: 'bad_request' }, 400);
   }
+  // The Shulchan Arukh search index (~0.7 s once per instance) builds while the database checks below run.
+  void saIndex();
   const followUp = parseFollowUp(body.followUp);
   const v = validateQuestion(body.question, followUp ? FOLLOW_MIN : undefined);
   if (!v.ok) return json({ type: 'error', error: v.error }, 400);

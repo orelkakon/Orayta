@@ -2,7 +2,7 @@
  * Builds src/lib/rabbiBot/data/sa-toc.json: the title of every siman in the
  * four parts of the Shulchan Arukh ("זמן הדלקת נר חנוכה"), from the bold
  * heading of its first seif on Sefaria. רבי־בוט matches questions against it
- * (lib/rabbiBot/toc.ts) so a siman is found by its subject, not only by a
+ * (the title field of the Shulchan Arukh search, lib/rabbiBot/saIndex.ts) so a siman is found by its subject, not only by a
  * model's memory of its number. Rerun only if Sefaria's text changes.
  *
  *   npx tsx scripts/sa-toc.ts

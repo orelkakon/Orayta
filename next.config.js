@@ -10,6 +10,8 @@ const nextConfig = {
     outputFileTracingIncludes: {
       '/api/story/daily.png': ['./assets/fonts/**'],
       '/api/story/shabbat.png': ['./assets/fonts/**'],
+      // The whole Shulchan Arukh, read from disk by רבי־בוט (lib/rabbiBot/saCorpus.ts).
+      '/api/rabbi-bot/ask': ['./src/lib/rabbiBot/data/sa-text.json'],
     },
   },
   // The push service worker must never be served stale, or fixes to it would

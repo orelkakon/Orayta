@@ -2,9 +2,7 @@ import { generateJson, generateJsonHedged, ModelHooks, planEnsemble, planModels,
 import type { RabbiBotFollowUp } from '@/types/rabbiBot';
 import { PLAN_SYSTEM, PLAN_SCHEMA, FOLLOWUP_PLAN_RULES, PLAN_SCHEMA_FOLLOWUP } from './prompts';
 import { followUpContext } from './followUp';
-import { tocMatches, tocLines } from './toc';
-import { keywords } from './text';
-import { impliedWords } from './rank';
+import { planCandidates } from './saFinder';
 
 /** What a planning model returns (parsed JSON, untrusted). */
 export interface RawPlan {
@@ -18,26 +16,22 @@ export interface RawPlan {
 export const PLAN_CAPS = { refs: 8, parallels: 4, searches: 4, terms: 4, principles: 2 } as const;
 
 const ENSEMBLE_TIMEOUT_MS = 12_000;
-/** Candidate simanim (by title) shown to the planner. */
-const TOC_CANDIDATES = 10;
 
 /**
- * The planner's message: the question, and the Shulchan Arukh simanim whose
- * titles share its words (toc.ts) — real titles with real numbers, so the
- * planner picks a siman instead of recalling a number (alone it named the
- * right siman in 3 of 13 test questions). ~300 tokens.
+ * The planner's message: the question, and the Shulchan Arukh seifim a
+ * full-text search of its words found (saFinder.ts) — real seifim with their
+ * siman's title and their own words, so the planner picks a seif instead of
+ * recalling a number (alone it named the right siman in 3 of 13 test questions).
  */
-export function planUser(question: string, tocBasis = question): string {
-  const asked = keywords(tocBasis);
-  const candidates = tocMatches({ asked, implied: impliedWords(asked) }, TOC_CANDIDATES);
-  return candidates.length ? `${question}\n\n${PLAN_TOC_HEADER}\n${tocLines(candidates)}` : question;
+export function planUser(question: string, candidates: string): string {
+  return candidates ? `${question}\n\n${PLAN_CANDIDATES_HEADER}\n${candidates}` : question;
 }
 
-/** A follow-up's planner message: the previous turn, the follow-up, and simanim matching both. */
-export function followUpPlanUser(question: string, f: RabbiBotFollowUp): string {
-  return planUser(`${followUpContext(f)}\nFollow-up question: ${question}`, `${f.understood || f.question} ${question}`);
+/** A follow-up's planner message: the previous turn, the follow-up, and the seifim found for both. */
+export function followUpPlanUser(question: string, f: RabbiBotFollowUp, candidates = ''): string {
+  return planUser(`${followUpContext(f)}\nFollow-up question: ${question}`, candidates);
 }
-const PLAN_TOC_HEADER = 'Shulchan Arukh simanim whose titles share words with the question (found by keyword — some are unrelated):';
+const PLAN_CANDIDATES_HEADER = 'Shulchan Arukh seifim found by a full-text search of the question\'s words (best match first — some are unrelated), each with its siman\'s title and the seif\'s words:';
 /** A plan slower than this gets a second model racing it (Gemini fallback chain). */
 const PLAN_HEDGE_MS = 7000;
 
@@ -88,8 +82,8 @@ export function needsSecondPlan(p: RawPlan): boolean {
  * The plan for a question. The Groq planners run one at a time, cheapest
  * first (Qwen ~2.4k tokens, gpt-oss ~4k with its reasoning; Groq allows 200k
  * a day per model): the next one runs only when the plan so far needs a second
- * opinion (needsSecondPlan), and their plans are merged. The table of
- * contents in the message (planUser) is what grounds the siman now, so a
+ * opinion (needsSecondPlan), and their plans are merged. The seifim found
+ * for the question (planUser) are what ground the siman now, so a
  * second model is rarely worth its tokens. When none answers, or one failed
  * and the rest still say "other", the Gemini plan chain decides.
  * `model` = the first model whose plan was used. A follow-up (`followUp` =
@@ -97,9 +91,10 @@ export function needsSecondPlan(p: RawPlan): boolean {
  * returns `standalone`, the follow-up resolved into a complete question.
  */
 export async function makePlan(question: string, hooks: ModelHooks, followUp: RabbiBotFollowUp | null = null): Promise<{ plan: RawPlan; model: string }> {
+  const candidates = await planCandidates(followUp ? `${followUp.understood || followUp.question} ${question}` : question);
   const call = followUp
-    ? { system: PLAN_SYSTEM + FOLLOWUP_PLAN_RULES, user: followUpPlanUser(question, followUp), schema: PLAN_SCHEMA_FOLLOWUP }
-    : { system: PLAN_SYSTEM, user: planUser(question), schema: PLAN_SCHEMA };
+    ? { system: PLAN_SYSTEM + FOLLOWUP_PLAN_RULES, user: followUpPlanUser(question, followUp, candidates), schema: PLAN_SCHEMA_FOLLOWUP }
+    : { system: PLAN_SYSTEM, user: planUser(question, candidates), schema: PLAN_SCHEMA };
   const planners = planEnsemble().filter(m => isConfigured(m) && !hooks.skip.has(m));
   const done: { value: unknown; model: string }[] = [];
   let failed = false;

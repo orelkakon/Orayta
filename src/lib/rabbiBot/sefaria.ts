@@ -1,6 +1,6 @@
-import { toHebrewNumeral } from '@/lib/hebrewNumerals';
 import { stripHtml, markRema } from './text';
 import { createGate, MAX_IN_FLIGHT, retryDelay } from './sefariaGate';
+import { heNumeral, localSaText } from './saCorpus';
 
 // Server-only: Sefaria's public API (no key). Texts are cached by Next's data
 // cache — a seif never changes — searches are not.
@@ -59,16 +59,15 @@ async function getJson<T>(url: string, init?: RequestInit & { next?: { revalidat
 const enc = (ref: string) => encodeURIComponent(ref.replace(/ /g, '_'));
 export const sefariaUrl = (ref: string) => `${BASE}/${enc(ref)}?lang=he`;
 
-/** 31 → ל״א, 5 → ה׳ (Sefaria's heRef style). */
-function heNumeral(n: number): string {
-  const s = toHebrewNumeral(n);
-  return s.length === 1 ? `${s}׳` : `${s.slice(0, -1)}״${s.slice(-1)}`;
-}
-
 const flat = (v: unknown): string[] => (Array.isArray(v) ? v.flatMap(flat) : typeof v === 'string' ? [v] : []);
 
-/** A ref's Hebrew text; null when the ref doesn't exist (hallucinated refs fall out here). */
+/**
+ * A ref's Hebrew text; null when the ref doesn't exist (hallucinated refs fall
+ * out here). The Shulchan Arukh itself comes from the local corpus (saCorpus.ts).
+ */
 export async function fetchText(wanted: string): Promise<SefariaText | null> {
+  const local = localSaText(wanted);
+  if (local) return local;
   const d = await getJson<V1Text>(`${BASE}/api/texts/${enc(wanted)}?context=0&commentary=0&lang=he&pad=0`,
     { next: { revalidate: TEXT_TTL } });
   if (!d || d.error || !d.ref) return null;

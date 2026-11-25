@@ -6,7 +6,6 @@ import { splitRemaCandidate } from '@/lib/rabbiBot/sources';
 import { simanRanges, spellings, arukhHaShulchanRef } from '@/lib/rabbiBot/anchors';
 import { partialAnswer } from '@/lib/rabbiBot/partial';
 import { worthSecondTry } from '@/lib/rabbiBot/retry';
-import { tocMatches } from '@/lib/rabbiBot/toc';
 import { isAshkenaziSource } from '@/lib/rabbiBot/views';
 import { scorer, wordWeights, impliedWords } from '@/lib/rabbiBot/rank';
 import { withHistory, LastAnswer } from '@/lib/rabbiBot/client';
@@ -437,13 +436,6 @@ test('arukhHaShulchanRef: the same siman in the Arukh HaShulchan', () => {
   assert.equal(arukhHaShulchanRef('Shulchan Arukh, Orach Chayim 672:1-99'), 'Arukh HaShulchan, Orach Chaim 672:1-99');
   assert.equal(arukhHaShulchanRef("Shulchan Arukh, Yoreh De'ah 89:1"), "Arukh HaShulchan, Yoreh De'ah 89:1-99");
   assert.equal(arukhHaShulchanRef('Mishnah Berurah 672:1'), null);
-});
-
-test('tocMatches finds a siman by its title', () => {
-  const hits = tocMatches({ asked: keywords('עד מתי מדליקים נרות חנוכה?'), implied: ['זמן'] }, 5).map(m => m.ref);
-  assert.ok(hits.includes('Shulchan Arukh, Orach Chayim 672'));
-  const hallel = tocMatches({ asked: keywords('מברכים על הלל בראש חודש?') }, 3).map(m => m.ref);
-  assert.equal(hallel[0], 'Shulchan Arukh, Orach Chayim 422');
 });
 
 test('a prefixed question word meets the plain word in the source', () => {
